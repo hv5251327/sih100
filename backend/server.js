@@ -7,8 +7,6 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
 let rawUrl = process.env.SUPABASE_URL || 'https://ccdrahlnsfrncsqaiumt.supabase.co';
 let cleanUrl = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
 const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjZHJhaGxuc2ZybmNzcWFpdW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDEzMDAsImV4cCI6MjEwMzU3NzMwMH0.O3sAoWJuLWKeJCenkiUjen3FfLnNahUu7nKbpQ1t6Fo';
@@ -23,11 +21,15 @@ app.get('/api/metadata', async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('mospi_metadata')
-            .select('cadre, department_code, department_name, designation')
-            .order('id');
-        if (error) return res.status(500).json({ error: error.message });
-        return res.json(data);
+            .select('cadre, department_code, department_name, designation');
+
+        if (error) {
+            console.error('Metadata DB error:', error);
+            return res.status(500).json({ error: error.message });
+        }
+        return res.json(data || []);
     } catch (err) {
+        console.error('Metadata catch error:', err);
         return res.status(500).json({ error: 'Failed to fetch metadata' });
     }
 });
