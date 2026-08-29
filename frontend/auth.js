@@ -28,8 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function submitAuth(role) {
-    const email = document.getElementById('email').value;
+    const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
+    const submitBtn = document.querySelector('.btn-submit');
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Verifying...';
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -38,19 +42,25 @@ async function submitAuth(role) {
             body: JSON.stringify({ email, password, role })
         });
         const data = await response.json();
+
         if (response.ok) {
-            alert(`Logged in successfully as ${role.toUpperCase()}`);
+            localStorage.setItem('mospi_user', JSON.stringify(data.user));
+            alert(`Welcome, ${data.user.name || 'Officer'}! Login successful.`);
+            window.location.href = 'dashboard.html';
         } else {
             alert(`Authentication Error: ${data.error || 'Invalid credentials'}`);
         }
     } catch (err) {
-        alert('Server unreachable. Ensure the backend is active.');
+        alert('Server unreachable. Ensure the backend is running.');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = role === 'admin' ? 'Authorize & Access Portal' : 'Login';
     }
 }
 
 async function submitRegistration() {
-    const name = document.getElementById('regName').value;
-    const email = document.getElementById('regEmail').value;
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
     const password = document.getElementById('regPassword').value;
     const cadre = document.getElementById('regCadre').value;
     const department = document.getElementById('regDept').options[document.getElementById('regDept').selectedIndex].text;
@@ -58,7 +68,7 @@ async function submitRegistration() {
     const submitBtn = document.querySelector('.btn-register-submit');
 
     submitBtn.disabled = true;
-    submitBtn.innerText = "Registering...";
+    submitBtn.innerText = 'Registering...';
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
@@ -67,17 +77,16 @@ async function submitRegistration() {
             body: JSON.stringify({ name, email, password, cadre, department, designation })
         });
         const data = await response.json();
-        
+
         if (response.ok) {
-            alert(`Registration successful! Record created for ${data.user.name} in Supabase.`);
-            // No redirect - awaiting next instructions
+            alert(`Registration successful for ${data.user.name} in Supabase.`);
         } else {
             alert(`Registration Error: ${data.error || 'Unable to complete registration'}`);
         }
     } catch (err) {
-        alert('Server unreachable. Please check backend status.');
+        alert('Server unreachable. Check backend connectivity.');
     } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = "Register & Create Competency Profile";
+        submitBtn.innerText = 'Register & Create Competency Profile';
     }
 }

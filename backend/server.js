@@ -7,7 +7,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Clean any accidental trailing slashes or /rest/v1 paths
 let rawUrl = process.env.SUPABASE_URL || 'https://ccdrahlnsfrncsqaiumt.supabase.co';
 let cleanUrl = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
 const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjZHJhaGxuc2ZybmNzcWFpdW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDEzMDAsImV4cCI6MjEwMzU3NzMwMH0.O3sAoWJuLWKeJCenkiUjen3FfLnNahUu7nKbpQ1t6Fo';
@@ -32,7 +31,6 @@ app.post('/api/auth/register', async (req, res) => {
             .select();
 
         if (error) {
-            console.error('Supabase error:', error);
             return res.status(400).json({ error: error.message });
         }
 
@@ -41,8 +39,7 @@ app.post('/api/auth/register', async (req, res) => {
             user: data ? data[0] : { name, email, cadre, department, designation }
         });
     } catch (err) {
-        console.error('Server catch error:', err);
-        return res.status(500).json({ error: err.message || 'Internal server error while saving data' });
+        return res.status(500).json({ error: err.message || 'Internal server error while saving record' });
     }
 });
 
@@ -50,24 +47,28 @@ app.post('/api/auth/login', async (req, res) => {
     const { email, password, role } = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password required' });
+        return res.status(400).json({ error: 'Email and password are required.' });
     }
 
-    if (role === 'employee') {
+    try {
         const { data, error } = await supabase
             .from('employees')
-            .select('*')
+            .select('id, name, email, cadre, department, designation')
             .eq('email', email)
             .eq('password', password)
-            .single();
+            .maybeSingle();
 
         if (error || !data) {
-            return res.status(401).json({ error: 'Invalid Employee credentials' });
+            return res.status(401).json({ error: 'Invalid email or password. Please check your credentials.' });
         }
-        return res.json({ message: 'Authentication successful', user: data });
-    }
 
-    return res.json({ message: 'Admin authentication processed', user: { email, role } });
+        return res.json({
+            message: 'Authentication successful',
+            user: data
+        });
+    } catch (err) {
+        return res.status(500).json({ error: 'Database connection failed during login.' });
+    }
 });
 
 const PORT = process.env.PORT || 5000;
