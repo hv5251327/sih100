@@ -1,0 +1,41 @@
+﻿* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+body { background: #fdfdfd; color: #1e293b; }
+.top-nav { background: #0f2038; color: #e2e8f0; padding: 0.4rem 2rem; display: flex; justify-content: space-between; font-size: 0.78rem; }
+.navbar { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.brand { display: flex; align-items: center; gap: 0.8rem; }
+.brand-icon { font-size: 2rem; color: #c4823f; }
+.brand-text h2 { font-size: 1.25rem; color: #a46114; }
+.brand-text small { font-size: 0.72rem; color: #64748b; font-weight: 600; }
+.nav-links { display: flex; gap: 1.4rem; }
+.nav-links a { text-decoration: none; color: #334155; font-size: 0.88rem; font-weight: 500; }
+.auth-buttons { display: flex; gap: 0.6rem; }
+.btn { padding: 0.45rem 1rem; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+.btn-outline { border: 1.5px solid #1a365d; background: transparent; color: #1a365d; }
+.btn-primary { border: none; background: #c4823f; color: #ffffff; }
+.hero-section { display: flex; justify-content: space-between; align-items: center; padding: 3rem 4rem; background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%); }
+.sub-badge { color: #1e3a8a; font-size: 0.85rem; font-weight: 700; }
+.hero-content h1 { font-size: 2.3rem; color: #b7791f; margin: 0.6rem 0 1.2rem; line-height: 1.25; }
+.social-icons { display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; color: #64748b; }
+.social-icons a { width: 30px; height: 30px; background: #1e3a8a; color: #fff; border-radius: 50%; display: grid; place-items: center; text-decoration: none; font-size: 0.8rem; }
+.hero-card { background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); color: #ffffff; padding: 2.2rem 3rem; border-radius: 16px; text-align: center; }
+.hero-card h4 { font-size: 0.85rem; letter-spacing: 1px; color: #fbbf24; }
+.hero-card .counter { font-size: 3rem; font-weight: 800; margin: 0.4rem 0; }
+.stats-ribbon { background: #2b5c92; color: #ffffff; display: flex; justify-content: space-around; padding: 1.8rem 1rem; text-align: center; }
+.stat-item i { font-size: 1.4rem; color: #f6ad55; margin-bottom: 0.4rem; }
+.stat-item h3 { font-size: 1.3rem; font-weight: 700; }
+.stat-item p { font-size: 0.75rem; color: #e2e8f0; }
+footer { background: #0c1a2e; color: #94a3b8; text-align: center; padding: 1.2rem; font-size: 0.78rem; }
+.center-body { background-color: #eef2f7; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.dark-bg { background-color: #1a202c; }
+.login-card { background: #ffffff; width: 100%; max-width: 440px; padding: 2.8rem 2.2rem; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
+.icon-box { font-size: 2.8rem; color: #234374; margin-bottom: 0.8rem; }
+.admin-icon { color: #2b4c7e; }
+.subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 2rem; }
+.form-group { text-align: left; margin-bottom: 1.2rem; }
+label { display: block; font-size: 0.85rem; font-weight: 700; color: #1e293b; margin-bottom: 0.4rem; }
+input { width: 100%; padding: 0.8rem 1rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none; }
+.btn-submit { width: 100%; padding: 0.85rem; background: #2b4c7e; color: #ffffff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 1rem; }
+.btn-submit:hover { background: #1e3a8a; }
+.footer-text { margin-top: 1.5rem; font-size: 0.88rem; color: #64748b; }
+.footer-text a { color: #2b4c7e; font-weight: 700; text-decoration: none; }
+.back-link { display: inline-block; margin-top: 1.2rem; color: #64748b; text-decoration: none; font-size: 0.85rem; }

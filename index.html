@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iGOT Karmayogi | MoSPI Intelligence</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- Top Gov Bar -->
+    <div class="top-nav">
+        <span><i class="fa-solid fa-flag"></i> Government of India | Ministry of Statistics & Programme Implementation</span>
+        <span>iGOT Karmayogi Bharat Integrated</span>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="navbar">
+        <div class="brand">
+            <i class="fa-solid fa-graduation-cap brand-icon"></i>
+            <div class="brand-text">
+                <h2>कर्मयोगी भारत</h2>
+                <small>iGOT MoSPI Intelligence</small>
+            </div>
+        </div>
+        <nav class="nav-links">
+            <a href="#">About Us</a>
+            <a href="#">Newsroom</a>
+            <a href="#">Career</a>
+            <a href="#">Tenders</a>
+            <a href="#">Notifications</a>
+            <a href="#">Help Centre</a>
+        </nav>
+        <div class="auth-buttons">
+            <button class="btn btn-outline" onclick="navigate('Admin Login')"><i class="fa-solid fa-shield-halved"></i> Admin Login</button>
+            <button class="btn btn-outline" onclick="navigate('Officer Login')">Employee Login</button>
+            <button class="btn btn-primary" onclick="navigate('New Registration')">New Registration</button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <span class="sub-badge">iGOT Karmayogi MoSPI</span>
+            <h1>Empowering National Statistical<br>& Administrative Excellence</h1>
+            <div class="social-icons">
+                <span>Follow Us</span>
+                <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+            </div>
+        </div>
+        <div class="hero-card">
+            <h4>CONGRATULATIONS, KARMAYOGIS!</h4>
+            <div class="counter">1.7 Crore+</div>
+            <p><strong>Users Onboarded</strong></p>
+            <small>Let's continue to learn, grow and lead!</small>
+        </div>
+    </section>
+
+    <!-- Stats Ribbon -->
+    <section class="stats-ribbon">
+        <div class="stat-item"><i class="fa-solid fa-users"></i><h3>1,72,04,488</h3><p>Total Karmayogis Onboarded</p></div>
+        <div class="stat-item"><i class="fa-solid fa-book-open"></i><h3>6,252</h3><p>Total Courses</p></div>
+        <div class="stat-item"><i class="fa-solid fa-circle-check"></i><h3>14,96,44,900</h3><p>Total Completions</p></div>
+        <div class="stat-item"><i class="fa-solid fa-user-check"></i><h3>16,53,660</h3><p>Monthly Active Users</p></div>
+        <div class="stat-item"><i class="fa-solid fa-certificate"></i><h3>2,90,521</h3><p>Certificates Issued Yesterday</p></div>
+    </section>
+
+    <!-- Showcased Courses -->
+    <section class="course-section">
+        <div class="section-title">
+            <h2>Showcased Courses</h2>
+            <a href="#" class="show-all">Show all <i class="fa-solid fa-chevron-right"></i></a>
+        </div>
+        <div class="card-grid">
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop');">
+                    <div class="play-btn" onclick="playVideo('POSH Act Overview')"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h 52m</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag orange">Course</span>
+                    <h4>Prevention of Sexual Harassment (POSH) at Workplace</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=500&auto=format&fit=crop');">
+                    <div class="play-btn" onclick="playVideo('Fire Safety Module')"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h 23m</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag orange">Course</span>
+                    <h4>Fire Safety & Emergency Protocols in Facilities</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=500&auto=format&fit=crop');">
+                    <div class="play-btn" onclick="playVideo('Civil Defence Prep')"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h 17m</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag orange">Course</span>
+                    <h4>Civil Defence Services: Fundamentals of Disaster Response</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=500&auto=format&fit=crop');">
+                    <div class="play-btn" onclick="playVideo('Official Statistics AI')"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 20m</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag orange">Course</span>
+                    <h4>Official Statistics, Survey Methodology & AI Tools</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By NSSTA & MoSPI</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Amrit Gyaan Kosh Case Studies -->
+    <section class="course-section bg-light">
+        <div class="section-title">
+            <h2>Amrit Gyaan Kosh Case Studies</h2>
+            <a href="#" class="show-all">Show all <i class="fa-solid fa-chevron-right"></i></a>
+        </div>
+        <div class="card-grid">
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=500&auto=format&fit=crop');">
+                    <div class="play-btn" onclick="playVideo('Malappuram Transformation')"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag blue">Governance & Administration</span>
+                    <h4>From Darkness to Dignity: Transformation of Malappuram</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&auto=format&fit=crop');">
+                    <div class="play-btn" onclick="playVideo('MANTHAN Bridge')"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h 10m</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag blue">Information Technology</span>
+                    <h4>MANTHAN: Building India's Demand-Driven Industry Bridge</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop');">
+                    <div class="play-btn" onclick="playVideo('Smart Mobility')"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h 30m</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag blue">Urban Development</span>
+                    <h4>Smart Mobility for Digital India: Delhi Metro Rail Corp</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&auto=format&fit=crop');">
+                    <div class="play-btn" onclick="playVideo('Kerala EPIP')"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h 30m</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag blue">Welfare</span>
+                    <h4>Extreme Poverty Identification Process (EPIP): Kerala</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Partners -->
+    <section class="partner-section">
+        <h3>Content Partners</h3>
+        <div class="partner-icons">
+            <div><i class="fa-solid fa-building-columns"></i><span>DPIIT</span></div>
+            <div><i class="fa-solid fa-shield-halved"></i><span>RAKNPA</span></div>
+            <div><i class="fa-solid fa-feather-pointed"></i><span>WF</span></div>
+            <div><i class="fa-solid fa-graduation-cap"></i><span>ISB</span></div>
+            <div><i class="fa-solid fa-award"></i><span>LBSNAA</span></div>
+            <div><i class="fa-solid fa-tree"></i><span>MoEFCC</span></div>
+            <div><i class="fa-solid fa-landmark"></i><span>ISTM</span></div>
+        </div>
+
+        <h3>Organisation Partners</h3>
+        <div class="ministry-list">
+            <span>Ministry of Agriculture & Farmers Welfare</span>
+            <span>Ministry of AYUSH</span>
+            <span>Ministry of Chemicals & Fertilizers</span>
+            <span>Ministry of Civil Aviation</span>
+            <span>Ministry of Coal</span>
+            <span>Ministry of Statistics & Programme Implementation (MoSPI)</span>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 iGOT Karmayogi Bharat | Ministry of Statistics & Programme Implementation. All Rights Reserved.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
