@@ -19,7 +19,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Backend Active', timestamp: new Date() });
 });
 
-// AI Course Recommendation Endpoint
+// iGOT Karmayogi Course Recommendation & Database Caching Endpoint
 app.post('/api/recommendations', async (req, res) => {
     const { cadre, department, designation } = req.body;
 
@@ -28,7 +28,7 @@ app.post('/api/recommendations', async (req, res) => {
     }
 
     try {
-        // 1. Check if cached recommendations exist in Supabase
+        // 1. Check if cached recommendations exist in database
         const { data: cached, error: cacheErr } = await supabase
             .from('recommended_courses')
             .select('*')
@@ -36,47 +36,26 @@ app.post('/api/recommendations', async (req, res) => {
             .eq('department', department)
             .eq('designation', designation);
 
-        if (!cacheErr && cached && cached.length >= 10) {
+        if (!cacheErr && cached && cached.length >= 15) {
             return res.json({ courses: cached, source: 'database' });
         }
 
-        // 2. Curated NSSTA & iGOT MoSPI YouTube Embed IDs pool
-        const curatedVideos = [
-            { id: "mak7BPe_0jY", title: "POSH at Workplace & Statutory Ethics", cat: "Governance & Statutory" },
-            { id: "a3xD_eysXQI", title: "Civil Defence & Disaster Preparedness Protocols", cat: "Field Safety" },
-            { id: "H16CzEcSC6U", title: "Office Safety & Fire Prevention Standards", cat: "Facility Safety" },
-            { id: "HqlLctm0qpE", title: "Swachhata Protocols & Administrative Hygiene", cat: "Administration" },
-            { id: "WS0lQc_3Yf0", title: "National Accounts Statistics (NAS) & GDP Compilation", cat: "Macro Statistics" },
-            { id: "MScsT8KkyR4", title: "Index of Industrial Production (IIP) & ASI Framework", cat: "Economic Statistics" },
-            { id: "q_4eC8pM26I", title: "Consumer Price Index (CPI) & Inflation Basket Analysis", cat: "Price Statistics" },
-            { id: "tPYj3fFJGjk", title: "Survey Sampling Design & Field Estimation Techniques", cat: "Sample Surveys" },
-            { id: "fHw4k7jXp0c", title: "Python & Pandas for Official Statistical Analysis", cat: "Technical Tools" },
-            { id: "HXV3zeRR3h4", title: "SQL & Relational Database Validation for Large Surveys", cat: "Data Processing" },
-            { id: "kJQP7kiw5Fk", title: "Digital Personal Data Protection (DPDP) Act Compliance", cat: "Digital Governance" },
-            { id: "8mAITcNt710", title: "SDG Indicators Monitoring & Data Localization", cat: "Social Statistics" },
-            { id: "9bZkp7q19f0", title: "Field Operations & Digital Computer-Assisted Surveys", cat: "Field Operations" },
-            { id: "L_LUpnjgPso", title: "Time Series Econometrics & Seasonal Adjustments", cat: "Applied Econometrics" },
-            { id: "rfscVS0vtbw", title: "Leadership, Team Management & Administrative Vigilance", cat: "Leadership & Ethics" }
-        ];
-
-        // 3. Query Gemini for customized mapping
+        // 2. Query Gemini API for 15 tailored iGOT Karmayogi courses
         const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
         const prompt = `You are the AI Training Director at NSSTA (National Statistical Systems Training Academy), MoSPI, Government of India.
-Generate a tailored training syllabus of 15 targeted training modules for an officer with:
-- Cadre: ${cadre}
-- Department/Division: ${department}
+Generate a tailored training syllabus of 15 targeted iGOT Karmayogi courses for an officer with:
+- Statistical Cadre: ${cadre}
+- Department / Division: ${department}
 - Designation: ${designation}
-
-Match each module with realistic statistical objectives and assign an appropriate YouTube video embed ID from this list:
-${JSON.stringify(curatedVideos.map(v => ({ id: v.id, defaultTitle: v.title, cat: v.cat })))}
 
 Return ONLY a valid JSON array of 15 objects matching this exact structure:
 [
   {
-    "title": "Title of Module",
-    "description": "Brief description of why this officer needs this training.",
-    "category": "Category Name",
-    "youtube_id": "Valid 11-char YouTube ID from above list"
+    "title": "Exact iGOT Course Title (e.g. Code on Social Security, National Accounts Statistics, Python for Data Analysis, Sampling Techniques)",
+    "description": "2-sentence practical reason why this course matches this officer's role.",
+    "category": "Domain Category (e.g. Statistical Methods, Data Informatics, Statutory Compliance, Behavioural)",
+    "course_id": "do_igot_course_identifier",
+    "course_url": "https://igotkarmayogi.gov.in/"
   }
 ]`;
 
@@ -91,9 +70,8 @@ Return ONLY a valid JSON array of 15 objects matching this exact structure:
 
         const geminiRes = await response.json();
         const rawContent = geminiRes.candidates?.[0]?.content?.parts?.[0]?.text;
-        let generatedCourses = JSON.parse(rawContent);
+        const generatedCourses = JSON.parse(rawContent);
 
-        // Map courses with officer metadata for DB insertion
         const rowsToInsert = generatedCourses.map(c => ({
             cadre,
             department,
@@ -101,25 +79,26 @@ Return ONLY a valid JSON array of 15 objects matching this exact structure:
             title: c.title,
             description: c.description,
             category: c.category,
-            youtube_id: c.youtube_id
+            course_id: c.course_id || 'igot_course_default',
+            course_url: c.course_url || 'https://igotkarmayogi.gov.in/'
         }));
 
-        // 4. Cache generated courses into Supabase
+        // 3. Cache into Supabase table
         await supabase.from('recommended_courses').insert(rowsToInsert);
 
         return res.json({ courses: rowsToInsert, source: 'ai_generated' });
     } catch (err) {
-        console.error('Recommendation Engine Error:', err);
-        return res.status(500).json({ error: 'Failed to generate recommendations.' });
+        console.error('iGOT Recommendation Error:', err);
+        return res.status(500).json({ error: 'Failed to generate iGOT recommendations.' });
     }
 });
 
-// Dynamic AI Quiz Generator for Completed Video
+// AI Assessment Quiz Generator for Completed iGOT Course
 app.post('/api/generate-quiz', async (req, res) => {
     const { courseTitle, category } = req.body;
     const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
-    const prompt = `Generate a 3-question multiple choice competency assessment for MoSPI officers on the subject: "${courseTitle}" (${category}).
+    const prompt = `Generate a 3-question multiple choice competency assessment for MoSPI officers on the iGOT Karmayogi course: "${courseTitle}" (${category}).
 Return ONLY a valid JSON array of objects with format:
 [
   {
@@ -148,7 +127,7 @@ Return ONLY a valid JSON array of objects with format:
     }
 });
 
-// Record user completion & quiz progress
+// Progress Tracker & Record Saving Endpoint
 app.post('/api/progress/save', async (req, res) => {
     const { email, courseTitle, score } = req.body;
     try {

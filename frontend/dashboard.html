@@ -52,17 +52,20 @@
     .detail-item span { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; }
     .detail-item p { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
 
+    /* iGOT Karmayogi Module Cards */
     .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
     .module-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
-    .video-container { position: relative; padding-bottom: 56.25%; height: 0; background: #000; }
-    .video-container iframe { position: absolute; top:0; left: 0; width: 100%; height: 100%; border: 0; }
+    .igot-banner { background: linear-gradient(135deg, #1e3a8a, #0284c7); padding: 20px; color: #ffffff; display: flex; flex-direction: column; gap: 6px; position: relative; }
+    .igot-tag { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.2); font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+    .igot-banner i { font-size: 2rem; margin-bottom: 4px; }
     .module-body { padding: 16px; display: flex; flex-direction: column; flex: 1; gap: 8px; }
     .module-badge { align-self: flex-start; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: #dbeafe; color: #1e40af; }
     .module-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); line-height: 1.3; }
     .module-desc { font-size: 0.82rem; color: var(--text-muted); flex: 1; }
     .module-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    .btn-action { padding: 8px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-action { padding: 8px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
     .btn-cert { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); }
+    .btn-cert:hover { background: #e2e8f0; }
     .btn-quiz { background: var(--primary); color: #fff; }
     .btn-quiz:hover { background: var(--primary-hover); }
 
@@ -131,26 +134,25 @@
     <section class="dashboard-panel">
       <div class="panel-header">
         <div class="panel-header-left">
-          <i class="fa-solid fa-brain"></i>
-          <h2>AI-Curated NSSTA & iGOT Learning Roadmap (15 Targeted Modules)</h2>
+          <i class="fa-solid fa-graduation-cap"></i>
+          <h2>AI-Curated NSSTA & iGOT Karmayogi Recommended Courses (15 Modules)</h2>
         </div>
-        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Generating tailored recommendations...</span>
+        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Curating 15 iGOT courses via AI...</span>
       </div>
       <div class="modules-grid" id="dynamic-modules-container"></div>
     </section>
 
   </div>
 
-  <!-- Dynamic Post-Video Quiz Modal -->
   <div class="modal-backdrop" id="quiz-modal">
     <div class="modal-box">
       <div class="modal-header">
-        <h3 id="quiz-modal-title">Competency Evaluation</h3>
+        <h3 id="quiz-modal-title">Competency Assessment</h3>
         <button class="modal-close" onclick="closeModal('quiz-modal')">&times;</button>
       </div>
-      <p style="font-size:0.85rem; color:var(--text-muted);" id="quiz-subtitle">Complete this 3-question evaluation to record competency credit on your profile.</p>
+      <p style="font-size:0.85rem; color:var(--text-muted);" id="quiz-subtitle">Complete this 3-question evaluation to credit this iGOT course to your profile.</p>
       <div id="quiz-questions-body" style="display:flex; flex-direction:column; gap:14px;"></div>
-      <button class="btn-action btn-quiz" id="quiz-submit-action" onclick="submitAssessment()">Submit Evaluation & Update Record</button>
+      <button class="btn-action btn-quiz" id="quiz-submit-action" onclick="submitAssessment()">Submit Assessment & Record Credit</button>
     </div>
   </div>
 
@@ -199,19 +201,21 @@
         const data = await res.json();
         const courses = data.courses || [];
 
-        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> 15 Custom Modules Active (${data.source === 'database' ? 'DB Cached' : 'AI Generated'})`;
+        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> 15 iGOT Courses Active (${data.source === 'database' ? 'DB Cached' : 'AI Generated'})`;
 
         container.innerHTML = courses.map((course, idx) => `
           <div class="module-card">
-            <div class="video-container">
-              <iframe id="video-frame-${idx}" src="https://www.youtube-nocookie.com/embed/${course.youtube_id}?enablejsapi=1" allowfullscreen></iframe>
+            <div class="igot-banner">
+              <span class="igot-tag">iGOT Karmayogi</span>
+              <i class="fa-solid fa-book-open-reader"></i>
+              <strong style="font-size:0.95rem;">Module ${idx + 1}</strong>
             </div>
             <div class="module-body">
               <span class="module-badge">${course.category || 'Competency Core'}</span>
               <div class="module-title">${course.title}</div>
-              <div class="module-desc">${course.description || 'Statutory training module customized for your designation.'}</div>
+              <div class="module-desc">${course.description || 'Custom statutory & technical course for this designation.'}</div>
               <div class="module-actions">
-                <button class="btn-action btn-cert" onclick="markVideoComplete('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.category)}')"><i class="fa-solid fa-circle-play"></i> Finished Video</button>
+                <a href="${course.course_url || 'https://igotkarmayogi.gov.in/'}" target="_blank" class="btn-action btn-cert" onclick="recordCourseOpen('${encodeURIComponent(course.title)}')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open iGOT</a>
                 <button class="btn-action btn-quiz" onclick="launchAssessment('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.category)}')"><i class="fa-solid fa-list-check"></i> Take Quiz</button>
               </div>
             </div>
@@ -219,13 +223,13 @@
         `).join("");
       } catch (err) {
         console.error("Failed to load recommendations:", err);
-        statusLabel.innerText = "Error loading AI courses.";
+        statusLabel.innerText = "Error loading iGOT courses.";
       }
     }
 
-    function markVideoComplete(titleEnc, catEnc) {
-      alert("Video progress recorded! Launching your competency evaluation quiz...");
-      launchAssessment(titleEnc, catEnc);
+    function recordCourseOpen(titleEnc) {
+      const title = decodeURIComponent(titleEnc);
+      console.log(`User launched iGOT course: ${title}`);
     }
 
     async function launchAssessment(titleEnc, catEnc) {
@@ -235,7 +239,7 @@
 
       document.getElementById("quiz-modal-title").innerText = `Assessment: ${title}`;
       const questionsBody = document.getElementById("quiz-questions-body");
-      questionsBody.innerHTML = `<div style="text-align:center; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Generating AI evaluation questions...</div>`;
+      questionsBody.innerHTML = `<div style="text-align:center; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Generating AI assessment questions...</div>`;
       document.getElementById("quiz-modal").style.display = "flex";
 
       try {
