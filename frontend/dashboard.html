@@ -59,13 +59,17 @@
     .progress-bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s ease; }
     .gap-text { font-size: 0.75rem; color: var(--warning); font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
 
+    /* Staged Learning Path Styles */
+    .stage-section-title { font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 20px 0 12px 0; display: flex; align-items: center; gap: 8px; }
     .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
     .module-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.04); }
-    .igot-banner { background: linear-gradient(135deg, #1e3a8a, #0284c7); padding: 16px 18px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; }
+    .igot-banner { background: linear-gradient(135deg, #1e3a8a, #0284c7); padding: 14px 16px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; }
     .igot-tag { background: rgba(255,255,255,0.22); font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; letter-spacing: 0.5px; }
     .module-body { padding: 16px; display: flex; flex-direction: column; flex: 1; gap: 8px; }
-    .module-badge { align-self: flex-start; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: #dbeafe; color: #1e40af; }
-    .module-title { font-size: 1rem; font-weight: 700; color: var(--text-main); line-height: 1.35; }
+    .badge-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .module-badge { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: #dbeafe; color: #1e40af; }
+    .stage-badge { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: #fef3c7; color: #92400e; }
+    .module-title { font-size: 0.98rem; font-weight: 700; color: var(--text-main); line-height: 1.35; }
     .module-desc { font-size: 0.83rem; color: var(--text-muted); flex: 1; line-height: 1.4; }
     .module-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
     .btn-action { padding: 8px 6px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 5px; text-decoration: none; text-align: center; }
@@ -162,22 +166,22 @@
         <div class="pillar-box">
           <div class="pillar-header"><span>Statistical Methods & Sampling</span><span id="score-stat">0% / 100%</span></div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" id="fill-stat" style="width: 0%;"></div></div>
-          <div class="gap-text" id="gap-stat"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete recommended iGOT modules</span></div>
+          <div class="gap-text" id="gap-stat"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete Stage 1 & 2 Modules</span></div>
         </div>
         <div class="pillar-box">
           <div class="pillar-header"><span>Technical & Data Analysis Tools</span><span id="score-tech">0% / 100%</span></div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" id="fill-tech" style="width: 0%;"></div></div>
-          <div class="gap-text" id="gap-tech"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete Python & SQL training</span></div>
+          <div class="gap-text" id="gap-tech"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete Python & SQL Training</span></div>
         </div>
         <div class="pillar-box">
           <div class="pillar-header"><span>Digital Governance & DPDP Act</span><span id="score-gov">0% / 100%</span></div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" id="fill-gov" style="width: 0%;"></div></div>
-          <div class="gap-text" id="gap-gov"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete statutory compliance</span></div>
+          <div class="gap-text" id="gap-gov"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete DPDP Act & POSH Compliance</span></div>
         </div>
         <div class="pillar-box">
           <div class="pillar-header"><span>Behavioural, Safety & Leadership</span><span id="score-lead">0% / 100%</span></div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" id="fill-lead" style="width: 0%;"></div></div>
-          <div class="gap-text" id="gap-lead"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete administrative modules</span></div>
+          <div class="gap-text" id="gap-lead"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete Administrative Modules</span></div>
         </div>
       </div>
     </section>
@@ -186,11 +190,11 @@
       <div class="panel-header">
         <div class="panel-header-left">
           <i class="fa-solid fa-graduation-cap"></i>
-          <h2>Comprehensive NSSTA & iGOT Karmayogi Curriculum Roadmap</h2>
+          <h2>AI-Curated NSSTA Roadmap (Foundation → Functional Core → Advanced Strategic)</h2>
         </div>
-        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Generating tailored NSSTA curriculum...</span>
+        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Grounding recommendations via Master Bank...</span>
       </div>
-      <div class="modules-grid" id="dynamic-modules-container"></div>
+      <div id="dynamic-modules-container"></div>
     </section>
 
   </div>
@@ -203,7 +207,7 @@
         <button onclick="toggleBhashini()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="bhashini-chat-log" id="bhashini-chat-log">
-        <div class="chat-msg bot">Namaste! Ask me anything about your NSSTA training roadmap, competency deficits, or speak via the mic.</div>
+        <div class="chat-msg bot">Namaste! Ask me anything about your 3-stage NSSTA training roadmap, competency deficits, or speak via the mic.</div>
       </div>
       <div class="bhashini-input-row">
         <input type="text" id="bhashini-input" placeholder="Ask Bhashini AI..." onkeydown="if(event.key==='Enter') sendChatMessage()">
@@ -279,19 +283,19 @@
 
         document.getElementById("score-stat").innerText = `${s}% / 100%`;
         document.getElementById("fill-stat").style.width = `${s}%`;
-        document.getElementById("gap-stat").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - s}% Deficit - Sample Survey Modules Required</span>`;
+        document.getElementById("gap-stat").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - s}% Deficit - Complete Stage 1 & 2 Modules</span>`;
 
         document.getElementById("score-tech").innerText = `${t}% / 100%`;
         document.getElementById("fill-tech").style.width = `${t}%`;
-        document.getElementById("gap-tech").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - t}% Deficit - Python & SQL Modules Required</span>`;
+        document.getElementById("gap-tech").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - t}% Deficit - Complete Python & SQL Training</span>`;
 
         document.getElementById("score-gov").innerText = `${g}% / 100%`;
         document.getElementById("fill-gov").style.width = `${g}%`;
-        document.getElementById("gap-gov").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - g}% Deficit - Complete POSH & DPDP Compliance</span>`;
+        document.getElementById("gap-gov").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - g}% Deficit - Complete DPDP Act & POSH Compliance</span>`;
 
         document.getElementById("score-lead").innerText = `${l}% / 100%`;
         document.getElementById("fill-lead").style.width = `${l}%`;
-        document.getElementById("gap-lead").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - l}% Deficit - Complete Civil Defence Protocols</span>`;
+        document.getElementById("gap-lead").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - l}% Deficit - Complete Administrative Modules</span>`;
       } catch (e) {
         console.warn("Using baseline 0% competency display.");
       }
@@ -315,26 +319,44 @@
         const data = await res.json();
         const courses = data.courses || [];
 
-        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${courses.length} NSSTA / iGOT Modules Active (${data.source === 'database' ? 'DB Cached' : 'AI Generated'})`;
+        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${courses.length} Grounded Modules Active (${data.source === 'database' ? 'DB Cached' : 'RAG Grounded'})`;
 
-        container.innerHTML = courses.map((course, idx) => `
-          <div class="module-card">
-            <div class="igot-banner">
-              <span style="font-weight:800; font-size:0.9rem;"><i class="fa-solid fa-graduation-cap"></i> Course ${idx + 1}</span>
-              <span class="igot-tag">NSSTA / iGOT</span>
-            </div>
-            <div class="module-body">
-              <span class="module-badge">${course.category || 'Core Methodology'}</span>
-              <div class="module-title">${course.title}</div>
-              <div class="module-desc">${course.description || 'Statutory training module customized for your designation.'}</div>
-              <div class="module-actions">
-                <a href="${course.video_url || 'https://portal.igotkarmayogi.gov.in'}" target="_blank" class="btn-action btn-open"><i class="fa-solid fa-video"></i> Watch Video</a>
-                <button class="btn-action btn-cert" onclick="openCertModal('${encodeURIComponent(course.title)}')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
-                <button class="btn-action btn-quiz" onclick="launchAssessment('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.category)}')"><i class="fa-solid fa-list-check"></i> Quiz</button>
+        const stages = ['Foundation', 'Functional Core', 'Advanced Strategic'];
+        let htmlContent = '';
+
+        stages.forEach(stageName => {
+          const stageCourses = courses.filter(c => (c.learning_stage || 'Functional Core') === stageName);
+          if (stageCourses.length > 0) {
+            htmlContent += `
+              <div class="stage-section-title"><i class="fa-solid fa-layer-group"></i> Stage: ${stageName} (${stageCourses.length} Modules)</div>
+              <div class="modules-grid">
+                ${stageCourses.map((course, idx) => `
+                  <div class="module-card">
+                    <div class="igot-banner">
+                      <span style="font-weight:800; font-size:0.9rem;"><i class="fa-solid fa-graduation-cap"></i> ${course.course_code || 'NSSTA-MOD'}</span>
+                      <span class="igot-tag">iGOT Karmayogi</span>
+                    </div>
+                    <div class="module-body">
+                      <div class="badge-row">
+                        <span class="module-badge">${course.category || 'Core Methodology'}</span>
+                        <span class="stage-badge">${course.difficulty_level || stageName}</span>
+                      </div>
+                      <div class="module-title">${course.title}</div>
+                      <div class="module-desc">${course.description}</div>
+                      <div class="module-actions">
+                        <a href="${course.video_url || 'https://portal.igotkarmayogi.gov.in'}" target="_blank" class="btn-action btn-open"><i class="fa-solid fa-video"></i> Watch Video</a>
+                        <button class="btn-action btn-cert" onclick="openCertModal('${encodeURIComponent(course.title)}')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
+                        <button class="btn-action btn-quiz" onclick="launchAssessment('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.category)}')"><i class="fa-solid fa-list-check"></i> Quiz</button>
+                      </div>
+                    </div>
+                  </div>
+                `).join("")}
               </div>
-            </div>
-          </div>
-        `).join("");
+            `;
+          }
+        });
+
+        container.innerHTML = htmlContent || '<p>No courses mapped for this profile.</p>';
       } catch (err) {
         console.error("Failed to load recommendations:", err);
         statusLabel.innerText = "Error loading courses.";

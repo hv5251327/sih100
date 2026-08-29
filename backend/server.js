@@ -48,7 +48,7 @@ app.get('/api/competencies/:email', async (req, res) => {
     }
 });
 
-// AI Course Recommendation Endpoint for Extensive NSSTA Syllabus
+// Grounded RAG Recommendation Engine using Supabase Master Bank + Gemini Ranking
 app.post('/api/recommendations', async (req, res) => {
     const { cadre, department, designation } = req.body;
 
@@ -57,7 +57,7 @@ app.post('/api/recommendations', async (req, res) => {
     }
 
     try {
-        // 1. Check if DB has cached courses for this role profile
+        // 1. Check if cached recommendations exist
         const { data: cached } = await supabase
             .from('recommended_courses')
             .select('*')
@@ -65,35 +65,46 @@ app.post('/api/recommendations', async (req, res) => {
             .eq('department', department)
             .eq('designation', designation);
 
-        if (cached && cached.length >= 25) {
+        if (cached && cached.length >= 10) {
             return res.json({ courses: cached, source: 'database' });
         }
 
-        // 2. Query Gemini API to generate an extensive 35-course NSSTA curriculum
+        // 2. Fetch ground truth master course bank from Supabase
+        const { data: masterBank, error: bankErr } = await supabase
+            .from('master_courses')
+            .select('*');
+
+        if (bankErr || !masterBank || masterBank.length === 0) {
+            return res.status(500).json({ error: 'Master course bank unavailable.' });
+        }
+
+        // 3. Grounded Gemini Prompt (RAG)
         const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-        let generatedCourses = [];
+        let selectedCourses = [];
 
         if (apiKey) {
-            const prompt = `You are the Director General of NSSTA (National Statistical Systems Training Academy), MoSPI, Government of India.
-Generate an extensive, deep-domain professional curriculum of 35 comprehensive iGOT Karmayogi / NSSTA courses strictly tailored for an officer with:
+            const prompt = `You are the Director General of NSSTA (National Statistical Systems Training Academy), MoSPI.
+Analyse this officer profile:
 - Cadre: ${cadre}
 - Department: ${department}
 - Designation: ${designation}
 
-Structure the 35 courses across these key domains:
-1. Core Statistical Theory & Official Statistics (Sampling, Estimation, National Accounts, Index Numbers, Price Indices)
-2. Advanced Data Science & Computational Tools (Python, R, Relational SQL, Time-Series Modeling, Machine Learning for Official Statistics)
-3. National Field Survey & Administrative Frameworks (CAPI, Survey Operations, Data Processing, Quality Assurance)
-4. Digital Governance, Statutory Compliance & Data Privacy (DPDP Act, POSH, RTI, Cyber Security, GeM & GFR 2017)
-5. Behavioural Leadership & Public Administration (Project Monitoring, Infrastructure Workflows, Crisis Decision Making)
+From the verified NSSTA Master Course Bank below, select the most relevant courses and organize them into 3 stages:
+Stage 1: Foundation (Induction & Core Compliance)
+Stage 2: Functional Core (Direct Departmental Responsibilities)
+Stage 3: Advanced Strategic (Specialized Analytics & Leadership)
 
-Return ONLY a valid JSON array of 35 objects matching this structure:
+VERIFIED MASTER COURSE BANK:
+${JSON.stringify(masterBank.map(m => ({ code: m.course_code, title: m.title, category: m.category, target: m.target_division, diff: m.difficulty_level, desc: m.description })))}
+
+Select all applicable courses from the bank (at least 12-18 courses). For each selected course, explain the specific operational reason for this officer.
+
+Return ONLY a valid JSON array of objects:
 [
   {
-    "title": "Exact Official Course Title",
-    "category": "Category Name",
-    "description": "2-sentence practical operational objective for this specific officer in MoSPI.",
-    "video_url": "https://portal.igotkarmayogi.gov.in"
+    "course_code": "Exact Code from Bank",
+    "learning_stage": "Foundation | Functional Core | Advanced Strategic",
+    "custom_reason": "Specific operational rationale for this officer"
   }
 ]`;
 
@@ -106,41 +117,60 @@ Return ONLY a valid JSON array of 35 objects matching this structure:
                 })
             });
 
-            const geminiRes = await response.json();
-            const rawContent = geminiRes.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (rawContent) {
-                generatedCourses = JSON.parse(rawContent);
-            }
+            const data = await response.json();
+            const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            const parsedRag = JSON.parse(rawContent);
+
+            const bankMap = new Map(masterBank.map(m => [m.course_code, m]));
+            selectedCourses = parsedRag.map(item => {
+                const base = bankMap.get(item.course_code) || masterBank[0];
+                return {
+                    cadre,
+                    department,
+                    designation,
+                    course_code: base.course_code,
+                    title: base.title,
+                    category: base.category,
+                    difficulty_level: base.difficulty_level,
+                    learning_stage: item.learning_stage || 'Functional Core',
+                    description: item.custom_reason || base.description,
+                    video_url: base.video_url
+                };
+            });
+        } else {
+            // Fallback selection if API key is not configured
+            selectedCourses = masterBank.map(m => ({
+                cadre,
+                department,
+                designation,
+                course_code: m.course_code,
+                title: m.title,
+                category: m.category,
+                difficulty_level: m.difficulty_level,
+                learning_stage: m.difficulty_level === 'Foundation' ? 'Foundation' : (m.difficulty_level === 'Intermediate' ? 'Functional Core' : 'Advanced Strategic'),
+                description: m.description,
+                video_url: m.video_url
+            }));
         }
 
-        const rowsToInsert = generatedCourses.map(c => ({
-            cadre,
-            department,
-            designation,
-            title: c.title,
-            description: c.description,
-            category: c.category,
-            video_url: c.video_url || 'https://portal.igotkarmayogi.gov.in'
-        }));
-
-        if (rowsToInsert.length > 0) {
-            await supabase.from('recommended_courses').insert(rowsToInsert);
+        if (selectedCourses.length > 0) {
+            await supabase.from('recommended_courses').insert(selectedCourses);
         }
 
-        return res.json({ courses: rowsToInsert, source: 'ai_generated' });
+        return res.json({ courses: selectedCourses, source: 'rag_ai_grounded' });
     } catch (err) {
-        console.error('AI Recommendation Error:', err);
-        return res.status(500).json({ error: 'Failed to generate courses.' });
+        console.error('RAG Error:', err);
+        return res.status(500).json({ error: 'Recommendation generation failed.' });
     }
 });
 
-// Dynamic AI Quiz Generator
+// Dynamic AI Assessment Quiz Generator
 app.post('/api/generate-quiz', async (req, res) => {
     const { courseTitle, category } = req.body;
     const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
     try {
-        const prompt = `Generate a 3-question multiple choice competency evaluation for the NSSTA/iGOT course: "${courseTitle}" (${category}). Return ONLY valid JSON:
+        const prompt = `Generate a 3-question multiple choice competency evaluation for the course: "${courseTitle}" (${category}). Return ONLY valid JSON:
 [
   {
     "question": "Question text?",
@@ -162,9 +192,9 @@ app.post('/api/generate-quiz', async (req, res) => {
     } catch (err) {
         return res.json({
             quiz: [
-                { question: `What is the regulatory objective of ${courseTitle}?`, options: ["Standard operational compliance and data integrity", "Manual log keeping", "Unregulated sampling", "Exemption from statutory audits"], correctIndex: 0 },
-                { question: "How are compliance records validated on the portal?", options: ["Digital submission & automated verification", "Verbal reports", "Offline registers only", "No verification"], correctIndex: 0 },
-                { question: "Which standard governs official data disclosures?", options: ["MoSPI Data Policy & DPDP Act", "Generic public rules", "Unverified guidelines", "Informal directives"], correctIndex: 0 }
+                { question: `What is the core regulatory objective of ${courseTitle}?`, options: ["Standard operational compliance and data integrity", "Manual log keeping", "Unregulated survey sampling", "Exemption from statutory audits"], correctIndex: 0 },
+                { question: "How are compliance milestones tracked on the MoSPI portal?", options: ["Automated digital validation", "Informal verbal updates", "Paper registers only", "No verification required"], correctIndex: 0 },
+                { question: "Which framework governs official statistical disclosures?", options: ["MoSPI Data Policy & DPDP Act", "Generic public rules", "Unverified guidelines", "Informal directives"], correctIndex: 0 }
             ]
         });
     }
@@ -177,7 +207,7 @@ app.post('/api/chatbot', async (req, res) => {
 
     if (apiKey) {
         try {
-            const prompt = `You are Bhashini AI on the MoSPI iGOT Portal. Officer: ${userProfile?.name}, Cadre: ${userProfile?.cadre}, Dept: ${userProfile?.department}, Designation: ${userProfile?.designation}. Question: "${message}". Give a helpful 2-sentence response guiding them on their comprehensive NSSTA roadmap.`;
+            const prompt = `You are Bhashini AI on the MoSPI iGOT Portal. Officer: ${userProfile?.name}, Cadre: ${userProfile?.cadre}, Dept: ${userProfile?.department}, Designation: ${userProfile?.designation}. Question: "${message}". Give a helpful 2-sentence response guiding them through their Foundation, Functional Core, and Advanced Strategic NSSTA modules.`;
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -188,7 +218,7 @@ app.post('/api/chatbot', async (req, res) => {
         } catch (e) {}
     }
 
-    return res.json({ reply: `Namaste ${userProfile?.name || 'Officer'}! You have an extensive NSSTA curriculum listed below. Complete modules to raise your competency score above 0%.` });
+    return res.json({ reply: `Namaste ${userProfile?.name || 'Officer'}! Follow your 3-stage learning roadmap below to build role competencies from 0% to 100%.` });
 });
 
 // Update progress and increment competency scores
@@ -211,10 +241,10 @@ app.post('/api/progress/save', async (req, res) => {
         const { data: comp } = await supabase.from('officer_competencies').select('*').eq('user_email', cleanEmail).maybeSingle();
         if (comp) {
             await supabase.from('officer_competencies').update({
-                statistical_score: Math.min(100, (comp.statistical_score || 0) + 10),
-                technical_score: Math.min(100, (comp.technical_score || 0) + 10),
-                governance_score: Math.min(100, (comp.governance_score || 0) + 10),
-                leadership_score: Math.min(100, (comp.leadership_score || 0) + 10),
+                statistical_score: Math.min(100, (comp.statistical_score || 0) + 15),
+                technical_score: Math.min(100, (comp.technical_score || 0) + 15),
+                governance_score: Math.min(100, (comp.governance_score || 0) + 15),
+                leadership_score: Math.min(100, (comp.leadership_score || 0) + 15),
                 updated_at: new Date()
             }).eq('user_email', cleanEmail);
         }
