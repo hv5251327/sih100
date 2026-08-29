@@ -47,7 +47,11 @@ async function submitAuth(role) {
 
         if (response.ok) {
             localStorage.setItem('mospi_user', JSON.stringify(data.user));
-            window.location.href = 'dashboard.html';
+            if (role === 'admin' || email.toLowerCase().includes('admin')) {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
         } else {
             alert(`Authentication Error: ${data.error || 'Invalid credentials'}`);
             if (submitBtn) {
@@ -56,7 +60,7 @@ async function submitAuth(role) {
             }
         }
     } catch (err) {
-        alert('Server unreachable. Please wait 30 seconds for backend initialization and retry.');
+        alert('Server unreachable. Please retry in a few moments.');
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.innerText = role === 'admin' ? 'Authorize & Access Portal' : 'Login';
@@ -98,7 +102,7 @@ async function submitRegistration() {
             }
         }
     } catch (err) {
-        alert('Backend connection error. Please retry in a few moments.');
+        alert('Backend connection error. Please retry.');
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.innerText = 'Register & Create Profile';
