@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://your-render-backend-url.onrender.com';
+﻿const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
     const employeeForm = document.getElementById('employeeForm');
