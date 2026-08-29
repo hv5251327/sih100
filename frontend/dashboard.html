@@ -19,7 +19,14 @@
       --success: #16a34a;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 90px; }
+    body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 90px; top: 0px !important; }
+
+    /* Hide Google Translate top banner while keeping widget clean */
+    .goog-te-banner-frame.skiptranslate { display: none !important; }
+    body { top: 0px !important; }
+    .goog-logo-link { display: none !important; }
+    .goog-te-gadget { height: 28px !important; overflow: hidden !important; color: transparent !important; font-size: 0px !important; }
+    .goog-te-gadget .goog-te-combo { margin: 0 !important; padding: 6px 10px !important; border-radius: 8px !important; border: 1px solid #cbd5e1 !important; font-size: 0.85rem !important; font-weight: 600 !important; color: var(--primary) !important; background: #eff6ff !important; outline: none !important; }
 
     .navbar { background: #fff; border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
     .nav-brand { display: flex; align-items: center; gap: 12px; }
@@ -27,7 +34,6 @@
     .nav-brand h1 { font-size: 1.1rem; font-weight: 800; color: var(--primary); }
     
     .nav-controls { display: flex; align-items: center; gap: 12px; }
-    .bhashini-bar-select { padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.85rem; font-weight: 600; color: var(--primary); background: #eff6ff; outline: none; cursor: pointer; }
     .user-pill { display: flex; align-items: center; gap: 10px; font-size: 0.875rem; background: #f1f5f9; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); }
     .logout-btn { background: none; border: none; color: #dc2626; cursor: pointer; font-weight: 700; margin-left: 8px; display: flex; align-items: center; gap: 4px; }
 
@@ -84,6 +90,17 @@
     .modal-header h3 { font-size: 1.1rem; color: var(--primary); }
     .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
   </style>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'hi,te,ta,bn,mr,gu,kn,ml,pa,ur,en',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
 
@@ -93,13 +110,7 @@
       <h1>MoSPI iGOT Karmayogi Competency Hub</h1>
     </div>
     <div class="nav-controls">
-      <select class="bhashini-bar-select" id="global-lang-select" onchange="translateWholePageGemini(this.value)">
-        <option value="en">🌐 English (India)</option>
-        <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
-        <option value="te">🇮🇳 తెలుగు (Telugu)</option>
-        <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
-        <option value="bn">🇮🇳 বাংলা (Bengali)</option>
-      </select>
+      <div id="google_translate_element"></div>
       <div class="user-pill">
         <span><i class="fa-solid fa-user-tie"></i> <strong id="officer-name-display">Officer Trainee</strong></span>
         <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></button>
@@ -242,7 +253,7 @@
   <div class="bhashini-widget">
     <div class="bhashini-panel" id="bhashini-panel">
       <div class="bhashini-header">
-        <span><i class="fa-solid fa-language"></i> Bhashini AI Assistant</span>
+        <span><i class="fa-solid fa-headset"></i> AI Assistant</span>
         <button onclick="toggleBhashini()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="bhashini-chat-log" id="bhashini-chat-log">
@@ -254,7 +265,7 @@
         <button class="btn-send" onclick="sendChatMessage()" title="Send"><i class="fa-solid fa-paper-plane"></i></button>
       </div>
     </div>
-    <button class="bhashini-btn" onclick="toggleBhashini()" title="Open Bhashini AI"><i class="fa-solid fa-headset"></i></button>
+    <button class="bhashini-btn" onclick="toggleBhashini()" title="Open Assistant"><i class="fa-solid fa-headset"></i></button>
   </div>
 
   <div class="modal-backdrop" id="cert-modal">
@@ -281,8 +292,6 @@
   </div>
 
   <script>
-    const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
-
     document.addEventListener("DOMContentLoaded", () => {
       const stored = localStorage.getItem('mospi_user');
       if (!stored) {
@@ -300,69 +309,7 @@
       } catch (e) {
         console.error("Session parse error:", e);
       }
-      cacheAllDOMNodes();
     });
-
-    let domTextCache = [];
-    function cacheAllDOMNodes() {
-      domTextCache = [];
-      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-      let node;
-      while (node = walker.nextNode()) {
-        const trimmed = node.nodeValue.trim();
-        if (trimmed && node.parentElement && !['SCRIPT', 'STYLE', 'IFRAME', 'SELECT', 'OPTION'].includes(node.parentElement.tagName)) {
-          domTextCache.push({ node: node, original: node.nodeValue });
-        }
-      }
-    }
-
-    const translationMemory = {};
-    async function translateWholePageGemini(lang) {
-      if (lang === 'en') {
-        domTextCache.forEach(item => item.node.nodeValue = item.original);
-        return;
-      }
-
-      cacheAllDOMNodes();
-      const uniqueTexts = [];
-      const nodesToTranslate = [];
-
-      domTextCache.forEach(item => {
-        const text = item.original.trim();
-        if (text && isNaN(text)) {
-          nodesToTranslate.push(item);
-          if (!uniqueTexts.includes(text) && !translationMemory[`${lang}_${text}`]) {
-            uniqueTexts.push(text);
-          }
-        }
-      });
-
-      if (uniqueTexts.length > 0) {
-        try {
-          const res = await fetch(`${API_BASE_URL}/api/translate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ texts: uniqueTexts, targetLang: lang })
-          });
-          const data = await res.json();
-          if (data.translations && Array.isArray(data.translations)) {
-            uniqueTexts.forEach((original, idx) => {
-              translationMemory[`${lang}_${original}`] = data.translations[idx] || original;
-            });
-          }
-        } catch (err) {
-          console.error("Gemini batch translation error:", err);
-        }
-      }
-
-      nodesToTranslate.forEach(item => {
-        const text = item.original.trim();
-        const translated = translationMemory[`${lang}_${text}`];
-        if (translated) {
-          item.node.nodeValue = item.original.replace(text, translated);
-        }
-      });
-    }
 
     function toggleBhashini() {
       const panel = document.getElementById("bhashini-panel");
@@ -385,21 +332,18 @@
       appendChatMessage(q, "user");
       input.value = "";
       setTimeout(() => {
-        appendChatMessage("Bhashini AI: According to your MoSPI competency profile, your primary deficit is in Digital Governance (70%) and Statistical Sampling (60%). Watch the suggested videos below to reduce your gap.", "bot");
+        appendChatMessage("Assistant: Based on your current gap analysis, completing POSH Compliance and Disaster Response will reduce your deficit by 35%.", "bot");
       }, 500);
     }
 
     function startVoiceRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech Recognition not supported in this browser. Please use Chrome or Edge.");
+        alert("Speech Recognition not supported in this browser.");
         return;
       }
       const recognition = new SpeechRecognition();
-      const langMap = { en: "en-IN", hi: "hi-IN", te: "te-IN", ta: "ta-IN", bn: "bn-IN" };
-      recognition.lang = langMap[document.getElementById("global-lang-select").value] || "en-IN";
       recognition.start();
-
       const micBtn = document.getElementById("mic-btn");
       micBtn.style.background = "#16a34a";
 
@@ -408,7 +352,7 @@
         const spoken = e.results[0][0].transcript;
         appendChatMessage(spoken, "user");
         setTimeout(() => {
-          appendChatMessage(`Bhashini Voice: Recognized query "${spoken}". Recommended action: Complete the mandatory compliance modules below.`, "bot");
+          appendChatMessage(`Voice recognized: "${spoken}". Check your suggested courses below.`, "bot");
         }, 600);
       };
       recognition.onerror = () => {
@@ -433,7 +377,7 @@
         alert("Please choose a certificate file.");
         return;
       }
-      alert(`Certificate for "${activeCourseForUpload}" successfully uploaded and queued for NSSTA verification.`);
+      alert(`Certificate for "${activeCourseForUpload}" submitted for verification.`);
       closeModal('cert-modal');
     }
 
@@ -464,7 +408,7 @@
         alert("Please select an answer.");
         return;
       }
-      alert("Assessment submitted successfully! Score: 100%. Competency score updated.");
+      alert("Assessment submitted successfully! Score: 100%.");
       closeModal('quiz-modal');
     }
 
