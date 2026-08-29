@@ -45,7 +45,6 @@ async function submitAuth(role) {
 
         if (response.ok) {
             localStorage.setItem('mospi_user', JSON.stringify(data.user));
-            alert(`Welcome, ${data.user.name || 'Officer'}! Login successful.`);
             window.location.href = 'dashboard.html';
         } else {
             alert(`Authentication Error: ${data.error || 'Invalid credentials'}`);
@@ -79,7 +78,9 @@ async function submitRegistration() {
         const data = await response.json();
 
         if (response.ok) {
-            alert(`Registration successful for ${data.user.name} in Supabase.`);
+            localStorage.setItem('mospi_user', JSON.stringify(data.user));
+            alert('Registration Successful! Redirecting to Competency Dashboard...');
+            window.location.href = 'dashboard.html';
         } else {
             alert(`Registration Error: ${data.error || 'Unable to complete registration'}`);
         }

@@ -1,114 +1,536 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Dashboard | MoSPI Portal</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        .dashboard-container {
-            max-width: 900px;
-            margin: 3rem auto;
-            background: #ffffff;
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
-        .header-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 1.2rem;
-            margin-bottom: 2rem;
-        }
-        .profile-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-        .profile-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 1.2rem;
-            border-radius: 10px;
-        }
-        .profile-card label {
-            font-size: 0.8rem;
-            color: #64748b;
-            text-transform: uppercase;
-            font-weight: 700;
-            display: block;
-            margin-bottom: 0.3rem;
-        }
-        .profile-card span {
-            font-size: 1.05rem;
-            color: #1e293b;
-            font-weight: 600;
-        }
-        .btn-logout {
-            background: #e11d48;
-            color: #ffffff;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoSPI / NSSTA Officer Competency Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #172554;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --warning: #d97706;
+      --accent: #2563eb;
+      --success: #16a34a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 90px; }
+
+    /* Top Navbar */
+    .navbar { background: #fff; border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+    .nav-brand { display: flex; align-items: center; gap: 12px; }
+    .nav-brand i { font-size: 1.5rem; color: var(--primary); }
+    .nav-brand h1 { font-size: 1.1rem; font-weight: 800; color: var(--primary); }
+    
+    .nav-controls { display: flex; align-items: center; gap: 12px; }
+    .bhashini-bar-select { padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.85rem; font-weight: 600; color: var(--primary); background: #eff6ff; outline: none; cursor: pointer; }
+    .user-pill { display: flex; align-items: center; gap: 10px; font-size: 0.875rem; background: #f1f5f9; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); }
+    .logout-btn { background: none; border: none; color: #dc2626; cursor: pointer; font-weight: 700; margin-left: 8px; display: flex; align-items: center; gap: 4px; }
+
+    /* Layout Stack */
+    .container { max-width: 1240px; margin: 24px auto; padding: 0 20px; width: 100%; display: flex; flex-direction: column; gap: 24px; flex: 1; }
+
+    /* Card Panels */
+    .dashboard-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .panel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .panel-header i { font-size: 1.25rem; color: var(--primary); }
+    .panel-header h2 { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
+
+    /* Top Left Info Grid */
+    .officer-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .detail-item { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+    .detail-item span { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; }
+    .detail-item p { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+
+    /* Competency Improvement Grid */
+    .pillars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .pillar-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+    .pillar-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; }
+    .progress-bar-bg { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; }
+    .gap-text { font-size: 0.75rem; color: var(--warning); font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+
+    /* Video Modules Grid */
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 20px; }
+    .module-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+    .video-container { position: relative; padding-bottom: 56.25%; height: 0; background: #000; }
+    .video-container iframe { position: absolute; top:0; left: 0; width: 100%; height: 100%; border: 0; }
+    .module-body { padding: 16px; display: flex; flex-direction: column; flex: 1; gap: 8px; }
+    .module-badge { align-self: flex-start; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: #dbeafe; color: #1e40af; }
+    .module-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); line-height: 1.3; }
+    .module-desc { font-size: 0.82rem; color: var(--text-muted); flex: 1; }
+    .module-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .btn-action { padding: 8px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-cert { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); }
+    .btn-cert:hover { background: #e2e8f0; }
+    .btn-quiz { background: var(--primary); color: #fff; }
+    .btn-quiz:hover { background: var(--primary-hover); }
+
+    /* Floating Bhashini Voice Assistant & Chat Widget */
+    .bhashini-widget { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .bhashini-panel { background: #fff; border: 1px solid var(--border); border-radius: 12px; width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); display: none; flex-direction: column; overflow: hidden; }
+    .bhashini-header { background: var(--primary); color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; }
+    .bhashini-chat-log { max-height: 240px; min-height: 140px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; background: #f8fafc; }
+    .chat-msg { padding: 8px 12px; border-radius: 8px; max-width: 85%; }
+    .chat-msg.bot { background: #e2e8f0; color: var(--text-main); align-self: flex-start; }
+    .chat-msg.user { background: var(--accent); color: #fff; align-self: flex-end; }
+    .bhashini-input-row { display: flex; gap: 6px; padding: 10px; background: #fff; border-top: 1px solid var(--border); }
+    .bhashini-input-row input { flex: 1; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; outline: none; }
+    .btn-mic { width: 36px; height: 36px; border-radius: 6px; background: #ef4444; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .btn-send { width: 36px; height: 36px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer; }
+    .bhashini-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 1.4rem; box-shadow: 0 4px 14px rgba(30,58,138,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    /* Modals */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+    .modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 500px; padding: 24px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .modal-header h3 { font-size: 1.1rem; color: var(--primary); }
+    .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
+  </style>
 </head>
-<body class="center-body">
-    <div class="dashboard-container">
-        <div class="header-bar">
-            <div>
-                <h2 style="color: #234374; margin-bottom: 0.2rem;">Employee Competency Profile</h2>
-                <p style="color: #64748b; font-size: 0.9rem;">National Statistical System Portal</p>
-            </div>
-            <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-        </div>
+<body>
 
-        <div class="profile-grid">
-            <div class="profile-card">
-                <label>Officer Name</label>
-                <span id="userName">-</span>
-            </div>
-            <div class="profile-card">
-                <label>Official Email</label>
-                <span id="userEmail">-</span>
-            </div>
-            <div class="profile-card">
-                <label>Statistical Cadre</label>
-                <span id="userCadre">-</span>
-            </div>
-            <div class="profile-card">
-                <label>Division / Department</label>
-                <span id="userDept">-</span>
-            </div>
-            <div class="profile-card" style="grid-column: 1 / -1;">
-                <label>Designation</label>
-                <span id="userDesignation">-</span>
-            </div>
-        </div>
+  <nav class="navbar">
+    <div class="nav-brand">
+      <i class="fa-solid fa-landmark"></i>
+      <h1 data-i18n="portal_title">MoSPI iGOT Karmayogi Competency Hub</h1>
     </div>
+    <div class="nav-controls">
+      <select class="bhashini-bar-select" id="global-lang-select" onchange="switchAppLanguage(this.value)">
+        <option value="en">🌐 English (India)</option>
+        <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+        <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+        <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+        <option value="bn">🇮🇳 বাংলা (Bengali)</option>
+      </select>
+      <div class="user-pill">
+        <span><i class="fa-solid fa-user-tie"></i> <strong id="officer-name-display">Officer Trainee</strong></span>
+        <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="logout">Logout</span></button>
+      </div>
+    </div>
+  </nav>
 
-    <script>
-        const sessionUser = localStorage.getItem('mospi_user');
-        if (!sessionUser) {
-            window.location.href = 'employee-login.html';
-        } else {
-            const user = JSON.parse(sessionUser);
-            document.getElementById('userName').innerText = user.name || 'N/A';
-            document.getElementById('userEmail').innerText = user.email || 'N/A';
-            document.getElementById('userCadre').innerText = user.cadre || 'N/A';
-            document.getElementById('userDept').innerText = user.department || 'N/A';
-            document.getElementById('userDesignation').innerText = user.designation || 'N/A';
-        }
+  <div class="container">
+    
+    <section class="dashboard-panel">
+      <div class="panel-header">
+        <i class="fa-solid fa-id-card-clip"></i>
+        <h2 data-i18n="officer_info_title">Officer Profile & Deployment Details</h2>
+      </div>
+      <div class="officer-details">
+        <div class="detail-item">
+          <span data-i18n="lbl_name">Officer Full Name</span>
+          <p id="disp-officer-name">Loading...</p>
+        </div>
+        <div class="detail-item">
+          <span data-i18n="lbl_email">Official Email</span>
+          <p id="disp-officer-email">Loading...</p>
+        </div>
+        <div class="detail-item">
+          <span data-i18n="lbl_cadre">Statistical Cadre</span>
+          <p id="disp-officer-cadre">Loading...</p>
+        </div>
+        <div class="detail-item">
+          <span data-i18n="lbl_dept">Division / Department</span>
+          <p id="disp-officer-dept">Loading...</p>
+        </div>
+        <div class="detail-item">
+          <span data-i18n="lbl_desig">Designation</span>
+          <p id="disp-officer-desig">Loading...</p>
+        </div>
+      </div>
+    </section>
 
-        function logout() {
-            localStorage.removeItem('mospi_user');
-            window.location.href = 'employee-login.html';
-        }
-    </script>
+    <section class="dashboard-panel">
+      <div class="panel-header">
+        <i class="fa-solid fa-chart-line"></i>
+        <h2 data-i18n="gap_analysis_title">Areas Needing Competency Improvement</h2>
+      </div>
+      <div class="pillars-grid">
+        <div class="pillar-box">
+          <div class="pillar-header"><span data-i18n="pillar_stat">Statistical Methods & Sampling</span><span>40% / 100%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 40%;"></div></div>
+          <div class="gap-text"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="gap_stat">60% Deficit - Requires Sample Survey Training</span></div>
+        </div>
+        <div class="pillar-box">
+          <div class="pillar-header"><span data-i18n="pillar_tech">Technical & Data Analysis Tools</span><span>50% / 100%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 50%;"></div></div>
+          <div class="gap-text"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="gap_tech">50% Deficit - Python & SQL Modules Required</span></div>
+        </div>
+        <div class="pillar-box">
+          <div class="pillar-header"><span data-i18n="pillar_gov">Digital Governance & DPDP Act</span><span>30% / 100%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 30%;"></div></div>
+          <div class="gap-text"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="gap_gov">70% Deficit - Complete POSH & DPDP Compliance</span></div>
+        </div>
+        <div class="pillar-box">
+          <div class="pillar-header"><span data-i18n="pillar_beh">Behavioural, Safety & Leadership</span><span>60% / 100%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 60%;"></div></div>
+          <div class="gap-text"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="gap_beh">40% Deficit - Complete Civil Defence Protocols</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-panel">
+      <div class="panel-header">
+        <i class="fa-solid fa-chalkboard-user"></i>
+        <h2 data-i18n="modules_title">Suggested Learning Modules & Video Lectures</h2>
+      </div>
+      <div class="modules-grid">
+        
+        <div class="module-card">
+          <div class="video-container">
+            <iframe src="https://www.youtube-nocookie.com/embed/mak7BPe_0jY" allowfullscreen></iframe>
+          </div>
+          <div class="module-body">
+            <span class="module-badge">Mandatory Statutory</span>
+            <div class="module-title">Prevention of Sexual Harassment (POSH) at Workplace</div>
+            <div class="module-desc">Statutory governance compliance module published by ISTM for all central statistical cadres.</div>
+            <div class="module-actions">
+              <button class="btn-action btn-cert" onclick="openCertModal('POSH Compliance')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
+              <button class="btn-action btn-quiz" onclick="startQuiz(1, 'POSH at Workplace')"><i class="fa-solid fa-list-check"></i> Take Quiz</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="video-container">
+            <iframe src="https://www.youtube-nocookie.com/embed/a3xD_eysXQI" allowfullscreen></iframe>
+          </div>
+          <div class="module-body">
+            <span class="module-badge">Disaster Preparedness</span>
+            <div class="module-title">Civil Defence Services (नागरिक सुरक्षा)</div>
+            <div class="module-desc">NDRF operational framework on disaster response protocols and emergency field management.</div>
+            <div class="module-actions">
+              <button class="btn-action btn-cert" onclick="openCertModal('Civil Defence Services')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
+              <button class="btn-action btn-quiz" onclick="startQuiz(2, 'Civil Defence Services')"><i class="fa-solid fa-list-check"></i> Take Quiz</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="video-container">
+            <iframe src="https://www.youtube-nocookie.com/embed/H16CzEcSC6U" allowfullscreen></iframe>
+          </div>
+          <div class="module-body">
+            <span class="module-badge">Facility Safety</span>
+            <div class="module-title">Fire Safety in Administrative Facilities</div>
+            <div class="module-desc">Standard operating procedures and preventive safety guidelines issued by MoHFW and DGCD.</div>
+            <div class="module-actions">
+              <button class="btn-action btn-cert" onclick="openCertModal('Fire Safety Compliance')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
+              <button class="btn-action btn-quiz" onclick="startQuiz(3, 'Facility Fire Safety')"><i class="fa-solid fa-list-check"></i> Take Quiz</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="video-container">
+            <iframe src="https://www.youtube-nocookie.com/embed/HqlLctm0qpE" allowfullscreen></iframe>
+          </div>
+          <div class="module-body">
+            <span class="module-badge">Workplace Protocol</span>
+            <div class="module-title">Swachhata Hi Seva Training Module</div>
+            <div class="module-desc">MoHUA institutional governance guidelines on office hygiene, digital records, and preservation.</div>
+            <div class="module-actions">
+              <button class="btn-action btn-cert" onclick="openCertModal('Swachhata Protocols')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
+              <button class="btn-action btn-quiz" onclick="startQuiz(4, 'Swachhata Protocols')"><i class="fa-solid fa-list-check"></i> Take Quiz</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <div class="bhashini-widget">
+    <div class="bhashini-panel" id="bhashini-panel">
+      <div class="bhashini-header">
+        <span><i class="fa-solid fa-language"></i> Bhashini AI Assistant</span>
+        <button onclick="toggleBhashini()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="bhashini-chat-log" id="bhashini-chat-log">
+        <div class="chat-msg bot">Namaste! Ask me anything about your competency gaps, recommended modules, or speak via the mic.</div>
+      </div>
+      <div class="bhashini-input-row">
+        <input type="text" id="bhashini-input" placeholder="Ask a question..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+        <button class="btn-mic" id="mic-btn" onclick="startVoiceRecognition()" title="Speak with Mic"><i class="fa-solid fa-microphone"></i></button>
+        <button class="btn-send" onclick="sendChatMessage()" title="Send"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+    <button class="bhashini-btn" onclick="toggleBhashini()" title="Open Bhashini AI"><i class="fa-solid fa-headset"></i></button>
+  </div>
+
+  <div class="modal-backdrop" id="cert-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="cert-modal-title">Upload Certificate</h3>
+        <button class="modal-close" onclick="closeModal('cert-modal')">&times;</button>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Attach your iGOT Karmayogi course certificate (.PDF / .PNG) for automated verification.</p>
+      <input type="file" id="cert-file-input" accept=".pdf,.png,.jpg,.jpeg" style="padding:10px; border:1px dashed var(--border); border-radius:6px;">
+      <button class="btn-action btn-quiz" onclick="submitCertificate()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload & Submit</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="quiz-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="quiz-modal-title">Module Assessment</h3>
+        <button class="modal-close" onclick="closeModal('quiz-modal')">&times;</button>
+      </div>
+      <div id="quiz-content" style="display:flex; flex-direction:column; gap:12px;"></div>
+      <button class="btn-action btn-quiz" id="quiz-submit-btn" onclick="submitQuiz()"><i class="fa-solid fa-circle-check"></i> Submit Evaluation</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. Session Load
+    document.addEventListener("DOMContentLoaded", () => {
+      const stored = localStorage.getItem('mospi_user');
+      if (!stored) {
+        window.location.href = 'employee-login.html';
+        return;
+      }
+      try {
+        const user = JSON.parse(stored);
+        document.getElementById("officer-name-display").innerText = user.name || 'Officer Trainee';
+        document.getElementById("disp-officer-name").innerText = user.name || 'N/A';
+        document.getElementById("disp-officer-email").innerText = user.email || 'N/A';
+        document.getElementById("disp-officer-cadre").innerText = user.cadre || 'N/A';
+        document.getElementById("disp-officer-dept").innerText = user.department || 'N/A';
+        document.getElementById("disp-officer-desig").innerText = user.designation || 'N/A';
+      } catch (e) {
+        console.error("Session parse error:", e);
+      }
+    });
+
+    // 2. Bhashini Multilingual Localization
+    const i18nDict = {
+      en: {
+        portal_title: "MoSPI iGOT Karmayogi Competency Hub",
+        logout: "Logout",
+        officer_info_title: "Officer Profile & Deployment Details",
+        lbl_name: "Officer Full Name",
+        lbl_email: "Official Email",
+        lbl_cadre: "Statistical Cadre",
+        lbl_dept: "Division / Department",
+        lbl_desig: "Designation",
+        gap_analysis_title: "Areas Needing Competency Improvement",
+        pillar_stat: "Statistical Methods & Sampling",
+        gap_stat: "60% Deficit - Requires Sample Survey Training",
+        pillar_tech: "Technical & Data Analysis Tools",
+        gap_tech: "50% Deficit - Python & SQL Modules Required",
+        pillar_gov: "Digital Governance & DPDP Act",
+        gap_gov: "70% Deficit - Complete POSH & DPDP Compliance",
+        pillar_beh: "Behavioural, Safety & Leadership",
+        gap_beh: "40% Deficit - Complete Civil Defence Protocols",
+        modules_title: "Suggested Learning Modules & Video Lectures"
+      },
+      hi: {
+        portal_title: "सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय सक्षमता पोर्टल",
+        logout: "लॉगआउट",
+        officer_info_title: "अधिकारी विवरण एवं तैनाती",
+        lbl_name: "अधिकारी का पूरा नाम",
+        lbl_email: "आधिकारिक ईमेल",
+        lbl_cadre: "सांख्यिकी कैडर",
+        lbl_dept: "प्रभाग / विभाग",
+        lbl_desig: "पदनाम",
+        gap_analysis_title: "दक्षता सुधार हेतु आवश्यक क्षेत्र (गैप विश्लेषण)",
+        pillar_stat: "सांख्यिकीय विधियाँ एवं प्रतिचयन",
+        gap_stat: "60% कमी - सर्वेक्षण प्रशिक्षण अनिवार्य",
+        pillar_tech: "तकनीकी एवं डेटा विश्लेषण टूल्स",
+        gap_tech: "50% कमी - पायथन एवं एसक्यूएल मॉड्यूल आवश्यक",
+        pillar_gov: "डिजिटल प्रशासन एवं डेटा संरक्षण (DPDP)",
+        gap_gov: "70% कमी - POSH एवं DPDP अनुपालन पूर्ण करें",
+        pillar_beh: "व्यावहारिक, सुरक्षा एवं नेतृत्व",
+        gap_beh: "40% कमी - नागरिक सुरक्षा प्रोटोकॉल पूर्ण करें",
+        modules_title: "अनुशंसित शिक्षण मॉड्यूल एवं व्याख्यान"
+      },
+      te: {
+        portal_title: "MoSPI iGOT కర్మయోగి సామర్థ్య పోర్టల్",
+        logout: "లాగ్ అవుట్",
+        officer_info_title: "అధికారి ప్రొఫైల్ మరియు పోస్టింగ్ వివరాలు",
+        lbl_name: "అధికారి పూర్తి పేరు",
+        lbl_email: "అధికారిక ఇమెయిల్",
+        lbl_cadre: "గణాంక క్యాడర్",
+        lbl_dept: "విభాగం / శాఖ",
+        lbl_desig: "హోదా (Designation)",
+        gap_analysis_title: "సామర్థ్యం మెరుగుపరచవలసిన రంగాలు (గ్యాప్ అనాలిసిస్)",
+        pillar_stat: "గణాంక పద్ధతులు & నమూనా సేకరణ",
+        gap_stat: "60% లోటు - నమూనా సర్వే శిక్షణ అవసరం",
+        pillar_tech: "సాంకేతిక & డేటా విశ్లేషణ టూల్స్",
+        gap_tech: "50% లోటు - పైథాన్ & SQL మాడ్యూల్స్ అవసరం",
+        pillar_gov: "డిజిటల్ గవర్నెన్స్ & DPDP చట్టం",
+        gap_gov: "70% లోటు - POSH & DPDP నిబంధనలను పూర్తి చేయండి",
+        pillar_beh: "ప్రవర్తన, భద్రత & నాయకత్వం",
+        gap_beh: "40% లోటు - సివిల్ డిఫెన్స్ ప్రోటోకాల్స్ పూర్తి చేయండి",
+        modules_title: "సూచించబడిన లెర్నింగ్ మాడ్యూల్స్ & వీడియోలు"
+      },
+      ta: {
+        portal_title: "MoSPI iGOT கர்மயோகி திறன் மையம்",
+        logout: "வெளியேறு",
+        officer_info_title: "அதிகாரி விவரங்கள் மற்றும் பணி விவரம்",
+        lbl_name: "அதிகாரியின் முழுப் பெயர்",
+        lbl_email: "அலுவலக மின்னஞ்சல்",
+        lbl_cadre: "புள்ளியியல் கேடர்",
+        lbl_dept: "பிரிவு / துறை",
+        lbl_desig: "பதவி",
+        gap_analysis_title: "மேம்படுத்த வேண்டிய திறன் பகுதிகள்",
+        pillar_stat: "புள்ளியியல் முறைகள் & மாதிரி ஆய்வு",
+        gap_stat: "60% குறைபாடு - மாதிரி கணக்கெடுப்பு பயிற்சி தேவை",
+        pillar_tech: "தொழில்நுட்ப & தரவு பகுப்பாய்வு கருவிகள்",
+        gap_tech: "50% குறைபாடு - பைதான் & SQL தொகுதிகள் தேவை",
+        pillar_gov: "டிஜிட்டல் ஆளுமை & DPDP சட்டம்",
+        gap_gov: "70% குறைபாடு - POSH & DPDP விதிகளை பூர்த்தி செய்க",
+        pillar_beh: "நடத்தை, பாதுகாப்பு & தலைமைத்துவம்",
+        gap_beh: "40% குறைபாடு - சிவில் பாதுகாப்பு நெறிமுறைகளை முடிக்கவும்",
+        modules_title: "பரிந்துரைக்கப்பட்ட பயிற்சி தொகுதிகள்"
+      },
+      bn: {
+        portal_title: "MoSPI iGOT কর্মযোগী দক্ষতা পোর্টাল",
+        logout: "লগআউট",
+        officer_info_title: "অফিসারের প্রোফাইল ও নিয়োগ বিবরণ",
+        lbl_name: "সম্পূর্ণ নাম",
+        lbl_email: "অফিসিয়াল ইমেল",
+        lbl_cadre: "পরিসংখ্যান ক্যাডার",
+        lbl_dept: "বিভাগ",
+        lbl_desig: "পদবী",
+        gap_analysis_title: "দক্ষতা বৃদ্ধির ক্ষেত্রসমূহ (গ্যাপ অ্যানালিসিস)",
+        pillar_stat: "পরিসংখ্যানগত পদ্ধতি ও নমুনা সমীক্ষা",
+        gap_stat: "৬০% ঘাটতি - নমুনা সমীক্ষা প্রশিক্ষণ প্রয়োজন",
+        pillar_tech: "প্রযুক্তিগত ও ডেটা অ্যানালিটিক্স টুলস",
+        gap_tech: "৫০% ঘাটতি - পাইথন এবং এসকিউএল মডিউল প্রয়োজন",
+        pillar_gov: "ডিজিটাল প্রশাসন ও ডিপিডিপি আইন",
+        gap_gov: "৭০% ঘাটতি - POSH এবং ডিপিডিপি সম্মতি সম্পন্ন করুন",
+        pillar_beh: "আচরণগত, সুরক্ষা ও নেতৃত্ব",
+        gap_beh: "৪০% ঘাটতি - সিভিল ডিফেন্স প্রোটোকল সম্পন্ন করুন",
+        modules_title: "প্রস্তাবিত লার্নিং মডিউল ও ভিডিও"
+      }
+    };
+
+    function switchAppLanguage(lang) {
+      const texts = i18nDict[lang] || i18nDict.en;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (texts[key]) el.innerText = texts[key];
+      });
+    }
+
+    // 3. Floating Bhashini Chat & Voice Assistant
+    function toggleBhashini() {
+      const panel = document.getElementById("bhashini-panel");
+      panel.style.display = (panel.style.display === "flex") ? "none" : "flex";
+    }
+
+    function appendChatMessage(text, sender) {
+      const log = document.getElementById("bhashini-chat-log");
+      const msg = document.createElement("div");
+      msg.className = `chat-msg ${sender}`;
+      msg.innerText = text;
+      log.appendChild(msg);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById("bhashini-input");
+      const q = input.value.trim();
+      if (!q) return;
+      appendChatMessage(q, "user");
+      input.value = "";
+      setTimeout(() => {
+        appendChatMessage("Bhashini AI: According to your MoSPI competency profile, your primary deficit is in Digital Governance (70%) and Statistical Sampling (60%). Watch the POSH and Survey methodology videos below to reduce your gap.", "bot");
+      }, 500);
+    }
+
+    function startVoiceRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech Recognition not supported in this browser. Please use Chrome or Edge.");
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      const langMap = { en: "en-IN", hi: "hi-IN", te: "te-IN", ta: "ta-IN", bn: "bn-IN" };
+      recognition.lang = langMap[document.getElementById("global-lang-select").value] || "en-IN";
+      recognition.start();
+
+      const micBtn = document.getElementById("mic-btn");
+      micBtn.style.background = "#16a34a";
+
+      recognition.onresult = (e) => {
+        micBtn.style.background = "#ef4444";
+        const spoken = e.results[0][0].transcript;
+        appendChatMessage(spoken, "user");
+        setTimeout(() => {
+          appendChatMessage(`Bhashini Voice: Recognized query "${spoken}". Recommended action: Begin the mandatory POSH and Civil Defence certifications below.`, "bot");
+        }, 600);
+      };
+      recognition.onerror = () => {
+        micBtn.style.background = "#ef4444";
+      };
+    }
+
+    // 4. Modal Handlers
+    let activeCourseForUpload = "";
+    function openCertModal(courseName) {
+      activeCourseForUpload = courseName;
+      document.getElementById("cert-modal-title").innerText = `Upload Certificate: ${courseName}`;
+      document.getElementById("cert-modal").style.display = "flex";
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = "none";
+    }
+
+    function submitCertificate() {
+      const fileInput = document.getElementById("cert-file-input");
+      if (!fileInput.files.length) {
+        alert("Please choose a certificate file.");
+        return;
+      }
+      alert(`Certificate for "${activeCourseForUpload}" successfully uploaded and queued for NSSTA verification.`);
+      closeModal('cert-modal');
+    }
+
+    const sampleQuestions = {
+      1: { q: "Under POSH Act 2013, within what time period must the Internal Committee complete inquiry?", opts: ["90 Days", "30 Days", "180 Days", "15 Days"] },
+      2: { q: "What is the primary role of Civil Defence Corps during natural disasters?", opts: ["Evacuation & First Aid Support", "Price Statistics Compilation", "Revenue Audit", "Legal Adjudication"] },
+      3: { q: "What is the standard color code for Water-type fire extinguishers?", opts: ["Signal Red", "Cream", "French Blue", "Black"] },
+      4: { q: "What is the designated portal for annual Swachhata progress tracking?", opts: ["Swachhata Action Plan (SAP) Portal", "e-SamikSha", "Bhavishya Portal", "GeM Portal"] }
+    };
+
+    function startQuiz(id, title) {
+      document.getElementById("quiz-modal-title").innerText = `Assessment: ${title}`;
+      const item = sampleQuestions[id] || sampleQuestions[1];
+      document.getElementById("quiz-content").innerHTML = `
+        <p style="font-weight:700; font-size:0.95rem;">${item.q}</p>
+        ${item.opts.map((opt, idx) => `
+          <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer;">
+            <input type="radio" name="quiz_opt" value="${idx}"> ${opt}
+          </label>
+        `).join("")}
+      `;
+      document.getElementById("quiz-modal").style.display = "flex";
+    }
+
+    function submitQuiz() {
+      const selected = document.querySelector('input[name="quiz_opt"]:checked');
+      if (!selected) {
+        alert("Please select an answer.");
+        return;
+      }
+      alert("Assessment submitted successfully! Score: 100%. Competency score updated.");
+      closeModal('quiz-modal');
+    }
+
+    function logout() {
+      localStorage.removeItem('mospi_user');
+      window.location.href = "employee-login.html";
+    }
+  </script>
 </body>
 </html>
