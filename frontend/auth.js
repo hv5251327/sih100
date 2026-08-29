@@ -30,10 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
 async function submitAuth(role) {
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    const submitBtn = document.querySelector('.btn-submit');
+    const submitBtn = document.querySelector('#employeeForm button[type="submit"], #adminForm button[type="submit"], .btn-submit');
 
-    submitBtn.disabled = true;
-    submitBtn.innerText = 'Verifying...';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Verifying...';
+    }
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -48,12 +50,17 @@ async function submitAuth(role) {
             window.location.href = 'dashboard.html';
         } else {
             alert(`Authentication Error: ${data.error || 'Invalid credentials'}`);
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = role === 'admin' ? 'Authorize & Access Portal' : 'Login';
+            }
         }
     } catch (err) {
-        alert('Server unreachable. Ensure the backend is running.');
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = role === 'admin' ? 'Authorize & Access Portal' : 'Login';
+        alert('Server unreachable. Please wait 30 seconds for backend initialization and retry.');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = role === 'admin' ? 'Authorize & Access Portal' : 'Login';
+        }
     }
 }
 
@@ -62,12 +69,15 @@ async function submitRegistration() {
     const email = document.getElementById('regEmail').value.trim();
     const password = document.getElementById('regPassword').value;
     const cadre = document.getElementById('regCadre').value;
-    const department = document.getElementById('regDept').options[document.getElementById('regDept').selectedIndex].text;
+    const deptSelect = document.getElementById('regDept');
+    const department = deptSelect.options[deptSelect.selectedIndex] ? deptSelect.options[deptSelect.selectedIndex].text : '';
     const designation = document.getElementById('regDesignation').value;
-    const submitBtn = document.querySelector('.btn-register-submit');
+    const submitBtn = document.querySelector('#registerForm button[type="submit"]');
 
-    submitBtn.disabled = true;
-    submitBtn.innerText = 'Registering...';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Registering...';
+    }
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
@@ -79,15 +89,19 @@ async function submitRegistration() {
 
         if (response.ok) {
             localStorage.setItem('mospi_user', JSON.stringify(data.user));
-            alert('Registration Successful! Redirecting to Competency Dashboard...');
             window.location.href = 'dashboard.html';
         } else {
-            alert(`Registration Error: ${data.error || 'Unable to complete registration'}`);
+            alert(`Registration Error: ${data.error || 'Unable to register'}`);
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Register & Create Profile';
+            }
         }
     } catch (err) {
-        alert('Server unreachable. Check backend connectivity.');
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'Register & Create Competency Profile';
+        alert('Backend connection error. Please retry in a few moments.');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Register & Create Profile';
+        }
     }
 }
