@@ -52,7 +52,15 @@
     .detail-item span { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; }
     .detail-item p { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
 
-    /* iGOT Karmayogi Course Cards */
+    /* Restored Areas Needing Competency Improvement */
+    .pillars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .pillar-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+    .pillar-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; }
+    .progress-bar-bg { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s ease; }
+    .gap-text { font-size: 0.75rem; color: var(--warning); font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+
+    /* iGOT Video Module Cards */
     .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
     .module-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.04); }
     .igot-banner { background: linear-gradient(135deg, #1e3a8a, #0284c7); padding: 16px 18px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; }
@@ -70,7 +78,7 @@
     .btn-quiz { background: var(--primary); color: #fff; }
     .btn-quiz:hover { background: var(--primary-hover); }
 
-    /* Floating Bhashini AI Assistant Widget */
+    /* Assistant Widget */
     .bhashini-widget { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
     .bhashini-panel { background: #fff; border: 1px solid var(--border); border-radius: 12px; width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); display: none; flex-direction: column; overflow: hidden; }
     .bhashini-header { background: var(--primary); color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; }
@@ -131,6 +139,7 @@
 
   <div class="container">
     
+    <!-- Profile Panel -->
     <section class="dashboard-panel">
       <div class="panel-header">
         <div class="panel-header-left">
@@ -147,20 +156,53 @@
       </div>
     </section>
 
+    <!-- Restored Competency Tracker with 0% initialization -->
+    <section class="dashboard-panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <i class="fa-solid fa-chart-line"></i>
+          <h2>Areas Needing Competency Improvement</h2>
+        </div>
+      </div>
+      <div class="pillars-grid">
+        <div class="pillar-box">
+          <div class="pillar-header"><span>Statistical Methods & Sampling</span><span id="score-stat">0% / 100%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="fill-stat" style="width: 0%;"></div></div>
+          <div class="gap-text" id="gap-stat"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete recommended iGOT modules</span></div>
+        </div>
+        <div class="pillar-box">
+          <div class="pillar-header"><span>Technical & Data Analysis Tools</span><span id="score-tech">0% / 100%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="fill-tech" style="width: 0%;"></div></div>
+          <div class="gap-text" id="gap-tech"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete Python & SQL training</span></div>
+        </div>
+        <div class="pillar-box">
+          <div class="pillar-header"><span>Digital Governance & DPDP Act</span><span id="score-gov">0% / 100%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="fill-gov" style="width: 0%;"></div></div>
+          <div class="gap-text" id="gap-gov"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete statutory compliance</span></div>
+        </div>
+        <div class="pillar-box">
+          <div class="pillar-header"><span>Behavioural, Safety & Leadership</span><span id="score-lead">0% / 100%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="fill-lead" style="width: 0%;"></div></div>
+          <div class="gap-text" id="gap-lead"><i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete administrative modules</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI-Curated iGOT Modules -->
     <section class="dashboard-panel">
       <div class="panel-header">
         <div class="panel-header-left">
           <i class="fa-solid fa-graduation-cap"></i>
-          <h2>AI-Curated NSSTA & iGOT Karmayogi Recommended Courses (15 Modules)</h2>
+          <h2>AI-Curated NSSTA & iGOT Karmayogi Recommended Video Courses (15 Modules)</h2>
         </div>
-        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Loading 15 customized courses...</span>
+        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Generating 15 custom modules...</span>
       </div>
       <div class="modules-grid" id="dynamic-modules-container"></div>
     </section>
 
   </div>
 
-  <!-- Bhashini AI Assistant Widget -->
+  <!-- Bhashini Widget -->
   <div class="bhashini-widget">
     <div class="bhashini-panel" id="bhashini-panel">
       <div class="bhashini-header">
@@ -168,7 +210,7 @@
         <button onclick="toggleBhashini()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="bhashini-chat-log" id="bhashini-chat-log">
-        <div class="chat-msg bot">Namaste! Ask me anything about your 15 iGOT recommended courses, competency improvements, or speak via mic.</div>
+        <div class="chat-msg bot">Namaste! Ask me anything about your 15 iGOT training courses, deficit areas, or speak via the mic.</div>
       </div>
       <div class="bhashini-input-row">
         <input type="text" id="bhashini-input" placeholder="Ask Bhashini AI..." onkeydown="if(event.key==='Enter') sendChatMessage()">
@@ -179,29 +221,29 @@
     <button class="bhashini-btn" onclick="toggleBhashini()" title="Open Bhashini AI"><i class="fa-solid fa-headset"></i></button>
   </div>
 
-  <!-- Certificate Upload Modal -->
+  <!-- Certificate Modal -->
   <div class="modal-backdrop" id="cert-modal">
     <div class="modal-box">
       <div class="modal-header">
         <h3 id="cert-modal-title">Upload Course Certificate</h3>
         <button class="modal-close" onclick="closeModal('cert-modal')">&times;</button>
       </div>
-      <p style="font-size:0.85rem; color:var(--text-muted);">Attach your completed iGOT Karmayogi course certificate (.PDF / .PNG / .JPG) for automated competency verification.</p>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Attach your completed iGOT Karmayogi course certificate (.PDF / .PNG / .JPG) for automated verification.</p>
       <input type="file" id="cert-file-input" accept=".pdf,.png,.jpg,.jpeg" style="padding:10px; border:1px dashed var(--border); border-radius:6px;">
       <button class="btn-action btn-quiz" style="padding:10px;" onclick="submitCertificate()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload & Submit for Verification</button>
     </div>
   </div>
 
-  <!-- Assessment Quiz Modal -->
+  <!-- Quiz Modal -->
   <div class="modal-backdrop" id="quiz-modal">
     <div class="modal-box">
       <div class="modal-header">
         <h3 id="quiz-modal-title">Competency Assessment</h3>
         <button class="modal-close" onclick="closeModal('quiz-modal')">&times;</button>
       </div>
-      <p style="font-size:0.85rem; color:var(--text-muted);" id="quiz-subtitle">Complete this 3-question evaluation to record competency credit on your profile.</p>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Complete this 3-question evaluation to credit this iGOT course toward your profile.</p>
       <div id="quiz-questions-body" style="display:flex; flex-direction:column; gap:14px;"></div>
-      <button class="btn-action btn-quiz" style="padding:10px;" id="quiz-submit-action" onclick="submitAssessment()">Submit Evaluation & Update Profile</button>
+      <button class="btn-action btn-quiz" style="padding:10px;" id="quiz-submit-action" onclick="submitAssessment()">Submit Assessment & Record Credit</button>
     </div>
   </div>
 
@@ -210,6 +252,7 @@
     let currentUser = null;
     let activeQuizData = [];
     let currentActiveCourse = "";
+    let currentActiveCategory = "";
 
     document.addEventListener("DOMContentLoaded", async () => {
       const stored = localStorage.getItem('mospi_user');
@@ -226,11 +269,41 @@
         document.getElementById("disp-officer-dept").innerText = currentUser.department || 'N/A';
         document.getElementById("disp-officer-desig").innerText = currentUser.designation || 'N/A';
 
-        await loadOfficerRecommendations();
+        await Promise.all([loadCompetencies(), loadOfficerRecommendations()]);
       } catch (e) {
-        console.error("Session parse error:", e);
+        console.error("Session load error:", e);
       }
     });
+
+    async function loadCompetencies() {
+      try {
+        const res = await fetch(`${API_URL}/api/competencies/${currentUser.email}`);
+        const data = await res.json();
+        
+        const s = data.statistical_score || 0;
+        const t = data.technical_score || 0;
+        const g = data.governance_score || 0;
+        const l = data.leadership_score || 0;
+
+        document.getElementById("score-stat").innerText = `${s}% / 100%`;
+        document.getElementById("fill-stat").style.width = `${s}%`;
+        document.getElementById("gap-stat").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - s}% Deficit - Sample Survey Modules Required</span>`;
+
+        document.getElementById("score-tech").innerText = `${t}% / 100%`;
+        document.getElementById("fill-tech").style.width = `${t}%`;
+        document.getElementById("gap-tech").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - t}% Deficit - Python & SQL Modules Required</span>`;
+
+        document.getElementById("score-gov").innerText = `${g}% / 100%`;
+        document.getElementById("fill-gov").style.width = `${g}%`;
+        document.getElementById("gap-gov").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - g}% Deficit - Complete POSH & DPDP Compliance</span>`;
+
+        document.getElementById("score-lead").innerText = `${l}% / 100%`;
+        document.getElementById("fill-lead").style.width = `${l}%`;
+        document.getElementById("gap-lead").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - l}% Deficit - Complete Civil Defence Protocols</span>`;
+      } catch (e) {
+        console.warn("Using baseline 0% competency display.");
+      }
+    }
 
     async function loadOfficerRecommendations() {
       const container = document.getElementById("dynamic-modules-container");
@@ -250,20 +323,20 @@
         const data = await res.json();
         const courses = data.courses || [];
 
-        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> 15 iGOT Courses Active (${data.source === 'database' ? 'DB Cached' : 'AI Generated'})`;
+        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> 15 iGOT Video Modules Active (${data.source === 'database' ? 'DB Cached' : 'AI Generated'})`;
 
         container.innerHTML = courses.map((course, idx) => `
           <div class="module-card">
             <div class="igot-banner">
-              <span style="font-weight:800; font-size:0.9rem;"><i class="fa-solid fa-book-open"></i> Module ${idx + 1}</span>
+              <span style="font-weight:800; font-size:0.9rem;"><i class="fa-solid fa-circle-play"></i> Module ${idx + 1}</span>
               <span class="igot-tag">iGOT Karmayogi</span>
             </div>
             <div class="module-body">
               <span class="module-badge">${course.category || 'Competency Core'}</span>
               <div class="module-title">${course.title}</div>
-              <div class="module-desc">${course.description || 'Statutory training module customized for your designation.'}</div>
+              <div class="module-desc">${course.description || 'Custom statutory & technical course for this designation.'}</div>
               <div class="module-actions">
-                <a href="${course.course_url || 'https://portal.igotkarmayogi.gov.in'}" target="_blank" class="btn-action btn-open"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open iGOT</a>
+                <a href="${course.video_url || 'https://portal.igotkarmayogi.gov.in'}" target="_blank" class="btn-action btn-open"><i class="fa-solid fa-video"></i> Watch Video</a>
                 <button class="btn-action btn-cert" onclick="openCertModal('${encodeURIComponent(course.title)}')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
                 <button class="btn-action btn-quiz" onclick="launchAssessment('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.category)}')"><i class="fa-solid fa-list-check"></i> Quiz</button>
               </div>
@@ -295,12 +368,12 @@
           body: JSON.stringify({
             email: currentUser.email,
             courseTitle: currentActiveCourse,
-            score: 100,
-            certificateUploaded: true
+            score: 100
           })
         });
-        alert(`Certificate for "${currentActiveCourse}" uploaded successfully! Profile competency updated.`);
+        alert(`Certificate for "${currentActiveCourse}" uploaded! Competency score updated.`);
         closeModal('cert-modal');
+        await loadCompetencies();
       } catch (e) {
         alert("Certificate submission error. Please retry.");
       }
@@ -310,6 +383,7 @@
       const title = decodeURIComponent(titleEnc);
       const cat = decodeURIComponent(catEnc);
       currentActiveCourse = title;
+      currentActiveCategory = cat;
 
       document.getElementById("quiz-modal-title").innerText = `Assessment: ${title}`;
       const questionsBody = document.getElementById("quiz-questions-body");
@@ -369,12 +443,14 @@
           body: JSON.stringify({
             email: currentUser.email,
             courseTitle: currentActiveCourse,
-            score: finalPercentage
+            score: finalPercentage,
+            category: currentActiveCategory
           })
         });
 
-        alert(`Assessment Completed! Score: ${finalPercentage}%. Competency score saved.`);
+        alert(`Assessment Completed! Score: ${finalPercentage}%. Competency score increased.`);
         closeModal('quiz-modal');
+        await loadCompetencies();
       } catch (e) {
         alert(`Score: ${finalPercentage}%. Error saving to database.`);
         closeModal('quiz-modal');

@@ -19,107 +19,118 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Backend Active', timestamp: new Date() });
 });
 
-// Curated master catalog of 15 authentic NSSTA / iGOT Karmayogi courses
-const DEFAULT_IGOT_COURSES = [
-    { title: "Infrastructure Project Monitoring & IPMD Workflows", category: "Project Management", description: "Comprehensive procedures for monitoring central infrastructure projects costing ₹150+ Crore.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Online Computerised Monitoring System (OCMS) Operations", category: "Digital Governance", description: "Standard data entry and monthly milestone tracking protocols on the IPMD OCMS portal.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "National Accounts Statistics & GDP Aggregates", category: "Macro Statistics", description: "Methods for compiling Gross State Domestic Product (GSDP) and Gross Fixed Capital Formation.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Index of Industrial Production (IIP) & ASI Framework", category: "Economic Statistics", description: "Technical compilation standards for Annual Survey of Industries and industrial production tracking.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Consumer Price Index (CPI) Basket & Inflation Metrics", category: "Price Statistics", description: "Price data validation methodologies and consumer basket weight calculation for rural/urban areas.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Survey Sampling Design & Estimation Techniques", category: "Sample Surveys", description: "Multi-stage stratified sampling designs and variance estimation in NSS socio-economic surveys.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Python & Pandas for Official Statistical Analysis", category: "Technical & Tools", description: "Automated data transformation, large survey data wrangling, and econometric visualization in Python.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Relational SQL & Survey Microdata Processing", category: "Data Informatics", description: "Relational querying, validation queries, and cross-tabulation of NSSO large datasets using SQL.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Digital Personal Data Protection (DPDP) Act Compliance", category: "Digital Governance", description: "Statutory governance obligations for handling citizen data and official respondent confidentiality.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Sustainable Development Goals (SDG) National Indicator Framework", category: "Social Statistics", description: "Monitoring progress against 300+ SDG national indicators and state-level data localization.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Prevention of Sexual Harassment (POSH) at Workplace", category: "Statutory Ethics", description: "Statutory mandates under POSH Act 2013, Internal Committee procedures, and ethical governance.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Civil Defence Services & Disaster Management Framework", category: "Emergency Protocols", description: "NDRF and institutional disaster mitigation, first aid, and emergency coordination procedures.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Swachhata Protocols & Office Hygiene Management", category: "Administration", description: "Record management, e-Office digitization standards, and physical premises governance.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Time Series Econometrics & Seasonal Adjustments", category: "Applied Statistics", description: "X-13ARIMA-SEATS seasonal adjustment techniques for monthly price and production indices.", course_url: "https://portal.igotkarmayogi.gov.in" },
-    { title: "Administrative Vigilance & Public Procurement (GeM / GFR)", category: "Leadership & Rules", description: "General Financial Rules (GFR) 2017, GeM portal procurement guidelines, and disciplinary rules.", course_url: "https://portal.igotkarmayogi.gov.in" }
-];
+// Fetch or initialize officer competency progress (defaults to 0% for new officers)
+app.get('/api/competencies/:email', async (req, res) => {
+    const email = req.params.email.trim().toLowerCase();
+    try {
+        let { data, error } = await supabase
+            .from('officer_competencies')
+            .select('*')
+            .eq('user_email', email)
+            .maybeSingle();
 
+        if (!data) {
+            const { data: created } = await supabase
+                .from('officer_competencies')
+                .insert([{
+                    user_email: email,
+                    statistical_score: 0,
+                    technical_score: 0,
+                    governance_score: 0,
+                    leadership_score: 0
+                }])
+                .select()
+                .single();
+            data = created;
+        }
+
+        return res.json(data);
+    } catch (err) {
+        return res.json({ statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0 });
+    }
+});
+
+// Dynamic AI Course & Video Generation per Cadre, Department, and Designation
 app.post('/api/recommendations', async (req, res) => {
     const { cadre, department, designation } = req.body;
 
+    if (!cadre || !department || !designation) {
+        return res.status(400).json({ error: 'Cadre, department, and designation are required.' });
+    }
+
     try {
-        // 1. Check if database already has cached courses
-        const { data: cached } = await supabase
+        // 1. Check if DB has courses saved for this exact combination
+        const { data: cached, error: cacheErr } = await supabase
             .from('recommended_courses')
             .select('*')
             .eq('cadre', cadre)
             .eq('department', department)
             .eq('designation', designation);
 
-        if (cached && cached.length >= 15) {
+        if (!cacheErr && cached && cached.length >= 15) {
             return res.json({ courses: cached, source: 'database' });
         }
 
-        // 2. Generate personalized list with Gemini AI
+        // 2. Query Gemini AI to create 15 custom courses tailored specifically to this officer
         const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-        let finalCourses = DEFAULT_IGOT_COURSES;
+        const prompt = `You are the AI Training Director at NSSTA (National Statistical Systems Training Academy), MoSPI, Government of India.
+Generate a tailored training syllabus of 15 targeted iGOT Karmayogi video modules for an officer with:
+- Cadre: ${cadre}
+- Department: ${department}
+- Designation: ${designation}
 
-        if (apiKey) {
-            try {
-                const prompt = `Generate a tailored list of exactly 15 authentic iGOT Karmayogi / NSSTA MoSPI training courses for an officer:
-Cadre: ${cadre}
-Department: ${department}
-Designation: ${designation}
+Ensure topics directly address the officer's specific operational responsibilities (e.g. IPMD officers need OCMS & Project Monitoring; NAD officers need GDP compilation; FOD officers need sample field validation).
 
-Return ONLY a valid JSON array of 15 objects in this structure:
+Return ONLY a valid JSON array of 15 objects matching this exact structure:
 [
   {
-    "title": "Course Title",
-    "category": "Domain Category",
-    "description": "Role-specific description for this officer",
-    "course_url": "https://portal.igotkarmayogi.gov.in"
+    "title": "Exact iGOT Karmayogi Video Course Title",
+    "category": "Domain (Statistical Methods, Technical Tools, Digital Governance, or Leadership)",
+    "description": "Specific operational purpose for this designation in MoSPI.",
+    "video_url": "https://portal.igotkarmayogi.gov.in"
   }
 ]`;
 
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json" }
-                    })
-                });
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { responseMimeType: "application/json" }
+            })
+        });
 
-                const data = await response.json();
-                const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (rawContent) {
-                    finalCourses = JSON.parse(rawContent);
-                }
-            } catch (aiErr) {
-                console.warn('Gemini recommendation API fallback to default catalog');
-            }
-        }
+        const geminiRes = await response.json();
+        const rawContent = geminiRes.candidates?.[0]?.content?.parts?.[0]?.text;
+        const generatedCourses = JSON.parse(rawContent);
 
-        // 3. Save into Supabase table
-        const rowsToInsert = finalCourses.map(c => ({
+        const rowsToInsert = generatedCourses.map(c => ({
             cadre,
             department,
             designation,
             title: c.title,
             description: c.description,
             category: c.category,
-            course_url: c.course_url || 'https://portal.igotkarmayogi.gov.in'
+            video_url: c.video_url || 'https://portal.igotkarmayogi.gov.in'
         }));
 
+        // 3. Save to database for caching
         await supabase.from('recommended_courses').insert(rowsToInsert);
+
         return res.json({ courses: rowsToInsert, source: 'ai_generated' });
     } catch (err) {
-        return res.json({ courses: DEFAULT_IGOT_COURSES, source: 'local_catalog' });
+        console.error('AI Recommendation Error:', err);
+        return res.status(500).json({ error: 'Failed to generate tailored courses.' });
     }
 });
 
-// Dynamic AI Assessment Quiz Generator
+// Dynamic AI Quiz Generator
 app.post('/api/generate-quiz', async (req, res) => {
     const { courseTitle, category } = req.body;
     const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
-    if (apiKey) {
-        try {
-            const prompt = `Generate 3 competency evaluation multiple choice questions for the iGOT course: "${courseTitle}" (${category}). Return ONLY valid JSON:
+    try {
+        const prompt = `Generate a 3-question multiple choice competency assessment for the iGOT course: "${courseTitle}" (${category}). Return ONLY valid JSON:
 [
   {
     "question": "Question text?",
@@ -127,73 +138,79 @@ app.post('/api/generate-quiz', async (req, res) => {
     "correctIndex": 0
   }
 ]`;
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                })
-            });
-            const data = await response.json();
-            const quiz = JSON.parse(data.candidates[0].content.parts[0].text);
-            return res.json({ quiz });
-        } catch (e) {}
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { responseMimeType: "application/json" }
+            })
+        });
+        const data = await response.json();
+        const quiz = JSON.parse(data.candidates[0].content.parts[0].text);
+        return res.json({ quiz });
+    } catch (err) {
+        return res.json({
+            quiz: [
+                { question: `What is the key regulatory protocol taught in ${courseTitle}?`, options: ["Ensuring standard operational compliance and data integrity", "Manual offline record keeping", "Unregulated survey sampling", "Exemption from statutory audits"], correctIndex: 0 },
+                { question: "How are compliance milestones tracked on the MoSPI portal?", options: ["Automated digital submission & validation", "Informal verbal updates", "Paper registers only", "No verification required"], correctIndex: 0 },
+                { question: "Which framework governs official statistical disclosures?", options: ["MoSPI Data Policy & DPDP Act", "Generic public domain rules", "Unverified guidelines", "Local administrative orders only"], correctIndex: 0 }
+            ]
+        });
     }
-
-    // Default 3-question evaluation fallback
-    return res.json({
-        quiz: [
-            { question: `What is the core regulatory objective of ${courseTitle}?`, options: ["Enhancing administrative transparency and data accuracy", "Manual file indexing only", "Non-digital reporting", "Ad-hoc task execution"], correctIndex: 0 },
-            { question: "Under MoSPI guidelines, how frequently should compliance data be verified?", options: ["Monthly / Quarterly Cycle", "Once every 5 years", "Never", "Only on audit request"], correctIndex: 0 },
-            { question: "Which digital platform manages central training tracking across government services?", options: ["iGOT Karmayogi Bharat Portal", "Generic Social Media", "Offline Logbooks", "Unverified third-party apps"], correctIndex: 0 }
-        ]
-    });
 });
 
-// Chatbot query handler
+// Chatbot Endpoint
 app.post('/api/chatbot', async (req, res) => {
     const { message, userProfile } = req.body;
     const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
     if (apiKey) {
         try {
-            const prompt = `You are Bhashini AI, the digital assistant for MoSPI & NSSTA iGOT Karmayogi portal.
-Officer Details: Name: ${userProfile?.name}, Cadre: ${userProfile?.cadre}, Dept: ${userProfile?.department}, Designation: ${userProfile?.designation}.
-Officer question: "${message}".
-Provide a concise, helpful 2-sentence response recommending courses or explaining competency protocols.`;
-
+            const prompt = `You are Bhashini AI on the MoSPI iGOT Portal. Officer: ${userProfile?.name}, Cadre: ${userProfile?.cadre}, Dept: ${userProfile?.department}, Designation: ${userProfile?.designation}. Question: "${message}". Give a helpful 2-sentence response advising them on courses to reduce their competency gap.`;
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             const data = await response.json();
-            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            return res.json({ reply });
+            return res.json({ reply: data.candidates?.[0]?.content?.parts?.[0]?.text });
         } catch (e) {}
     }
 
-    return res.json({
-        reply: `Namaste ${userProfile?.name || 'Officer'}! For ${userProfile?.department || 'your department'}, we recommend completing the 15 iGOT Karmayogi modules listed below and uploading your completion certificates.`
-    });
+    return res.json({ reply: `Namaste ${userProfile?.name || 'Officer'}! Complete your 15 tailored iGOT video modules below to raise your competency score above 0%.` });
 });
 
+// Update progress and increase competency scores
 app.post('/api/progress/save', async (req, res) => {
-    const { email, courseTitle, score, certificateUploaded } = req.body;
+    const { email, courseTitle, score, category } = req.body;
+    const cleanEmail = email.trim().toLowerCase();
+
     try {
         await supabase
             .from('user_course_progress')
             .upsert([{
-                user_email: email.trim().toLowerCase(),
+                user_email: cleanEmail,
                 course_title: courseTitle,
                 video_completed: true,
                 quiz_passed: score >= 60,
-                score: score || 100,
+                score: score,
                 completed_at: new Date()
             }], { onConflict: 'user_email,course_title' });
 
-        return res.json({ message: 'Progress saved successfully' });
+        // Increment user score across competency pillars
+        const { data: comp } = await supabase.from('officer_competencies').select('*').eq('user_email', cleanEmail).maybeSingle();
+        if (comp) {
+            await supabase.from('officer_competencies').update({
+                statistical_score: Math.min(100, (comp.statistical_score || 0) + 15),
+                technical_score: Math.min(100, (comp.technical_score || 0) + 15),
+                governance_score: Math.min(100, (comp.governance_score || 0) + 15),
+                leadership_score: Math.min(100, (comp.leadership_score || 0) + 15),
+                updated_at: new Date()
+            }).eq('user_email', cleanEmail);
+        }
+
+        return res.json({ message: 'Progress recorded' });
     } catch (err) {
         return res.status(500).json({ error: 'Save error' });
     }
@@ -204,20 +221,25 @@ app.post('/api/auth/register', async (req, res) => {
     if (!email || !password || !name || !cadre || !department || !designation) {
         return res.status(400).json({ error: 'All fields are required.' });
     }
+    const cleanEmail = email.trim().toLowerCase();
     try {
         const { data, error } = await supabase
             .from('employees')
-            .insert([{ 
-                name: name.trim(), 
-                email: email.trim().toLowerCase(), 
-                password: password, 
-                cadre: cadre.trim(), 
-                department: department.trim(), 
-                designation: designation.trim() 
-            }])
+            .insert([{ name: name.trim(), email: cleanEmail, password: password, cadre: cadre.trim(), department: department.trim(), designation: designation.trim() }])
             .select();
+
         if (error) return res.status(400).json({ error: error.message });
-        return res.status(201).json({ message: 'Employee registered successfully', user: data ? data[0] : req.body });
+
+        // Initialize 0% competency entry for new user
+        await supabase.from('officer_competencies').insert([{
+            user_email: cleanEmail,
+            statistical_score: 0,
+            technical_score: 0,
+            governance_score: 0,
+            leadership_score: 0
+        }]);
+
+        return res.status(201).json({ message: 'Registered successfully', user: data[0] });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
