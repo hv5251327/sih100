@@ -48,137 +48,84 @@ app.get('/api/competencies/:email', async (req, res) => {
     }
 });
 
-// Grounded RAG Recommendation Engine using Supabase Master Bank + Gemini Ranking
+// Fetch all videos from DB table and use Gemini to recommend the best matching set for the officer
 app.post('/api/recommendations', async (req, res) => {
     const { cadre, department, designation } = req.body;
 
-    if (!cadre || !department || !designation) {
-        return res.status(400).json({ error: 'Cadre, department, and designation are required.' });
-    }
-
     try {
-        // 1. Check if cached recommendations exist
-        const { data: cached } = await supabase
-            .from('recommended_courses')
-            .select('*')
-            .eq('cadre', cadre)
-            .eq('department', department)
-            .eq('designation', designation);
-
-        if (cached && cached.length >= 10) {
-            return res.json({ courses: cached, source: 'database' });
-        }
-
-        // 2. Fetch ground truth master course bank from Supabase
-        const { data: masterBank, error: bankErr } = await supabase
+        const { data: allDbVideos, error } = await supabase
             .from('master_courses')
             .select('*');
 
-        if (bankErr || !masterBank || masterBank.length === 0) {
-            return res.status(500).json({ error: 'Master course bank unavailable.' });
+        if (error || !allDbVideos || allDbVideos.length === 0) {
+            return res.status(500).json({ error: 'No videos found in master database table.' });
         }
 
-        // 3. Grounded Gemini Prompt (RAG)
-        const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-        let selectedCourses = [];
-
-        if (apiKey) {
-            const prompt = `You are the Director General of NSSTA (National Statistical Systems Training Academy), MoSPI.
-Analyse this officer profile:
+        if (GEMINI_API_KEY) {
+            try {
+                const prompt = `You are the NSSTA Training Director. Select and rank the most suitable videos from the database table for this officer:
+Officer Profile:
 - Cadre: ${cadre}
 - Department: ${department}
 - Designation: ${designation}
 
-From the verified NSSTA Master Course Bank below, select the most relevant courses and organize them into 3 stages:
-Stage 1: Foundation (Induction & Core Compliance)
-Stage 2: Functional Core (Direct Departmental Responsibilities)
-Stage 3: Advanced Strategic (Specialized Analytics & Leadership)
+AVAILABLE VIDEOS IN DATABASE:
+${JSON.stringify(allDbVideos.map(v => ({ id: v.id, code: v.course_code, title: v.title, category: v.category, target: v.target_division, desc: v.description })))}
 
-VERIFIED MASTER COURSE BANK:
-${JSON.stringify(masterBank.map(m => ({ code: m.course_code, title: m.title, category: m.category, target: m.target_division, diff: m.difficulty_level, desc: m.description })))}
-
-Select all applicable courses from the bank (at least 12-18 courses). For each selected course, explain the specific operational reason for this officer.
-
+Select all matching videos suited for this officer and classify each into: "Foundation", "Functional Core", or "Advanced Strategic".
 Return ONLY a valid JSON array of objects:
 [
   {
-    "course_code": "Exact Code from Bank",
-    "learning_stage": "Foundation | Functional Core | Advanced Strategic",
-    "custom_reason": "Specific operational rationale for this officer"
+    "id": video_id_from_db,
+    "learning_stage": "Foundation | Functional Core | Advanced Strategic"
   }
 ]`;
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                })
-            });
+                const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
 
-            const data = await response.json();
-            const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            const parsedRag = JSON.parse(rawContent);
+                const aiData = await aiRes.json();
+                const rankedList = JSON.parse(aiData.candidates[0].content.parts[0].text);
+                const dbMap = new Map(allDbVideos.map(v => [v.id, v]));
 
-            const bankMap = new Map(masterBank.map(m => [m.course_code, m]));
-            selectedCourses = parsedRag.map(item => {
-                const base = bankMap.get(item.course_code) || masterBank[0];
-                return {
-                    cadre,
-                    department,
-                    designation,
-                    course_code: base.course_code,
-                    title: base.title,
-                    category: base.category,
-                    difficulty_level: base.difficulty_level,
-                    learning_stage: item.learning_stage || 'Functional Core',
-                    description: item.custom_reason || base.description,
-                    video_url: base.video_url
-                };
-            });
-        } else {
-            // Fallback selection if API key is not configured
-            selectedCourses = masterBank.map(m => ({
-                cadre,
-                department,
-                designation,
-                course_code: m.course_code,
-                title: m.title,
-                category: m.category,
-                difficulty_level: m.difficulty_level,
-                learning_stage: m.difficulty_level === 'Foundation' ? 'Foundation' : (m.difficulty_level === 'Intermediate' ? 'Functional Core' : 'Advanced Strategic'),
-                description: m.description,
-                video_url: m.video_url
-            }));
+                const tailored = rankedList
+                    .filter(item => dbMap.has(item.id))
+                    .map(item => ({
+                        ...dbMap.get(item.id),
+                        learning_stage: item.learning_stage || 'Functional Core'
+                    }));
+
+                if (tailored.length > 0) {
+                    return res.json({ courses: tailored, source: 'db_ai_matched' });
+                }
+            } catch (aiErr) {
+                console.warn('AI ranking failed, falling back to direct DB return', aiErr);
+            }
         }
 
-        if (selectedCourses.length > 0) {
-            await supabase.from('recommended_courses').insert(selectedCourses);
-        }
+        const fallback = allDbVideos.map(v => ({
+            ...v,
+            learning_stage: v.difficulty_level === 'Foundation' ? 'Foundation' : (v.difficulty_level === 'Intermediate' ? 'Functional Core' : 'Advanced Strategic')
+        }));
 
-        return res.json({ courses: selectedCourses, source: 'rag_ai_grounded' });
+        return res.json({ courses: fallback, source: 'db_direct' });
     } catch (err) {
-        console.error('RAG Error:', err);
-        return res.status(500).json({ error: 'Recommendation generation failed.' });
+        return res.status(500).json({ error: 'Failed to recommend videos from DB.' });
     }
 });
 
-// Dynamic AI Assessment Quiz Generator
 app.post('/api/generate-quiz', async (req, res) => {
     const { courseTitle, category } = req.body;
-    const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-
     try {
-        const prompt = `Generate a 3-question multiple choice competency evaluation for the course: "${courseTitle}" (${category}). Return ONLY valid JSON:
-[
-  {
-    "question": "Question text?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctIndex": 0
-  }
-]`;
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        const prompt = `Generate a 3-question MCQ competency evaluation for course: "${courseTitle}" (${category}). Return ONLY valid JSON:
+[{"question":"...","options":["A","B","C","D"],"correctIndex":0}]`;
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -187,28 +134,24 @@ app.post('/api/generate-quiz', async (req, res) => {
             })
         });
         const data = await response.json();
-        const quiz = JSON.parse(data.candidates[0].content.parts[0].text);
-        return res.json({ quiz });
+        return res.json({ quiz: JSON.parse(data.candidates[0].content.parts[0].text) });
     } catch (err) {
         return res.json({
             quiz: [
-                { question: `What is the core regulatory objective of ${courseTitle}?`, options: ["Standard operational compliance and data integrity", "Manual log keeping", "Unregulated survey sampling", "Exemption from statutory audits"], correctIndex: 0 },
-                { question: "How are compliance milestones tracked on the MoSPI portal?", options: ["Automated digital validation", "Informal verbal updates", "Paper registers only", "No verification required"], correctIndex: 0 },
-                { question: "Which framework governs official statistical disclosures?", options: ["MoSPI Data Policy & DPDP Act", "Generic public rules", "Unverified guidelines", "Informal directives"], correctIndex: 0 }
+                { question: `What is the key regulatory protocol taught in ${courseTitle}?`, options: ["Ensuring standard operational compliance and data integrity", "Manual log keeping", "Unregulated sampling", "Exemption from statutory audits"], correctIndex: 0 },
+                { question: "How are compliance milestones tracked on the MoSPI portal?", options: ["Automated digital submission & validation", "Informal verbal updates", "Paper registers only", "No verification required"], correctIndex: 0 },
+                { question: "Which framework governs official statistical disclosures?", options: ["MoSPI Data Policy & DPDP Act", "Generic public domain rules", "Unverified guidelines", "Local administrative orders only"], correctIndex: 0 }
             ]
         });
     }
 });
 
-// Chatbot Endpoint
 app.post('/api/chatbot', async (req, res) => {
     const { message, userProfile } = req.body;
-    const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-
-    if (apiKey) {
+    if (GEMINI_API_KEY) {
         try {
-            const prompt = `You are Bhashini AI on the MoSPI iGOT Portal. Officer: ${userProfile?.name}, Cadre: ${userProfile?.cadre}, Dept: ${userProfile?.department}, Designation: ${userProfile?.designation}. Question: "${message}". Give a helpful 2-sentence response guiding them through their Foundation, Functional Core, and Advanced Strategic NSSTA modules.`;
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            const prompt = `You are Bhashini AI on MoSPI Portal. Officer: ${userProfile?.name}, Dept: ${userProfile?.department}, Designation: ${userProfile?.designation}. Question: "${message}". Reply concisely in 2 sentences recommending database modules.`;
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -217,15 +160,12 @@ app.post('/api/chatbot', async (req, res) => {
             return res.json({ reply: data.candidates?.[0]?.content?.parts?.[0]?.text });
         } catch (e) {}
     }
-
-    return res.json({ reply: `Namaste ${userProfile?.name || 'Officer'}! Follow your 3-stage learning roadmap below to build role competencies from 0% to 100%.` });
+    return res.json({ reply: `Namaste ${userProfile?.name || 'Officer'}! Complete your assigned database training courses below to eliminate competency deficits.` });
 });
 
-// Update progress and increment competency scores
 app.post('/api/progress/save', async (req, res) => {
     const { email, courseTitle, score } = req.body;
     const cleanEmail = email.trim().toLowerCase();
-
     try {
         await supabase
             .from('user_course_progress')
@@ -248,7 +188,6 @@ app.post('/api/progress/save', async (req, res) => {
                 updated_at: new Date()
             }).eq('user_email', cleanEmail);
         }
-
         return res.json({ message: 'Progress recorded' });
     } catch (err) {
         return res.status(500).json({ error: 'Save error' });
@@ -266,17 +205,8 @@ app.post('/api/auth/register', async (req, res) => {
             .from('employees')
             .insert([{ name: name.trim(), email: cleanEmail, password: password, cadre: cadre.trim(), department: department.trim(), designation: designation.trim() }])
             .select();
-
         if (error) return res.status(400).json({ error: error.message });
-
-        await supabase.from('officer_competencies').insert([{
-            user_email: cleanEmail,
-            statistical_score: 0,
-            technical_score: 0,
-            governance_score: 0,
-            leadership_score: 0
-        }]);
-
+        await supabase.from('officer_competencies').insert([{ user_email: cleanEmail, statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0 }]);
         return res.status(201).json({ message: 'Registered successfully', user: data[0] });
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -293,9 +223,7 @@ app.post('/api/auth/login', async (req, res) => {
             .ilike('email', email.trim().toLowerCase())
             .maybeSingle();
 
-        if (error || !data || data.password !== password) {
-            return res.status(401).json({ error: 'Invalid email or password.' });
-        }
+        if (error || !data || data.password !== password) return res.status(401).json({ error: 'Invalid email or password.' });
         const { password: _, ...userProfile } = data;
         return res.json({ message: 'Authentication successful', user: userProfile });
     } catch (err) {
