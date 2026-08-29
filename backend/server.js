@@ -19,44 +19,16 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Backend Active', timestamp: new Date() });
 });
 
-app.post('/api/translate', async (req, res) => {
-    const { texts, targetLang } = req.body;
-    if (!texts || !Array.isArray(texts) || !targetLang) {
-        return res.status(400).json({ error: 'texts array and targetLang are required' });
-    }
-
-    const langNames = {
-        hi: 'Hindi',
-        te: 'Telugu',
-        ta: 'Tamil',
-        bn: 'Bengali',
-        en: 'English'
-    };
-
-    const targetLangName = langNames[targetLang] || targetLang;
-    const prompt = `Translate the following array of short UI strings accurately into ${targetLangName}. Preserve any technical MoSPI/statistical terms naturally. Return ONLY a valid JSON array of strings in the exact same order:\n\n${JSON.stringify(texts)}`;
-
+app.get('/api/metadata', async (req, res) => {
     try {
-        const apiKey = GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                    responseMimeType: "application/json"
-                }
-            })
-        });
-
-        const data = await response.json();
-        const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        const translations = JSON.parse(rawContent);
-
-        return res.json({ translations });
+        const { data, error } = await supabase
+            .from('mospi_metadata')
+            .select('cadre, department_code, department_name, designation')
+            .order('id');
+        if (error) return res.status(500).json({ error: error.message });
+        return res.json(data);
     } catch (err) {
-        console.error('Gemini Translation Error:', err);
-        return res.status(500).json({ error: 'Translation processing failed', fallback: texts });
+        return res.status(500).json({ error: 'Failed to fetch metadata' });
     }
 });
 
@@ -80,9 +52,7 @@ app.post('/api/auth/register', async (req, res) => {
             }])
             .select();
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
+        if (error) return res.status(400).json({ error: error.message });
 
         return res.status(201).json({
             message: 'Employee registered successfully',
