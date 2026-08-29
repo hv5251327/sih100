@@ -27,10 +27,18 @@ app.post('/api/auth/register', async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('employees')
-            .insert([{ name, email, password, cadre, department, designation }])
+            .insert([{ 
+                name: name.trim(), 
+                email: email.trim().toLowerCase(), 
+                password: password, 
+                cadre: cadre.trim(), 
+                department: department.trim(), 
+                designation: designation.trim() 
+            }])
             .select();
 
         if (error) {
+            console.error('Supabase Register Error:', error);
             return res.status(400).json({ error: error.message });
         }
 
@@ -39,7 +47,8 @@ app.post('/api/auth/register', async (req, res) => {
             user: data ? data[0] : { name, email, cadre, department, designation }
         });
     } catch (err) {
-        return res.status(500).json({ error: err.message || 'Internal server error while saving record' });
+        console.error('Server Catch Register Error:', err);
+        return res.status(500).json({ error: err.message || 'Internal server error' });
     }
 });
 
@@ -50,24 +59,38 @@ app.post('/api/auth/login', async (req, res) => {
         return res.status(400).json({ error: 'Email and password are required.' });
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+
     try {
+        // Find employee by email
         const { data, error } = await supabase
             .from('employees')
-            .select('id, name, email, cadre, department, designation')
-            .eq('email', email)
-            .eq('password', password)
+            .select('id, name, email, password, cadre, department, designation')
+            .ilike('email', cleanEmail)
             .maybeSingle();
 
-        if (error || !data) {
-            return res.status(401).json({ error: 'Invalid email or password. Please check your credentials.' });
+        if (error) {
+            console.error('Supabase Login Query Error:', error);
+            return res.status(500).json({ error: 'Database query error: ' + error.message });
         }
 
+        if (!data) {
+            return res.status(401).json({ error: 'No user account found with email: ' + cleanEmail });
+        }
+
+        if (data.password !== password) {
+            return res.status(401).json({ error: 'Incorrect password entered.' });
+        }
+
+        // Return user profile omitting plain text password
+        const { password: _, ...userProfile } = data;
         return res.json({
             message: 'Authentication successful',
-            user: data
+            user: userProfile
         });
     } catch (err) {
-        return res.status(500).json({ error: 'Database connection failed during login.' });
+        console.error('Catch Login Error:', err);
+        return res.status(500).json({ error: 'Internal server error: ' + err.message });
     }
 });
 
