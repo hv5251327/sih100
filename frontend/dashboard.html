@@ -52,7 +52,6 @@
     .detail-item span { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; }
     .detail-item p { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
 
-    /* Restored Areas Needing Competency Improvement */
     .pillars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
     .pillar-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
     .pillar-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; }
@@ -60,7 +59,6 @@
     .progress-bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s ease; }
     .gap-text { font-size: 0.75rem; color: var(--warning); font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
 
-    /* iGOT Video Module Cards */
     .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
     .module-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.04); }
     .igot-banner { background: linear-gradient(135deg, #1e3a8a, #0284c7); padding: 16px 18px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; }
@@ -78,7 +76,6 @@
     .btn-quiz { background: var(--primary); color: #fff; }
     .btn-quiz:hover { background: var(--primary-hover); }
 
-    /* Assistant Widget */
     .bhashini-widget { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
     .bhashini-panel { background: #fff; border: 1px solid var(--border); border-radius: 12px; width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); display: none; flex-direction: column; overflow: hidden; }
     .bhashini-header { background: var(--primary); color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; }
@@ -92,7 +89,6 @@
     .btn-send { width: 36px; height: 36px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer; }
     .bhashini-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 1.4rem; box-shadow: 0 4px 14px rgba(30,58,138,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-    /* Modals */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
     .modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 520px; padding: 24px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
@@ -139,7 +135,6 @@
 
   <div class="container">
     
-    <!-- Profile Panel -->
     <section class="dashboard-panel">
       <div class="panel-header">
         <div class="panel-header-left">
@@ -156,7 +151,6 @@
       </div>
     </section>
 
-    <!-- Restored Competency Tracker with 0% initialization -->
     <section class="dashboard-panel">
       <div class="panel-header">
         <div class="panel-header-left">
@@ -188,14 +182,13 @@
       </div>
     </section>
 
-    <!-- AI-Curated iGOT Modules -->
     <section class="dashboard-panel">
       <div class="panel-header">
         <div class="panel-header-left">
           <i class="fa-solid fa-graduation-cap"></i>
-          <h2>AI-Curated NSSTA & iGOT Karmayogi Recommended Video Courses (15 Modules)</h2>
+          <h2>Comprehensive NSSTA & iGOT Karmayogi Curriculum Roadmap</h2>
         </div>
-        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Generating 15 custom modules...</span>
+        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Generating tailored NSSTA curriculum...</span>
       </div>
       <div class="modules-grid" id="dynamic-modules-container"></div>
     </section>
@@ -210,7 +203,7 @@
         <button onclick="toggleBhashini()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="bhashini-chat-log" id="bhashini-chat-log">
-        <div class="chat-msg bot">Namaste! Ask me anything about your 15 iGOT training courses, deficit areas, or speak via the mic.</div>
+        <div class="chat-msg bot">Namaste! Ask me anything about your NSSTA training roadmap, competency deficits, or speak via the mic.</div>
       </div>
       <div class="bhashini-input-row">
         <input type="text" id="bhashini-input" placeholder="Ask Bhashini AI..." onkeydown="if(event.key==='Enter') sendChatMessage()">
@@ -241,7 +234,7 @@
         <h3 id="quiz-modal-title">Competency Assessment</h3>
         <button class="modal-close" onclick="closeModal('quiz-modal')">&times;</button>
       </div>
-      <p style="font-size:0.85rem; color:var(--text-muted);">Complete this 3-question evaluation to credit this iGOT course toward your profile.</p>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Complete this 3-question evaluation to credit this course toward your profile.</p>
       <div id="quiz-questions-body" style="display:flex; flex-direction:column; gap:14px;"></div>
       <button class="btn-action btn-quiz" style="padding:10px;" id="quiz-submit-action" onclick="submitAssessment()">Submit Assessment & Record Credit</button>
     </div>
@@ -252,7 +245,6 @@
     let currentUser = null;
     let activeQuizData = [];
     let currentActiveCourse = "";
-    let currentActiveCategory = "";
 
     document.addEventListener("DOMContentLoaded", async () => {
       const stored = localStorage.getItem('mospi_user');
@@ -323,18 +315,18 @@
         const data = await res.json();
         const courses = data.courses || [];
 
-        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> 15 iGOT Video Modules Active (${data.source === 'database' ? 'DB Cached' : 'AI Generated'})`;
+        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${courses.length} NSSTA / iGOT Modules Active (${data.source === 'database' ? 'DB Cached' : 'AI Generated'})`;
 
         container.innerHTML = courses.map((course, idx) => `
           <div class="module-card">
             <div class="igot-banner">
-              <span style="font-weight:800; font-size:0.9rem;"><i class="fa-solid fa-circle-play"></i> Module ${idx + 1}</span>
-              <span class="igot-tag">iGOT Karmayogi</span>
+              <span style="font-weight:800; font-size:0.9rem;"><i class="fa-solid fa-graduation-cap"></i> Course ${idx + 1}</span>
+              <span class="igot-tag">NSSTA / iGOT</span>
             </div>
             <div class="module-body">
-              <span class="module-badge">${course.category || 'Competency Core'}</span>
+              <span class="module-badge">${course.category || 'Core Methodology'}</span>
               <div class="module-title">${course.title}</div>
-              <div class="module-desc">${course.description || 'Custom statutory & technical course for this designation.'}</div>
+              <div class="module-desc">${course.description || 'Statutory training module customized for your designation.'}</div>
               <div class="module-actions">
                 <a href="${course.video_url || 'https://portal.igotkarmayogi.gov.in'}" target="_blank" class="btn-action btn-open"><i class="fa-solid fa-video"></i> Watch Video</a>
                 <button class="btn-action btn-cert" onclick="openCertModal('${encodeURIComponent(course.title)}')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
@@ -383,7 +375,6 @@
       const title = decodeURIComponent(titleEnc);
       const cat = decodeURIComponent(catEnc);
       currentActiveCourse = title;
-      currentActiveCategory = cat;
 
       document.getElementById("quiz-modal-title").innerText = `Assessment: ${title}`;
       const questionsBody = document.getElementById("quiz-questions-body");
@@ -443,8 +434,7 @@
           body: JSON.stringify({
             email: currentUser.email,
             courseTitle: currentActiveCourse,
-            score: finalPercentage,
-            category: currentActiveCategory
+            score: finalPercentage
           })
         });
 
@@ -485,9 +475,9 @@
           body: JSON.stringify({ message: q, userProfile: currentUser })
         });
         const data = await res.json();
-        appendChatMessage(data.reply || "I am here to help you navigate your MoSPI training roadmap.", "bot");
+        appendChatMessage(data.reply || "I am here to help you navigate your NSSTA training roadmap.", "bot");
       } catch (e) {
-        appendChatMessage("Bhashini AI: Complete your recommended iGOT courses below to reduce your competency gaps.", "bot");
+        appendChatMessage("Bhashini AI: Complete your recommended NSSTA courses below to reduce your competency gaps.", "bot");
       }
     }
 
