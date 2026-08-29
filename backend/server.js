@@ -48,57 +48,47 @@ app.get('/api/competencies/:email', async (req, res) => {
     }
 });
 
-// Helper: Extract Department Acronym (e.g. 'IPMD' from 'Infrastructure & Project Monitoring Division (IPMD)')
 function parseDeptCode(deptStr) {
     if (!deptStr) return 'ALL';
     const match = deptStr.match(/\(([^)]+)\)/);
     return match ? match[1].trim() : deptStr.trim();
 }
 
-// Intelligent Semantic Course Recommendation over Entire Database Bank
 app.post('/api/recommendations', async (req, res) => {
-    const { cadre, department, designation } = req.body;
+    const { department, cadre, designation } = req.body;
     const deptCode = parseDeptCode(department);
 
     try {
-        // 1. Retrieve all active courses from Supabase database
-        const { data: allCourses, error: dbErr } = await supabase
+        const { data: allCourses, error } = await supabase
             .from('master_courses')
             .select('*')
             .order('id');
 
-        if (dbErr || !allCourses || allCourses.length === 0) {
-            return res.status(500).json({ error: 'No course catalog found in database.' });
+        if (error || !allCourses || allCourses.length === 0) {
+            return res.status(500).json({ error: 'Master courses table is empty.' });
         }
 
-        // 2. Extract Mandatory Foundation Courses (Present for all officers)
-        const mandatoryList = allCourses.filter(c => c.is_mandatory_core === true);
-        const nonMandatoryPool = allCourses.filter(c => c.is_mandatory_core !== true);
+        // 1. All officers get the general mandatory foundational courses
+        const mandatoryFoundation = allCourses
+            .filter(c => c.is_general_mandatory === true)
+            .map(c => ({ ...c, learning_stage: 'Foundation' }));
 
-        let rankedDomainCourses = [];
+        // 2. Department-specific and relevant advanced courses from DB
+        const domainPool = allCourses.filter(c => c.is_general_mandatory !== true);
 
-        // 3. AI Semantic Relevance Matching across remaining DB courses
+        let domainCourses = [];
+
         if (GEMINI_API_KEY) {
             try {
-                const prompt = `You are the AI Chief Learning Officer for MoSPI / NSSTA.
-Officer Profile:
-- Cadre: ${cadre}
-- Department: ${department} (Code: ${deptCode})
-- Designation: ${designation}
+                const prompt = `You are the NSSTA Training Director.
+Officer: Cadre: ${cadre}, Department: ${department} (${deptCode}), Designation: ${designation}.
 
-AVAILABLE COURSES IN DATABASE:
-${JSON.stringify(nonMandatoryPool.map(c => ({ id: c.id, code: c.course_code, title: c.title, domain: c.domain, tags: c.competency_tags, target: c.target_divisions, desc: c.description })))}
+Select the most relevant domain courses from this list:
+${JSON.stringify(domainPool.map(c => ({ id: c.id, code: c.course_code, title: c.title, domain: c.domain, target: c.target_departments, desc: c.description })))}
 
-Select the most relevant courses from the above database pool that directly support this officer's domain tasks and technical growth.
-Assign each selected course a structured stage: "Functional Core" (Direct job alignment) or "Advanced Strategic" (Advanced modeling/leadership).
-Return ONLY a valid JSON array of objects:
-[
-  {
-    "id": course_id,
-    "learning_stage": "Functional Core | Advanced Strategic",
-    "rationale": "1-sentence direct job reason why this officer needs this course"
-  }
-]`;
+Assign each selected course to either "Functional Core" or "Advanced Strategic".
+Return ONLY a valid JSON array:
+[{"id": course_id, "learning_stage": "Functional Core | Advanced Strategic"}]`;
 
                 const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
@@ -110,60 +100,41 @@ Return ONLY a valid JSON array of objects:
                 });
 
                 const aiData = await aiRes.json();
-                const aiRankings = JSON.parse(aiData.candidates[0].content.parts[0].text);
-                const poolMap = new Map(nonMandatoryPool.map(c => [c.id, c]));
+                const aiSelections = JSON.parse(aiData.candidates[0].content.parts[0].text);
+                const poolMap = new Map(domainPool.map(c => [c.id, c]));
 
-                rankedDomainCourses = aiRankings
+                domainCourses = aiSelections
                     .filter(item => poolMap.has(item.id))
-                    .map(item => {
-                        const base = poolMap.get(item.id);
-                        return {
-                            ...base,
-                            learning_stage: item.learning_stage || 'Functional Core',
-                            description: item.rationale || base.description
-                        };
-                    });
-            } catch (aiErr) {
-                console.warn('AI ranking fallback to deterministic matching:', aiErr);
+                    .map(item => ({
+                        ...poolMap.get(item.id),
+                        learning_stage: item.learning_stage || 'Functional Core'
+                    }));
+            } catch (e) {
+                console.warn('AI ranking fallback to direct match');
             }
         }
 
-        // Fallback if AI is unconfigured or failed: deterministic department matching
-        if (rankedDomainCourses.length === 0) {
-            rankedDomainCourses = nonMandatoryPool.map(c => {
-                const isDirectDept = c.target_divisions.includes(deptCode);
-                return {
+        if (domainCourses.length === 0) {
+            domainCourses = domainPool
+                .filter(c => c.target_departments.includes('ALL') || c.target_departments.includes(deptCode))
+                .map(c => ({
                     ...c,
-                    learning_stage: isDirectDept ? 'Functional Core' : (c.difficulty_level === 'Advanced' ? 'Advanced Strategic' : 'Functional Core')
-                };
-            });
+                    learning_stage: c.target_departments.includes(deptCode) ? 'Functional Core' : 'Advanced Strategic'
+                }));
         }
 
-        // 4. Combine Mandatory Foundation with Ranked Domain Courses
-        const formattedMandatory = mandatoryList.map(c => ({
-            ...c,
-            learning_stage: 'Foundation'
-        }));
-
-        const finalSyllabus = [...formattedMandatory, ...rankedDomainCourses];
-
-        return res.json({
-            courses: finalSyllabus,
-            source: 'db_intelligent_recommendation',
-            total: finalSyllabus.length
-        });
+        const combined = [...mandatoryFoundation, ...domainCourses];
+        return res.json({ courses: combined, source: 'database_recommended' });
     } catch (err) {
-        console.error('Course recommendation error:', err);
-        return res.status(500).json({ error: 'Failed to generate recommendations.' });
+        return res.status(500).json({ error: 'Failed to recommend courses' });
     }
 });
 
-// Dynamic AI MCQ Evaluation Generator
 app.post('/api/generate-quiz', async (req, res) => {
     const { courseTitle, category } = req.body;
     try {
-        const prompt = `Generate a 3-question multiple choice competency assessment for MoSPI officers on: "${courseTitle}" (${category}). Return ONLY valid JSON array:
-[{"question":"...","options":["Option A","Option B","Option C","Option D"],"correctIndex":0}]`;
+        const prompt = `Generate 3 multiple choice questions for course: "${courseTitle}" (${category}). Return ONLY valid JSON:
+[{"question":"Question text?","options":["A","B","C","D"],"correctIndex":0}]`;
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -177,20 +148,19 @@ app.post('/api/generate-quiz', async (req, res) => {
     } catch (err) {
         return res.json({
             quiz: [
-                { question: `What is the key regulatory protocol taught in ${courseTitle}?`, options: ["Ensuring statutory compliance and statistical reliability", "Manual ledger management", "Unregulated survey sampling", "Exemption from statutory audits"], correctIndex: 0 },
-                { question: "How are compliance milestones tracked on the MoSPI portal?", options: ["Automated digital submission & validation", "Informal verbal updates", "Paper registers only", "No verification required"], correctIndex: 0 },
-                { question: "Which framework governs official data disclosures and respondent privacy?", options: ["MoSPI Data Policy & DPDP Act 2023", "Generic social media rules", "Unverified guidelines", "Local administrative orders only"], correctIndex: 0 }
+                { question: `What is the core regulatory objective of ${courseTitle}?`, options: ["Standard statutory compliance and data integrity", "Manual log keeping", "Unregulated survey sampling", "Exemption from audits"], correctIndex: 0 },
+                { question: "How are compliance milestones verified on the portal?", options: ["Automated digital submission & validation", "Informal verbal updates", "Paper registers only", "No verification"], correctIndex: 0 },
+                { question: "Which framework governs data processing and security?", options: ["MoSPI Data Policy & DPDP Act 2023", "Generic social media rules", "Unverified guidelines", "Local informal orders"], correctIndex: 0 }
             ]
         });
     }
 });
 
-// Bhashini AI Chatbot
 app.post('/api/chatbot', async (req, res) => {
     const { message, userProfile } = req.body;
     if (GEMINI_API_KEY) {
         try {
-            const prompt = `You are Bhashini AI on the MoSPI Skill Intelligence Portal. Officer: ${userProfile?.name}, Cadre: ${userProfile?.cadre}, Dept: ${userProfile?.department}, Designation: ${userProfile?.designation}. Question: "${message}". Give a helpful 2-sentence response explaining how completing their Foundation, Functional Core, and Advanced Strategic modules will bridge their competency gaps.`;
+            const prompt = `You are Bhashini AI on the MoSPI Portal. Officer: ${userProfile?.name}, Dept: ${userProfile?.department}. Question: "${message}". Reply concisely in 2 sentences recommending their Foundation and Functional courses.`;
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -203,7 +173,6 @@ app.post('/api/chatbot', async (req, res) => {
     return res.json({ reply: `Namaste ${userProfile?.name || 'Officer'}! Complete your mandatory Foundation modules and departmental Functional Core courses below to bridge your competency gap.` });
 });
 
-// Record Assessment & Update Pillar Scores
 app.post('/api/progress/save', async (req, res) => {
     const { email, courseTitle, score } = req.body;
     const cleanEmail = email.trim().toLowerCase();

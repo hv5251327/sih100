@@ -59,7 +59,6 @@
     .progress-bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s ease; }
     .gap-text { font-size: 0.75rem; color: var(--warning); font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
 
-    /* Staged Learning Path Styles */
     .stage-section-title { font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 20px 0 12px 0; display: flex; align-items: center; gap: 8px; }
     .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
     .module-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.04); }
@@ -192,14 +191,13 @@
           <i class="fa-solid fa-graduation-cap"></i>
           <h2>AI-Curated NSSTA Roadmap (Foundation → Functional Core → Advanced Strategic)</h2>
         </div>
-        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Grounding recommendations via Master Bank...</span>
+        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Fetching recommended courses...</span>
       </div>
       <div id="dynamic-modules-container"></div>
     </section>
 
   </div>
 
-  <!-- Bhashini Widget -->
   <div class="bhashini-widget">
     <div class="bhashini-panel" id="bhashini-panel">
       <div class="bhashini-header">
@@ -207,7 +205,7 @@
         <button onclick="toggleBhashini()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="bhashini-chat-log" id="bhashini-chat-log">
-        <div class="chat-msg bot">Namaste! Ask me anything about your 3-stage NSSTA training roadmap, competency deficits, or speak via the mic.</div>
+        <div class="chat-msg bot">Namaste! Ask me anything about your training courses, competency deficits, or speak via the mic.</div>
       </div>
       <div class="bhashini-input-row">
         <input type="text" id="bhashini-input" placeholder="Ask Bhashini AI..." onkeydown="if(event.key==='Enter') sendChatMessage()">
@@ -218,7 +216,6 @@
     <button class="bhashini-btn" onclick="toggleBhashini()" title="Open Bhashini AI"><i class="fa-solid fa-headset"></i></button>
   </div>
 
-  <!-- Certificate Modal -->
   <div class="modal-backdrop" id="cert-modal">
     <div class="modal-box">
       <div class="modal-header">
@@ -231,7 +228,6 @@
     </div>
   </div>
 
-  <!-- Quiz Modal -->
   <div class="modal-backdrop" id="quiz-modal">
     <div class="modal-box">
       <div class="modal-header">
@@ -319,7 +315,7 @@
         const data = await res.json();
         const courses = data.courses || [];
 
-        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${courses.length} Grounded Modules Active (${data.source === 'database' ? 'DB Cached' : 'RAG Grounded'})`;
+        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${courses.length} Modules Recommended (Database Grounded)`;
 
         const stages = ['Foundation', 'Functional Core', 'Advanced Strategic'];
         let htmlContent = '';
@@ -330,7 +326,7 @@
             htmlContent += `
               <div class="stage-section-title"><i class="fa-solid fa-layer-group"></i> Stage: ${stageName} (${stageCourses.length} Modules)</div>
               <div class="modules-grid">
-                ${stageCourses.map((course, idx) => `
+                ${stageCourses.map((course) => `
                   <div class="module-card">
                     <div class="igot-banner">
                       <span style="font-weight:800; font-size:0.9rem;"><i class="fa-solid fa-graduation-cap"></i> ${course.course_code || 'NSSTA-MOD'}</span>
@@ -338,7 +334,7 @@
                     </div>
                     <div class="module-body">
                       <div class="badge-row">
-                        <span class="module-badge">${course.category || 'Core Methodology'}</span>
+                        <span class="module-badge">${course.domain || 'Core Methodology'}</span>
                         <span class="stage-badge">${course.difficulty_level || stageName}</span>
                       </div>
                       <div class="module-title">${course.title}</div>
@@ -346,7 +342,7 @@
                       <div class="module-actions">
                         <a href="${course.video_url || 'https://portal.igotkarmayogi.gov.in'}" target="_blank" class="btn-action btn-open"><i class="fa-solid fa-video"></i> Watch Video</a>
                         <button class="btn-action btn-cert" onclick="openCertModal('${encodeURIComponent(course.title)}')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
-                        <button class="btn-action btn-quiz" onclick="launchAssessment('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.category)}')"><i class="fa-solid fa-list-check"></i> Quiz</button>
+                        <button class="btn-action btn-quiz" onclick="launchAssessment('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.domain)}')"><i class="fa-solid fa-list-check"></i> Quiz</button>
                       </div>
                     </div>
                   </div>
