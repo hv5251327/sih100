@@ -21,22 +21,17 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 90px; top: 0px !important; position: static !important; }
 
-    /* Completely suppress Google Translate banner, toolbar, logos, and frame popups */
-    .goog-te-banner-frame, .goog-te-banner-frame.skiptranslate, iframe[id=":1.container"], iframe[id=":2.container"], .VIpgJd-ZVi9od-OR9QNe-Oxf5td, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf, .goog-tooltip, .goog-tooltip:hover { display: none !important; visibility: hidden !important; height: 0 !important; width: 0 !important; }
+    .goog-te-banner-frame, .goog-te-banner-frame.skiptranslate, iframe[id=":1.container"], iframe[id=":2.container"], .VIpgJd-ZVi9od-OR9QNe-Oxf5td, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf, .goog-tooltip { display: none !important; visibility: hidden !important; }
     body > .skiptranslate { display: none !important; }
-    #goog-gt-tt { display: none !important; visibility: hidden !important; }
-    .goog-text-highlight { background: none !important; box-shadow: none !important; }
+    #goog-gt-tt { display: none !important; }
     #google_translate_element { display: none !important; }
 
-    /* Top Navbar */
     .navbar { background: #fff; border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
     .nav-brand { display: flex; align-items: center; gap: 12px; }
     .nav-brand i { font-size: 1.5rem; color: var(--primary); }
     .nav-brand h1 { font-size: 1.1rem; font-weight: 800; color: var(--primary); }
     
     .nav-controls { display: flex; align-items: center; gap: 14px; }
-    
-    /* Clean Custom Bhashini Dropdown */
     .bhashini-dropdown-wrapper { display: flex; align-items: center; gap: 8px; background: #eff6ff; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 8px; }
     .bhashini-dropdown-wrapper i { color: var(--primary); font-size: 0.95rem; }
     .bhashini-select-custom { border: none; background: transparent; font-size: 0.85rem; font-weight: 700; color: var(--primary); outline: none; cursor: pointer; }
@@ -44,12 +39,11 @@
     .user-pill { display: flex; align-items: center; gap: 10px; font-size: 0.875rem; background: #f1f5f9; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); }
     .logout-btn { background: none; border: none; color: #dc2626; cursor: pointer; font-weight: 700; margin-left: 8px; display: flex; align-items: center; gap: 4px; }
 
-    /* Layout */
-    .container { max-width: 1240px; margin: 24px auto; padding: 0 20px; width: 100%; display: flex; flex-direction: column; gap: 24px; flex: 1; }
+    .container { max-width: 1280px; margin: 24px auto; padding: 0 20px; width: 100%; display: flex; flex-direction: column; gap: 24px; flex: 1; }
 
-    /* Dashboard Panels */
     .dashboard-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-    .panel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .panel-header-left { display: flex; align-items: center; gap: 10px; }
     .panel-header i { font-size: 1.25rem; color: var(--primary); }
     .panel-header h2 { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
 
@@ -58,14 +52,7 @@
     .detail-item span { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; }
     .detail-item p { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
 
-    .pillars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-    .pillar-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-    .pillar-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; }
-    .progress-bar-bg { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; }
-    .gap-text { font-size: 0.75rem; color: var(--warning); font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
-
-    .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 20px; }
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
     .module-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
     .video-container { position: relative; padding-bottom: 56.25%; height: 0; background: #000; }
     .video-container iframe { position: absolute; top:0; left: 0; width: 100%; height: 100%; border: 0; }
@@ -76,47 +63,25 @@
     .module-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .btn-action { padding: 8px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-cert { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); }
-    .btn-cert:hover { background: #e2e8f0; }
     .btn-quiz { background: var(--primary); color: #fff; }
     .btn-quiz:hover { background: var(--primary-hover); }
 
-    /* Assistant Widget */
-    .bhashini-widget { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
-    .bhashini-panel { background: #fff; border: 1px solid var(--border); border-radius: 12px; width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); display: none; flex-direction: column; overflow: hidden; }
-    .bhashini-header { background: var(--primary); color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; }
-    .bhashini-chat-log { max-height: 240px; min-height: 140px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; background: #f8fafc; }
-    .chat-msg { padding: 8px 12px; border-radius: 8px; max-width: 85%; }
-    .chat-msg.bot { background: #e2e8f0; color: var(--text-main); align-self: flex-start; }
-    .chat-msg.user { background: var(--accent); color: #fff; align-self: flex-end; }
-    .bhashini-input-row { display: flex; gap: 6px; padding: 10px; background: #fff; border-top: 1px solid var(--border); }
-    .bhashini-input-row input { flex: 1; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; outline: none; }
-    .btn-mic { width: 36px; height: 36px; border-radius: 6px; background: #ef4444; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .btn-send { width: 36px; height: 36px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer; }
-    .bhashini-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 1.4rem; box-shadow: 0 4px 14px rgba(30,58,138,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-    /* Modals */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
-    .modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 500px; padding: 24px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 520px; padding: 24px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
     .modal-header h3 { font-size: 1.1rem; color: var(--primary); }
     .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
   </style>
 
-  <!-- Google Translate Headless Engine -->
   <script type="text/javascript">
     function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'hi,te,ta,bn,mr,gu,kn,ml,pa,ur,en',
-        autoDisplay: false
-      }, 'google_translate_element');
+      new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
     }
   </script>
   <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
 
-  <!-- Hidden Mount Point for Translation Engine -->
   <div id="google_translate_element" style="display:none;"></div>
 
   <nav class="navbar">
@@ -125,10 +90,9 @@
       <h1>MoSPI iGOT Karmayogi Competency Hub</h1>
     </div>
     <div class="nav-controls">
-      <!-- Clean Bhashini Header Dropdown -->
       <div class="bhashini-dropdown-wrapper">
         <i class="fa-solid fa-language"></i>
-        <select class="bhashini-select-custom" id="bhashini-lang-picker" onchange="triggerBhashiniTranslate(this.value)">
+        <select class="bhashini-select-custom" onchange="triggerBhashiniTranslate(this.value)">
           <option value="en">🌐 English</option>
           <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
           <option value="te">🇮🇳 తెలుగు (Telugu)</option>
@@ -136,10 +100,6 @@
           <option value="bn">🇮🇳 বাংলা (Bengali)</option>
           <option value="gu">🇮🇳 ગુજરાતી (Gujarati)</option>
           <option value="mr">🇮🇳 मराठी (Marathi)</option>
-          <option value="kn">🇮🇳 ಕನ್ನಡ (Kannada)</option>
-          <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
-          <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
-          <option value="ur">🇮🇳 اردو (Urdu)</option>
         </select>
       </div>
 
@@ -154,318 +114,205 @@
     
     <section class="dashboard-panel">
       <div class="panel-header">
-        <i class="fa-solid fa-id-card-clip"></i>
-        <h2>Officer Profile & Deployment Details</h2>
+        <div class="panel-header-left">
+          <i class="fa-solid fa-id-card-clip"></i>
+          <h2>Officer Profile & Deployment Details</h2>
+        </div>
       </div>
       <div class="officer-details">
-        <div class="detail-item">
-          <span>Officer Full Name</span>
-          <p id="disp-officer-name">Loading...</p>
-        </div>
-        <div class="detail-item">
-          <span>Official Email</span>
-          <p id="disp-officer-email">Loading...</p>
-        </div>
-        <div class="detail-item">
-          <span>Statistical Cadre</span>
-          <p id="disp-officer-cadre">Loading...</p>
-        </div>
-        <div class="detail-item">
-          <span>Division / Department</span>
-          <p id="disp-officer-dept">Loading...</p>
-        </div>
-        <div class="detail-item">
-          <span>Designation</span>
-          <p id="disp-officer-desig">Loading...</p>
-        </div>
+        <div class="detail-item"><span>Officer Full Name</span><p id="disp-officer-name">Loading...</p></div>
+        <div class="detail-item"><span>Official Email</span><p id="disp-officer-email">Loading...</p></div>
+        <div class="detail-item"><span>Statistical Cadre</span><p id="disp-officer-cadre">Loading...</p></div>
+        <div class="detail-item"><span>Division / Department</span><p id="disp-officer-dept">Loading...</p></div>
+        <div class="detail-item"><span>Designation</span><p id="disp-officer-desig">Loading...</p></div>
       </div>
     </section>
 
     <section class="dashboard-panel">
       <div class="panel-header">
-        <i class="fa-solid fa-chart-line"></i>
-        <h2>Areas Needing Competency Improvement</h2>
+        <div class="panel-header-left">
+          <i class="fa-solid fa-brain"></i>
+          <h2>AI-Curated NSSTA & iGOT Learning Roadmap (15 Targeted Modules)</h2>
+        </div>
+        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Generating tailored recommendations...</span>
       </div>
-      <div class="pillars-grid">
-        <div class="pillar-box">
-          <div class="pillar-header"><span>Statistical Methods & Sampling</span><span>40% / 100%</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 40%;"></div></div>
-          <div class="gap-text"><i class="fa-solid fa-triangle-exclamation"></i> <span>60% Deficit - Requires Sample Survey Training</span></div>
-        </div>
-        <div class="pillar-box">
-          <div class="pillar-header"><span>Technical & Data Analysis Tools</span><span>50% / 100%</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 50%;"></div></div>
-          <div class="gap-text"><i class="fa-solid fa-triangle-exclamation"></i> <span>50% Deficit - Python & SQL Modules Required</span></div>
-        </div>
-        <div class="pillar-box">
-          <div class="pillar-header"><span>Digital Governance & DPDP Act</span><span>30% / 100%</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 30%;"></div></div>
-          <div class="gap-text"><i class="fa-solid fa-triangle-exclamation"></i> <span>70% Deficit - Complete POSH & DPDP Compliance</span></div>
-        </div>
-        <div class="pillar-box">
-          <div class="pillar-header"><span>Behavioural, Safety & Leadership</span><span>60% / 100%</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 60%;"></div></div>
-          <div class="gap-text"><i class="fa-solid fa-triangle-exclamation"></i> <span>40% Deficit - Complete Civil Defence Protocols</span></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="dashboard-panel">
-      <div class="panel-header">
-        <i class="fa-solid fa-chalkboard-user"></i>
-        <h2>Suggested Learning Modules & Video Lectures</h2>
-      </div>
-      <div class="modules-grid" id="modules-container">
-        
-        <div class="module-card">
-          <div class="video-container">
-            <iframe src="https://www.youtube-nocookie.com/embed/mak7BPe_0jY" allowfullscreen></iframe>
-          </div>
-          <div class="module-body">
-            <span class="module-badge">Mandatory Statutory</span>
-            <div class="module-title">Prevention of Sexual Harassment (POSH) at Workplace</div>
-            <div class="module-desc">Statutory governance compliance module published by ISTM for all central statistical cadres.</div>
-            <div class="module-actions">
-              <button class="btn-action btn-cert" onclick="openCertModal('POSH Compliance')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
-              <button class="btn-action btn-quiz" onclick="startQuiz(1, 'POSH at Workplace')"><i class="fa-solid fa-list-check"></i> Take Quiz</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="module-card">
-          <div class="video-container">
-            <iframe src="https://www.youtube-nocookie.com/embed/a3xD_eysXQI" allowfullscreen></iframe>
-          </div>
-          <div class="module-body">
-            <span class="module-badge">Disaster Preparedness</span>
-            <div class="module-title">Civil Defence Services (नागरिक सुरक्षा)</div>
-            <div class="module-desc">NDRF operational framework on disaster response protocols and emergency field management.</div>
-            <div class="module-actions">
-              <button class="btn-action btn-cert" onclick="openCertModal('Civil Defence Services')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
-              <button class="btn-action btn-quiz" onclick="startQuiz(2, 'Civil Defence Services')"><i class="fa-solid fa-list-check"></i> Take Quiz</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="module-card">
-          <div class="video-container">
-            <iframe src="https://www.youtube-nocookie.com/embed/H16CzEcSC6U" allowfullscreen></iframe>
-          </div>
-          <div class="module-body">
-            <span class="module-badge">Facility Safety</span>
-            <div class="module-title">Fire Safety in Administrative Facilities</div>
-            <div class="module-desc">Standard operating procedures and preventive safety guidelines issued by MoHFW and DGCD.</div>
-            <div class="module-actions">
-              <button class="btn-action btn-cert" onclick="openCertModal('Fire Safety Compliance')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
-              <button class="btn-action btn-quiz" onclick="startQuiz(3, 'Facility Fire Safety')"><i class="fa-solid fa-list-check"></i> Take Quiz</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="module-card">
-          <div class="video-container">
-            <iframe src="https://www.youtube-nocookie.com/embed/HqlLctm0qpE" allowfullscreen></iframe>
-          </div>
-          <div class="module-body">
-            <span class="module-badge">Workplace Protocol</span>
-            <div class="module-title">Swachhata Hi Seva Training Module</div>
-            <div class="module-desc">MoHUA institutional governance guidelines on office hygiene, digital records, and preservation.</div>
-            <div class="module-actions">
-              <button class="btn-action btn-cert" onclick="openCertModal('Swachhata Protocols')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
-              <button class="btn-action btn-quiz" onclick="startQuiz(4, 'Swachhata Protocols')"><i class="fa-solid fa-list-check"></i> Take Quiz</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      <div class="modules-grid" id="dynamic-modules-container"></div>
     </section>
 
   </div>
 
-  <div class="bhashini-widget">
-    <div class="bhashini-panel" id="bhashini-panel">
-      <div class="bhashini-header">
-        <span><i class="fa-solid fa-headset"></i> AI Assistant</span>
-        <button onclick="toggleBhashini()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="bhashini-chat-log" id="bhashini-chat-log">
-        <div class="chat-msg bot">Namaste! Ask me anything about your competency gaps, recommended modules, or speak via the mic.</div>
-      </div>
-      <div class="bhashini-input-row">
-        <input type="text" id="bhashini-input" placeholder="Ask a question..." onkeydown="if(event.key==='Enter') sendChatMessage()">
-        <button class="btn-mic" id="mic-btn" onclick="startVoiceRecognition()" title="Speak with Mic"><i class="fa-solid fa-microphone"></i></button>
-        <button class="btn-send" onclick="sendChatMessage()" title="Send"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
-    </div>
-    <button class="bhashini-btn" onclick="toggleBhashini()" title="Open Assistant"><i class="fa-solid fa-headset"></i></button>
-  </div>
-
-  <div class="modal-backdrop" id="cert-modal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3 id="cert-modal-title">Upload Certificate</h3>
-        <button class="modal-close" onclick="closeModal('cert-modal')">&times;</button>
-      </div>
-      <p style="font-size:0.85rem; color:var(--text-muted);">Attach your iGOT Karmayogi course certificate (.PDF / .PNG) for automated verification.</p>
-      <input type="file" id="cert-file-input" accept=".pdf,.png,.jpg,.jpeg" style="padding:10px; border:1px dashed var(--border); border-radius:6px;">
-      <button class="btn-action btn-quiz" onclick="submitCertificate()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload & Submit</button>
-    </div>
-  </div>
-
+  <!-- Dynamic Post-Video Quiz Modal -->
   <div class="modal-backdrop" id="quiz-modal">
     <div class="modal-box">
       <div class="modal-header">
-        <h3 id="quiz-modal-title">Module Assessment</h3>
+        <h3 id="quiz-modal-title">Competency Evaluation</h3>
         <button class="modal-close" onclick="closeModal('quiz-modal')">&times;</button>
       </div>
-      <div id="quiz-content" style="display:flex; flex-direction:column; gap:12px;"></div>
-      <button class="btn-action btn-quiz" id="quiz-submit-btn" onclick="submitQuiz()"><i class="fa-solid fa-circle-check"></i> Submit Evaluation</button>
+      <p style="font-size:0.85rem; color:var(--text-muted);" id="quiz-subtitle">Complete this 3-question evaluation to record competency credit on your profile.</p>
+      <div id="quiz-questions-body" style="display:flex; flex-direction:column; gap:14px;"></div>
+      <button class="btn-action btn-quiz" id="quiz-submit-action" onclick="submitAssessment()">Submit Evaluation & Update Record</button>
     </div>
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
+    let currentUser = null;
+    let activeQuizData = [];
+    let currentQuizCourseTitle = "";
+
+    document.addEventListener("DOMContentLoaded", async () => {
       const stored = localStorage.getItem('mospi_user');
       if (!stored) {
         window.location.href = 'employee-login.html';
         return;
       }
       try {
-        const user = JSON.parse(stored);
-        document.getElementById("officer-name-display").innerText = user.name || 'Officer Trainee';
-        document.getElementById("disp-officer-name").innerText = user.name || 'N/A';
-        document.getElementById("disp-officer-email").innerText = user.email || 'N/A';
-        document.getElementById("disp-officer-cadre").innerText = user.cadre || 'N/A';
-        document.getElementById("disp-officer-dept").innerText = user.department || 'N/A';
-        document.getElementById("disp-officer-desig").innerText = user.designation || 'N/A';
+        currentUser = JSON.parse(stored);
+        document.getElementById("officer-name-display").innerText = currentUser.name || 'Officer Trainee';
+        document.getElementById("disp-officer-name").innerText = currentUser.name || 'N/A';
+        document.getElementById("disp-officer-email").innerText = currentUser.email || 'N/A';
+        document.getElementById("disp-officer-cadre").innerText = currentUser.cadre || 'N/A';
+        document.getElementById("disp-officer-dept").innerText = currentUser.department || 'N/A';
+        document.getElementById("disp-officer-desig").innerText = currentUser.designation || 'N/A';
+
+        await loadOfficerRecommendations();
       } catch (e) {
         console.error("Session parse error:", e);
       }
     });
 
-    // Triggers whole-page translation seamlessly via clean Bhashini dropdown
-    function triggerBhashiniTranslate(langCode) {
-      if (langCode === 'en') {
-        const iframe = document.querySelector('iframe.goog-te-banner-frame');
-        if (iframe) {
-          const doc = iframe.contentDocument || iframe.contentWindow.document;
-          const showOrigBtn = doc.querySelector('.goog-close-link') || doc.querySelector('button');
-          if (showOrigBtn) showOrigBtn.click();
+    async function loadOfficerRecommendations() {
+      const container = document.getElementById("dynamic-modules-container");
+      const statusLabel = document.getElementById("recommendation-status");
+
+      try {
+        const res = await fetch(`${API_URL}/api/recommendations`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cadre: currentUser.cadre,
+            department: currentUser.department,
+            designation: currentUser.designation
+          })
+        });
+
+        const data = await res.json();
+        const courses = data.courses || [];
+
+        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> 15 Custom Modules Active (${data.source === 'database' ? 'DB Cached' : 'AI Generated'})`;
+
+        container.innerHTML = courses.map((course, idx) => `
+          <div class="module-card">
+            <div class="video-container">
+              <iframe id="video-frame-${idx}" src="https://www.youtube-nocookie.com/embed/${course.youtube_id}?enablejsapi=1" allowfullscreen></iframe>
+            </div>
+            <div class="module-body">
+              <span class="module-badge">${course.category || 'Competency Core'}</span>
+              <div class="module-title">${course.title}</div>
+              <div class="module-desc">${course.description || 'Statutory training module customized for your designation.'}</div>
+              <div class="module-actions">
+                <button class="btn-action btn-cert" onclick="markVideoComplete('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.category)}')"><i class="fa-solid fa-circle-play"></i> Finished Video</button>
+                <button class="btn-action btn-quiz" onclick="launchAssessment('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.category)}')"><i class="fa-solid fa-list-check"></i> Take Quiz</button>
+              </div>
+            </div>
+          </div>
+        `).join("");
+      } catch (err) {
+        console.error("Failed to load recommendations:", err);
+        statusLabel.innerText = "Error loading AI courses.";
+      }
+    }
+
+    function markVideoComplete(titleEnc, catEnc) {
+      alert("Video progress recorded! Launching your competency evaluation quiz...");
+      launchAssessment(titleEnc, catEnc);
+    }
+
+    async function launchAssessment(titleEnc, catEnc) {
+      const title = decodeURIComponent(titleEnc);
+      const cat = decodeURIComponent(catEnc);
+      currentQuizCourseTitle = title;
+
+      document.getElementById("quiz-modal-title").innerText = `Assessment: ${title}`;
+      const questionsBody = document.getElementById("quiz-questions-body");
+      questionsBody.innerHTML = `<div style="text-align:center; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Generating AI evaluation questions...</div>`;
+      document.getElementById("quiz-modal").style.display = "flex";
+
+      try {
+        const res = await fetch(`${API_URL}/api/generate-quiz`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courseTitle: title, category: cat })
+        });
+        const data = await res.json();
+        activeQuizData = data.quiz || [];
+
+        questionsBody.innerHTML = activeQuizData.map((qItem, qIdx) => `
+          <div style="border-bottom:1px solid #f1f5f9; padding-bottom:10px;">
+            <p style="font-weight:700; font-size:0.9rem; margin-bottom:8px;">${qIdx + 1}. ${qItem.question}</p>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              ${qItem.options.map((opt, oIdx) => `
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
+                  <input type="radio" name="quiz_q_${qIdx}" value="${oIdx}"> ${opt}
+                </label>
+              `).join("")}
+            </div>
+          </div>
+        `).join("");
+      } catch (e) {
+        questionsBody.innerHTML = `<p style="color:#ef4444;">Failed to generate quiz. Please retry.</p>`;
+      }
+    }
+
+    async function submitAssessment() {
+      let scoreCount = 0;
+      let allAnswered = true;
+
+      activeQuizData.forEach((q, idx) => {
+        const selected = document.querySelector(`input[name="quiz_q_${idx}"]:checked`);
+        if (!selected) {
+          allAnswered = false;
+        } else if (parseInt(selected.value) === q.correctIndex) {
+          scoreCount++;
         }
-        const combo = document.querySelector('.goog-te-combo');
-        if (combo) {
-          combo.value = 'en';
-          combo.dispatchEvent(new Event('change'));
-        }
+      });
+
+      if (!allAnswered) {
+        alert("Please answer all questions before submitting.");
         return;
       }
 
-      const combo = document.querySelector('.goog-te-combo');
-      if (combo) {
-        combo.value = langCode;
-        combo.dispatchEvent(new Event('change'));
+      const finalPercentage = Math.round((scoreCount / activeQuizData.length) * 100);
+
+      try {
+        await fetch(`${API_URL}/api/progress/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentUser.email,
+            courseTitle: currentQuizCourseTitle,
+            score: finalPercentage
+          })
+        });
+
+        alert(`Assessment Completed! Your Score: ${finalPercentage}%. Competency score saved to your profile.`);
+        closeModal('quiz-modal');
+      } catch (e) {
+        alert(`Score: ${finalPercentage}%. Error saving to database.`);
+        closeModal('quiz-modal');
       }
-    }
-
-    function toggleBhashini() {
-      const panel = document.getElementById("bhashini-panel");
-      panel.style.display = (panel.style.display === "flex") ? "none" : "flex";
-    }
-
-    function appendChatMessage(text, sender) {
-      const log = document.getElementById("bhashini-chat-log");
-      const msg = document.createElement("div");
-      msg.className = `chat-msg ${sender}`;
-      msg.innerText = text;
-      log.appendChild(msg);
-      log.scrollTop = log.scrollHeight;
-    }
-
-    function sendChatMessage() {
-      const input = document.getElementById("bhashini-input");
-      const q = input.value.trim();
-      if (!q) return;
-      appendChatMessage(q, "user");
-      input.value = "";
-      setTimeout(() => {
-        appendChatMessage("Assistant: Based on your current gap analysis, completing POSH Compliance and Disaster Response will reduce your deficit by 35%.", "bot");
-      }, 500);
-    }
-
-    function startVoiceRecognition() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Speech Recognition not supported in this browser.");
-        return;
-      }
-      const recognition = new SpeechRecognition();
-      recognition.start();
-      const micBtn = document.getElementById("mic-btn");
-      micBtn.style.background = "#16a34a";
-
-      recognition.onresult = (e) => {
-        micBtn.style.background = "#ef4444";
-        const spoken = e.results[0][0].transcript;
-        appendChatMessage(spoken, "user");
-        setTimeout(() => {
-          appendChatMessage(`Voice recognized: "${spoken}". Check your suggested courses below.`, "bot");
-        }, 600);
-      };
-      recognition.onerror = () => {
-        micBtn.style.background = "#ef4444";
-      };
-    }
-
-    let activeCourseForUpload = "";
-    function openCertModal(courseName) {
-      activeCourseForUpload = courseName;
-      document.getElementById("cert-modal-title").innerText = `Upload Certificate: ${courseName}`;
-      document.getElementById("cert-modal").style.display = "flex";
     }
 
     function closeModal(id) {
       document.getElementById(id).style.display = "none";
     }
 
-    function submitCertificate() {
-      const fileInput = document.getElementById("cert-file-input");
-      if (!fileInput.files.length) {
-        alert("Please choose a certificate file.");
-        return;
+    function triggerBhashiniTranslate(langCode) {
+      const combo = document.querySelector('.goog-te-combo');
+      if (combo) {
+        combo.value = langCode;
+        combo.dispatchEvent(new Event('change'));
       }
-      alert(`Certificate for "${activeCourseForUpload}" submitted for verification.`);
-      closeModal('cert-modal');
-    }
-
-    const sampleQuestions = {
-      1: { q: "Under POSH Act 2013, within what time period must the Internal Committee complete inquiry?", opts: ["90 Days", "30 Days", "180 Days", "15 Days"] },
-      2: { q: "What is the primary role of Civil Defence Corps during natural disasters?", opts: ["Evacuation & First Aid Support", "Price Statistics Compilation", "Revenue Audit", "Legal Adjudication"] },
-      3: { q: "What is the standard color code for Water-type fire extinguishers?", opts: ["Signal Red", "Cream", "French Blue", "Black"] },
-      4: { q: "What is the designated portal for annual Swachhata progress tracking?", opts: ["Swachhata Action Plan (SAP) Portal", "e-SamikSha", "Bhavishya Portal", "GeM Portal"] }
-    };
-
-    function startQuiz(id, title) {
-      document.getElementById("quiz-modal-title").innerText = `Assessment: ${title}`;
-      const item = sampleQuestions[id] || sampleQuestions[1];
-      document.getElementById("quiz-content").innerHTML = `
-        <p style="font-weight:700; font-size:0.95rem;">${item.q}</p>
-        ${item.opts.map((opt, idx) => `
-          <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer;">
-            <input type="radio" name="quiz_opt" value="${idx}"> ${opt}
-          </label>
-        `).join("")}
-      `;
-      document.getElementById("quiz-modal").style.display = "flex";
-    }
-
-    function submitQuiz() {
-      const selected = document.querySelector('input[name="quiz_opt"]:checked');
-      if (!selected) {
-        alert("Please select an answer.");
-        return;
-      }
-      alert("Assessment submitted successfully! Score: 100%.");
-      closeModal('quiz-modal');
     }
 
     function logout() {
