@@ -19,7 +19,18 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Skill Intelligence Engine Active', timestamp: new Date() });
 });
 
-// Admin API: Get aggregated officer analytics grouped by Cadre, Department, and Designation
+// Admin API: Get list of active master courses for target selection dropdown
+app.get('/api/admin/courses-list', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('master_courses').select('id, course_code, title, domain').order('title');
+        if (error) return res.status(500).json({ error: error.message });
+        return res.json({ courses: data });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// Admin API: Officer analytics grouped by Cadre, Department, and Designation
 app.get('/api/admin/officers-analytics', async (req, res) => {
     try {
         const { data: officers, error } = await supabase
@@ -37,7 +48,6 @@ app.get('/api/admin/officers-analytics', async (req, res) => {
             return { ...o, competency: c, overall_score: avg };
         });
 
-        // Aggregations
         const byCadre = {};
         const byDept = {};
         const byDesig = {};
@@ -58,13 +68,13 @@ app.get('/api/admin/officers-analytics', async (req, res) => {
     }
 });
 
-// Admin API: Draft AI Course Recommendations for Admin Review
+// Admin API: Draft Course via AI
 app.post('/api/admin/draft-course', async (req, res) => {
     const { department, domain, topic } = req.body;
     try {
         let draft = {
             course_code: `ADM-${Date.now().toString().slice(-4)}`,
-            title: `${topic || 'Advanced Competency Module'} (${department})`,
+            title: `${topic || 'Advanced Module'} (${department})`,
             domain: domain || 'Statistical Competencies',
             difficulty_level: 'Intermediate',
             target_departments: [department || 'ALL'],
@@ -128,7 +138,6 @@ app.post('/api/admin/approve-course', async (req, res) => {
         const { data: pending, error: findErr } = await supabase.from('pending_courses').select('*').eq('id', id).single();
         if (findErr || !pending) return res.status(404).json({ error: 'Pending course not found.' });
 
-        // Insert into active master_courses catalog
         const { error: insErr } = await supabase.from('master_courses').insert([{
             course_code: pending.course_code,
             title: pending.title,
@@ -149,29 +158,29 @@ app.post('/api/admin/approve-course', async (req, res) => {
     }
 });
 
-// Admin API: Generate Quizzes from Document Text / PDF Content
+// Admin API: Generate & Assign Quizzes from PDF/Document Text directly to a Selected Course
 app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
     const { courseTitle, documentText } = req.body;
-    if (!documentText) return res.status(400).json({ error: 'Document content is required.' });
+    if (!courseTitle || !documentText) return res.status(400).json({ error: 'Course Title and Document Text are required.' });
 
     try {
         let questions = [
-            { question: `What is the key regulatory finding in ${courseTitle}?`, options: ["Standard data integrity protocol", "Informal field log", "Unregulated survey sampling", "Exemption from statutory audits"], correct_index: 0 },
-            { question: "Under MoSPI guidelines, how are milestone compliances reported?", options: ["Automated digital submission", "Verbal reports", "No validation", "Physical paper only"], correct_index: 0 },
-            { question: "Which framework governs respondent privacy and data protection?", options: ["DPDP Act 2023 & MoSPI Standards", "Generic guidelines", "Informal policies", "Local circulars only"], correct_index: 0 }
+            { question: `What is the key regulatory objective in ${courseTitle}?`, options: ["Standard data integrity protocol", "Informal ledger maintenance", "Unregulated survey sampling", "Exemption from statutory audits"], correct_index: 0 },
+            { question: "How are compliance milestones verified across official divisions?", options: ["Automated digital submission & validation", "Verbal statements only", "Unchecked paper records", "No verification"], correct_index: 0 },
+            { question: "Which framework governs respondent privacy and data protection?", options: ["DPDP Act 2023 & MoSPI Standards", "Generic public domain rules", "Unverified guidelines", "Local administrative orders only"], correct_index: 0 }
         ];
 
         if (GEMINI_API_KEY) {
             const prompt = `You are an AI assessment engine for NSSTA MoSPI.
-Generate 5 multiple-choice questions from this training document for the course "${courseTitle}".
+Generate 5 multiple-choice questions from the provided training document text specifically for the course: "${courseTitle}".
 
-DOCUMENT TEXT:
-${documentText.slice(0, 10000)}
+DOCUMENT CONTENT:
+${documentText.slice(0, 15000)}
 
-Return ONLY valid JSON array of objects:
+Return ONLY a valid JSON array of objects:
 [
   {
-    "question": "Question text?",
+    "question": "Clear question text?",
     "options": ["Option A", "Option B", "Option C", "Option D"],
     "correct_index": 0
   }
@@ -190,19 +199,18 @@ Return ONLY valid JSON array of objects:
             questions = JSON.parse(rawText);
         }
 
-        // Insert questions into course_quizzes table
         const rowsToInsert = questions.map(q => ({
             course_title: courseTitle,
             question: q.question,
             options: q.options,
             correct_index: q.correct_index,
-            source_document: 'Admin Uploaded PDF/Doc'
+            source_document: 'Admin Uploaded PDF/Manual'
         }));
 
         await supabase.from('course_quizzes').insert(rowsToInsert);
-        return res.json({ message: `${questions.length} questions generated & stored for ${courseTitle}!`, questions });
+        return res.json({ message: `${questions.length} questions generated & assigned to "${courseTitle}"!`, questions });
     } catch (err) {
-        return res.status(500).json({ error: 'Quiz synthesis error' });
+        return res.status(500).json({ error: 'Quiz synthesis failed.' });
     }
 });
 
@@ -266,7 +274,7 @@ app.post('/api/recommendations', async (req, res) => {
 app.post('/api/generate-quiz', async (req, res) => {
     const { courseTitle } = req.body;
     try {
-        const { data: storedQuiz } = await supabase.from('course_quizzes').select('*').eq('course_title', courseTitle).limit(3);
+        const { data: storedQuiz } = await supabase.from('course_quizzes').select('*').eq('course_title', courseTitle).limit(5);
         if (storedQuiz && storedQuiz.length > 0) {
             return res.json({ quiz: storedQuiz.map(q => ({ question: q.question, options: q.options, correctIndex: q.correct_index })) });
         }

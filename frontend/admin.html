@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Command Centre | MoSPI Skill Intelligence</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
   <style>
     :root {
       --primary: #1e3a8a;
@@ -139,22 +141,28 @@
         <div id="pending-courses-list" style="display:flex; flex-direction:column; gap:8px;"></div>
       </section>
 
-      <!-- PDF / Document AI Quiz Synthesizer -->
+      <!-- PDF / Document AI Quiz Synthesizer with Course Selector -->
       <section class="panel">
         <div class="panel-header">
           <h2><i class="fa-solid fa-file-pdf"></i> PDF & Training Material Quiz Synthesizer</h2>
         </div>
-        <p style="font-size:0.85rem; color:var(--text-muted);">Paste the text content of any training manual or circular. AI will synthesize 5 MCQs and store them in the database for officers taking that course.</p>
+        <p style="font-size:0.85rem; color:var(--text-muted);">Select the target course from the database and upload a training PDF or paste manual text. AI will synthesize 5 MCQs and assign them directly to that course for officer evaluations.</p>
         <form id="quizDocForm" onsubmit="handleDocQuiz(event)">
           <div class="form-group">
-            <label>Target Course Title</label>
-            <input type="text" id="quizCourseTitle" placeholder="e.g., Digital Personal Data Protection (DPDP) Act 2023" required>
+            <label>Assign Assessment to Course</label>
+            <select id="quizCourseSelect" required>
+              <option value="">-- Choose Target Course from DB --</option>
+            </select>
           </div>
           <div class="form-group">
-            <label>Document / Manual Content</label>
-            <textarea id="quizDocText" rows="6" placeholder="Paste training manual text, SOPs, circulars, or policy draft here..." required></textarea>
+            <label>Upload Training PDF File</label>
+            <input type="file" id="quizPdfFile" accept=".pdf" onchange="extractPdfText(event)" style="padding:8px; border:1px dashed var(--border); border-radius:6px; cursor:pointer;">
           </div>
-          <button type="submit" class="btn-action"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Save Quiz to Database</button>
+          <div class="form-group">
+            <label>Document / Manual Content (Auto-filled from PDF or paste directly)</label>
+            <textarea id="quizDocText" rows="5" placeholder="Upload a PDF above or paste training manual text/circulars here..." required></textarea>
+          </div>
+          <button type="submit" class="btn-action" id="btn-quiz-synth"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Assign Quiz to Course</button>
         </form>
         <div id="quiz-gen-status" style="font-size:0.85rem; font-weight:700; color:var(--success);"></div>
       </section>
@@ -167,8 +175,52 @@
     let allOfficers = [];
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await Promise.all([loadOfficerAnalytics(), loadPendingCourses()]);
+      await Promise.all([loadOfficerAnalytics(), loadPendingCourses(), loadCoursesDropdown()]);
     });
+
+    async function loadCoursesDropdown() {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/courses-list`);
+        const data = await res.json();
+        const select = document.getElementById("quizCourseSelect");
+        select.innerHTML = '<option value="">-- Choose Target Course from DB --</option>';
+
+        (data.courses || []).forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c.title;
+          opt.innerText = `${c.title} (${c.course_code})`;
+          select.appendChild(opt);
+        });
+      } catch (e) {
+        console.error("Failed to load courses dropdown:", e);
+      }
+    }
+
+    async function extractPdfText(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById("quiz-gen-status");
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Reading & extracting PDF text...`;
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let extractedText = "";
+
+        for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          extractedText += content.items.map(item => item.str).join(" ") + "\n";
+        }
+
+        document.getElementById("quizDocText").value = extractedText.trim();
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> PDF text extracted successfully (${pdf.numPages} pages)! Ready to synthesize.`;
+      } catch (err) {
+        console.error("PDF extraction error:", err);
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Could not read PDF directly. Please paste the text below.</span>`;
+      }
+    }
 
     async function loadOfficerAnalytics() {
       try {
@@ -274,7 +326,7 @@
         });
         const data = await res.json();
         alert(data.message || "Course approved!");
-        await loadPendingCourses();
+        await Promise.all([loadPendingCourses(), loadCoursesDropdown()]);
       } catch (e) {
         alert("Approval failed.");
       }
@@ -282,11 +334,18 @@
 
     async function handleDocQuiz(e) {
       e.preventDefault();
-      const courseTitle = document.getElementById("quizCourseTitle").value;
+      const courseTitle = document.getElementById("quizCourseSelect").value;
       const documentText = document.getElementById("quizDocText").value;
       const statusDiv = document.getElementById("quiz-gen-status");
+      const submitBtn = document.getElementById("btn-quiz-synth");
 
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Synthesizing questions from document text...`;
+      if (!courseTitle) {
+        alert("Please select a target course from the dropdown.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Synthesizing assessment questions and assigning to "${courseTitle}"...`;
 
       try {
         const res = await fetch(`${API_URL}/api/admin/generate-quiz-from-doc`, {
@@ -297,8 +356,11 @@
         const data = await res.json();
         statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
         document.getElementById("quizDocText").value = "";
+        document.getElementById("quizPdfFile").value = "";
       } catch (e) {
         statusDiv.innerHTML = `<span style="color:#ef4444;">Failed to generate quiz from document.</span>`;
+      } finally {
+        submitBtn.disabled = false;
       }
     }
 
