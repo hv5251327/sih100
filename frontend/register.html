@@ -6,108 +6,59 @@
     <title>Employee Registration | MoSPI Competency Portal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        .register-container {
-            max-width: 650px;
-            margin: 2rem auto;
-            background: #ffffff;
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
-        .register-container h2 {
-            color: #234374;
-            font-size: 1.6rem;
-            margin-bottom: 0.3rem;
-            text-align: center;
-        }
-        .register-container .subtitle {
-            text-align: center;
-            color: #64748b;
-            font-size: 0.9rem;
-            margin-bottom: 1.8rem;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        .form-group {
-            margin-bottom: 1.1rem;
-            text-align: left;
-        }
-        .form-group label {
-            display: block;
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 0.4rem;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 0.75rem 0.9rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            outline: none;
-            background: #ffffff;
-            color: #1e293b;
-        }
-        .form-group input:focus, .form-group select:focus {
-            border-color: #234374;
-        }
-        .btn-register-submit {
-            width: 100%;
-            padding: 0.85rem;
-            background: #c4823f;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 1rem;
-            transition: background 0.2s;
-        }
-        .btn-register-submit:hover {
-            background: #a46114;
-        }
-    </style>
 </head>
 <body class="center-body">
-    <div class="register-container">
-        <div class="icon-box" style="text-align: center;"><i class="fa-solid fa-id-card"></i></div>
-        <h2>MoSPI Employee Registration</h2>
-        <p class="subtitle">National Statistical System Capacity Building Portal</p>
-
+    <div class="login-card" style="max-width: 580px; width: 100%;">
+        <div class="icon-box"><i class="fa-solid fa-user-plus"></i></div>
+        <h2>MoSPI Competency Portal</h2>
+        <p class="subtitle">Employee Registration</p>
+        
         <form id="registerForm">
             <div class="form-group">
                 <label>Full Name</label>
-                <input type="text" id="regName" placeholder="Enter full name" required>
+                <input type="text" id="regName" placeholder="Enter your full name" required>
             </div>
 
-            <div class="grid-2">
-                <div class="form-group">
-                    <label>Official Email ID</label>
-                    <input type="email" id="regEmail" placeholder="Enter official email" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="regPassword" placeholder="Enter password" required>
-                </div>
+            <div class="form-group">
+                <label>Official Email ID</label>
+                <input type="email" id="regEmail" placeholder="Enter your email" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPassword" placeholder="Enter your password" required>
             </div>
 
             <div class="form-group">
                 <label>Statistical Cadre</label>
-                <select id="regCadre" required onchange="handleCadreChange()">
+                <select id="regCadre" required>
                     <option value="">-- Select Cadre --</option>
+                    <option value="Indian Statistical Service (ISS)">Indian Statistical Service (ISS) — Group 'A' Central Service</option>
+                    <option value="Subordinate Statistical Service (SSS)">Subordinate Statistical Service (SSS) — Group 'B' Central Service</option>
+                    <option value="State DES Cadre">State Directorate of Economics & Statistics (DES) Cadre</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label>Division / Department / Organization</label>
                 <select id="regDept" required onchange="handleDeptChange()">
-                    <option value="">-- Select Cadre First --</option>
+                    <option value="">-- Select Division / Department --</option>
+                    <option value="NAD">National Accounts Division (NAD) — Macro Aggregates & GDP</option>
+                    <option value="ESD">Economic Statistics Division (ESD) — IIP & ASI</option>
+                    <option value="PSD">Price Statistics Division (PSD) — CPI & Inflation</option>
+                    <option value="SSD">Social Statistics Division (SSD) — SDG Metrics</option>
+                    <option value="FOD">Field Operations Division (FOD) — Primary Field Surveys</option>
+                    <option value="SDRD">Survey Design and Research Division (SDRD) — Sampling Design</option>
+                    <option value="DPD">Data Processing Division (DPD) — Validation & Tabulation</option>
+                    <option value="DIID">Data Informatics & Innovation Division (DIID) — Cloud & AI</option>
+                    <option value="NSSTA">National Statistical Systems Training Academy (NSSTA) — Training HQ</option>
+                    <option value="CAPD">Coordination & Publication Division (CAPD)</option>
+                    <option value="NSSO">National Sample Survey Office Secretariat (NSSO HQs)</option>
+                    <option value="IPMD">Infrastructure & Project Monitoring Division (IPMD)</option>
+                    <option value="SDG_LAB">Sustainable Development Goals (SDG) Unit / Data Innovation Lab</option>
+                    <option value="STATE_DES">State Directorate of Economics and Statistics (State DES) — State HQ</option>
+                    <option value="DSO">District Statistical Office (DSO) — Field Unit</option>
+                    <option value="TALUK">State Sub-Divisional / Taluk Statistical Unit</option>
                 </select>
             </div>
 
@@ -118,126 +69,47 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn-register-submit">Register & Create Competency Profile</button>
+            <button type="submit" class="btn-submit" style="margin-top: 15px;">Register & Create Profile</button>
         </form>
 
-        <p class="footer-text" style="text-align: center; margin-top: 1.2rem;">
-            Already registered? <a href="employee-login.html">Employee Login</a>
-        </p>
-        <div style="text-align: center;">
-            <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
-        </div>
+        <p class="footer-text">Already registered? <a href="employee-login.html">Employee Login</a></p>
+        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
     </div>
 
     <script>
-        const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
-        
-        // Comprehensive baseline dataset loaded immediately
-        let metadataList = [
-            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Director General (DG)" },
-            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Additional Director General (ADG)" },
-            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Deputy Director General (DDG)" },
-            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Director / Joint Director" },
-            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Deputy Director / Assistant Director" },
-            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Senior Statistical Officer (SSO)" },
-            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Junior Statistical Officer (JSO)" },
-
-            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "ESD", department_name: "Economic Statistics Division (ESD) — IIP & ASI", designation: "Additional Director General (ADG)" },
-            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "ESD", department_name: "Economic Statistics Division (ESD) — IIP & ASI", designation: "Deputy Director General (DDG)" },
-            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "ESD", department_name: "Economic Statistics Division (ESD) — IIP & ASI", designation: "Director / Joint Director" },
-            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "ESD", department_name: "Economic Statistics Division (ESD) — IIP & ASI", designation: "Senior Statistical Officer (SSO)" },
-            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "ESD", department_name: "Economic Statistics Division (ESD) — IIP & ASI", designation: "Junior Statistical Officer (JSO)" },
-
-            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "FOD", department_name: "Field Operations Division (FOD) — Primary Field Surveys", designation: "Additional Director General (ADG)" },
-            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "FOD", department_name: "Field Operations Division (FOD) — Primary Field Surveys", designation: "Deputy Director General (DDG / Regional Head)" },
-            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "FOD", department_name: "Field Operations Division (FOD) — Primary Field Surveys", designation: "Senior Statistical Officer (SSO / Field Supervisor)" },
-            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "FOD", department_name: "Field Operations Division (FOD) — Primary Field Surveys", designation: "Junior Statistical Officer (JSO / Field Investigator)" },
-
-            { cadre: "State Directorate of Economics & Statistics (DES) Cadre", department_code: "STATE_DES", department_name: "State Directorate of Economics and Statistics (State DES) — State HQ", designation: "Director / Commissioner of Economics & Statistics (State Head)" },
-            { cadre: "State Directorate of Economics & Statistics (DES) Cadre", department_code: "STATE_DES", department_name: "State Directorate of Economics and Statistics (State DES) — State HQ", designation: "Assistant Statistical Officer / Statistical Officer (State)" },
-            { cadre: "State Directorate of Economics & Statistics (DES) Cadre", department_code: "DSO", department_name: "District Statistical Office (DSO) — Field Unit", designation: "District Statistical Officer (DSO)" },
-            { cadre: "State Directorate of Economics & Statistics (DES) Cadre", department_code: "DSO", department_name: "District Statistical Office (DSO) — Field Unit", designation: "Assistant Statistical Officer (ASO)" }
-        ];
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            renderCadres();
-            await syncDatabaseMetadata();
-        });
-
-        function renderCadres() {
-            const cadreSelect = document.getElementById('regCadre');
-            const uniqueCadres = [...new Set(metadataList.map(item => item.cadre))];
-            cadreSelect.innerHTML = '<option value="">-- Select Cadre --</option>';
-            uniqueCadres.forEach(cadre => {
-                const opt = document.createElement('option');
-                opt.value = cadre;
-                opt.textContent = cadre;
-                cadreSelect.appendChild(opt);
-            });
-        }
-
-        async function syncDatabaseMetadata() {
-            try {
-                const res = await fetch(`${API_URL}/api/metadata`);
-                if (res.ok) {
-                    const dbData = await res.json();
-                    if (Array.isArray(dbData) && dbData.length > 0) {
-                        metadataList = dbData;
-                        renderCadres();
-                    }
-                }
-            } catch (err) {
-                console.warn("Using active baseline metadata buffer.");
-            }
-        }
-
-        function handleCadreChange() {
-            const selectedCadre = document.getElementById('regCadre').value;
-            const deptSelect = document.getElementById('regDept');
-            const desigSelect = document.getElementById('regDesignation');
-
-            deptSelect.innerHTML = '<option value="">-- Select Division / Department --</option>';
-            desigSelect.innerHTML = '<option value="">-- Select Department First --</option>';
-
-            if (!selectedCadre) return;
-
-            const filteredDepts = metadataList.filter(item => item.cadre === selectedCadre);
-            const uniqueDepts = [];
-            const seenCodes = new Set();
-
-            filteredDepts.forEach(item => {
-                if (!seenCodes.has(item.department_code)) {
-                    seenCodes.add(item.department_code);
-                    uniqueDepts.push({ code: item.department_code, name: item.department_name });
-                }
-            });
-
-            uniqueDepts.forEach(dept => {
-                const opt = document.createElement('option');
-                opt.value = dept.code;
-                opt.textContent = dept.name;
-                deptSelect.appendChild(opt);
-            });
-        }
+        const designationsMap = {
+            "NAD": ["Director General (DG)", "Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "ESD": ["Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "PSD": ["Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "SSD": ["Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "FOD": ["Additional Director General (ADG)", "Deputy Director General (DDG / Regional Head)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO / Field Supervisor)", "Junior Statistical Officer (JSO / Field Investigator)"],
+            "SDRD": ["Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "DPD": ["Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "DIID": ["Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "NSSTA": ["Additional Director General (ADG / Head of Academy)", "Deputy Director General (DDG)", "Director / Joint Director (Faculty)", "Deputy Director / Assistant Director (Course Coordinator)", "ISS Probationer / Officer Trainee (NSSTA)"],
+            "CAPD": ["Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "NSSO": ["Director General (NSSO / DG)", "Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "IPMD": ["Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "SDG_LAB": ["Deputy Director General (DDG / Lead)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (Data Analytics / GIS)", "Junior Statistical Officer (JSO)"],
+            "STATE_DES": ["Director / Commissioner of Economics & Statistics (State Head)", "Joint Director / Deputy Director (State DES)", "Assistant Statistical Officer / Statistical Officer (State)", "Statistical Inspector / Research Assistant (DES)"],
+            "DSO": ["District Statistical Officer (DSO)", "Assistant Statistical Officer (ASO)", "Primary Field Investigator / Enumerator"],
+            "TALUK": ["Sub-Divisional / Taluk Statistical Officer", "Assistant Statistical Officer (ASO)", "Statistical Compiler / Computer Operator", "Primary Field Investigator / Enumerator"]
+        };
 
         function handleDeptChange() {
-            const selectedCadre = document.getElementById('regCadre').value;
-            const selectedDept = document.getElementById('regDept').value;
+            const deptSelect = document.getElementById('regDept');
             const desigSelect = document.getElementById('regDesignation');
-
+            const selectedDept = deptSelect.value;
             desigSelect.innerHTML = '<option value="">-- Select Designation --</option>';
 
-            if (!selectedDept) return;
-
-            const filteredDesigs = metadataList.filter(item => item.cadre === selectedCadre && item.department_code === selectedDept);
-            const uniqueDesigs = [...new Set(filteredDesigs.map(item => item.designation))];
-
-            uniqueDesigs.forEach(role => {
-                const opt = document.createElement('option');
-                opt.value = role;
-                opt.textContent = role;
-                desigSelect.appendChild(opt);
-            });
+            if (selectedDept && designationsMap[selectedDept]) {
+                designationsMap[selectedDept].forEach(role => {
+                    const opt = document.createElement('option');
+                    opt.value = role;
+                    opt.textContent = role;
+                    desigSelect.appendChild(opt);
+                });
+            }
         }
     </script>
     <script src="auth.js"></script>
