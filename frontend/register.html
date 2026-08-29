@@ -6,7 +6,6 @@
     <title>Employee Registration | MoSPI Competency Portal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .register-container {
             max-width: 650px;
@@ -101,7 +100,7 @@
             <div class="form-group">
                 <label>Statistical Cadre</label>
                 <select id="regCadre" required onchange="handleCadreChange()">
-                    <option value="">-- Loading Cadres... --</option>
+                    <option value="">-- Select Cadre --</option>
                 </select>
             </div>
 
@@ -132,45 +131,41 @@
 
     <script>
         const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
-        const SUPABASE_URL = 'https://ccdrahlnsfrncsqaiumt.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjZHJhaGxuc2ZybmNzcWFpdW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDEzMDAsImV4cCI6MjEwMzU3NzMwMH0.O3sAoWJuLWKeJCenkiUjen3FfLnNahUu7nKbpQ1t6Fo';
+        
+        // Comprehensive baseline dataset loaded immediately
+        let metadataList = [
+            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Director General (DG)" },
+            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Additional Director General (ADG)" },
+            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Deputy Director General (DDG)" },
+            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Director / Joint Director" },
+            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Deputy Director / Assistant Director" },
+            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Senior Statistical Officer (SSO)" },
+            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "NAD", department_name: "National Accounts Division (NAD) — Macro Aggregates & GDP", designation: "Junior Statistical Officer (JSO)" },
 
-        let metadataList = [];
+            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "ESD", department_name: "Economic Statistics Division (ESD) — IIP & ASI", designation: "Additional Director General (ADG)" },
+            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "ESD", department_name: "Economic Statistics Division (ESD) — IIP & ASI", designation: "Deputy Director General (DDG)" },
+            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "ESD", department_name: "Economic Statistics Division (ESD) — IIP & ASI", designation: "Director / Joint Director" },
+            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "ESD", department_name: "Economic Statistics Division (ESD) — IIP & ASI", designation: "Senior Statistical Officer (SSO)" },
+            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "ESD", department_name: "Economic Statistics Division (ESD) — IIP & ASI", designation: "Junior Statistical Officer (JSO)" },
+
+            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "FOD", department_name: "Field Operations Division (FOD) — Primary Field Surveys", designation: "Additional Director General (ADG)" },
+            { cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service", department_code: "FOD", department_name: "Field Operations Division (FOD) — Primary Field Surveys", designation: "Deputy Director General (DDG / Regional Head)" },
+            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "FOD", department_name: "Field Operations Division (FOD) — Primary Field Surveys", designation: "Senior Statistical Officer (SSO / Field Supervisor)" },
+            { cadre: "Subordinate Statistical Service (SSS) — Group 'B' Central Service", department_code: "FOD", department_name: "Field Operations Division (FOD) — Primary Field Surveys", designation: "Junior Statistical Officer (JSO / Field Investigator)" },
+
+            { cadre: "State Directorate of Economics & Statistics (DES) Cadre", department_code: "STATE_DES", department_name: "State Directorate of Economics and Statistics (State DES) — State HQ", designation: "Director / Commissioner of Economics & Statistics (State Head)" },
+            { cadre: "State Directorate of Economics & Statistics (DES) Cadre", department_code: "STATE_DES", department_name: "State Directorate of Economics and Statistics (State DES) — State HQ", designation: "Assistant Statistical Officer / Statistical Officer (State)" },
+            { cadre: "State Directorate of Economics & Statistics (DES) Cadre", department_code: "DSO", department_name: "District Statistical Office (DSO) — Field Unit", designation: "District Statistical Officer (DSO)" },
+            { cadre: "State Directorate of Economics & Statistics (DES) Cadre", department_code: "DSO", department_name: "District Statistical Office (DSO) — Field Unit", designation: "Assistant Statistical Officer (ASO)" }
+        ];
 
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadMetadata();
+            renderCadres();
+            await syncDatabaseMetadata();
         });
 
-        async function loadMetadata() {
-            try {
-                // Try fetching from backend API first
-                const res = await fetch(`${API_URL}/api/metadata`);
-                if (res.ok) {
-                    metadataList = await res.json();
-                }
-            } catch (err) {
-                console.warn("Backend API unavailable, querying Supabase directly...", err);
-            }
-
-            // Fallback direct to Supabase if backend was idle/failed
-            if (!metadataList || metadataList.length === 0) {
-                try {
-                    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    const { data, error } = await sb.from('mospi_metadata').select('cadre, department_code, department_name, designation');
-                    if (!error && data) {
-                        metadataList = data;
-                    }
-                } catch (sbErr) {
-                    console.error("Direct Supabase query error:", sbErr);
-                }
-            }
-
+        function renderCadres() {
             const cadreSelect = document.getElementById('regCadre');
-            if (!metadataList || metadataList.length === 0) {
-                cadreSelect.innerHTML = '<option value="">-- Unable to load cadres from DB --</option>';
-                return;
-            }
-
             const uniqueCadres = [...new Set(metadataList.map(item => item.cadre))];
             cadreSelect.innerHTML = '<option value="">-- Select Cadre --</option>';
             uniqueCadres.forEach(cadre => {
@@ -179,6 +174,21 @@
                 opt.textContent = cadre;
                 cadreSelect.appendChild(opt);
             });
+        }
+
+        async function syncDatabaseMetadata() {
+            try {
+                const res = await fetch(`${API_URL}/api/metadata`);
+                if (res.ok) {
+                    const dbData = await res.json();
+                    if (Array.isArray(dbData) && dbData.length > 0) {
+                        metadataList = dbData;
+                        renderCadres();
+                    }
+                }
+            } catch (err) {
+                console.warn("Using active baseline metadata buffer.");
+            }
         }
 
         function handleCadreChange() {
