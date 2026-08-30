@@ -169,8 +169,9 @@
             <label>Course Topic / Core Objective</label>
             <input type="text" id="draftTopic" placeholder="e.g., CAPI Tablet Quality Auditing, OCMS Cost Tracking" required>
           </div>
-          <button type="submit" class="btn-action" style="margin-top:10px;"><i class="fa-solid fa-database"></i> Generate & Save Directly to Database</button>
+          <button type="submit" class="btn-action" id="btn-draft-submit" style="margin-top:10px;"><i class="fa-solid fa-database"></i> Generate & Save Directly to Database</button>
         </form>
+        <div id="draft-status" style="font-size:0.85rem; font-weight:700; color:var(--success); margin-top:4px;"></div>
 
         <h3 style="font-size:0.95rem; font-weight:800; margin-top:12px; color:var(--primary);"><i class="fa-solid fa-list-check"></i> Recently Added Master Courses</h3>
         <div id="recent-courses-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;"></div>
@@ -262,7 +263,7 @@
         }
 
         document.getElementById("syllabusText").value = extractedText.trim();
-        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> Extracted ${pdf.numPages} pages from Syllabus PDF!`;
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> Extracted ${pdf.numPages} pages from Syllabus PDF! Ready to extract.`;
       } catch (err) {
         statusDiv.innerHTML = `<span style="color:#ef4444;">Could not read PDF automatically. Please paste the text directly.</span>`;
       }
@@ -276,7 +277,7 @@
       const submitBtn = document.getElementById("btn-syllabus-submit");
 
       submitBtn.disabled = true;
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing syllabus with AI and saving courses to Master DB...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing syllabus and saving courses to Master DB...`;
 
       try {
         const res = await fetch(`${API_URL}/api/admin/parse-syllabus`, {
@@ -291,6 +292,34 @@
         await loadCoursesDropdown();
       } catch (err) {
         statusDiv.innerHTML = `<span style="color:#ef4444;">Failed to extract syllabus.</span>`;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    async function handleDraftCourse(e) {
+      e.preventDefault();
+      const department = document.getElementById("draftDept").value;
+      const domain = document.getElementById("draftDomain").value;
+      const topic = document.getElementById("draftTopic").value;
+      const statusDiv = document.getElementById("draft-status");
+      const submitBtn = document.getElementById("btn-draft-submit");
+
+      submitBtn.disabled = true;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating & saving course to database...`;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/draft-course`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ department, domain, topic })
+        });
+        const data = await res.json();
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message || 'Course added successfully!'}`;
+        document.getElementById("draftTopic").value = "";
+        await loadCoursesDropdown();
+      } catch (err) {
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Course creation failed.</span>`;
       } finally {
         submitBtn.disabled = false;
       }
@@ -365,27 +394,6 @@
         o.designation.toLowerCase().includes(q)
       );
       renderOfficersTable(filtered);
-    }
-
-    async function handleDraftCourse(e) {
-      e.preventDefault();
-      const department = document.getElementById("draftDept").value;
-      const domain = document.getElementById("draftDomain").value;
-      const topic = document.getElementById("draftTopic").value;
-
-      try {
-        const res = await fetch(`${API_URL}/api/admin/draft-course`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ department, domain, topic })
-        });
-        const data = await res.json();
-        alert(data.message || "Course created directly into database!");
-        document.getElementById("draftTopic").value = "";
-        await loadCoursesDropdown();
-      } catch (err) {
-        alert("Course creation failed.");
-      }
     }
 
     async function handleDocQuiz(e) {

@@ -28,7 +28,7 @@ async function generateAIResponse(prompt) {
                 body: JSON.stringify({
                     model: 'grok-beta',
                     messages: [
-                        { role: 'system', content: 'You are the Chief Academic Training Director at NSSTA (National Statistical Systems Training Academy), MoSPI, Government of India. Always output valid, unpadded JSON.' },
+                        { role: 'system', content: 'You are the Chief Academic Training Director at NSSTA, MoSPI. Always return raw JSON only.' },
                         { role: 'user', content: prompt }
                     ],
                     temperature: 0.2
@@ -53,7 +53,7 @@ async function generateAIResponse(prompt) {
             const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
         } catch (e) {
-            console.warn('Gemini API error:', e.message);
+            console.warn('Gemini API fallback:', e.message);
         }
     }
 
@@ -64,40 +64,89 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Skill Intelligence Engine Active', timestamp: new Date() });
 });
 
-// Helper: Normalize department acronyms
-function parseDeptCode(deptStr) {
-    if (!deptStr) return 'ALL';
-    const match = deptStr.match(/\(([^)]+)\)/);
-    if (match && match[1]) return match[1].trim().toUpperCase();
-    const knownCodes = ['NAD', 'ESD', 'PSD', 'SSD', 'FOD', 'SDRD', 'DPD', 'DIID', 'NSSTA', 'CAPD', 'NSSO', 'IPMD', 'SDG_LAB', 'STATE_DES', 'DSO', 'TALUK'];
-    for (const code of knownCodes) {
-        if (deptStr.toUpperCase().includes(code)) return code;
-    }
-    return deptStr.trim().toUpperCase();
-}
+// Admin API: Quick Course Creator -> Directly writes into master_courses table
+app.post('/api/admin/draft-course', async (req, res) => {
+    const { department, domain, topic } = req.body;
+    if (!topic) return res.status(400).json({ error: 'Course topic is required.' });
 
-// Admin API: Structured PDF syllabus organizer into role-tailored courses
+    try {
+        const uniqueCode = 'MOD-' + Date.now().toString().slice(-6);
+        let courseTitle = `${topic} (${department})`;
+        let courseDesc = `Practical competency and operational methodology training on ${topic} for ${department} officers.`;
+        let courseDiff = 'Intermediate';
+
+        const prompt = `Generate a title and a 2-sentence practical operational purpose for a MoSPI official course.
+Department: ${department}
+Domain: ${domain}
+Topic: ${topic}
+
+Return ONLY valid JSON:
+{
+  "title": "${topic} (${department})",
+  "description": "2-sentence purpose",
+  "difficulty_level": "Intermediate"
+}`;
+
+        const rawJson = await generateAIResponse(prompt);
+        if (rawJson) {
+            try {
+                const match = rawJson.match(/\{[\s\S]*\}/);
+                if (match) {
+                    const parsed = JSON.parse(match[0]);
+                    courseTitle = parsed.title || courseTitle;
+                    courseDesc = parsed.description || courseDesc;
+                    courseDiff = parsed.difficulty_level || courseDiff;
+                }
+            } catch (e) {}
+        }
+
+        const newCourseRow = {
+            course_code: uniqueCode,
+            title: courseTitle,
+            domain: domain || 'Statistical Competencies',
+            difficulty_level: courseDiff,
+            target_departments: [department || 'ALL'],
+            description: courseDesc,
+            video_url: 'https://portal.igotkarmayogi.gov.in',
+            is_general_mandatory: false
+        };
+
+        const { data: saved, error } = await supabase
+            .from('master_courses')
+            .insert([newCourseRow])
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Database direct insert error:', error);
+            return res.status(400).json({ error: error.message });
+        }
+
+        return res.json({ message: `Course "${saved.title}" successfully added to Master Database!`, course: saved });
+    } catch (err) {
+        console.error('Quick course error:', err);
+        return res.status(500).json({ error: 'Server error while inserting course.' });
+    }
+});
+
+// Admin API: Parse syllabus text -> Direct write into master_courses
 app.post('/api/admin/parse-syllabus', async (req, res) => {
     const { syllabusText, defaultDivision } = req.body;
-    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text content is required.' });
+    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text is required.' });
 
     try {
         let extractedModules = [];
-        const prompt = `You are the NSSTA Curriculum & Competency Director at MoSPI.
-Analyze this raw training document/syllabus text. Organize and break down the contents into clear, modular courses tailored for officers in the "${defaultDivision || 'ALL'}" division of MoSPI.
+        const prompt = `Break down this syllabus into 3 to 6 distinct modular training courses for MoSPI ${defaultDivision} statisticians.
+SYLLABUS:
+${syllabusText.slice(0, 15000)}
 
-DOCUMENT/SYLLABUS CONTENT:
-${syllabusText.slice(0, 18000)}
-
-Structure every chapter/topic logically into distinct courses.
-Return ONLY a valid JSON array of objects structured as:
+Return ONLY a valid JSON array of objects:
 [
   {
-    "title": "Clear, concise course title",
-    "domain": "Statistical Competencies | Technical Competencies | Digital Governance | Behavioural & Managerial",
-    "difficulty_level": "Foundation | Intermediate | Advanced",
-    "description": "2-sentence practical operational purpose explaining what the officer will learn and execute",
-    "video_url": "https://portal.igotkarmayogi.gov.in"
+    "title": "Module Title",
+    "domain": "Statistical Competencies",
+    "difficulty_level": "Intermediate",
+    "description": "2-sentence practical operational purpose"
   }
 ]`;
 
@@ -106,20 +155,18 @@ Return ONLY a valid JSON array of objects structured as:
             try {
                 const match = rawJson.match(/\[[\s\S]*\]/);
                 if (match) extractedModules = JSON.parse(match[0]);
-            } catch (pErr) {
-                console.warn('Regex JSON parse fallback:', pErr);
-            }
+            } catch (pErr) {}
         }
 
-        // Fallback: organize text lines if LLM output fails
+        // Guaranteed fallback if LLM returned non-JSON text
         if (!extractedModules || extractedModules.length === 0) {
-            const lines = syllabusText.split('\n').filter(l => l.trim().length > 20).slice(0, 5);
-            if (lines.length > 0) {
-                extractedModules = lines.map((line, i) => ({
-                    title: `Module ${i + 1}: ` + line.trim().slice(0, 55),
+            const rawLines = syllabusText.split('\n').map(l => l.trim()).filter(l => l.length > 10);
+            if (rawLines.length > 0) {
+                extractedModules = rawLines.slice(0, 4).map((line, i) => ({
+                    title: `Unit ${i + 1}: ${line.slice(0, 50)}`,
                     domain: 'Statistical Competencies',
                     difficulty_level: 'Intermediate',
-                    description: `Practical operational training covering ${line.trim().slice(0, 140)} for ${defaultDivision} officers.`
+                    description: `Training module on ${line.slice(0, 150)} for ${defaultDivision} officials.`
                 }));
             } else {
                 extractedModules = [{
@@ -132,13 +179,13 @@ Return ONLY a valid JSON array of objects structured as:
         }
 
         const rowsToInsert = extractedModules.map((m, idx) => ({
-            course_code: `NSSTA-${Date.now().toString().slice(-5)}-${idx + 1}`,
+            course_code: 'NSSTA-' + Date.now().toString().slice(-5) + '-' + (idx + 1),
             title: m.title || `NSSTA Module ${idx + 1}`,
             domain: m.domain || 'Statistical Competencies',
             difficulty_level: m.difficulty_level || 'Intermediate',
             target_departments: [defaultDivision || 'ALL'],
             description: m.description || `Competency training module for ${defaultDivision} statisticians.`,
-            video_url: m.video_url || 'https://portal.igotkarmayogi.gov.in',
+            video_url: 'https://portal.igotkarmayogi.gov.in',
             is_general_mandatory: false
         }));
 
@@ -148,82 +195,27 @@ Return ONLY a valid JSON array of objects structured as:
             .select();
 
         if (insErr) {
-            console.error('Database Insert Error:', insErr);
+            console.error('Syllabus Insert Error:', insErr);
             return res.status(500).json({ error: insErr.message });
         }
 
         return res.json({
-            message: `Successfully organized and inserted ${rowsToInsert.length} courses tailored for ${defaultDivision} into the Master Database!`,
+            message: `Successfully parsed and saved ${rowsToInsert.length} courses to Master Database!`,
             modules: inserted || rowsToInsert
         });
     } catch (err) {
-        console.error('Syllabus parsing error:', err);
-        return res.status(500).json({ error: 'Failed to organize syllabus courses.' });
-    }
-});
-
-// Admin API: Quick Course Creator directly into master_courses
-app.post('/api/admin/draft-course', async (req, res) => {
-    const { department, domain, topic } = req.body;
-    try {
-        const uniqueCode = 'MOD-' + Math.floor(100000 + Math.random() * 900000);
-        let courseObj = {
-            course_code: uniqueCode,
-            title: `${topic || 'Competency Training'} (${department})`,
-            domain: domain || 'Statistical Competencies',
-            difficulty_level: 'Intermediate',
-            target_departments: [department || 'ALL'],
-            description: `Official competency module focused on ${topic || 'operational techniques'} for ${department}.`,
-            video_url: 'https://portal.igotkarmayogi.gov.in',
-            is_general_mandatory: false
-        };
-
-        const prompt = `Generate a clear title and a 2-sentence practical description for a MoSPI official course.
-Department: ${department}
-Domain: ${domain}
-Topic: ${topic}
-
-Return ONLY valid JSON:
-{
-  "title": "Title Here",
-  "description": "2-sentence practical operational purpose",
-  "difficulty_level": "Intermediate"
-}`;
-
-        const rawJson = await generateAIResponse(prompt);
-        if (rawJson) {
-            try {
-                const match = rawJson.match(/\{[\s\S]*\}/);
-                if (match) {
-                    const parsed = JSON.parse(match[0]);
-                    courseObj.title = parsed.title || courseObj.title;
-                    courseObj.description = parsed.description || courseObj.description;
-                    courseObj.difficulty_level = parsed.difficulty_level || courseObj.difficulty_level;
-                }
-            } catch (e) {}
-        }
-
-        const { data: saved, error } = await supabase
-            .from('master_courses')
-            .insert([courseObj])
-            .select()
-            .single();
-
-        if (error) {
-            console.error('Course insert error:', error);
-            return res.status(400).json({ error: error.message });
-        }
-
-        return res.json({ message: `Course "${saved.title}" created & added to Master Database!`, course: saved });
-    } catch (err) {
-        console.error('Quick course error:', err);
-        return res.status(500).json({ error: 'Failed to create course.' });
+        console.error('Syllabus error:', err);
+        return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
     }
 });
 
 app.get('/api/admin/courses-list', async (req, res) => {
     try {
-        const { data, error } = await supabase.from('master_courses').select('id, course_code, title, domain, target_departments').order('id', { ascending: false });
+        const { data, error } = await supabase
+            .from('master_courses')
+            .select('id, course_code, title, domain, target_departments')
+            .order('id', { ascending: false });
+
         if (error) return res.status(500).json({ error: error.message });
         return res.json({ courses: data || [] });
     } catch (err) {
@@ -276,7 +268,7 @@ app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
 DOCUMENT:
 ${documentText.slice(0, 15000)}
 
-Return ONLY a valid JSON array:
+Return ONLY valid JSON array:
 [{"question": "Question?", "options": ["A", "B", "C", "D"], "correct_index": 0}]`;
 
         const rawJson = await generateAIResponse(prompt);
@@ -318,6 +310,17 @@ app.get('/api/competencies/:email', async (req, res) => {
         return res.json({ statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0 });
     }
 });
+
+function parseDeptCode(deptStr) {
+    if (!deptStr) return 'ALL';
+    const match = deptStr.match(/\(([^)]+)\)/);
+    if (match && match[1]) return match[1].trim().toUpperCase();
+    const knownCodes = ['NAD', 'ESD', 'PSD', 'SSD', 'FOD', 'SDRD', 'DPD', 'DIID', 'NSSTA', 'CAPD', 'NSSO', 'IPMD', 'SDG_LAB', 'STATE_DES', 'DSO', 'TALUK'];
+    for (const code of knownCodes) {
+        if (deptStr.toUpperCase().includes(code)) return code;
+    }
+    return deptStr.trim().toUpperCase();
+}
 
 app.post('/api/recommendations', async (req, res) => {
     const { department } = req.body;
