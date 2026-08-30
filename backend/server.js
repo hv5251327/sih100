@@ -1198,13 +1198,79 @@ RESPONSE GUIDELINES:
         if (aiReply && aiReply.trim()) {
             return res.json({ reply: aiReply.trim() });
         }
+
+        // --- HIGH-INTELLIGENCE DOMAIN KNOWLEDGE GRAPH FALLBACK ---
+        const msgLower = (message || '').toLowerCase();
+
+        // 1. Certificate Upload Query
+        if (msgLower.includes('certificate') || msgLower.includes('upload') || msgLower.includes('submit cert') || msgLower.includes('verify')) {
+            return res.json({
+                reply: `📜 **How to Upload Your Certificate:**\n1. Locate the target course card in your **AI-Curated Roadmap**.\n2. Click the orange **"Certificate"** button.\n3. Choose your PDF or image certificate file (from iGOT Karmayogi, NSSTA Greater Noida, DoPT, ISI, etc.).\n4. The **MoSPI AI Credential Auditor** automatically reads the document, verifies your identity (${officerName}) and issuing body, marks the course complete in the database, and awards your competency credits!`
+            });
+        }
+
+        // 2. Quiz / Assessment Query
+        if (msgLower.includes('quiz') || msgLower.includes('assessment') || msgLower.includes('test') || msgLower.includes('exam') || msgLower.includes('question')) {
+            return res.json({
+                reply: `📝 **How to Take a Course Assessment Quiz:**\n1. Click the blue **"Quiz"** button on any course card in your roadmap.\n2. You will be presented with 5 multiple-choice questions fetched directly from the accredited MoSPI Database Question Bank.\n3. Select your answers and click **"Submit Assessment"**.\n4. Scoring 60% or higher instantly passes the module, marks it complete, credits points to your competency profile, and promotes the next course in your pathway!`
+            });
+        }
+
+        // 3. Remaining Courses & Progress Query
+        if (msgLower.includes('left') || msgLower.includes('remain') || msgLower.includes('how many') || msgLower.includes('progress') || msgLower.includes('roadmap')) {
+            return res.json({
+                reply: `📊 **Your Live Training Status & Remaining Courses:**\n• **Completed Modules:** ${completedCount} course(s)\n• **Remaining in Roadmap:** ${remainingCount} course(s)\n• **Current Overall Readiness:** ${comp.overall_score}%\n\n🎯 **Next Priority Courses for ${dept}:**\n${nextRecommendedTitles || 'All core departmental modules completed!'}`
+            });
+        }
+
+        // 4. Competency Passport Query
+        if (msgLower.includes('passport') || msgLower.includes('download') || msgLower.includes('transcript') || msgLower.includes('pdf')) {
+            return res.json({
+                reply: `🎓 **How to Download Your Competency Passport:**\nScroll to the bottom of your dashboard and click the blue **"Download Official Competency Passport (PDF)"** button. This generates a signed official transcript with your verified scores across Statistical Methods (${comp.statistical_score}%), Technical Tools (${comp.technical_score}%), Governance (${comp.governance_score}%), and Leadership (${comp.leadership_score}%).`
+            });
+        }
+
+        // 5. Score Calculation Query
+        if (msgLower.includes('score') || msgLower.includes('percent') || msgLower.includes('calculate') || msgLower.includes('point') || msgLower.includes('gap') || msgLower.includes('deficit')) {
+            return res.json({
+                reply: `📈 **How Competency Scores Are Calculated:**\nYour proficiency is calculated dynamically across 4 pillars based on evaluation scores and curriculum capacity requirements:\n• **Statistical Methods:** ${comp.statistical_score}% (Target: 6 core modules)\n• **Technical & Analytical Tools:** ${comp.technical_score}% (Target: 4 core modules)\n• **Digital Governance & DPDP:** ${comp.governance_score}% (Target: 3 core modules)\n• **Leadership & Management:** ${comp.leadership_score}% (Target: 3 core modules)\nEach passed quiz or approved certificate increases the corresponding pillar score proportionally.`
+            });
+        }
+
+        // 6. Specific Domain / Methodology Queries
+        if (msgLower.includes('sna') || msgLower.includes('gdp') || msgLower.includes('national account')) {
+            return res.json({
+                reply: `🏛️ **System of National Accounts (SNA 2008) & GDP:**\nSNA 2008 is the internationally accepted standard statistical framework for compiling macroeconomic aggregates, Gross Domestic Product (GDP), Gross Value Added (GVA), and Supply-Use Tables (SUT) maintained by NAD, MoSPI.`
+            });
+        }
+
+        if (msgLower.includes('plfs') || msgLower.includes('labour') || msgLower.includes('employment')) {
+            return res.json({
+                reply: `👥 **Periodic Labour Force Survey (PLFS):**\nPLFS is the nationwide primary household survey by NSSO/FOD to estimate key employment and unemployment indicators (UR, WPR, LFPR) in both Usual Status (ps+ss) and Current Weekly Status (CWS).`
+            });
+        }
+
+        if (msgLower.includes('capi') || msgLower.includes('tablet') || msgLower.includes('field')) {
+            return res.json({
+                reply: `📱 **Computer-Assisted Personal Interviewing (CAPI):**\nCAPI replaces traditional paper schedules with encrypted digital tablets for field data collection in NSSO surveys, featuring real-time data validation, GPS tagging, and paradata auditing.`
+            });
+        }
+
+        if (msgLower.includes('dpdp') || msgLower.includes('privacy') || msgLower.includes('data protection')) {
+            return res.json({
+                reply: `🔒 **Digital Personal Data Protection (DPDP) Act 2023:**\nUnder the DPDP Act 2023, official statistical organizations must implement strict data fiduciary obligations, respondent anonymization, encrypted transmission, and statutory confidentiality for microdata.`
+            });
+        }
+
+        return res.json({
+            reply: `Namaste ${officerName}! You currently have ${completedCount} completed course(s) and ${remainingCount} course(s) remaining in your ${dept} roadmap.\n\n• To take a quiz, click **"Quiz"** on any course card.\n• To upload a certificate, click **"Certificate"** on any course card.\n• To view your certified transcript, click **"Download Official Competency Passport (PDF)"** below.`
+        });
     } catch (err) {
         console.error('Chatbot error:', err.message);
+        return res.json({
+            reply: `Namaste ${officerName}! You currently have ${completedCount} completed course(s) and ${remainingCount} course(s) remaining in your roadmap. To earn credits, click "Quiz" on any course card or click "Certificate" to upload your accredited certificate.`
+        });
     }
-
-    return res.json({
-        reply: `Namaste ${officerName}! You currently have ${completedCount} completed course(s) and ${remainingCount} course(s) remaining in your roadmap. To earn credits, click "Quiz" on any course card to take the 5-question evaluation, or click "Certificate" to upload your accredited certificate.`
-    });
 });
 
 // --- IN-MEMORY FALLBACK CACHES FOR CERTIFICATES & WORKSHOPS ---
