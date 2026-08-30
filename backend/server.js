@@ -905,13 +905,14 @@ async function recalculateCompetencies(cleanEmail) {
             const titleLower = (c.title || '').toLowerCase();
 
             // Calculate actual earned competency points proportional to course score & domain weight
-            if (dom.includes('stat') || titleLower.includes('gdp') || titleLower.includes('sna') || titleLower.includes('sampling') || titleLower.includes('plfs') || titleLower.includes('asuse') || titleLower.includes('hces') || titleLower.includes('sut') || titleLower.includes('time series') || titleLower.includes('index') || titleLower.includes('econometrics') || titleLower.includes('multiplier')) {
+            const dom = (c.domain || '').trim();
+            if (dom === 'Statistical Competencies' || dom.toLowerCase().includes('stat')) {
                 statEarned += (100 / BENCHMARKS.statistical) * scorePct;
-            } else if (dom.includes('tech') || titleLower.includes('python') || titleLower.includes('sql') || titleLower.includes('capi') || titleLower.includes('r ') || titleLower.includes('tableau') || titleLower.includes('cloud') || titleLower.includes('machine learning') || titleLower.includes('ai ') || titleLower.includes('paradata') || titleLower.includes('encryption')) {
+            } else if (dom === 'Technical Competencies' || dom.toLowerCase().includes('tech')) {
                 techEarned += (100 / BENCHMARKS.technical) * scorePct;
-            } else if (dom.includes('govern') || titleLower.includes('dpdp') || titleLower.includes('posh') || titleLower.includes('cyber') || titleLower.includes('rti') || titleLower.includes('official statistics') || titleLower.includes('sdg') || titleLower.includes('lif') || titleLower.includes('metadata')) {
+            } else if (dom === 'Digital Governance' || dom.toLowerCase().includes('govern')) {
                 govEarned += (100 / BENCHMARKS.governance) * scorePct;
-            } else if (dom.includes('behav') || dom.includes('manage') || dom.includes('lead') || titleLower.includes('leadership') || titleLower.includes('ethics') || titleLower.includes('public policy') || titleLower.includes('communication') || titleLower.includes('conflict')) {
+            } else if (dom === 'Behavioural & Managerial' || dom.toLowerCase().includes('behav') || dom.toLowerCase().includes('manage')) {
                 leadEarned += (100 / BENCHMARKS.leadership) * scorePct;
             } else {
                 statEarned += (100 / BENCHMARKS.statistical) * scorePct;
