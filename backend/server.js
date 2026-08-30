@@ -7,6 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+const GROK_API_KEY = process.env.GROK_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 let rawUrl = process.env.SUPABASE_URL || 'https://ccdrahlnsfrncsqaiumt.supabase.co';
@@ -15,20 +16,62 @@ const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp
 
 const supabase = createClient(cleanUrl, supabaseKey);
 
+// Unified LLM Generator: Primary Grok API -> Fallback Gemini API
+async function generateAIResponse(prompt) {
+    if (GROK_API_KEY) {
+        try {
+            const res = await fetch('https://api.x.ai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GROK_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'grok-beta',
+                    messages: [
+                        { role: 'system', content: 'You are the Chief Academic Training Director at NSSTA (National Statistical Systems Training Academy), MoSPI, Government of India.' },
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: 0.2
+                })
+            });
+            const data = await res.json();
+            const text = data?.choices?.[0]?.message?.content;
+            if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
+        } catch (e) {
+            console.warn('Grok API call failed, falling back to Gemini:', e.message);
+        }
+    }
+
+    if (GEMINI_API_KEY) {
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await res.json();
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
+        } catch (e) {
+            console.warn('Gemini API call failed:', e.message);
+        }
+    }
+
+    return null;
+}
+
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'MoSPI Skill Intelligence Engine Active', timestamp: new Date() });
+    res.json({ status: 'MoSPI Skill Intelligence Engine Active with Grok & Gemini', timestamp: new Date() });
 });
 
-// Admin API: Extract syllabus from PDF text and convert into structured course modules in DB
+// Admin API: Parse PDF Syllabus and auto-generate structured courses into DB
 app.post('/api/admin/parse-syllabus', async (req, res) => {
     const { syllabusText, defaultDivision } = req.body;
     if (!syllabusText) return res.status(400).json({ error: 'Syllabus text content is required.' });
 
     try {
-        let extractedModules = [];
-        if (GEMINI_API_KEY) {
-            const prompt = `You are the NSSTA Academic Curriculum Director at MoSPI.
-Analyze the following official NSSTA syllabus/circular text and break it down into clean, standalone competency courses for official statisticians.
+        const prompt = `Analyze the following official NSSTA syllabus/circular text and break it down into clean, standalone competency courses for official statisticians.
 
 SYLLABUS TEXT:
 ${syllabusText.slice(0, 20000)}
@@ -47,19 +90,10 @@ For each topic/chapter found, return ONLY a valid JSON array of objects structur
   }
 ]`;
 
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                })
-            });
-
-            const data = await aiRes.json();
-            let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-            extractedModules = JSON.parse(rawText);
+        const rawJson = await generateAIResponse(prompt);
+        let extractedModules = [];
+        if (rawJson) {
+            extractedModules = JSON.parse(rawJson);
         }
 
         if (extractedModules.length > 0) {
@@ -136,8 +170,7 @@ app.post('/api/admin/draft-course', async (req, res) => {
             video_url: 'https://portal.igotkarmayogi.gov.in'
         };
 
-        if (GEMINI_API_KEY) {
-            const prompt = `Generate a detailed NSSTA training module for MoSPI officers.
+        const prompt = `Generate a detailed NSSTA training module for MoSPI officers.
 Department: ${department}
 Domain: ${domain}
 Topic Focus: ${topic}
@@ -152,18 +185,10 @@ Return ONLY valid JSON format:
   "description": "2-sentence practical operational purpose",
   "video_url": "https://portal.igotkarmayogi.gov.in"
 }`;
-            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                })
-            });
-            const data = await aiRes.json();
-            let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-            draft = JSON.parse(rawText);
+
+        const rawJson = await generateAIResponse(prompt);
+        if (rawJson) {
+            draft = JSON.parse(rawJson);
         }
 
         const { data: saved, error } = await supabase.from('pending_courses').insert([{ ...draft, status: 'PENDING' }]).select().single();
@@ -221,25 +246,16 @@ app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
             { question: "Which framework governs respondent privacy and data protection?", options: ["DPDP Act 2023 & MoSPI Standards", "Generic public domain rules", "Unverified guidelines", "Local administrative orders only"], correct_index: 0 }
         ];
 
-        if (GEMINI_API_KEY) {
-            const prompt = `Generate 5 multiple-choice questions from the provided training document text specifically for the course: "${courseTitle}".
+        const prompt = `Generate 5 multiple-choice questions from the provided training document text specifically for the course: "${courseTitle}".
 DOCUMENT CONTENT:
 ${documentText.slice(0, 15000)}
 
 Return ONLY a valid JSON array of objects:
 [{"question": "Clear question text?", "options": ["Option A", "Option B", "Option C", "Option D"], "correct_index": 0}]`;
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                })
-            });
-            const data = await response.json();
-            let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-            questions = JSON.parse(rawText);
+
+        const rawJson = await generateAIResponse(prompt);
+        if (rawJson) {
+            questions = JSON.parse(rawJson);
         }
 
         const rowsToInsert = questions.map(q => ({
@@ -295,16 +311,43 @@ app.post('/api/recommendations', async (req, res) => {
         const mandatoryFoundation = allCourses.filter(c => c.is_general_mandatory === true).map(c => ({ ...c, learning_stage: 'Foundation' }));
         const domainPool = allCourses.filter(c => c.is_general_mandatory !== true);
 
-        let domainCourses = domainPool.filter(c => {
-            const targets = Array.isArray(c.target_departments) ? c.target_departments : ['ALL'];
-            return targets.includes('ALL') || targets.includes(deptCode);
-        }).map(c => {
-            const targets = Array.isArray(c.target_departments) ? c.target_departments : ['ALL'];
-            return {
-                ...c,
-                learning_stage: targets.includes(deptCode) ? 'Functional Core' : 'Advanced Strategic'
-            };
-        });
+        let domainCourses = [];
+        const prompt = `Officer: Cadre: ${cadre}, Department: ${department} (Code: ${deptCode}), Designation: ${designation}.
+Select the most relevant domain courses from this list:
+${JSON.stringify(domainPool.map(c => ({ id: c.id, code: c.course_code, title: c.title, domain: c.domain, target: c.target_departments, desc: c.description })))}
+
+Assign each selected course to either "Functional Core" or "Advanced Strategic".
+Return ONLY valid JSON array with format:
+[{"id": 1, "learning_stage": "Functional Core"}]`;
+
+        const rawJson = await generateAIResponse(prompt);
+        if (rawJson) {
+            try {
+                const aiSelections = JSON.parse(rawJson);
+                const poolMap = new Map(domainPool.map(c => [c.id, c]));
+                domainCourses = aiSelections
+                    .filter(item => poolMap.has(item.id))
+                    .map(item => ({
+                        ...poolMap.get(item.id),
+                        learning_stage: item.learning_stage || 'Functional Core'
+                    }));
+            } catch (e) {
+                console.warn('AI ranking parsing fallback');
+            }
+        }
+
+        if (domainCourses.length === 0) {
+            domainCourses = domainPool.filter(c => {
+                const targets = Array.isArray(c.target_departments) ? c.target_departments : ['ALL'];
+                return targets.includes('ALL') || targets.includes(deptCode);
+            }).map(c => {
+                const targets = Array.isArray(c.target_departments) ? c.target_departments : ['ALL'];
+                return {
+                    ...c,
+                    learning_stage: targets.includes(deptCode) ? 'Functional Core' : 'Advanced Strategic'
+                };
+            });
+        }
 
         const combined = [...mandatoryFoundation, ...domainCourses];
         return res.json({ courses: combined, source: 'master_courses_direct' });
@@ -334,19 +377,9 @@ app.post('/api/generate-quiz', async (req, res) => {
 
 app.post('/api/chatbot', async (req, res) => {
     const { message, userProfile } = req.body;
-    if (GEMINI_API_KEY) {
-        try {
-            const prompt = `You are Bhashini AI on MoSPI Portal. Officer: ${userProfile?.name}, Dept: ${userProfile?.department}. Question: "${message}". Reply concisely in 2 sentences recommending their courses.`;
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            const data = await response.json();
-            return res.json({ reply: data?.candidates?.[0]?.content?.parts?.[0]?.text });
-        } catch (e) {}
-    }
-    return res.json({ reply: `Namaste ${userProfile?.name || 'Officer'}! Complete your mandatory Foundation modules and departmental Functional Core courses below.` });
+    const prompt = `You are Bhashini AI on MoSPI Portal. Officer: ${userProfile?.name}, Dept: ${userProfile?.department}. Question: "${message}". Reply concisely in 2 sentences recommending their courses.`;
+    const reply = await generateAIResponse(prompt);
+    return res.json({ reply: reply || `Namaste ${userProfile?.name || 'Officer'}! Complete your mandatory Foundation modules and departmental Functional Core courses below.` });
 });
 
 app.post('/api/progress/save', async (req, res) => {
