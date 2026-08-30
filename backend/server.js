@@ -846,44 +846,92 @@ async function getOfficerCompletedCourses(cleanEmail) {
 }
 
 async function recalculateCompetencies(cleanEmail) {
-    const completedNormTitles = await getOfficerCompletedCourses(cleanEmail);
-    
+    // Map completed courses to their actual quiz/certificate scores
+    const completedScores = new Map();
+
+    memoryUserProgress
+        .filter(p => p.user_email === cleanEmail && (p.quiz_passed || p.video_completed))
+        .forEach(p => {
+            const norm = normalizeTitle(p.course_title);
+            const sc = Math.max(completedScores.get(norm) || 0, p.score || 100);
+            completedScores.set(norm, sc);
+        });
+
+    memoryCertificates
+        .filter(c => c.user_email === cleanEmail && c.status === 'approved')
+        .forEach(c => {
+            const norm = normalizeTitle(c.course_title);
+            completedScores.set(norm, 100);
+        });
+
+    try {
+        const { data: dbProg } = await supabase.from('user_course_progress').select('course_title, score, quiz_passed, video_completed').eq('user_email', cleanEmail);
+        (dbProg || []).filter(p => p.quiz_passed || p.video_completed).forEach(p => {
+            const norm = normalizeTitle(p.course_title);
+            const sc = Math.max(completedScores.get(norm) || 0, p.score || 100);
+            completedScores.set(norm, sc);
+        });
+    } catch (e) {}
+
+    try {
+        const { data: dbCert } = await supabase.from('course_certificates').select('course_title, status').eq('user_email', cleanEmail).eq('status', 'approved');
+        (dbCert || []).forEach(c => {
+            const norm = normalizeTitle(c.course_title);
+            completedScores.set(norm, 100);
+        });
+    } catch (e) {}
+
     let { data: allCourses } = await supabase.from('master_courses').select('id, title, domain, is_general_mandatory');
     if (!allCourses || allCourses.length === 0) allCourses = [];
 
-    let statScore = 0;
-    let techScore = 0;
-    let govScore = 0;
-    let leadScore = 0;
+    // Curriculum domain module benchmark capacities
+    const BENCHMARKS = {
+        statistical: 6, // 6 core courses required for 100% Statistical proficiency (16.67% per course)
+        technical: 4,   // 4 core courses required for 100% Technical proficiency (25% per course)
+        governance: 3,  // 3 core courses required for 100% Governance proficiency (33.33% per course)
+        leadership: 3   // 3 core courses required for 100% Leadership proficiency (33.33% per course)
+    };
+
+    let statEarned = 0;
+    let techEarned = 0;
+    let govEarned = 0;
+    let leadEarned = 0;
 
     allCourses.forEach(c => {
         const norm = normalizeTitle(c.title);
-        if (completedNormTitles.has(norm)) {
+        if (completedScores.has(norm)) {
+            const scorePct = (completedScores.get(norm) || 100) / 100;
             const dom = (c.domain || '').toLowerCase();
             const titleLower = (c.title || '').toLowerCase();
 
-            // Strict domain mapping: only increment the specific pillar for that course's domain!
+            // Calculate actual earned competency points proportional to course score & domain weight
             if (dom.includes('stat') || titleLower.includes('gdp') || titleLower.includes('sna') || titleLower.includes('sampling') || titleLower.includes('plfs') || titleLower.includes('asuse') || titleLower.includes('hces') || titleLower.includes('sut') || titleLower.includes('time series') || titleLower.includes('index') || titleLower.includes('econometrics') || titleLower.includes('multiplier')) {
-                statScore += 25;
+                statEarned += (100 / BENCHMARKS.statistical) * scorePct;
             } else if (dom.includes('tech') || titleLower.includes('python') || titleLower.includes('sql') || titleLower.includes('capi') || titleLower.includes('r ') || titleLower.includes('tableau') || titleLower.includes('cloud') || titleLower.includes('machine learning') || titleLower.includes('ai ') || titleLower.includes('paradata') || titleLower.includes('encryption')) {
-                techScore += 25;
+                techEarned += (100 / BENCHMARKS.technical) * scorePct;
             } else if (dom.includes('govern') || titleLower.includes('dpdp') || titleLower.includes('posh') || titleLower.includes('cyber') || titleLower.includes('rti') || titleLower.includes('official statistics') || titleLower.includes('sdg') || titleLower.includes('lif') || titleLower.includes('metadata')) {
-                govScore += 25;
+                govEarned += (100 / BENCHMARKS.governance) * scorePct;
             } else if (dom.includes('behav') || dom.includes('manage') || dom.includes('lead') || titleLower.includes('leadership') || titleLower.includes('ethics') || titleLower.includes('public policy') || titleLower.includes('communication') || titleLower.includes('conflict')) {
-                leadScore += 25;
+                leadEarned += (100 / BENCHMARKS.leadership) * scorePct;
             } else {
-                statScore += 25;
+                statEarned += (100 / BENCHMARKS.statistical) * scorePct;
             }
         }
     });
 
+    const statScore = Math.min(100, Math.round(statEarned));
+    const techScore = Math.min(100, Math.round(techEarned));
+    const govScore = Math.min(100, Math.round(govEarned));
+    const leadScore = Math.min(100, Math.round(leadEarned));
+    const overallScore = Math.min(100, Math.round((statScore + techScore + govScore + leadScore) / 4));
+
     const result = {
         user_email: cleanEmail,
-        statistical_score: Math.min(100, statScore),
-        technical_score: Math.min(100, techScore),
-        governance_score: Math.min(100, govScore),
-        leadership_score: Math.min(100, leadScore),
-        overall_score: Math.min(100, Math.round((Math.min(100, statScore) + Math.min(100, techScore) + Math.min(100, govScore) + Math.min(100, leadScore)) / 4))
+        statistical_score: statScore,
+        technical_score: techScore,
+        governance_score: govScore,
+        leadership_score: leadScore,
+        overall_score: overallScore
     };
 
     memoryCompetencies[cleanEmail] = result;
@@ -891,11 +939,11 @@ async function recalculateCompetencies(cleanEmail) {
     try {
         const { error } = await supabase.from('officer_competencies').upsert([{
             user_email: cleanEmail,
-            statistical_score: result.statistical_score,
-            technical_score: result.technical_score,
-            governance_score: result.governance_score,
-            leadership_score: result.leadership_score,
-            overall_score: result.overall_score,
+            statistical_score: statScore,
+            technical_score: techScore,
+            governance_score: govScore,
+            leadership_score: leadScore,
+            overall_score: overallScore,
             updated_at: new Date().toISOString()
         }], { onConflict: 'user_email' });
         if (error) console.error('DB Upsert Competencies Error:', error.message);
