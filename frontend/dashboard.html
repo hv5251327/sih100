@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -372,16 +372,18 @@
         return;
       }
       try {
-        await fetch(`${API_URL}/api/progress/save`, {
+        const file = fileInput.files[0];
+        await fetch(`${API_URL}/api/certificates/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email: currentUser.email,
+            userEmail: currentUser.email,
+            officerName: currentUser.name,
             courseTitle: currentActiveCourse,
-            score: 100
+            fileName: file ? file.name : 'Certificate_Uploaded.pdf'
           })
         });
-        alert(`Certificate for "${currentActiveCourse}" uploaded! Competency score updated.`);
+        alert(`Certificate for "${currentActiveCourse}" submitted successfully! It is now in the administrative audit queue for verification.`);
         closeModal('cert-modal');
         await loadCompetencies();
       } catch (e) {

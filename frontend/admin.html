@@ -310,6 +310,192 @@
       </section>
     </div>
 
+    <!-- 1. Officer Certificate Verification & Approval Queue -->
+    <section class="panel" style="border-top: 4px solid var(--accent);">
+      <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
+        <div>
+          <h2><i class="fa-solid fa-stamp"></i> Officer Certificate Verification & Approval Queue</h2>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Audit uploaded course certificates, verify document validity, and credit verified competency points (+25 Pts) to officer records.</p>
+        </div>
+        <button class="btn-action" onclick="loadCertificatesQueue()" style="background:#0284c7; padding:6px 12px; font-size:0.85rem;"><i class="fa-solid fa-arrows-rotate"></i> Refresh Queue</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Officer Name & Email</th>
+              <th>Course Title</th>
+              <th>Submitted Document</th>
+              <th>Timestamp</th>
+              <th style="text-align:center;">Status</th>
+              <th style="text-align:center;">Administrative Action</th>
+            </tr>
+          </thead>
+          <tbody id="cert-queue-table-body">
+            <tr><td colspan="6" style="text-align:center;">Loading certificate verification queue...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. NSSTA Annual Training Plan (ATP) & Workshop Scheduler -->
+    <section class="panel">
+      <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
+        <div>
+          <h2><i class="fa-solid fa-calendar-days"></i> NSSTA Annual Training Calendar (ATP) & Workshop Scheduler</h2>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Plan and schedule physical, hybrid, and virtual capacity-building workshops across MoSPI divisions.</p>
+        </div>
+      </div>
+      
+      <!-- Workshop Creation Form -->
+      <form id="workshopSchedulerForm" onsubmit="scheduleWorkshop(event)" style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:16px;">
+        <div style="font-weight:700; font-size:0.92rem; color:var(--primary); margin-bottom:10px;"><i class="fa-solid fa-plus-circle"></i> Schedule New Training Workshop Batch</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Workshop / Batch Title</label>
+            <input type="text" id="wsTitle" placeholder="e.g. National Accounts SUT & Input-Output Workshop" required>
+          </div>
+          <div class="form-group">
+            <label>Target Division / Department</label>
+            <select id="wsDivision" required>
+              <option value="ALL">Universal (All Divisions)</option>
+              <option value="NAD">National Accounts Division (NAD)</option>
+              <option value="FOD">Field Operations Division (FOD)</option>
+              <option value="PSD">Price Statistics Division (PSD)</option>
+              <option value="SSD">Social Statistics Division (SSD)</option>
+              <option value="ESD">Economic Statistics Division (ESD)</option>
+              <option value="SDRD">Survey Design and Research Division (SDRD)</option>
+              <option value="IPMD">Infrastructure and Project Monitoring Division (IPMD)</option>
+              <option value="DIID">Data Informatics and Innovation Division (DIID)</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:10px;">
+          <div class="form-group">
+            <label>Target Cadre</label>
+            <select id="wsCadre" required>
+              <option value="ALL">All Cadres (ISS, SSS, Non-Cadre)</option>
+              <option value="Indian Statistical Service (ISS)">Indian Statistical Service (ISS)</option>
+              <option value="Subordinate Statistical Service (SSS)">Subordinate Statistical Service (SSS)</option>
+              <option value="General Central Service">General Central Service</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Training Mode / Venue</label>
+            <select id="wsMode" required>
+              <option value="In-Person (NSSTA Greater Noida)">In-Person (NSSTA Greater Noida Complex)</option>
+              <option value="Hybrid">Hybrid (In-Person + Virtual Live Stream)</option>
+              <option value="Virtual">Virtual (Webinar / MeghRaj Cloud Room)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-top:10px;">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="wsStartDate" required>
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="wsEndDate" required>
+          </div>
+          <div class="form-group">
+            <label>Max Seat Capacity</label>
+            <input type="number" id="wsMaxSeats" value="40" min="5" max="500" required>
+          </div>
+          <div class="form-group" style="display:flex; align-items:flex-end;">
+            <button type="submit" class="btn-action" style="width:100%; height:40px;"><i class="fa-solid fa-calendar-plus"></i> Add to Calendar</button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Workshops Table -->
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Workshop Title</th>
+              <th>Division & Cadre</th>
+              <th>Mode / Venue</th>
+              <th>Schedule Dates</th>
+              <th style="text-align:center;">Seats / Capacity</th>
+              <th style="text-align:center;">Status</th>
+              <th style="text-align:center;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="workshops-table-body">
+            <tr><td colspan="7" style="text-align:center;">Loading scheduled workshops...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. Training Budget & Capacity Allocation Simulator -->
+    <section class="panel" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-left: 4px solid #0f766e;">
+      <div class="panel-header">
+        <div>
+          <h2><i class="fa-solid fa-calculator"></i> Training Budget, Person-Days & Capacity Allocation Simulator</h2>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Simulate logistical expenditure, total training person-days, and projected competency uplift for upcoming capacity-building programs.</p>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:10px;">
+        <div style="background:#ffffff; border:1px solid var(--border); border-radius:8px; padding:16px;">
+          <div style="font-weight:700; font-size:0.9rem; color:var(--text-main); margin-bottom:12px;"><i class="fa-solid fa-sliders"></i> Simulation Parameters</div>
+          <div class="form-group">
+            <label>Target Statistical Division</label>
+            <select id="simDept" onchange="runBudgetSimulator()">
+              <option value="All Divisions">Universal (All MoSPI Divisions)</option>
+              <option value="National Accounts Division (NAD)">National Accounts Division (NAD)</option>
+              <option value="Field Operations Division (FOD)">Field Operations Division (FOD)</option>
+              <option value="Price Statistics Division (PSD)">Price Statistics Division (PSD)</option>
+              <option value="Social Statistics Division (SSD)">Social Statistics Division (SSD)</option>
+            </select>
+          </div>
+          <div class="grid-2" style="margin-top:10px;">
+            <div class="form-group">
+              <label>Nominated Officers Count: <strong id="simOfficerVal">35</strong></label>
+              <input type="range" id="simOfficers" min="5" max="150" value="35" oninput="document.getElementById('simOfficerVal').innerText = this.value; runBudgetSimulator();">
+            </div>
+            <div class="form-group">
+              <label>Duration (Days): <strong id="simDaysVal">5</strong></label>
+              <input type="range" id="simDays" min="1" max="21" value="5" oninput="document.getElementById('simDaysVal').innerText = this.value; runBudgetSimulator();">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:10px;">
+            <label>Delivery Mode</label>
+            <select id="simMode" onchange="runBudgetSimulator()">
+              <option value="In-Person (NSSTA Greater Noida)">In-Person Residential (NSSTA Greater Noida)</option>
+              <option value="Hybrid">Hybrid (Classroom + Regional Live Streaming)</option>
+              <option value="Virtual">Virtual (Gov MeghRaj Cloud)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div class="stat-card" style="border-left:4px solid var(--primary);">
+            <div class="stat-label"><i class="fa-solid fa-user-clock"></i> Total Person-Days</div>
+            <div class="stat-val" id="sim-person-days">175</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Nominated officer-days</div>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #0f766e;">
+            <div class="stat-label"><i class="fa-solid fa-indian-rupee-sign"></i> Estimated Budget</div>
+            <div class="stat-val" id="sim-budget-lakhs">₹ 7.88 L</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Logistics, TA/DA & Venue</div>
+          </div>
+          <div class="stat-card" style="border-left:4px solid var(--accent);">
+            <div class="stat-label"><i class="fa-solid fa-chart-line"></i> Projected Uplift</div>
+            <div class="stat-val" id="sim-uplift-pct" style="color:var(--success);">+39.5%</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Division competency gain</div>
+          </div>
+          <div class="stat-card" style="border-left:4px solid var(--warning);">
+            <div class="stat-label"><i class="fa-solid fa-building"></i> Facility Load</div>
+            <div class="stat-val" id="sim-facility-load">58%</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">NSSTA capacity utilization</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
   <script>
@@ -317,7 +503,14 @@
     let allOfficers = [];
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await Promise.all([loadMetadataDropdowns(), loadOfficerAnalytics(), loadCoursesDropdown()]);
+      await Promise.all([
+        loadMetadataDropdowns(), 
+        loadOfficerAnalytics(), 
+        loadCoursesDropdown(),
+        loadCertificatesQueue(),
+        loadWorkshopsCalendar()
+      ]);
+      runBudgetSimulator();
     });
 
     async function loadMetadataDropdowns() {
@@ -828,6 +1021,167 @@
         alert(`Quiz error: ${err.message}`);
       } finally {
         submitBtn.disabled = false;
+      }
+    }
+
+    // --- 1. Certificate Review Queue ---
+    async function loadCertificatesQueue() {
+      const tbody = document.getElementById("cert-queue-table-body");
+      try {
+        const res = await fetch(`${API_URL}/api/admin/certificates`);
+        const data = await res.json();
+        const list = data.certificates || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No certificates pending audit.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(c => {
+          const isPending = c.status === 'pending';
+          const statusBadge = c.status === 'approved' 
+            ? '<span class="stage-badge" style="background:#dcfce7; color:#15803d;"><i class="fa-solid fa-circle-check"></i> Approved (+25 Pts)</span>'
+            : (c.status === 'rejected' 
+                ? '<span class="stage-badge" style="background:#fee2e2; color:#b91c1c;"><i class="fa-solid fa-circle-xmark"></i> Rejected</span>'
+                : '<span class="stage-badge" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-clock"></i> Pending Audit</span>');
+
+          const actionButtons = isPending ? `
+            <button onclick="reviewCertificate('${c.id}', 'approved')" class="btn-action" style="background:#15803d; padding:4px 8px; font-size:0.78rem; margin-right:4px;"><i class="fa-solid fa-check"></i> Approve</button>
+            <button onclick="reviewCertificate('${c.id}', 'rejected')" class="btn-action" style="background:#b91c1c; padding:4px 8px; font-size:0.78rem;"><i class="fa-solid fa-xmark"></i> Reject</button>
+          ` : `<span style="font-size:0.78rem; color:var(--text-muted);">${c.admin_remarks || 'Audit complete'}</span>`;
+
+          const timeStr = c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'N/A';
+
+          return `
+            <tr>
+              <td><strong>${c.officer_name || 'Officer'}</strong><br><small style="color:var(--text-muted);">${c.user_email}</small></td>
+              <td><strong>${c.course_title}</strong></td>
+              <td><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> ${c.certificate_file_name || 'Certificate.pdf'}</td>
+              <td style="font-size:0.8rem; color:var(--text-muted);">${timeStr}</td>
+              <td style="text-align:center;">${statusBadge}</td>
+              <td style="text-align:center;">${actionButtons}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">Failed to load certificate queue.</td></tr>`;
+      }
+    }
+
+    async function reviewCertificate(certId, decisionStatus) {
+      const remarks = prompt(`Enter optional remarks for ${decisionStatus.toUpperCase()}:`, decisionStatus === 'approved' ? 'Verified by NSSTA Training Authority' : 'Incomplete documentation');
+      if (remarks === null) return;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/certificates/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ certificateId: certId, status: decisionStatus, adminRemarks: remarks })
+        });
+        const data = await res.json();
+        alert(data.message || `Certificate ${decisionStatus}!`);
+        await loadCertificatesQueue();
+        await loadOfficerAnalytics();
+      } catch (e) {
+        alert("Failed to review certificate.");
+      }
+    }
+
+    // --- 2. NSSTA Annual Training Plan (ATP) & Workshop Calendar ---
+    async function loadWorkshopsCalendar() {
+      const tbody = document.getElementById("workshops-table-body");
+      try {
+        const res = await fetch(`${API_URL}/api/workshops`);
+        const data = await res.json();
+        const list = data.workshops || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No workshops scheduled.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(w => {
+          const modeBadge = w.mode.includes('In-Person') 
+            ? '<span class="stage-badge" style="background:#e0f2fe; color:#0369a1;"><i class="fa-solid fa-building-columns"></i> In-Person</span>'
+            : (w.mode === 'Hybrid' 
+                ? '<span class="stage-badge" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-tower-broadcast"></i> Hybrid</span>'
+                : '<span class="stage-badge" style="background:#dcfce7; color:#15803d;"><i class="fa-solid fa-laptop"></i> Virtual</span>');
+
+          return `
+            <tr>
+              <td><strong>${w.title}</strong></td>
+              <td>${w.division} (${w.cadre || 'ALL'})</td>
+              <td>${modeBadge}</td>
+              <td style="font-size:0.82rem;">${w.start_date || 'TBD'} to ${w.end_date || 'TBD'}</td>
+              <td style="text-align:center; font-weight:bold;">${w.enrolled_seats || 0} / ${w.max_seats || 40}</td>
+              <td style="text-align:center;"><span class="module-badge">${w.status || 'Scheduled'}</span></td>
+              <td style="text-align:center;">
+                <button onclick="deleteWorkshop('${w.id}')" class="btn-action" style="background:#b91c1c; padding:3px 8px; font-size:0.75rem;"><i class="fa-solid fa-trash"></i> Cancel</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#ef4444;">Failed to load training calendar.</td></tr>`;
+      }
+    }
+
+    async function scheduleWorkshop(e) {
+      e.preventDefault();
+      const title = document.getElementById("wsTitle").value;
+      const division = document.getElementById("wsDivision").value;
+      const cadre = document.getElementById("wsCadre").value;
+      const mode = document.getElementById("wsMode").value;
+      const startDate = document.getElementById("wsStartDate").value;
+      const endDate = document.getElementById("wsEndDate").value;
+      const maxSeats = document.getElementById("wsMaxSeats").value;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/workshops/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, division, cadre, mode, startDate, endDate, maxSeats })
+        });
+        const data = await res.json();
+        alert(data.message || 'Workshop scheduled in Annual Training Plan!');
+        document.getElementById("wsTitle").value = "";
+        await loadWorkshopsCalendar();
+      } catch (e) {
+        alert("Failed to schedule workshop.");
+      }
+    }
+
+    async function deleteWorkshop(wsId) {
+      if (!confirm("Are you sure you want to cancel this training workshop?")) return;
+      try {
+        await fetch(`${API_URL}/api/admin/workshops/${wsId}`, { method: 'DELETE' });
+        await loadWorkshopsCalendar();
+      } catch (e) {
+        alert("Failed to cancel workshop.");
+      }
+    }
+
+    // --- 3. Training Budget & Capacity Simulator ---
+    async function runBudgetSimulator() {
+      const division = document.getElementById("simDept") ? document.getElementById("simDept").value : 'All Divisions';
+      const targetOfficers = document.getElementById("simOfficers") ? document.getElementById("simOfficers").value : 35;
+      const durationDays = document.getElementById("simDays") ? document.getElementById("simDays").value : 5;
+      const mode = document.getElementById("simMode") ? document.getElementById("simMode").value : 'In-Person (NSSTA Greater Noida)';
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/budget-simulate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ division, targetOfficers, durationDays, mode })
+        });
+        const data = await res.json();
+
+        document.getElementById("sim-person-days").innerText = data.total_person_days || (targetOfficers * durationDays);
+        document.getElementById("sim-budget-lakhs").innerText = `₹ ${data.estimated_budget_lakhs || '0.00'} L`;
+        document.getElementById("sim-uplift-pct").innerText = `+${data.projected_competency_uplift_pct || 35}%`;
+        document.getElementById("sim-facility-load").innerText = data.facility_capacity_index || '50%';
+      } catch (e) {
+        console.warn("Budget simulator fallback calculation.");
       }
     }
 
