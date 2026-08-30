@@ -843,30 +843,58 @@ function parseDeptCode(deptStr) {
 }
 
 app.post('/api/recommendations', async (req, res) => {
-    const { department } = req.body;
+    const { department, designation, cadre } = req.body;
     const deptCode = parseDeptCode(department);
+    const desigUpper = (designation || '').toUpperCase();
+    const cadreUpper = (cadre || '').toUpperCase();
+
+    const isSenior = desigUpper.includes('DIRECTOR') || desigUpper.includes('DDG') || desigUpper.includes('ADG') || desigUpper.includes('JOINT') || desigUpper.includes('DEPUTY DIRECTOR');
+    const isJSO = desigUpper.includes('JUNIOR') || desigUpper.includes('JSO') || desigUpper.includes('ENUMERATOR') || desigUpper.includes('INVESTIGATOR');
+    const isSSO = desigUpper.includes('SENIOR') || desigUpper.includes('SSO') || desigUpper.includes('ASSISTANT DIRECTOR');
 
     try {
         let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
         if (!allCourses || allCourses.length === 0) return res.json({ courses: [] });
 
-        const mandatoryFoundation = allCourses.filter(c => c.is_general_mandatory === true).map(c => ({ ...c, learning_stage: 'Foundation' }));
+        const mandatoryFoundation = allCourses
+            .filter(c => c.is_general_mandatory === true)
+            .map(c => ({ ...c, learning_stage: 'Foundation' }));
+
         const domainPool = allCourses.filter(c => c.is_general_mandatory !== true);
 
         let functionalMatches = domainPool.filter(c => {
             const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
-            return targets.includes(deptCode);
+            const deptMatch = targets.includes(deptCode) || targets.includes('ALL');
+            
+            if (isJSO) return deptMatch && (c.difficulty_level === 'Foundation' || c.difficulty_level === 'Intermediate');
+            if (isSSO) return deptMatch && (c.difficulty_level === 'Intermediate' || c.difficulty_level === 'Advanced');
+            if (isSenior) return deptMatch && (c.difficulty_level === 'Advanced' || c.domain === 'Behavioural & Managerial');
+            return deptMatch;
         }).map(c => ({ ...c, learning_stage: 'Functional Core' }));
 
         let strategicMatches = domainPool.filter(c => {
             const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
-            return !targets.includes(deptCode) && (targets.includes('ALL') || c.difficulty_level === 'Advanced');
+            const isNotFunctional = !functionalMatches.some(f => f.id === c.id);
+            
+            if (isSenior) return isNotFunctional && (c.difficulty_level === 'Advanced' || c.domain === 'Behavioural & Managerial' || c.domain === 'Digital Governance');
+            if (isSSO) return isNotFunctional && (c.difficulty_level === 'Advanced' || c.domain === 'Technical Competencies');
+            return isNotFunctional && (targets.includes('ALL') || c.difficulty_level === 'Intermediate' || c.difficulty_level === 'Advanced');
         }).map(c => ({ ...c, learning_stage: 'Advanced Strategic' }));
 
-        if (functionalMatches.length === 0) functionalMatches = domainPool.slice(0, 3).map(c => ({ ...c, learning_stage: 'Functional Core' }));
-        if (strategicMatches.length === 0) strategicMatches = domainPool.slice(3, 6).map(c => ({ ...c, learning_stage: 'Advanced Strategic' }));
+        if (functionalMatches.length === 0) functionalMatches = domainPool.slice(0, 4).map(c => ({ ...c, learning_stage: 'Functional Core' }));
+        if (strategicMatches.length === 0) strategicMatches = domainPool.slice(4, 8).map(c => ({ ...c, learning_stage: 'Advanced Strategic' }));
 
-        return res.json({ courses: [...mandatoryFoundation, ...functionalMatches, ...strategicMatches] });
+        // Deduplicate and return clean list
+        const seenIds = new Set();
+        const finalRecommendations = [];
+        for (const c of [...mandatoryFoundation, ...functionalMatches, ...strategicMatches]) {
+            if (!seenIds.has(c.id)) {
+                seenIds.add(c.id);
+                finalRecommendations.push(c);
+            }
+        }
+
+        return res.json({ courses: finalRecommendations });
     } catch (err) {
         return res.status(500).json({ error: 'Failed to recommend courses.' });
     }
