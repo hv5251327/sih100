@@ -28,7 +28,7 @@ async function generateAIResponse(prompt) {
                 body: JSON.stringify({
                     model: 'grok-beta',
                     messages: [
-                        { role: 'system', content: 'You are the Chief Academic Training Director at NSSTA, MoSPI. Always return raw JSON only.' },
+                        { role: 'system', content: 'You are the Chief Academic Training Director at NSSTA, MoSPI. Return clean JSON only.' },
                         { role: 'user', content: prompt }
                     ],
                     temperature: 0.2
@@ -64,7 +64,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Skill Intelligence Engine Active', timestamp: new Date() });
 });
 
-// Admin API: Quick Course Creator -> Directly writes into master_courses table
+// 1. Quick Course Creator -> Directly into master_courses
 app.post('/api/admin/draft-course', async (req, res) => {
     const { department, domain, topic } = req.body;
     if (!topic) return res.status(400).json({ error: 'Course topic is required.' });
@@ -72,7 +72,7 @@ app.post('/api/admin/draft-course', async (req, res) => {
     try {
         const uniqueCode = 'MOD-' + Date.now().toString().slice(-6);
         let courseTitle = `${topic} (${department})`;
-        let courseDesc = `Practical competency and operational methodology training on ${topic} for ${department} officers.`;
+        let courseDesc = `Practical operational and methodology training on ${topic} for ${department} officers.`;
         let courseDiff = 'Intermediate';
 
         const prompt = `Generate a title and a 2-sentence practical operational purpose for a MoSPI official course.
@@ -83,7 +83,7 @@ Topic: ${topic}
 Return ONLY valid JSON:
 {
   "title": "${topic} (${department})",
-  "description": "2-sentence purpose",
+  "description": "2-sentence practical description",
   "difficulty_level": "Intermediate"
 }`;
 
@@ -100,7 +100,7 @@ Return ONLY valid JSON:
             } catch (e) {}
         }
 
-        const newCourseRow = {
+        const newCourse = {
             course_code: uniqueCode,
             title: courseTitle,
             domain: domain || 'Statistical Competencies',
@@ -113,7 +113,7 @@ Return ONLY valid JSON:
 
         const { data: saved, error } = await supabase
             .from('master_courses')
-            .insert([newCourseRow])
+            .insert([newCourse])
             .select()
             .single();
 
@@ -122,22 +122,23 @@ Return ONLY valid JSON:
             return res.status(400).json({ error: error.message });
         }
 
-        return res.json({ message: `Course "${saved.title}" successfully added to Master Database!`, course: saved });
+        return res.json({ message: `Course "${saved.title}" created & added to Master Database!`, course: saved });
     } catch (err) {
         console.error('Quick course error:', err);
-        return res.status(500).json({ error: 'Server error while inserting course.' });
+        return res.status(500).json({ error: 'Failed to insert course.' });
     }
 });
 
-// Admin API: Parse syllabus text -> Direct write into master_courses
+// 2. PDF Syllabus Parser -> Organizes and directly inserts into master_courses
 app.post('/api/admin/parse-syllabus', async (req, res) => {
     const { syllabusText, defaultDivision } = req.body;
     if (!syllabusText) return res.status(400).json({ error: 'Syllabus text is required.' });
 
     try {
         let extractedModules = [];
-        const prompt = `Break down this syllabus into 3 to 6 distinct modular training courses for MoSPI ${defaultDivision} statisticians.
-SYLLABUS:
+        const prompt = `You are the NSSTA Curriculum Director.
+Break down this syllabus into 3 to 6 modular courses for MoSPI ${defaultDivision} statisticians.
+SYLLABUS CONTENT:
 ${syllabusText.slice(0, 15000)}
 
 Return ONLY a valid JSON array of objects:
@@ -158,9 +159,8 @@ Return ONLY a valid JSON array of objects:
             } catch (pErr) {}
         }
 
-        // Guaranteed fallback if LLM returned non-JSON text
         if (!extractedModules || extractedModules.length === 0) {
-            const rawLines = syllabusText.split('\n').map(l => l.trim()).filter(l => l.length > 10);
+            const rawLines = syllabusText.split('\n').map(l => l.trim()).filter(l => l.length > 15);
             if (rawLines.length > 0) {
                 extractedModules = rawLines.slice(0, 4).map((line, i) => ({
                     title: `Unit ${i + 1}: ${line.slice(0, 50)}`,
@@ -184,7 +184,7 @@ Return ONLY a valid JSON array of objects:
             domain: m.domain || 'Statistical Competencies',
             difficulty_level: m.difficulty_level || 'Intermediate',
             target_departments: [defaultDivision || 'ALL'],
-            description: m.description || `Competency training module for ${defaultDivision} statisticians.`,
+            description: m.description || `Competency module for ${defaultDivision} statisticians.`,
             video_url: 'https://portal.igotkarmayogi.gov.in',
             is_general_mandatory: false
         }));
@@ -200,7 +200,7 @@ Return ONLY a valid JSON array of objects:
         }
 
         return res.json({
-            message: `Successfully parsed and saved ${rowsToInsert.length} courses to Master Database!`,
+            message: `Successfully organized and saved ${rowsToInsert.length} courses to Master Database!`,
             modules: inserted || rowsToInsert
         });
     } catch (err) {
@@ -209,6 +209,7 @@ Return ONLY a valid JSON array of objects:
     }
 });
 
+// 3. List courses for dropdown and recent lists
 app.get('/api/admin/courses-list', async (req, res) => {
     try {
         const { data, error } = await supabase
