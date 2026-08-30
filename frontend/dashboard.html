@@ -196,6 +196,46 @@
       <div id="dynamic-modules-container"></div>
     </section>
 
+    <!-- Upcoming Workshops Section -->
+    <section class="dashboard-panel" style="border-top:4px solid #0284c7;">
+      <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
+        <div class="panel-header-left">
+          <i class="fa-solid fa-calendar-check"></i>
+          <h2>Upcoming NSSTA Training Workshops & Cadre Nominations</h2>
+        </div>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">Nomination schedules for residential and virtual capacity-building workshops conducted at NSSTA Greater Noida and Regional Training Centers.</p>
+      <div id="officer-workshops-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
+        <p style="color:var(--text-muted);">Loading scheduled workshops...</p>
+      </div>
+    </section>
+
+    <!-- My Verified Credentials & Completed Courses -->
+    <section class="dashboard-panel" style="border-top:4px solid var(--success);">
+      <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
+        <div class="panel-header-left">
+          <i class="fa-solid fa-award"></i>
+          <h2>My Verified Credentials & Training History</h2>
+        </div>
+        <button class="btn-action" onclick="downloadCompetencyPassport()" style="background:#1e3a8a; color:#fff; font-size:0.85rem; padding:8px 14px;"><i class="fa-solid fa-print"></i> Download Competency Passport (Print/PDF)</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Accredited Course Title</th>
+              <th>Completion Date</th>
+              <th style="text-align:center;">Assessment Score</th>
+              <th style="text-align:center;">Certificate / Audit Status</th>
+            </tr>
+          </thead>
+          <tbody id="completed-courses-table-body">
+            <tr><td colspan="4" style="text-align:center;">Loading course completion history...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   </div>
 
   <div class="bhashini-widget">
@@ -216,6 +256,23 @@
     <button class="bhashini-btn" onclick="toggleBhashini()" title="Open Bhashini AI"><i class="fa-solid fa-headset"></i></button>
   </div>
 
+  <!-- In-Portal Video Player Modal -->
+  <div class="modal-backdrop" id="video-modal">
+    <div class="modal-box" style="max-width:720px;">
+      <div class="modal-header">
+        <h3 id="video-modal-title"><i class="fa-solid fa-circle-play"></i> Course Training Video</h3>
+        <button class="modal-close" onclick="closeVideoModal()">&times;</button>
+      </div>
+      <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; background:#000;">
+        <iframe id="video-frame" src="" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; flex-wrap:wrap; gap:10px;">
+        <span style="font-size:0.8rem; color:var(--text-muted);"><i class="fa-solid fa-shield-halved"></i> iGOT / NSSTA Official Video Resource</span>
+        <button class="btn-action btn-quiz" style="padding:8px 16px;" onclick="closeVideoModal(); launchAssessment(encodeURIComponent(currentActiveCourse), 'Core')"><i class="fa-solid fa-list-check"></i> Mark Video Watched & Take Quiz</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="cert-modal">
     <div class="modal-box">
       <div class="modal-header">
@@ -234,7 +291,7 @@
         <h3 id="quiz-modal-title">Competency Assessment</h3>
         <button class="modal-close" onclick="closeModal('quiz-modal')">&times;</button>
       </div>
-      <p style="font-size:0.85rem; color:var(--text-muted);">Complete this 3-question evaluation to credit this course toward your profile.</p>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Complete this evaluation to credit this course toward your profile.</p>
       <div id="quiz-questions-body" style="display:flex; flex-direction:column; gap:14px;"></div>
       <button class="btn-action btn-quiz" style="padding:10px;" id="quiz-submit-action" onclick="submitAssessment()">Submit Assessment & Record Credit</button>
     </div>
@@ -261,7 +318,11 @@
         document.getElementById("disp-officer-dept").innerText = currentUser.department || 'N/A';
         document.getElementById("disp-officer-desig").innerText = currentUser.designation || 'N/A';
 
-        await Promise.all([loadCompetencies(), loadOfficerRecommendations()]);
+        await Promise.all([
+          loadCompetencies(), 
+          loadOfficerRecommendations(),
+          loadOfficerHistoryAndWorkshops()
+        ]);
       } catch (e) {
         console.error("Session load error:", e);
       }
@@ -340,7 +401,7 @@
                       <div class="module-title">${course.title}</div>
                       <div class="module-desc">${course.description}</div>
                       <div class="module-actions">
-                        <a href="${course.video_url || 'https://portal.igotkarmayogi.gov.in'}" target="_blank" class="btn-action btn-open"><i class="fa-solid fa-video"></i> Watch Video</a>
+                        <button class="btn-action btn-open" onclick="openVideoModal('${encodeURIComponent(course.title)}', '${course.video_url || 'https://www.youtube.com/embed/1Il5UUPrSNk'}')"><i class="fa-solid fa-circle-play"></i> Watch Video</button>
                         <button class="btn-action btn-cert" onclick="openCertModal('${encodeURIComponent(course.title)}')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
                         <button class="btn-action btn-quiz" onclick="launchAssessment('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.domain)}')"><i class="fa-solid fa-list-check"></i> Quiz</button>
                       </div>
@@ -357,6 +418,181 @@
         console.error("Failed to load recommendations:", err);
         statusLabel.innerText = "Error loading courses.";
       }
+    }
+
+    function openVideoModal(titleEnc, videoUrl) {
+      currentActiveCourse = decodeURIComponent(titleEnc);
+      document.getElementById("video-modal-title").innerHTML = `<i class="fa-solid fa-circle-play"></i> Training: ${currentActiveCourse}`;
+      let targetSrc = videoUrl || 'https://www.youtube.com/embed/1Il5UUPrSNk';
+      if (!targetSrc.includes('embed') && targetSrc.includes('youtube.com/watch?v=')) {
+        targetSrc = targetSrc.replace('watch?v=', 'embed/');
+      }
+      document.getElementById("video-frame").src = targetSrc;
+      document.getElementById("video-modal").style.display = "flex";
+    }
+
+    function closeVideoModal() {
+      document.getElementById("video-frame").src = "";
+      document.getElementById("video-modal").style.display = "none";
+    }
+
+    async function loadOfficerHistoryAndWorkshops() {
+      // 1. Load Completed History & Certs
+      try {
+        const res = await fetch(`${API_URL}/api/progress/${currentUser.email}`);
+        const data = await res.json();
+        const progressList = data.progress || [];
+        const certsList = data.certificates || [];
+        const tbody = document.getElementById("completed-courses-table-body");
+
+        if (progressList.length === 0 && certsList.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No courses completed yet. Start with Foundation modules above!</td></tr>`;
+        } else {
+          let rowsHtml = '';
+          progressList.forEach(p => {
+            const dateStr = p.completed_at ? new Date(p.completed_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', year:'numeric' }) : 'Recently';
+            rowsHtml += `
+              <tr>
+                <td><strong>${p.course_title}</strong></td>
+                <td>${dateStr}</td>
+                <td style="text-align:center; font-weight:bold; color:var(--success);">${p.score || 100}% (Passed)</td>
+                <td style="text-align:center;"><span class="stage-badge" style="background:#dcfce7; color:#15803d;"><i class="fa-solid fa-certificate"></i> Verified Credential</span></td>
+              </tr>
+            `;
+          });
+          certsList.forEach(c => {
+            if (!progressList.some(p => p.course_title === c.course_title)) {
+              const statusBadge = c.status === 'approved' 
+                ? '<span class="stage-badge" style="background:#dcfce7; color:#15803d;"><i class="fa-solid fa-circle-check"></i> Approved (+25 Pts)</span>'
+                : (c.status === 'rejected' ? '<span class="stage-badge" style="background:#fee2e2; color:#b91c1c;">Rejected</span>' : '<span class="stage-badge" style="background:#fef3c7; color:#b45309;">In Audit Queue</span>');
+              const dateStr = c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', year:'numeric' }) : 'Recently';
+              rowsHtml += `
+                <tr>
+                  <td><strong>${c.course_title}</strong></td>
+                  <td>${dateStr}</td>
+                  <td style="text-align:center; color:var(--text-muted);">Uploaded Cert</td>
+                  <td style="text-align:center;">${statusBadge}</td>
+                </tr>
+              `;
+            }
+          });
+          tbody.innerHTML = rowsHtml;
+        }
+      } catch (e) {
+        console.warn("Failed to load progress history:", e);
+      }
+
+      // 2. Load Upcoming Workshops Matching Officer
+      try {
+        const wsRes = await fetch(`${API_URL}/api/workshops`);
+        const wsData = await wsRes.json();
+        const wsList = wsData.workshops || [];
+        const wsContainer = document.getElementById("officer-workshops-grid");
+
+        if (wsList.length === 0) {
+          wsContainer.innerHTML = `<p style="color:var(--text-muted);">No upcoming workshops scheduled at this time.</p>`;
+          return;
+        }
+
+        wsContainer.innerHTML = wsList.map(w => {
+          const modeBadge = w.mode.includes('In-Person') 
+            ? '<span class="stage-badge" style="background:#e0f2fe; color:#0369a1;"><i class="fa-solid fa-building-columns"></i> In-Person</span>'
+            : (w.mode === 'Hybrid' ? '<span class="stage-badge" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-tower-broadcast"></i> Hybrid</span>' : '<span class="stage-badge" style="background:#dcfce7; color:#15803d;"><i class="fa-solid fa-laptop"></i> Virtual</span>');
+
+          return `
+            <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:14px; display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="module-badge">${w.division || 'Universal'}</span>
+                ${modeBadge}
+              </div>
+              <strong style="font-size:0.92rem; color:var(--text-main); line-height:1.35;">${w.title}</strong>
+              <div style="font-size:0.8rem; color:var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> ${w.start_date || 'TBD'} to ${w.end_date || 'TBD'}</div>
+              <div style="font-size:0.8rem; color:var(--primary); font-weight:700;"><i class="fa-solid fa-users"></i> Available Seats: ${(w.max_seats || 40) - (w.enrolled_seats || 0)} left</div>
+            </div>
+          `;
+        }).join('');
+      } catch (e) {
+        console.warn("Failed to load workshops:", e);
+      }
+    }
+
+    function downloadCompetencyPassport() {
+      const printWindow = window.open('', '_blank');
+      const dateStr = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+      const statScore = document.getElementById("score-stat").innerText;
+      const techScore = document.getElementById("score-tech").innerText;
+      const govScore = document.getElementById("score-gov").innerText;
+      const leadScore = document.getElementById("score-lead").innerText;
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>MoSPI NSSTA Officer Competency Passport - ${currentUser.name}</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 35px; color: #0f172a; }
+            .header { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 14px; margin-bottom: 20px; }
+            .header h1 { margin: 0; font-size: 1.4rem; color: #1e3a8a; }
+            .header h2 { margin: 4px 0 0 0; font-size: 1rem; color: #0284c7; font-weight: normal; }
+            .passport-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 18px; margin-bottom: 20px; background: #f8fafc; }
+            .grid-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; }
+            .score-box { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 15px; }
+            .score-item { background: #fff; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; text-align: center; }
+            .score-item h4 { margin: 0; font-size: 0.78rem; color: #64748b; }
+            .score-item p { margin: 6px 0 0 0; font-size: 1.2rem; font-weight: 800; color: #1e3a8a; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
+            th, td { padding: 10px 8px; border: 1px solid #cbd5e1; text-align: left; }
+            th { background: #f1f5f9; }
+            .stamp { text-align: right; margin-top: 30px; font-size: 0.82rem; color: #64748b; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA)</h1>
+            <h2>Ministry of Statistics and Programme Implementation, Government of India</h2>
+            <p style="margin-top:6px; font-size:0.85rem; font-weight:bold; color:#1e3a8a;">OFFICER DIGITAL COMPETENCY PASSPORT & ACCREDITED TRANSCRIPT</p>
+          </div>
+          <div class="passport-card">
+            <div class="grid-row">
+              <div><strong>Officer Name:</strong> ${currentUser.name}</div>
+              <div><strong>Official Email:</strong> ${currentUser.email}</div>
+            </div>
+            <div class="grid-row">
+              <div><strong>Cadre:</strong> ${currentUser.cadre}</div>
+              <div><strong>Division / Department:</strong> ${currentUser.department}</div>
+              <div><strong>Designation:</strong> ${currentUser.designation}</div>
+            </div>
+            <div class="score-box">
+              <div class="score-item"><h4>Statistical Sampling</h4><p>${statScore}</p></div>
+              <div class="score-item"><h4>Technical & Tools</h4><p>${techScore}</p></div>
+              <div class="score-item"><h4>Digital Governance</h4><p>${govScore}</p></div>
+              <div class="score-item"><h4>Leadership & Admin</h4><p>${leadScore}</p></div>
+            </div>
+          </div>
+          <h3>Accredited Course History & Verification Matrix</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Course / Competency Title</th>
+                <th>Completion Date</th>
+                <th>Assessment Score</th>
+                <th>Accreditation Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${document.getElementById("completed-courses-table-body").innerHTML}
+            </tbody>
+          </table>
+          <div class="stamp">
+            <p><strong>Verified & Sealed by NSSTA Learning Management System</strong></p>
+            <p>Issued on: ${dateStr}</p>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 500);
     }
 
     function openCertModal(titleEnc) {
@@ -385,7 +621,7 @@
         });
         alert(`Certificate for "${currentActiveCourse}" submitted successfully! It is now in the administrative audit queue for verification.`);
         closeModal('cert-modal');
-        await loadCompetencies();
+        await Promise.all([loadCompetencies(), loadOfficerHistoryAndWorkshops()]);
       } catch (e) {
         alert("Certificate submission error. Please retry.");
       }
@@ -460,7 +696,7 @@
 
         alert(`Assessment Completed! Score: ${finalPercentage}%. Competency score increased.`);
         closeModal('quiz-modal');
-        await loadCompetencies();
+        await Promise.all([loadCompetencies(), loadOfficerHistoryAndWorkshops()]);
       } catch (e) {
         alert(`Score: ${finalPercentage}%. Error saving to database.`);
         closeModal('quiz-modal');

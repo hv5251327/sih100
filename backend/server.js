@@ -1190,6 +1190,25 @@ app.post('/api/admin/budget-simulate', (req, res) => {
     });
 });
 
+app.get('/api/progress/:email', async (req, res) => {
+    const email = (req.params.email || '').trim().toLowerCase();
+    try {
+        const { data: progress } = await supabase.from('user_course_progress').select('*').eq('user_email', email).order('completed_at', { ascending: false });
+        let certs = memoryCertificates.filter(c => c.user_email.toLowerCase() === email);
+        try {
+            const { data: dbCerts } = await supabase.from('course_certificates').select('*').eq('user_email', email);
+            if (dbCerts && dbCerts.length > 0) certs = dbCerts;
+        } catch (e) {}
+
+        return res.json({
+            progress: progress || [],
+            certificates: certs || []
+        });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/progress/save', async (req, res) => {
     const { email, courseTitle, score } = req.body;
     const cleanEmail = (email || '').trim().toLowerCase();
