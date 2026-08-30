@@ -16,7 +16,9 @@ const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp
 
 const supabase = createClient(cleanUrl, supabaseKey);
 
-async function generateAIResponse(prompt) {
+async function generateAIResponse(prompt, systemInstruction) {
+    const sysPrompt = systemInstruction || 'You are the Principal Curriculum Director & Chief Psychometrician at the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India. Provide rigorous, precise, domain-accurate JSON without markdown formatting.';
+
     if (GROK_API_KEY) {
         try {
             const res = await fetch('https://api.x.ai/v1/chat/completions', {
@@ -28,7 +30,7 @@ async function generateAIResponse(prompt) {
                 body: JSON.stringify({
                     model: 'grok-beta',
                     messages: [
-                        { role: 'system', content: 'You are the Chief Assessment Officer at NSSTA, MoSPI. Return only raw, valid JSON.' },
+                        { role: 'system', content: sysPrompt },
                         { role: 'user', content: prompt }
                     ],
                     temperature: 0.2
@@ -47,7 +49,11 @@ async function generateAIResponse(prompt) {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                body: JSON.stringify({
+                    systemInstruction: { parts: [{ text: sysPrompt }] },
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.2 }
+                })
             });
             const data = await res.json();
             const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -60,7 +66,92 @@ async function generateAIResponse(prompt) {
     return null;
 }
 
-// Smart document text parser for MCQ extraction
+// Domain-Aware Heuristic Parser for Course Syllabus Extraction
+function parseSyllabusFromText(syllabusText, defaultDivision) {
+    const courses = [];
+    const div = defaultDivision || 'ALL';
+    const lines = syllabusText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+    // Identify headings, chapters, modules, or bullet points
+    let currentTitle = null;
+    let currentDescLines = [];
+
+    const headingRegex = /^(?:(?:Module|Chapter|Unit|Paper|Section|Topic|Session)\s*[\d\.\:\-]+|\d{1,2}[\.\)]\s+)(.+)/i;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const match = line.match(headingRegex);
+
+        if (match && match[1].length > 6) {
+            if (currentTitle && currentDescLines.length > 0) {
+                courses.push(buildCourseObject(currentTitle, currentDescLines.join(' '), div, courses.length + 1));
+                currentDescLines = [];
+            }
+            currentTitle = match[1].trim();
+        } else if (currentTitle) {
+            if (line.length > 15 && !/^(page|table|figure|\d+$)/i.test(line)) {
+                currentDescLines.push(line);
+            }
+        }
+    }
+
+    if (currentTitle && currentDescLines.length > 0) {
+        courses.push(buildCourseObject(currentTitle, currentDescLines.join(' '), div, courses.length + 1));
+    }
+
+    // Fallback: segment text by paragraphs or statistical concepts
+    if (courses.length === 0) {
+        const cleanParagraphs = syllabusText
+            .split(/(?:\r?\n){2,}/)
+            .map(p => p.trim().replace(/\s+/g, ' '))
+            .filter(p => p.length > 40 && !/^(page|table|figure|\d+$)/i.test(p));
+
+        for (let i = 0; i < cleanParagraphs.length && courses.length < 6; i++) {
+            const p = cleanParagraphs[i];
+            const title = p.slice(0, 70).replace(/[\.\:\;].*$/, '').trim();
+            courses.push(buildCourseObject(title, p, div, i + 1));
+        }
+    }
+
+    if (courses.length === 0) {
+        courses.push(buildCourseObject(`NSSTA Specialized Operational Module (${div})`, syllabusText.slice(0, 250), div, 1));
+    }
+
+    return courses;
+}
+
+function buildCourseObject(rawTitle, rawDesc, div, index) {
+    const cleanTitle = rawTitle.replace(/^[\d\.\:\-\s]+/, '').trim() || `NSSTA Module ${index}`;
+    let domain = 'Statistical Competencies';
+    const lower = (cleanTitle + ' ' + rawDesc).toLowerCase();
+
+    if (/capi|tablet|python|r\s+for|data\s+science|machine\s+learning|software|sql|gis|geo|spatial|database|cloud|ai/i.test(lower)) {
+        domain = 'Technical Competencies';
+    } else if (/dpdp|privacy|cyber|security|iso|rti|act|law|statutory|governance|compliance|policy/i.test(lower)) {
+        domain = 'Digital Governance';
+    } else if (/posh|ethics|conduct|leadership|procurement|gem|pfm|administration|management|finance/i.test(lower)) {
+        domain = 'Behavioural & Managerial';
+    }
+
+    let diff = 'Intermediate';
+    if (/foundation|introductory|basic|overview|fundamentals|principles/i.test(lower)) diff = 'Foundation';
+    else if (/advanced|deep|complex|expert|specialized|modelling|estimation/i.test(lower)) diff = 'Advanced';
+
+    const shortDesc = rawDesc.length > 180 ? rawDesc.slice(0, 177) + '...' : (rawDesc || `Operational competency module covering ${cleanTitle} for ${div} division.`);
+
+    return {
+        course_code: `NSSTA-${Date.now().toString().slice(-4)}-${index}`,
+        title: cleanTitle.length > 90 ? cleanTitle.slice(0, 87) + '...' : cleanTitle,
+        domain: domain,
+        difficulty_level: diff,
+        description: shortDesc,
+        video_url: 'https://portal.igotkarmayogi.gov.in',
+        is_general_mandatory: domain === 'Digital Governance' && diff === 'Foundation',
+        target_departments: [div]
+    };
+}
+
+// Smart document text parser for MCQ assessment extraction
 function parseQuizFromText(docText, courseTitle) {
     const questions = [];
     const lines = docText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
@@ -112,17 +203,17 @@ function parseQuizFromText(docText, courseTitle) {
         const cleanSentences = docText
             .split(/[\r\n\.\;]+/)
             .map(s => s.trim().replace(/\s+/g, ' '))
-            .filter(s => s.length > 25 && s.length < 180 && !/^(page|table|figure|\d+$)/i.test(s));
+            .filter(s => s.length > 30 && s.length < 180 && !/^(page|table|figure|\d+$)/i.test(s));
 
         const unique = [...new Set(cleanSentences)];
         for (let i = 0; i < unique.length && questions.length < 6; i += 2) {
             const fact = unique[i];
             const dist1 = unique[(i + 1) % unique.length] || 'Standard administrative verification protocol';
-            const dist2 = unique[(i + 2) % unique.length] || 'Informal verification without documentation';
-            const dist3 = unique[(i + 3) % unique.length] || 'Unregulated secondary procedural standard';
+            const dist2 = unique[(i + 2) % unique.length] || 'Informal unrecorded secondary observation';
+            const dist3 = unique[(i + 3) % unique.length] || 'Exemption from quality validation audits';
 
             questions.push({
-                question: `Which of the following standards applies to: "${fact.slice(0, 90)}..."?`,
+                question: `Under ${courseTitle}, which protocol applies to: "${fact.slice(0, 90)}..."?`,
                 options: [
                     fact,
                     dist1,
@@ -458,39 +549,41 @@ app.get('/api/admin/officers-analytics', async (req, res) => {
     }
 });
 
-// PDF Quiz Synthesizer with AI & Smart Text Parser
+// PDF Quiz Synthesizer with Enhanced AI Training & NLP Fallback
 app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
     const { courseTitle, documentText } = req.body;
     if (!courseTitle || !documentText) return res.status(400).json({ error: 'Course Title and Document Text are required.' });
 
     try {
         let questions = [];
-        const prompt = `You are the Assessment Specialist at NSSTA, MoSPI.
-Extract or synthesize 5 to 8 high-quality multiple choice assessment questions for the course: "${courseTitle}" from the training material below.
+        const systemPrompt = "You are the Senior Psychometric Assessment Specialist at NSSTA, MoSPI, Government of India. Formulate rigorous, objective, and domain-precise multiple-choice questions (MCQs) for official statistical capacity evaluation.";
+        
+        const prompt = `Formulate 6 to 10 high-standard multiple choice assessment questions for the course: "${courseTitle}" based on the official training text below.
 
 DOCUMENT CONTENT:
 ${documentText.slice(0, 25000)}
 
-Requirements:
-1. Provide exactly 4 realistic options per question.
-2. Indicate the zero-based index of the correct answer (0, 1, 2, or 3).
+Guidelines:
+1. Questions must test practical methodology, statutory protocols, formulas, data verification, or regulatory frameworks.
+2. Provide exactly 4 realistic, distinct options (A, B, C, D) per question. Do not include 'All of the above' as cheap distractors.
+3. Indicate the zero-based index of the correct answer (0 for A, 1 for B, 2 for C, 3 for D).
 
 Return ONLY a valid JSON array:
 [
   {
-    "question": "Question text?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "question": "Clear, direct question text?",
+    "options": ["Accurate correct answer or realistic distractor 1", "Realistic distractor 2", "Realistic distractor 3", "Realistic distractor 4"],
     "correct_index": 0
   }
 ]`;
 
-        const rawJson = await generateAIResponse(prompt);
+        const rawJson = await generateAIResponse(prompt, systemPrompt);
         if (rawJson) {
             try {
                 const match = rawJson.match(/\[[\s\S]*\]/);
                 if (match) questions = JSON.parse(match[0]);
             } catch (e) {
-                console.warn('Quiz JSON parse fallback:', e.message);
+                console.warn('AI Quiz JSON parsing note:', e.message);
             }
         }
 
@@ -501,18 +594,43 @@ Return ONLY a valid JSON array:
         if (!questions || questions.length === 0) {
             questions = [
                 {
-                    question: `What is the core regulatory compliance standard discussed in ${courseTitle}?`,
-                    options: ["Statutory validation, data integrity, and compliance protocols", "Manual log maintenance without review", "Informal sampling without verification", "Exemption from audits"],
+                    question: `What is the primary operational and regulatory compliance standard under ${courseTitle}?`,
+                    options: [
+                        "Statutory validation, data integrity, and strict confidentiality protocols",
+                        "Informal verbal communication without data verification",
+                        "Unchecked manual register maintenance",
+                        "Exemption from supervisory audits and checks"
+                    ],
                     correct_index: 0
                 },
                 {
-                    question: `How are survey milestones verified under ${courseTitle}?`,
-                    options: ["Automated digital submission and supervisory spot-checks", "Informal verbal updates", "Unchecked paper records", "No verification"],
+                    question: `How are survey data collection and validation milestones audited in ${courseTitle}?`,
+                    options: [
+                        "Automated digital validation with supervisory spot-checks and GPS verification",
+                        "Unverified telephonic updates",
+                        "Post-facto informal estimation without metadata",
+                        "Self-certification without documentation"
+                    ],
                     correct_index: 0
                 },
                 {
-                    question: `Which framework governs data security and respondent privacy for ${courseTitle}?`,
-                    options: ["MoSPI Standards and DPDP Act 2023", "Generic public forum rules", "Unverified local procedures", "Ad-hoc guidelines"],
+                    question: `Which legislative and governance framework protects respondent privacy in ${courseTitle}?`,
+                    options: [
+                        "MoSPI National Data Sharing Policy & DPDP Act 2023",
+                        "Generic social media terms and conditions",
+                        "Unregulated local office circulars",
+                        "General administrative circulars without statutory backing"
+                    ],
+                    correct_index: 0
+                },
+                {
+                    question: `What is the standard error mitigation and quality assurance protocol for ${courseTitle}?`,
+                    options: [
+                        "Multi-stage stratified sampling with systematic variance and non-response adjustment",
+                        "Arbitrary non-probability convenience sampling",
+                        "Omission of non-responding survey units without re-weighting",
+                        "Replacing sampled clusters with unverified alternate locations"
+                    ],
                     correct_index: 0
                 }
             ];
@@ -532,17 +650,20 @@ Return ONLY a valid JSON array:
 
             return {
                 course_title: courseTitle,
-                question: String(q.question || `Question on ${courseTitle}`).trim(),
+                question: String(q.question || `Assessment question on ${courseTitle}`).trim(),
                 options: safeOptions,
                 correct_index: safeIndex,
-                source_document: 'Admin Uploaded PDF Manual'
+                source_document: 'Admin Uploaded Training Material PDF'
             };
         });
 
         const { data: inserted, error: quizErr } = await supabase.from('course_quizzes').insert(rowsToInsert).select();
         if (quizErr) return res.status(500).json({ error: quizErr.message });
 
-        return res.json({ message: `Successfully generated and saved ${rowsToInsert.length} questions to course_quizzes table!`, questions: inserted || rowsToInsert });
+        return res.json({ 
+            message: `Successfully synthesized and stored ${rowsToInsert.length} assessment questions in course_quizzes table!`, 
+            questions: inserted || rowsToInsert 
+        });
     } catch (err) {
         return res.status(500).json({ error: err.message || 'Quiz synthesis failed.' });
     }
@@ -605,72 +726,79 @@ Return ONLY JSON:
     }
 });
 
-// PDF Syllabus Parser
+// PDF Syllabus Parser & Intelligent Course Ingestion
 app.post('/api/admin/parse-syllabus', async (req, res) => {
     const { syllabusText, defaultDivision } = req.body;
     if (!syllabusText) return res.status(400).json({ error: 'Syllabus text is required.' });
 
     try {
         let extractedModules = [];
-        const prompt = `Break this syllabus down into 4 to 8 standalone courses for "${defaultDivision || 'ALL'}" division.
+        const systemPrompt = "You are the Director of Curriculum at NSSTA, MoSPI. Extract distinct accredited training courses mapped to MoSPI competency pillars: Statistical Competencies, Technical Competencies, Digital Governance, Behavioural & Managerial.";
+
+        const prompt = `Analyze this NSSTA / MoSPI training syllabus and break it down into 4 to 8 standalone competency courses for division: "${defaultDivision || 'ALL'}".
+
 SYLLABUS CONTENT:
 ${syllabusText.slice(0, 25000)}
+
+Requirements:
+1. Provide a professional, descriptive course title.
+2. Categorize into one of: 'Statistical Competencies', 'Technical Competencies', 'Digital Governance', 'Behavioural & Managerial'.
+3. Assign difficulty: 'Foundation', 'Intermediate', or 'Advanced'.
+4. Provide a concise 2-sentence practical operational objective.
 
 Return ONLY a valid JSON array:
 [
   {
-    "title": "Clear Course Title",
-    "domain": "Statistical Competencies | Technical Competencies | Digital Governance | Behavioural & Managerial",
-    "difficulty_level": "Foundation | Intermediate | Advanced",
-    "description": "2-sentence practical operational purpose"
+    "title": "Clear Professional Course Title",
+    "domain": "Statistical Competencies",
+    "difficulty_level": "Intermediate",
+    "description": "2-sentence practical operational description"
   }
 ]`;
 
-        const rawJson = await generateAIResponse(prompt);
+        const rawJson = await generateAIResponse(prompt, systemPrompt);
         if (rawJson) {
             try {
                 const match = rawJson.match(/\[[\s\S]*\]/);
                 if (match) extractedModules = JSON.parse(match[0]);
-            } catch (e) {}
-        }
-
-        if (!extractedModules || extractedModules.length === 0) {
-            const lines = syllabusText.split('\n').map(l => l.trim()).filter(l => l.length > 25);
-            if (lines.length > 0) {
-                const step = Math.max(1, Math.floor(lines.length / 5));
-                for (let i = 0; i < lines.length && extractedModules.length < 6; i += step) {
-                    extractedModules.push({
-                        title: lines[i].slice(0, 60),
-                        domain: 'Statistical Competencies',
-                        difficulty_level: 'Intermediate',
-                        description: `Operational statistical methodology training covering: ${lines[i].slice(0, 140)}`
-                    });
-                }
-            } else {
-                extractedModules = [{
-                    title: `NSSTA Specialized Module (${defaultDivision || 'ALL'})`,
-                    domain: 'Statistical Competencies',
-                    difficulty_level: 'Intermediate',
-                    description: syllabusText.slice(0, 200)
-                }];
+            } catch (e) {
+                console.warn('AI Syllabus JSON parsing note:', e.message);
             }
         }
 
-        const rowsToInsert = extractedModules.map((m, idx) => ({
-            course_code: `NSSTA-${Date.now().toString().slice(-5)}-${idx + 1}`,
-            title: m.title || `NSSTA Module ${idx + 1}`,
-            domain: m.domain || 'Statistical Competencies',
-            difficulty_level: m.difficulty_level || 'Intermediate',
-            description: m.description || `Practical competency course for ${defaultDivision || 'ALL'} officers.`,
-            video_url: 'https://portal.igotkarmayogi.gov.in',
-            is_general_mandatory: false,
-            target_departments: [defaultDivision || 'ALL']
-        }));
+        if (!extractedModules || extractedModules.length === 0) {
+            extractedModules = parseSyllabusFromText(syllabusText, defaultDivision);
+        }
+
+        const rowsToInsert = extractedModules.map((m, idx) => {
+            const cleanTitle = (m.title || `NSSTA Module ${idx + 1}`).trim();
+            let domain = m.domain || 'Statistical Competencies';
+            const validDomains = ['Statistical Competencies', 'Technical Competencies', 'Digital Governance', 'Behavioural & Managerial'];
+            if (!validDomains.includes(domain)) domain = 'Statistical Competencies';
+
+            let diff = m.difficulty_level || 'Intermediate';
+            const validDiffs = ['Foundation', 'Intermediate', 'Advanced'];
+            if (!validDiffs.includes(diff)) diff = 'Intermediate';
+
+            return {
+                course_code: `NSSTA-${Date.now().toString().slice(-4)}-${idx + 1}`,
+                title: cleanTitle,
+                domain: domain,
+                difficulty_level: diff,
+                description: m.description || `Practical competency training for ${defaultDivision || 'ALL'} officers.`,
+                video_url: 'https://portal.igotkarmayogi.gov.in',
+                is_general_mandatory: domain === 'Digital Governance' && diff === 'Foundation',
+                target_departments: [defaultDivision || 'ALL']
+            };
+        });
 
         const { data: inserted, error: insErr } = await supabase.from('master_courses').insert(rowsToInsert).select();
         if (insErr) return res.status(500).json({ error: insErr.message });
 
-        return res.json({ message: `Successfully analyzed syllabus and saved ${rowsToInsert.length} courses to master_courses!`, modules: inserted || rowsToInsert });
+        return res.json({ 
+            message: `Successfully analyzed syllabus and saved ${rowsToInsert.length} accredited courses into master_courses table!`, 
+            modules: inserted || rowsToInsert 
+        });
     } catch (err) {
         return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
     }
