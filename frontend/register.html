@@ -90,7 +90,37 @@
             <div class="form-group">
                 <label>Designation</label>
                 <select id="regDesignation" required>
-                    <option value="">-- Select Department First --</option>
+                    <option value="">-- Select Designation --</option>
+                    <option value="Director General (DG)">Director General (DG)</option>
+                    <option value="Additional Director General (ADG)">Additional Director General (ADG)</option>
+                    <option value="Deputy Director General (DDG)">Deputy Director General (DDG)</option>
+                    <option value="Director / Joint Director">Director / Joint Director</option>
+                    <option value="Deputy Director / Assistant Director">Deputy Director / Assistant Director</option>
+                    <option value="Senior Statistical Officer (SSO)">Senior Statistical Officer (SSO)</option>
+                    <option value="Junior Statistical Officer (JSO)">Junior Statistical Officer (JSO)</option>
+                    <option value="Deputy Director General (DDG / Regional Head)">Deputy Director General (DDG / Regional Head)</option>
+                    <option value="Senior Statistical Officer (SSO / Field Supervisor)">Senior Statistical Officer (SSO / Field Supervisor)</option>
+                    <option value="Junior Statistical Officer (JSO / Field Investigator)">Junior Statistical Officer (JSO / Field Investigator)</option>
+                    <option value="Additional Director General (ADG / Head of Academy)">Additional Director General (ADG / Head of Academy)</option>
+                    <option value="Director / Joint Director (Faculty)">Director / Joint Director (Faculty)</option>
+                    <option value="Deputy Director / Assistant Director (Course Coordinator)">Deputy Director / Assistant Director (Course Coordinator)</option>
+                    <option value="ISS Probationer / Officer Trainee (NSSTA)">ISS Probationer / Officer Trainee (NSSTA)</option>
+                    <option value="Director / Commissioner of Economics & Statistics (State Head)">Director / Commissioner of Economics & Statistics (State Head)</option>
+                    <option value="Joint Director / Deputy Director (State DES)">Joint Director / Deputy Director (State DES)</option>
+                    <option value="Assistant Statistical Officer / Statistical Officer (State)">Assistant Statistical Officer / Statistical Officer (State)</option>
+                    <option value="Statistical Inspector / Research Assistant (DES)">Statistical Inspector / Research Assistant (DES)</option>
+                    <option value="District Statistical Officer (DSO)">District Statistical Officer (DSO)</option>
+                    <option value="Assistant Statistical Officer (ASO)">Assistant Statistical Officer (ASO)</option>
+                    <option value="Primary Field Investigator / Enumerator">Primary Field Investigator / Enumerator</option>
+                    <option value="Sub-Divisional / Taluk Statistical Officer">Sub-Divisional / Taluk Statistical Officer</option>
+                    <option value="Statistical Compiler / Computer Operator">Statistical Compiler / Computer Operator</option>
+                    <option value="Director">Director</option>
+                    <option value="Joint Director">Joint Director</option>
+                    <option value="Deputy Director">Deputy Director</option>
+                    <option value="Assistant Director">Assistant Director</option>
+                    <option value="Senior Statistical Officer">Senior Statistical Officer</option>
+                    <option value="Junior Statistical Officer">Junior Statistical Officer</option>
+                    <option value="Assistant Director / SSO">Assistant Director / SSO</option>
                 </select>
             </div>
 
@@ -102,12 +132,45 @@
     </div>
 
     <script>
+        const ALL_DESIGNATIONS = [
+            "Director General (DG)",
+            "Additional Director General (ADG)",
+            "Deputy Director General (DDG)",
+            "Director / Joint Director",
+            "Deputy Director / Assistant Director",
+            "Senior Statistical Officer (SSO)",
+            "Junior Statistical Officer (JSO)",
+            "Deputy Director General (DDG / Regional Head)",
+            "Senior Statistical Officer (SSO / Field Supervisor)",
+            "Junior Statistical Officer (JSO / Field Investigator)",
+            "Additional Director General (ADG / Head of Academy)",
+            "Director / Joint Director (Faculty)",
+            "Deputy Director / Assistant Director (Course Coordinator)",
+            "ISS Probationer / Officer Trainee (NSSTA)",
+            "Director / Commissioner of Economics & Statistics (State Head)",
+            "Joint Director / Deputy Director (State DES)",
+            "Assistant Statistical Officer / Statistical Officer (State)",
+            "Statistical Inspector / Research Assistant (DES)",
+            "District Statistical Officer (DSO)",
+            "Assistant Statistical Officer (ASO)",
+            "Primary Field Investigator / Enumerator",
+            "Sub-Divisional / Taluk Statistical Officer",
+            "Statistical Compiler / Computer Operator",
+            "Director",
+            "Joint Director",
+            "Deputy Director",
+            "Assistant Director",
+            "Senior Statistical Officer",
+            "Junior Statistical Officer",
+            "Assistant Director / SSO"
+        ];
+
         const designationsMap = {
-            "NAD": ["Director General (DG)", "Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
-            "ESD": ["Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
-            "PSD": ["Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
-            "SSD": ["Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
-            "FOD": ["Additional Director General (ADG)", "Deputy Director General (DDG / Regional Head)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO / Field Supervisor)", "Junior Statistical Officer (JSO / Field Investigator)"],
+            "NAD": ["Director General (DG)", "Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Director", "Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "ESD": ["Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Director", "Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "PSD": ["Deputy Director General (DDG)", "Director / Joint Director", "Director", "Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "SSD": ["Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Director", "Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
+            "FOD": ["Additional Director General (ADG)", "Deputy Director General (DDG / Regional Head)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO / Field Supervisor)", "Junior Statistical Officer (JSO / Field Investigator)", "Primary Field Investigator / Enumerator"],
             "SDRD": ["Additional Director General (ADG)", "Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
             "DPD": ["Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
             "DIID": ["Deputy Director General (DDG)", "Director / Joint Director", "Deputy Director / Assistant Director", "Senior Statistical Officer (SSO)", "Junior Statistical Officer (JSO)"],
@@ -125,17 +188,36 @@
             const deptSelect = document.getElementById('regDept');
             const desigSelect = document.getElementById('regDesignation');
             const selectedDept = deptSelect.value;
+            const currentVal = desigSelect.value;
+            
             desigSelect.innerHTML = '<option value="">-- Select Designation --</option>';
 
-            if (selectedDept && designationsMap[selectedDept]) {
-                designationsMap[selectedDept].forEach(role => {
-                    const opt = document.createElement('option');
-                    opt.value = role;
-                    opt.textContent = role;
-                    desigSelect.appendChild(opt);
-                });
-            }
+            const listToUse = (selectedDept && designationsMap[selectedDept]) ? designationsMap[selectedDept] : ALL_DESIGNATIONS;
+
+            listToUse.forEach(role => {
+                const opt = document.createElement('option');
+                opt.value = role;
+                opt.textContent = role;
+                if (role === currentVal) opt.selected = true;
+                desigSelect.appendChild(opt);
+            });
         }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
+                const res = await fetch(`${API_URL}/api/metadata`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.designations && data.designations.length > 0) {
+                        data.designations.forEach(d => {
+                            if (!ALL_DESIGNATIONS.includes(d)) ALL_DESIGNATIONS.push(d);
+                        });
+                        handleDeptChange();
+                    }
+                }
+            } catch (e) {}
+        });
     </script>
     <script src="auth.js"></script>
 </body>
