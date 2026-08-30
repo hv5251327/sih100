@@ -901,11 +901,9 @@ async function recalculateCompetencies(cleanEmail) {
         const norm = normalizeTitle(c.title);
         if (completedScores.has(norm)) {
             const scorePct = (completedScores.get(norm) || 100) / 100;
-            const dom = (c.domain || '').toLowerCase();
-            const titleLower = (c.title || '').toLowerCase();
+            const dom = (c.domain || '').trim();
 
             // Calculate actual earned competency points proportional to course score & domain weight
-            const dom = (c.domain || '').trim();
             if (dom === 'Statistical Competencies' || dom.toLowerCase().includes('stat')) {
                 statEarned += (100 / BENCHMARKS.statistical) * scorePct;
             } else if (dom === 'Technical Competencies' || dom.toLowerCase().includes('tech')) {
