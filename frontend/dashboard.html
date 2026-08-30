@@ -196,20 +196,6 @@
       <div id="dynamic-modules-container"></div>
     </section>
 
-    <!-- Upcoming Workshops Section -->
-    <section class="dashboard-panel" style="border-top:4px solid #0284c7;">
-      <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
-        <div class="panel-header-left">
-          <i class="fa-solid fa-calendar-check"></i>
-          <h2>Upcoming NSSTA Training Workshops & Cadre Nominations</h2>
-        </div>
-      </div>
-      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">Nomination schedules for residential and virtual capacity-building workshops conducted at NSSTA Greater Noida and Regional Training Centers.</p>
-      <div id="officer-workshops-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
-        <p style="color:var(--text-muted);">Loading scheduled workshops...</p>
-      </div>
-    </section>
-
     <!-- My Verified Credentials & Completed Courses -->
     <section class="dashboard-panel" style="border-top:4px solid var(--success);">
       <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
@@ -321,7 +307,7 @@
         await Promise.all([
           loadCompetencies(), 
           loadOfficerRecommendations(),
-          loadOfficerHistoryAndWorkshops()
+          loadOfficerHistory()
         ]);
       } catch (e) {
         console.error("Session load error:", e);
@@ -436,7 +422,7 @@
       document.getElementById("video-modal").style.display = "none";
     }
 
-    async function loadOfficerHistoryAndWorkshops() {
+    async function loadOfficerHistory() {
       // 1. Load Completed History & Certs
       try {
         const res = await fetch(`${API_URL}/api/progress/${currentUser.email}`);
@@ -480,39 +466,6 @@
         }
       } catch (e) {
         console.warn("Failed to load progress history:", e);
-      }
-
-      // 2. Load Upcoming Workshops Matching Officer
-      try {
-        const wsRes = await fetch(`${API_URL}/api/workshops`);
-        const wsData = await wsRes.json();
-        const wsList = wsData.workshops || [];
-        const wsContainer = document.getElementById("officer-workshops-grid");
-
-        if (wsList.length === 0) {
-          wsContainer.innerHTML = `<p style="color:var(--text-muted);">No upcoming workshops scheduled at this time.</p>`;
-          return;
-        }
-
-        wsContainer.innerHTML = wsList.map(w => {
-          const modeBadge = w.mode.includes('In-Person') 
-            ? '<span class="stage-badge" style="background:#e0f2fe; color:#0369a1;"><i class="fa-solid fa-building-columns"></i> In-Person</span>'
-            : (w.mode === 'Hybrid' ? '<span class="stage-badge" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-tower-broadcast"></i> Hybrid</span>' : '<span class="stage-badge" style="background:#dcfce7; color:#15803d;"><i class="fa-solid fa-laptop"></i> Virtual</span>');
-
-          return `
-            <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:14px; display:flex; flex-direction:column; gap:6px;">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span class="module-badge">${w.division || 'Universal'}</span>
-                ${modeBadge}
-              </div>
-              <strong style="font-size:0.92rem; color:var(--text-main); line-height:1.35;">${w.title}</strong>
-              <div style="font-size:0.8rem; color:var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> ${w.start_date || 'TBD'} to ${w.end_date || 'TBD'}</div>
-              <div style="font-size:0.8rem; color:var(--primary); font-weight:700;"><i class="fa-solid fa-users"></i> Available Seats: ${(w.max_seats || 40) - (w.enrolled_seats || 0)} left</div>
-            </div>
-          `;
-        }).join('');
-      } catch (e) {
-        console.warn("Failed to load workshops:", e);
       }
     }
 
@@ -621,7 +574,7 @@
         });
         alert(`Certificate for "${currentActiveCourse}" submitted successfully! It is now in the administrative audit queue for verification.`);
         closeModal('cert-modal');
-        await Promise.all([loadCompetencies(), loadOfficerHistoryAndWorkshops()]);
+        await Promise.all([loadCompetencies(), loadOfficerHistory()]);
       } catch (e) {
         alert("Certificate submission error. Please retry.");
       }
@@ -696,7 +649,7 @@
 
         alert(`Assessment Completed! Score: ${finalPercentage}%. Competency score increased.`);
         closeModal('quiz-modal');
-        await Promise.all([loadCompetencies(), loadOfficerHistoryAndWorkshops()]);
+        await Promise.all([loadCompetencies(), loadOfficerHistory()]);
       } catch (e) {
         alert(`Score: ${finalPercentage}%. Error saving to database.`);
         closeModal('quiz-modal');
