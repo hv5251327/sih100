@@ -105,6 +105,7 @@
     }
   </script>
   <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
@@ -262,24 +263,29 @@
   <div class="modal-backdrop" id="cert-modal">
     <div class="modal-box">
       <div class="modal-header">
-        <h3 id="cert-modal-title">Upload Course Certificate</h3>
+        <h3 id="cert-modal-title"><i class="fa-solid fa-stamp"></i> AI Certificate Verification</h3>
         <button class="modal-close" onclick="closeModal('cert-modal')">&times;</button>
       </div>
-      <p style="font-size:0.85rem; color:var(--text-muted);">Attach your completed iGOT Karmayogi course certificate (.PDF / .PNG / .JPG) for automated verification.</p>
-      <input type="file" id="cert-file-input" accept=".pdf,.png,.jpg,.jpeg" style="padding:10px; border:1px dashed var(--border); border-radius:6px;">
-      <button class="btn-action btn-quiz" style="padding:10px;" onclick="submitCertificate()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload & Submit for Verification</button>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Attach your completed iGOT Karmayogi / NSSTA course certificate (.PDF / .PNG / .JPG). The AI Credential Auditor will verify your name, course alignment, and issuing authority in real time.</p>
+      <input type="file" id="cert-file-input" accept=".pdf,.png,.jpg,.jpeg" onchange="previewCertFile(event)" style="padding:10px; border:1px dashed var(--border); border-radius:6px; cursor:pointer;">
+      
+      <div id="cert-status-msg" style="font-size:0.85rem; font-weight:700; color:var(--primary);"></div>
+      <div id="cert-ai-feedback" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px; font-size:0.85rem; line-height:1.4;"></div>
+      
+      <button class="btn-action btn-quiz" id="btn-cert-submit" style="padding:10px;" onclick="submitCertificate()"><i class="fa-solid fa-wand-magic-sparkles"></i> Verify Credential & Credit Course</button>
     </div>
   </div>
 
   <div class="modal-backdrop" id="quiz-modal">
     <div class="modal-box">
       <div class="modal-header">
-        <h3 id="quiz-modal-title">Competency Assessment</h3>
+        <h3 id="quiz-modal-title"><i class="fa-solid fa-list-check"></i> Competency Assessment</h3>
         <button class="modal-close" onclick="closeModal('quiz-modal')">&times;</button>
       </div>
-      <p style="font-size:0.85rem; color:var(--text-muted);">Complete this evaluation to credit this course toward your profile.</p>
-      <div id="quiz-questions-body" style="display:flex; flex-direction:column; gap:14px;"></div>
-      <button class="btn-action btn-quiz" style="padding:10px;" id="quiz-submit-action" onclick="submitAssessment()">Submit Assessment & Record Credit</button>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Complete this domain evaluation to verify understanding and record credits in the database.</p>
+      <div id="quiz-source-badge" style="font-size:0.75rem; font-weight:700; color:var(--accent);"></div>
+      <div id="quiz-questions-body" style="display:flex; flex-direction:column; gap:14px; margin-top:8px;"></div>
+      <button class="btn-action btn-quiz" style="padding:10px;" id="quiz-submit-action" onclick="submitAssessment()"><i class="fa-solid fa-circle-check"></i> Submit Assessment & Record Credit</button>
     </div>
   </div>
 
@@ -548,10 +554,46 @@
       setTimeout(() => printWindow.print(), 500);
     }
 
+    let extractedCertText = "";
+
     function openCertModal(titleEnc) {
       currentActiveCourse = decodeURIComponent(titleEnc);
-      document.getElementById("cert-modal-title").innerText = `Upload Certificate: ${currentActiveCourse}`;
+      document.getElementById("cert-modal-title").innerHTML = `<i class="fa-solid fa-stamp"></i> AI Certificate Verification: ${currentActiveCourse}`;
+      document.getElementById("cert-status-msg").innerHTML = "";
+      document.getElementById("cert-ai-feedback").style.display = "none";
+      document.getElementById("cert-file-input").value = "";
+      extractedCertText = "";
       document.getElementById("cert-modal").style.display = "flex";
+    }
+
+    async function previewCertFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      extractedCertText = "";
+      const statusDiv = document.getElementById("cert-status-msg");
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Reading file data...`;
+      
+      if (file.type === "application/pdf" && typeof pdfjsLib !== 'undefined') {
+        try {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          let fullText = "";
+          for (let i = 1; i <= Math.min(pdf.numPages, 3); i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            fullText += content.items.map(item => item.str).join(" ") + " ";
+          }
+          extractedCertText = fullText.trim();
+          statusDiv.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> PDF text extracted (${extractedCertText.length} characters). Ready for AI validation.`;
+        } catch (e) {
+          extractedCertText = `Filename: ${file.name}`;
+          statusDiv.innerHTML = `<span>File: ${file.name} ready for audit.</span>`;
+        }
+      } else {
+        extractedCertText = `Filename: ${file.name}`;
+        statusDiv.innerHTML = `<span>File: ${file.name} ready for audit.</span>`;
+      }
     }
 
     async function submitCertificate() {
@@ -560,23 +602,60 @@
         alert("Please choose a certificate file to upload.");
         return;
       }
+      const submitBtn = document.getElementById("btn-cert-submit");
+      const statusDiv = document.getElementById("cert-status-msg");
+      const feedbackDiv = document.getElementById("cert-ai-feedback");
+      
+      submitBtn.disabled = true;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> MoSPI AI Credential Auditor evaluating certificate...`;
+      feedbackDiv.style.display = "none";
+
+      const file = fileInput.files[0];
       try {
-        const file = fileInput.files[0];
-        await fetch(`${API_URL}/api/certificates/submit`, {
+        const res = await fetch(`${API_URL}/api/certificates/verify-ai`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userEmail: currentUser.email,
             officerName: currentUser.name,
             courseTitle: currentActiveCourse,
-            fileName: file ? file.name : 'Certificate_Uploaded.pdf'
+            fileName: file.name,
+            extractedText: extractedCertText || file.name
           })
         });
-        alert(`Certificate for "${currentActiveCourse}" submitted successfully! It is now in the administrative audit queue for verification.`);
-        closeModal('cert-modal');
-        await Promise.all([loadCompetencies(), loadOfficerHistory()]);
+
+        const data = await res.json();
+        const v = data.verification || {};
+
+        feedbackDiv.style.display = "block";
+        if (data.success) {
+          feedbackDiv.style.background = "#f0fdf4";
+          feedbackDiv.style.borderColor = "#bbf7d0";
+          feedbackDiv.innerHTML = `
+            <div style="font-weight:800; color:#15803d; margin-bottom:4px;"><i class="fa-solid fa-circle-check"></i> ${data.message}</div>
+            <div><strong>Issuing Body:</strong> ${v.issuing_authority || 'Accredited Authority'}</div>
+            <div><strong>Audit Summary:</strong> ${v.verification_summary || 'Accredited certificate verified.'}</div>
+            <div style="margin-top:4px; font-weight:700; color:var(--primary);"><i class="fa-solid fa-award"></i> +${v.awarded_competency_points || 25}% Competency Points Credited!</div>
+          `;
+          statusDiv.innerHTML = `<span style="color:var(--success);"><i class="fa-solid fa-check-double"></i> Verification Complete & Saved to Database.</span>`;
+          alert(`Success: "${currentActiveCourse}" is verified and marked as COMPLETED!`);
+          await Promise.all([loadCompetencies(), loadOfficerHistory()]);
+          setTimeout(() => closeModal('cert-modal'), 2000);
+        } else {
+          feedbackDiv.style.background = "#fef3c7";
+          feedbackDiv.style.borderColor = "#fde68a";
+          feedbackDiv.innerHTML = `
+            <div style="font-weight:800; color:#b45309;"><i class="fa-solid fa-clock"></i> Certificate Submitted for Manual Administrative Review</div>
+            <div><strong>Remarks:</strong> ${v.verification_summary || 'Queued for supervisor verification.'}</div>
+          `;
+          statusDiv.innerHTML = `<span style="color:#b45309;">Queued in Admin Verification Queue.</span>`;
+          await loadOfficerHistory();
+        }
       } catch (e) {
-        alert("Certificate submission error. Please retry.");
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Verification server connection error.</span>`;
+        alert("Verification error. Please retry.");
+      } finally {
+        submitBtn.disabled = false;
       }
     }
 
@@ -585,9 +664,11 @@
       const cat = decodeURIComponent(catEnc);
       currentActiveCourse = title;
 
-      document.getElementById("quiz-modal-title").innerText = `Assessment: ${title}`;
+      document.getElementById("quiz-modal-title").innerHTML = `<i class="fa-solid fa-list-check"></i> Assessment: ${title}`;
       const questionsBody = document.getElementById("quiz-questions-body");
-      questionsBody.innerHTML = `<div style="text-align:center; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Generating AI evaluation questions...</div>`;
+      const badgeDiv = document.getElementById("quiz-source-badge");
+      questionsBody.innerHTML = `<div style="text-align:center; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching accredited course questions from database...</div>`;
+      if (badgeDiv) badgeDiv.innerHTML = "";
       document.getElementById("quiz-modal").style.display = "flex";
 
       try {
@@ -599,13 +680,21 @@
         const data = await res.json();
         activeQuizData = data.quiz || [];
 
+        if (badgeDiv) {
+          if (data.source === 'DATABASE_GROUNDED') {
+            badgeDiv.innerHTML = `<span style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;"><i class="fa-solid fa-database"></i> Live Database Grounded Quiz Bank (${data.total_in_bank || 11} Questions Available)</span>`;
+          } else {
+            badgeDiv.innerHTML = `<span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI-Synthesized Psychometric Assessment</span>`;
+          }
+        }
+
         questionsBody.innerHTML = activeQuizData.map((qItem, qIdx) => `
-          <div style="border-bottom:1px solid #f1f5f9; padding-bottom:10px;">
-            <p style="font-weight:700; font-size:0.9rem; margin-bottom:8px;">${qIdx + 1}. ${qItem.question}</p>
-            <div style="display:flex; flex-direction:column; gap:6px;">
+          <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:12px;">
+            <p style="font-weight:700; font-size:0.9rem; margin-bottom:8px; color:var(--text-main);">${qIdx + 1}. ${qItem.question}</p>
+            <div style="display:flex; flex-direction:column; gap:8px;">
               ${qItem.options.map((opt, oIdx) => `
-                <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
-                  <input type="radio" name="quiz_q_${qIdx}" value="${oIdx}"> ${opt}
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer; background:#fff; padding:6px 10px; border-radius:6px; border:1px solid #e2e8f0;">
+                  <input type="radio" name="quiz_q_${qIdx}" value="${oIdx}"> <span>${opt}</span>
                 </label>
               `).join("")}
             </div>
