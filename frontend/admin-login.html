@@ -14,32 +14,17 @@
         <p class="subtitle">MoSPI Command Center Access</p>
         <form id="adminForm">
             <div class="form-group">
-                <label>Admin Official Email ID</label>
-                <input type="email" id="email" placeholder="e.g. admin@mospi.gov.in" required>
+                <label>Admin Email ID</label>
+                <input type="email" id="email" placeholder="Enter admin email" required>
             </div>
             <div class="form-group">
-                <label>Administrator Password</label>
+                <label>Password</label>
                 <input type="password" id="password" placeholder="Enter password" required>
             </div>
-            <button type="submit" class="btn-submit admin-btn"><i class="fa-solid fa-lock"></i> Authorize & Access Command Center</button>
+            <button type="submit" class="btn-submit admin-btn"><i class="fa-solid fa-lock"></i> Authorize & Access Portal</button>
         </form>
-
-        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.2); text-align: center;">
-            <p style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; margin-bottom: 8px;"><i class="fa-solid fa-bolt" style="color:#eab308;"></i> QUICK DEMO ADMIN ACCESS</p>
-            <button type="button" onclick="quickFillAdmin('admin@mospi.gov.in', 'admin123')" style="width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:6px; padding:8px 10px; font-size:0.82rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                <span><i class="fa-solid fa-user-shield"></i> <strong>MoSPI Training Administrator</strong></span>
-                <span style="color:#38bdf8; font-weight:700;">Fill <i class="fa-solid fa-arrow-right"></i></span>
-            </button>
-        </div>
-
-        <a href="index.html" class="back-link" style="margin-top:14px;"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
+        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
     </div>
-    <script>
-        function quickFillAdmin(email, pwd) {
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = pwd;
-        }
-    </script>
     <script src="auth.js"></script>
 </body>
 </html>

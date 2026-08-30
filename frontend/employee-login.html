@@ -15,42 +15,17 @@
         <form id="employeeForm">
             <div class="form-group">
                 <label>Official Email ID</label>
-                <input type="email" id="email" placeholder="e.g. sunita.sharma@mospi.gov.in" required>
+                <input type="email" id="email" placeholder="Enter your email" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
                 <input type="password" id="password" placeholder="Enter your password" required>
             </div>
-            <button type="submit" class="btn-submit"><i class="fa-solid fa-right-to-bracket"></i> Login & Access Hub</button>
+            <button type="submit" class="btn-submit">Login</button>
         </form>
-
-        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border, #cbd5e1); text-align: center;">
-            <p style="font-size: 0.78rem; font-weight: 700; color: #64748b; margin-bottom: 8px;"><i class="fa-solid fa-bolt" style="color:#eab308;"></i> QUICK DEMO OFFICER PROFILES</p>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-                <button type="button" onclick="quickFill('sunita.sharma@mospi.gov.in', 'iss123')" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:6px 10px; font-size:0.78rem; text-align:left; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                    <span><strong>Dr. Sunita Sharma</strong> (Director, NAD)</span>
-                    <span style="color:#0284c7; font-weight:700;">Fill <i class="fa-solid fa-arrow-right"></i></span>
-                </button>
-                <button type="button" onclick="quickFill('rajesh.verma@mospi.gov.in', 'sss123')" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:6px 10px; font-size:0.78rem; text-align:left; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                    <span><strong>Shri Rajesh Verma</strong> (JSO, FOD)</span>
-                    <span style="color:#0284c7; font-weight:700;">Fill <i class="fa-solid fa-arrow-right"></i></span>
-                </button>
-                <button type="button" onclick="quickFill('ananya.sen@mospi.gov.in', 'des123')" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:6px 10px; font-size:0.78rem; text-align:left; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                    <span><strong>Smt. Ananya Sen</strong> (Joint Director, State DES)</span>
-                    <span style="color:#0284c7; font-weight:700;">Fill <i class="fa-solid fa-arrow-right"></i></span>
-                </button>
-            </div>
-        </div>
-
-        <p class="footer-text" style="margin-top:12px;">New Employee? <a href="register.html">Register here</a></p>
+        <p class="footer-text">New Employee? <a href="register.html">Register here</a></p>
         <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
     </div>
-    <script>
-        function quickFill(email, pwd) {
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = pwd;
-        }
-    </script>
     <script src="auth.js"></script>
 </body>
 </html>
