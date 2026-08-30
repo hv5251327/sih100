@@ -79,28 +79,22 @@ app.get('/api/metadata', async (req, res) => {
     }
 });
 
-// Admin API: Extract, synthesize MCQs from uploaded PDF content and insert directly into course_quizzes table
+// Admin API: Extract, parse, and insert MCQs directly into course_quizzes
 app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
     const { courseTitle, documentText } = req.body;
-    if (!courseTitle || !documentText) return res.status(400).json({ error: 'Course Title and Document Text required.' });
+    if (!courseTitle || !documentText) return res.status(400).json({ error: 'Course Title and Document Text are required.' });
 
     try {
         let questions = [];
-        const prompt = `You are the Assessment Specialist at NSSTA, MoSPI.
-Read this training material document text and extract or formulate 5 to 10 high-quality multiple choice assessment questions for the course: "${courseTitle}".
+        const prompt = `Extract 5 multiple choice questions from this training material for the course: "${courseTitle}".
 
 DOCUMENT CONTENT:
-${documentText.slice(0, 25000)}
+${documentText.slice(0, 20000)}
 
-Requirements:
-1. Each question must test practical application, statutory standards, or core methodology from the document.
-2. Provide exactly 4 realistic options per question.
-3. Indicate the zero-based index of the correct answer (0, 1, 2, or 3).
-
-Return ONLY a valid JSON array matching this exact format:
+Return ONLY a valid JSON array:
 [
   {
-    "question": "Clear, direct question text?",
+    "question": "Question text?",
     "options": ["Option A", "Option B", "Option C", "Option D"],
     "correct_index": 0
   }
@@ -112,39 +106,38 @@ Return ONLY a valid JSON array matching this exact format:
                 const match = rawJson.match(/\[[\s\S]*\]/);
                 if (match) questions = JSON.parse(match[0]);
             } catch (e) {
-                console.warn('Regex JSON parse fallback on quiz:', e.message);
+                console.warn('Quiz JSON parse fallback:', e.message);
             }
         }
 
-        // Guaranteed fallback if LLM returned non-JSON text
         if (!questions || questions.length === 0) {
             questions = [
                 {
-                    question: `What is the primary regulatory or operational objective discussed in the ${courseTitle} training manual?`,
+                    question: `What is the core regulatory compliance standard discussed in ${courseTitle}?`,
                     options: [
-                        "Statutory compliance, data integrity and standardized validation protocols",
-                        "Manual log maintenance without supervisory audits",
-                        "Unregulated survey sampling and non-standard estimation",
-                        "Exemption from statutory and administrative review"
+                        "Statutory validation and data integrity protocols",
+                        "Manual log maintenance without supervisory review",
+                        "Informal sampling without verification",
+                        "Exemption from statutory audits"
                     ],
                     correct_index: 0
                 },
                 {
-                    question: `How are survey milestones and compliance verified under the framework for ${courseTitle}?`,
+                    question: `How are survey milestones verified under ${courseTitle}?`,
                     options: [
-                        "Automated digital submission, supervisory spot-checks and database validation",
-                        "Informal verbal updates without documentation",
-                        "Unchecked paper logs without secondary verification",
-                        "No formal milestone verification required"
+                        "Automated digital submission and supervisory spot-checks",
+                        "Informal verbal updates",
+                        "Unchecked paper records",
+                        "No milestone verification required"
                     ],
                     correct_index: 0
                 },
                 {
-                    question: `Which governance and security standards govern data processing for ${courseTitle}?`,
+                    question: `Which framework governs data processing and respondent privacy for ${courseTitle}?`,
                     options: [
-                        "MoSPI Official Statistics Policy & DPDP Act 2023 regulations",
-                        "Unregulated public internet standards",
-                        "Informal local administrative procedures",
+                        "MoSPI Standards and DPDP Act 2023",
+                        "Generic public forum rules",
+                        "Unverified local procedures",
                         "Ad-hoc undocumented guidelines"
                     ],
                     correct_index: 0
@@ -152,14 +145,17 @@ Return ONLY a valid JSON array matching this exact format:
             ];
         }
 
-        // Map directly to match course_quizzes column constraints
-        const rowsToInsert = questions.map(q => ({
-            course_title: courseTitle,
-            question: q.question || `Assessment question for ${courseTitle}`,
-            options: Array.isArray(q.options) && q.options.length === 4 ? q.options : ["Option A", "Option B", "Option C", "Option D"],
-            correct_index: (typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < 4) ? q.correct_index : 0,
-            source_document: 'Admin PDF / Training Manual'
-        }));
+        const rowsToInsert = questions.map(q => {
+            let safeOptions = Array.isArray(q.options) && q.options.length >= 2 ? q.options : ["Option A", "Option B", "Option C", "Option D"];
+            let safeIndex = typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < safeOptions.length ? q.correct_index : 0;
+            return {
+                course_title: courseTitle,
+                question: String(q.question || `Question on ${courseTitle}`).trim(),
+                options: safeOptions,
+                correct_index: safeIndex,
+                source_document: 'Admin Uploaded PDF Manual'
+            };
+        });
 
         const { data: inserted, error: quizErr } = await supabase
             .from('course_quizzes')
@@ -167,21 +163,21 @@ Return ONLY a valid JSON array matching this exact format:
             .select();
 
         if (quizErr) {
-            console.error('Quiz insertion DB error:', quizErr);
+            console.error('Quiz DB Insert Error:', quizErr);
             return res.status(500).json({ error: quizErr.message });
         }
 
         return res.json({
-            message: `Successfully extracted and saved ${rowsToInsert.length} questions to course_quizzes for "${courseTitle}"!`,
+            message: `Successfully generated and saved ${rowsToInsert.length} questions to course_quizzes table!`,
             questions: inserted || rowsToInsert
         });
     } catch (err) {
-        console.error('Quiz synthesis error:', err);
-        return res.status(500).json({ error: 'Quiz extraction failed.' });
+        console.error('Quiz synthesis route error:', err);
+        return res.status(500).json({ error: err.message || 'Quiz synthesis failed.' });
     }
 });
 
-// Admin API: Course Creator
+// Admin API: Quick Course Creator
 app.post('/api/admin/draft-course', async (req, res) => {
     const { department, domain, topic, cadre, designation } = req.body;
     if (!topic) return res.status(400).json({ error: 'Course topic is required.' });
@@ -250,19 +246,18 @@ app.post('/api/admin/parse-syllabus', async (req, res) => {
 
     try {
         let extractedModules = [];
-        const prompt = `You are the Academic Director at NSSTA (MoSPI). Read this full syllabus/circular text and break it down into 4 to 8 distinct standalone official training courses suitable for official statisticians in the "${defaultDivision || 'ALL'}" division.
+        const prompt = `You are the Academic Director at NSSTA (MoSPI). Read this syllabus text and break it down into 4 to 8 distinct standalone official training courses for "${defaultDivision || 'ALL'}" division.
 
 SYLLABUS CONTENT:
 ${syllabusText.slice(0, 25000)}
 
-Organize every distinct chapter/module found into an individual course object.
 Return ONLY a valid JSON array of objects:
 [
   {
-    "title": "Clear Course Title (e.g. Sampling Frame Methodologies & Error Audit)",
+    "title": "Clear Course Title",
     "domain": "Statistical Competencies | Technical Competencies | Digital Governance | Behavioural & Managerial",
     "difficulty_level": "Foundation | Intermediate | Advanced",
-    "description": "2-sentence practical operational purpose explaining what the officer will execute"
+    "description": "2-sentence practical operational purpose"
   }
 ]`;
 
@@ -312,17 +307,13 @@ Return ONLY a valid JSON array of objects:
             .insert(rowsToInsert)
             .select();
 
-        if (insErr) {
-            console.error('Syllabus Insert Error:', insErr);
-            return res.status(500).json({ error: insErr.message });
-        }
+        if (insErr) return res.status(500).json({ error: insErr.message });
 
         return res.json({
             message: `Successfully analyzed syllabus and saved ${rowsToInsert.length} courses to master_courses!`,
             modules: inserted || rowsToInsert
         });
     } catch (err) {
-        console.error('Syllabus error:', err);
         return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
     }
 });
