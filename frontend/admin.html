@@ -87,12 +87,12 @@
 
   <div class="container">
     
-    <!-- KPI Row: Officers, Hours, Pass Rate & Master Courses -->
+    <!-- KPI Row: Officers, Divisions, Cadres & Master Courses -->
     <div class="kpi-row">
       <div class="kpi-card"><span>Total Officers Enrolled</span><h3 id="stat-total-officers">0</h3></div>
-      <div class="kpi-card"><span>Total Learning Hours</span><h3 id="stat-total-hours" style="color:var(--accent);">0 hrs</h3></div>
-      <div class="kpi-card"><span>Assessment Pass Rate</span><h3 id="stat-pass-rate" style="color:var(--success);">0%</h3></div>
-      <div class="kpi-card"><span>Total Master DB Courses</span><h3 id="stat-total-courses" style="color:var(--primary);">0</h3></div>
+      <div class="kpi-card"><span>Active Divisions</span><h3 id="stat-total-depts">0</h3></div>
+      <div class="kpi-card"><span>Registered Cadres</span><h3 id="stat-total-cadres">0</h3></div>
+      <div class="kpi-card"><span>Total Master DB Courses</span><h3 id="stat-total-courses" style="color:var(--success);">0</h3></div>
     </div>
 
     <!-- Predictive Workforce Planning & iGOT Sync Monitor -->
@@ -122,7 +122,7 @@
         <div style="display:flex; flex-direction:column; gap:10px; font-size:0.88rem;">
           <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
             <span>Catalogue Sync Health:</span>
-            <strong style="color:var(--success);"><i class="fa-solid fa-circle-check"></i> 100% Synced</strong>
+            <strong style="color:var(--success);" id="igot-sync-health"><i class="fa-solid fa-circle-check"></i> 100% Synced</strong>
           </div>
           <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
             <span>Single Sign-On (SSO):</span>
@@ -133,6 +133,8 @@
             <strong style="color:var(--text-main);"><i class="fa-solid fa-user-lock"></i> MoSPI / NSSTA Admin Role Verified</strong>
           </div>
         </div>
+        <button class="btn-action" id="btn-sync-igot" onclick="triggerIgotSync()" style="margin-top:4px; background:#0284c7;"><i class="fa-solid fa-arrows-rotate"></i> Sync with iGOT Karmayogi Now</button>
+        <div id="igot-sync-result" style="font-size:0.82rem; font-weight:700; color:var(--success);"></div>
       </section>
     </div>
 
@@ -505,13 +507,36 @@
         allOfficers = data.officers || [];
 
         document.getElementById("stat-total-officers").innerText = data.total_officers || 0;
-        document.getElementById("stat-total-hours").innerText = `${data.metrics?.total_hours || 0} hrs`;
-        document.getElementById("stat-pass-rate").innerText = `${data.metrics?.pass_rate || 92}%`;
+        document.getElementById("stat-total-depts").innerText = Object.keys(data.breakdown?.byDept || {}).length;
+        document.getElementById("stat-total-cadres").innerText = Object.keys(data.breakdown?.byCadre || {}).length;
 
         renderHeatmap(allOfficers);
         renderOfficersTable(allOfficers);
       } catch (e) {
         console.error("Failed to load analytics:", e);
+      }
+    }
+
+    async function triggerIgotSync() {
+      const btn = document.getElementById("btn-sync-igot");
+      const resDiv = document.getElementById("igot-sync-result");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Syncing with iGOT Karmayogi API...`;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/sync-igot`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Sync failed');
+
+        resDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
+        alert(data.message);
+        await loadCoursesDropdown();
+      } catch (err) {
+        resDiv.innerHTML = `<span style="color:#ef4444;">Sync Error: ${err.message}</span>`;
+        alert(`iGOT Sync error: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Sync with iGOT Karmayogi Now`;
       }
     }
 

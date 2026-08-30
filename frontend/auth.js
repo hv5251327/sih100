@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
+const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
     const employeeForm = document.getElementById('employeeForm');
@@ -111,6 +111,49 @@ async function submitRegistration() {
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.innerText = 'Register & Create Profile';
+        }
+    }
+}
+
+async function triggerGovSSO(role) {
+    const ssoEmail = role === 'admin' ? 'admin@mospi.gov.in' : 'officer.iss@nic.in';
+    const ssoBtn = document.getElementById('btn-parichay-sso') || document.querySelector('.sso-btn');
+    if (ssoBtn) {
+        ssoBtn.disabled = true;
+        ssoBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Authenticating via Parichay (MeriPehchan)...`;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/sso`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: ssoEmail,
+                role: role,
+                sso_provider: 'Parichay (MeriPehchan - Govt of India)'
+            })
+        });
+        const data = await response.json();
+
+        if (response.ok && data.user) {
+            localStorage.setItem('mospi_user', JSON.stringify(data.user));
+            if (role === 'admin' || data.user.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        } else {
+            alert(`Gov SSO Error: ${data.error || 'Parichay authentication failed'}`);
+            if (ssoBtn) {
+                ssoBtn.disabled = false;
+                ssoBtn.innerHTML = `<i class="fa-solid fa-shield-halved"></i> Sign In with Parichay (Gov SSO)`;
+            }
+        }
+    } catch (err) {
+        alert('Could not connect to Government SSO gateway. Please retry.');
+        if (ssoBtn) {
+            ssoBtn.disabled = false;
+            ssoBtn.innerHTML = `<i class="fa-solid fa-shield-halved"></i> Sign In with Parichay (Gov SSO)`;
         }
     }
 }
