@@ -859,23 +859,20 @@ async function recalculateCompetencies(cleanEmail) {
     allCourses.forEach(c => {
         const norm = normalizeTitle(c.title);
         if (completedNormTitles.has(norm)) {
-            if (c.is_general_mandatory) {
-                statScore += 20;
-                techScore += 20;
-                govScore += 20;
-                leadScore += 20;
+            const dom = (c.domain || '').toLowerCase();
+            const titleLower = (c.title || '').toLowerCase();
+
+            // Strict domain mapping: only increment the specific pillar for that course's domain!
+            if (dom.includes('stat') || titleLower.includes('gdp') || titleLower.includes('sna') || titleLower.includes('sampling') || titleLower.includes('plfs') || titleLower.includes('asuse') || titleLower.includes('hces') || titleLower.includes('sut') || titleLower.includes('time series') || titleLower.includes('index') || titleLower.includes('econometrics') || titleLower.includes('multiplier')) {
+                statScore += 25;
+            } else if (dom.includes('tech') || titleLower.includes('python') || titleLower.includes('sql') || titleLower.includes('capi') || titleLower.includes('r ') || titleLower.includes('tableau') || titleLower.includes('cloud') || titleLower.includes('machine learning') || titleLower.includes('ai ') || titleLower.includes('paradata') || titleLower.includes('encryption')) {
+                techScore += 25;
+            } else if (dom.includes('govern') || titleLower.includes('dpdp') || titleLower.includes('posh') || titleLower.includes('cyber') || titleLower.includes('rti') || titleLower.includes('official statistics') || titleLower.includes('sdg') || titleLower.includes('lif') || titleLower.includes('metadata')) {
+                govScore += 25;
+            } else if (dom.includes('behav') || dom.includes('manage') || dom.includes('lead') || titleLower.includes('leadership') || titleLower.includes('ethics') || titleLower.includes('public policy') || titleLower.includes('communication') || titleLower.includes('conflict')) {
+                leadScore += 25;
             } else {
-                const dom = (c.domain || '').toLowerCase();
-                const titleLower = (c.title || '').toLowerCase();
-                if (dom.includes('stat') || titleLower.includes('gdp') || titleLower.includes('sna') || titleLower.includes('sampling') || titleLower.includes('plfs') || titleLower.includes('asuse') || titleLower.includes('hces') || titleLower.includes('sut') || titleLower.includes('time series') || titleLower.includes('index') || titleLower.includes('econometrics')) {
-                    statScore += 25;
-                } else if (dom.includes('tech') || titleLower.includes('python') || titleLower.includes('sql') || titleLower.includes('capi') || titleLower.includes('r ') || titleLower.includes('tableau') || titleLower.includes('cloud') || titleLower.includes('machine learning') || titleLower.includes('ai ')) {
-                    techScore += 25;
-                } else if (dom.includes('govern') || titleLower.includes('dpdp') || titleLower.includes('posh') || titleLower.includes('cyber') || titleLower.includes('rti') || titleLower.includes('official statistics') || titleLower.includes('sdg') || titleLower.includes('lif')) {
-                    govScore += 25;
-                } else {
-                    leadScore += 25;
-                }
+                statScore += 25;
             }
         }
     });

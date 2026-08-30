@@ -330,21 +330,33 @@
         const g = data.governance_score || 0;
         const l = data.leadership_score || 0;
 
+        // Statistical Methods
         document.getElementById("score-stat").innerText = `${s}% / 100%`;
         document.getElementById("fill-stat").style.width = `${s}%`;
-        document.getElementById("gap-stat").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - s}% Deficit - Complete Stage 1 & 2 Modules</span>`;
+        document.getElementById("gap-stat").innerHTML = s >= 100 
+          ? `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> <span style="color:var(--success); font-weight:700;">Proficient (100% Target Achieved)</span>`
+          : (s > 0 ? `<i class="fa-solid fa-clock-rotate-left" style="color:var(--warning);"></i> <span>${100 - s}% Gap Remaining (${s}% Completed)</span>` : `<i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete Statistical Modules</span>`);
 
+        // Technical Tools
         document.getElementById("score-tech").innerText = `${t}% / 100%`;
         document.getElementById("fill-tech").style.width = `${t}%`;
-        document.getElementById("gap-tech").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - t}% Deficit - Complete Python & SQL Training</span>`;
+        document.getElementById("gap-tech").innerHTML = t >= 100 
+          ? `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> <span style="color:var(--success); font-weight:700;">Proficient (100% Target Achieved)</span>`
+          : (t > 0 ? `<i class="fa-solid fa-clock-rotate-left" style="color:var(--warning);"></i> <span>${100 - t}% Gap Remaining (${t}% Completed)</span>` : `<i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete Python, SQL & CAPI</span>`);
 
+        // Digital Governance
         document.getElementById("score-gov").innerText = `${g}% / 100%`;
         document.getElementById("fill-gov").style.width = `${g}%`;
-        document.getElementById("gap-gov").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - g}% Deficit - Complete DPDP Act & POSH Compliance</span>`;
+        document.getElementById("gap-gov").innerHTML = g >= 100 
+          ? `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> <span style="color:var(--success); font-weight:700;">Proficient (100% Target Achieved)</span>`
+          : (g > 0 ? `<i class="fa-solid fa-clock-rotate-left" style="color:var(--warning);"></i> <span>${100 - g}% Gap Remaining (${g}% Completed)</span>` : `<i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete DPDP & Governance</span>`);
 
+        // Leadership & Behavioural
         document.getElementById("score-lead").innerText = `${l}% / 100%`;
         document.getElementById("fill-lead").style.width = `${l}%`;
-        document.getElementById("gap-lead").innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${100 - l}% Deficit - Complete Administrative Modules</span>`;
+        document.getElementById("gap-lead").innerHTML = l >= 100 
+          ? `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> <span style="color:var(--success); font-weight:700;">Proficient (100% Target Achieved)</span>`
+          : (l > 0 ? `<i class="fa-solid fa-clock-rotate-left" style="color:var(--warning);"></i> <span>${100 - l}% Gap Remaining (${l}% Completed)</span>` : `<i class="fa-solid fa-triangle-exclamation"></i> <span>100% Deficit - Complete Leadership Modules</span>`);
       } catch (e) {
         console.warn("Using baseline 0% competency display.");
       }
