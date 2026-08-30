@@ -19,7 +19,63 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Skill Intelligence Engine Active', timestamp: new Date() });
 });
 
-// Admin API: Get list of active master courses for target selection dropdown
+// Admin API: Extract syllabus from PDF text and convert into structured course modules in DB
+app.post('/api/admin/parse-syllabus', async (req, res) => {
+    const { syllabusText, defaultDivision } = req.body;
+    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text content is required.' });
+
+    try {
+        let extractedModules = [];
+        if (GEMINI_API_KEY) {
+            const prompt = `You are the NSSTA Academic Curriculum Director at MoSPI.
+Analyze the following official NSSTA syllabus/circular text and break it down into clean, standalone competency courses for official statisticians.
+
+SYLLABUS TEXT:
+${syllabusText.slice(0, 20000)}
+
+For each topic/chapter found, return ONLY a valid JSON array of objects structured as:
+[
+  {
+    "course_code": "NSSTA-GEN-CODE",
+    "title": "Exact Course Module Title",
+    "domain": "Statistical Competencies | Technical Competencies | Digital Governance | Behavioural & Managerial",
+    "difficulty_level": "Foundation | Intermediate | Advanced",
+    "target_departments": ["${defaultDivision || 'ALL'}"],
+    "description": "2-sentence practical operational purpose for MoSPI statisticians",
+    "video_url": "https://portal.igotkarmayogi.gov.in",
+    "is_general_mandatory": false
+  }
+]`;
+
+            const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+
+            const data = await aiRes.json();
+            let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+            extractedModules = JSON.parse(rawText);
+        }
+
+        if (extractedModules.length > 0) {
+            await supabase.from('master_courses').upsert(extractedModules, { onConflict: 'course_code' });
+        }
+
+        return res.json({
+            message: `Successfully parsed and saved ${extractedModules.length} courses to Master DB!`,
+            modules: extractedModules
+        });
+    } catch (err) {
+        console.error('Syllabus parsing error:', err);
+        return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
+    }
+});
+
 app.get('/api/admin/courses-list', async (req, res) => {
     try {
         const { data, error } = await supabase.from('master_courses').select('id, course_code, title, domain').order('title');
@@ -30,7 +86,6 @@ app.get('/api/admin/courses-list', async (req, res) => {
     }
 });
 
-// Admin API: Officer analytics grouped by Cadre, Department, and Designation
 app.get('/api/admin/officers-analytics', async (req, res) => {
     try {
         const { data: officers, error } = await supabase
@@ -68,7 +123,6 @@ app.get('/api/admin/officers-analytics', async (req, res) => {
     }
 });
 
-// Admin API: Draft Course via AI
 app.post('/api/admin/draft-course', async (req, res) => {
     const { department, domain, topic } = req.body;
     try {
@@ -120,7 +174,6 @@ Return ONLY valid JSON format:
     }
 });
 
-// Admin API: List Pending Courses
 app.get('/api/admin/pending-courses', async (req, res) => {
     try {
         const { data, error } = await supabase.from('pending_courses').select('*').eq('status', 'PENDING').order('created_at', { ascending: false });
@@ -131,7 +184,6 @@ app.get('/api/admin/pending-courses', async (req, res) => {
     }
 });
 
-// Admin API: Approve Course and publish to master_courses
 app.post('/api/admin/approve-course', async (req, res) => {
     const { id } = req.body;
     try {
@@ -158,7 +210,6 @@ app.post('/api/admin/approve-course', async (req, res) => {
     }
 });
 
-// Admin API: Generate & Assign Quizzes from PDF/Document Text directly to a Selected Course
 app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
     const { courseTitle, documentText } = req.body;
     if (!courseTitle || !documentText) return res.status(400).json({ error: 'Course Title and Document Text are required.' });
@@ -171,20 +222,12 @@ app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
         ];
 
         if (GEMINI_API_KEY) {
-            const prompt = `You are an AI assessment engine for NSSTA MoSPI.
-Generate 5 multiple-choice questions from the provided training document text specifically for the course: "${courseTitle}".
-
+            const prompt = `Generate 5 multiple-choice questions from the provided training document text specifically for the course: "${courseTitle}".
 DOCUMENT CONTENT:
 ${documentText.slice(0, 15000)}
 
 Return ONLY a valid JSON array of objects:
-[
-  {
-    "question": "Clear question text?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correct_index": 0
-  }
-]`;
+[{"question": "Clear question text?", "options": ["Option A", "Option B", "Option C", "Option D"], "correct_index": 0}]`;
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -214,7 +257,6 @@ Return ONLY a valid JSON array of objects:
     }
 });
 
-// Officer Core APIs
 app.get('/api/competencies/:email', async (req, res) => {
     const email = (req.params.email || '').trim().toLowerCase();
     try {
