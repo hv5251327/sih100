@@ -1,11 +1,28 @@
 const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
 
+// Centralized persistent placeholder configuration
+const SYSTEM_PLACEHOLDERS = {
+    employeeEmail: 'e.g. sunita.sharma@mospi.gov.in',
+    employeePassword: 'Enter your password',
+    adminEmail: 'e.g. admin@mospi.gov.in',
+    adminPassword: 'Enter password',
+    regName: 'e.g. Dr. Sunita Sharma',
+    regEmail: 'e.g. sunita.sharma@mospi.gov.in',
+    regPassword: 'Create a secure password (e.g. mospi123)'
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const employeeForm = document.getElementById('employeeForm');
     const adminForm = document.getElementById('adminForm');
     const registerForm = document.getElementById('registerForm');
 
+    // Enforce permanent placeholders
     if (employeeForm) {
+        const em = document.getElementById('email');
+        const pw = document.getElementById('password');
+        if (em) em.placeholder = SYSTEM_PLACEHOLDERS.employeeEmail;
+        if (pw) pw.placeholder = SYSTEM_PLACEHOLDERS.employeePassword;
+
         employeeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             await submitAuth('employee');
@@ -13,6 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (adminForm) {
+        const em = document.getElementById('email');
+        const pw = document.getElementById('password');
+        if (em) em.placeholder = SYSTEM_PLACEHOLDERS.adminEmail;
+        if (pw) pw.placeholder = SYSTEM_PLACEHOLDERS.adminPassword;
+
         adminForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             await submitAuth('admin');
@@ -20,6 +42,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (registerForm) {
+        const nm = document.getElementById('regName');
+        const em = document.getElementById('regEmail');
+        const pw = document.getElementById('regPassword');
+        if (nm) nm.placeholder = SYSTEM_PLACEHOLDERS.regName;
+        if (em) em.placeholder = SYSTEM_PLACEHOLDERS.regEmail;
+        if (pw) pw.placeholder = SYSTEM_PLACEHOLDERS.regPassword;
+
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             await submitRegistration();
