@@ -21,31 +21,32 @@
       --warning: #d97706;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    html, body { width: 100%; overflow-x: hidden; }
     body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
     
-    .navbar { background: #fff; border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+    .navbar { width: 100%; background: #fff; border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
     .nav-brand { display: flex; align-items: center; gap: 12px; }
     .nav-brand i { font-size: 1.6rem; color: var(--primary); }
     .nav-brand h1 { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
     .logout-btn { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 700; }
 
-    .container { max-width: 1320px; margin: 24px auto; padding: 0 20px; width: 100%; display: flex; flex-direction: column; gap: 24px; flex: 1; }
+    .container { max-width: 1320px; width: 100%; margin: 24px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 24px; flex: 1; }
 
-    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; width: 100%; }
     .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
     .kpi-card span { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
     .kpi-card h3 { font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-top: 6px; }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media(max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    .grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; width: 100%; }
+    @media(max-width: 1024px) { .grid-2 { grid-template-columns: 1fr; } }
 
-    .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 16px; }
+    .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 16px; width: 100%; min-width: 0; }
     .panel-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
     .panel-header h2 { font-size: 1.1rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
 
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; }
     .form-group label { font-size: 0.85rem; font-weight: 700; }
-    .form-group input, .form-group select, .form-group textarea { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; outline: none; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; outline: none; }
     .btn-action { background: var(--primary); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-action:hover { background: var(--primary-hover); }
 
@@ -53,6 +54,22 @@
     th { background: #f8fafc; text-align: left; padding: 10px 12px; font-weight: 700; border-bottom: 1px solid var(--border); }
     td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
     .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; background: #e0f2fe; color: #0369a1; }
+
+    /* Heatmap styling */
+    .heatmap-cell {
+      text-align: center;
+      font-weight: 700;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 0.82rem;
+      transition: all 0.2s ease;
+    }
+    .hm-high { background: #dcfce7; color: #15803d; }
+    .hm-mid { background: #fef3c7; color: #b45309; }
+    .hm-low { background: #fee2e2; color: #b91c1c; }
+    .hm-none { background: #f1f5f9; color: #64748b; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; }
+    .legend-box { width: 14px; height: 14px; border-radius: 3px; }
   </style>
 </head>
 <body>
@@ -73,6 +90,36 @@
       <div class="kpi-card"><span>Registered Cadres</span><h3 id="stat-total-cadres">0</h3></div>
       <div class="kpi-card"><span>Total Master DB Courses</span><h3 id="stat-total-courses" style="color:var(--success);">0</h3></div>
     </div>
+
+    <!-- Organization-Wide Competency & Skill Gap Heatmap -->
+    <section class="panel">
+      <div class="panel-header">
+        <h2><i class="fa-solid fa-chart-simple"></i> Division-Wise Competency & Skill Gap Heatmap</h2>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div class="legend-item"><span class="legend-box hm-high"></span> 70-100% (Strong)</div>
+          <div class="legend-item"><span class="legend-box hm-mid"></span> 40-69% (Moderate)</div>
+          <div class="legend-item"><span class="legend-box hm-low"></span> 0-39% (Critical Gap)</div>
+        </div>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Real-time aggregated proficiency metrics across the four mandatory MoSPI competency frameworks by division.</p>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:180px;">Division / Department</th>
+              <th style="text-align:center;">Statistical Competencies</th>
+              <th style="text-align:center;">Technical Competencies</th>
+              <th style="text-align:center;">Digital Governance</th>
+              <th style="text-align:center;">Behavioural & Managerial</th>
+              <th style="text-align:center;">Officers</th>
+            </tr>
+          </thead>
+          <tbody id="heatmap-table-body">
+            <tr><td colspan="6" style="text-align:center;">Aggregating division competencies...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <!-- Officer Directory -->
     <section class="panel">
@@ -99,7 +146,7 @@
       </div>
     </section>
 
-    <!-- PDF Syllabus Parser Panel with all Database Divisions -->
+    <!-- PDF Syllabus Parser Panel -->
     <section class="panel">
       <div class="panel-header">
         <h2><i class="fa-solid fa-book-open-reader"></i> NSSTA Training Syllabus PDF Parser & Course Generator</h2>
@@ -128,7 +175,7 @@
     </section>
 
     <div class="grid-2">
-      <!-- Quick Course Creator with dynamic Cadre, Division, Designation from Metadata -->
+      <!-- Quick Course Creator -->
       <section class="panel">
         <div class="panel-header">
           <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Quick Course Creator</h2>
@@ -177,7 +224,7 @@
         <div id="recent-courses-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;"></div>
       </section>
 
-      <!-- Training Material Quiz Synthesizer with Course Selector -->
+      <!-- Training Material Quiz Synthesizer -->
       <section class="panel">
         <div class="panel-header">
           <h2><i class="fa-solid fa-file-pdf"></i> Training Material Quiz Synthesizer</h2>
@@ -201,6 +248,7 @@
           <button type="submit" class="btn-action" id="btn-quiz-synth"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Assign Quiz to Course</button>
         </form>
         <div id="quiz-gen-status" style="font-size:0.85rem; font-weight:700; color:var(--success);"></div>
+        <div id="quiz-preview-box" style="display:none; margin-top:10px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:12px; max-height:220px; overflow-y:auto;"></div>
       </section>
     </div>
 
@@ -219,7 +267,6 @@
         const res = await fetch(`${API_URL}/api/metadata`);
         const data = await res.json();
 
-        // 1. Populate Syllabus Division Dropdown
         const syllabusSelect = document.getElementById("syllabusDept");
         syllabusSelect.innerHTML = '<option value="ALL">Universal (All MoSPI Officers)</option>';
         (data.departments || []).forEach(d => {
@@ -229,7 +276,6 @@
           syllabusSelect.appendChild(opt);
         });
 
-        // 2. Populate Quick Course Creator Department Dropdown
         const draftDeptSelect = document.getElementById("draftDept");
         draftDeptSelect.innerHTML = '<option value="ALL">Universal (All Divisions)</option>';
         (data.departments || []).forEach(d => {
@@ -239,7 +285,6 @@
           draftDeptSelect.appendChild(opt);
         });
 
-        // 3. Populate Quick Course Creator Cadre Dropdown
         const cadreSelect = document.getElementById("draftCadre");
         cadreSelect.innerHTML = '<option value="ALL">All Cadres</option>';
         (data.cadres || []).forEach(c => {
@@ -249,7 +294,6 @@
           cadreSelect.appendChild(opt);
         });
 
-        // 4. Populate Quick Course Creator Designation Dropdown
         const desigSelect = document.getElementById("draftDesignation");
         desigSelect.innerHTML = '<option value="ALL">All Designations</option>';
         (data.designations || []).forEach(des => {
@@ -419,10 +463,58 @@
         document.getElementById("stat-total-depts").innerText = Object.keys(data.breakdown?.byDept || {}).length;
         document.getElementById("stat-total-cadres").innerText = Object.keys(data.breakdown?.byCadre || {}).length;
 
+        renderHeatmap(allOfficers);
         renderOfficersTable(allOfficers);
       } catch (e) {
         console.error("Failed to load analytics:", e);
       }
+    }
+
+    function getHeatmapClass(val) {
+      if (val >= 70) return "hm-high";
+      if (val >= 40) return "hm-mid";
+      if (val > 0) return "hm-low";
+      return "hm-none";
+    }
+
+    function renderHeatmap(officers) {
+      const tbody = document.getElementById("heatmap-table-body");
+      if (!officers.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No departmental data available yet.</td></tr>`;
+        return;
+      }
+
+      const deptMap = {};
+      officers.forEach(o => {
+        const dept = o.department || "General Administration";
+        if (!deptMap[dept]) {
+          deptMap[dept] = { count: 0, stat: 0, tech: 0, gov: 0, lead: 0 };
+        }
+        deptMap[dept].count += 1;
+        deptMap[dept].stat += (o.competency?.statistical_score || 0);
+        deptMap[dept].tech += (o.competency?.technical_score || 0);
+        deptMap[dept].gov += (o.competency?.governance_score || 0);
+        deptMap[dept].lead += (o.competency?.leadership_score || 0);
+      });
+
+      tbody.innerHTML = Object.keys(deptMap).map(dept => {
+        const d = deptMap[dept];
+        const avgStat = Math.round(d.stat / d.count);
+        const avgTech = Math.round(d.tech / d.count);
+        const avgGov = Math.round(d.gov / d.count);
+        const avgLead = Math.round(d.lead / d.count);
+
+        return `
+          <tr>
+            <td><strong>${dept}</strong></td>
+            <td><div class="heatmap-cell ${getHeatmapClass(avgStat)}">${avgStat}%</div></td>
+            <td><div class="heatmap-cell ${getHeatmapClass(avgTech)}">${avgTech}%</div></td>
+            <td><div class="heatmap-cell ${getHeatmapClass(avgGov)}">${avgGov}%</div></td>
+            <td><div class="heatmap-cell ${getHeatmapClass(avgLead)}">${avgLead}%</div></td>
+            <td style="text-align:center;"><strong>${d.count}</strong></td>
+          </tr>
+        `;
+      }).join("");
     }
 
     function renderOfficersTable(officers) {
@@ -460,6 +552,7 @@
       const courseTitle = document.getElementById("quizCourseSelect").value;
       const documentText = document.getElementById("quizDocText").value;
       const statusDiv = document.getElementById("quiz-gen-status");
+      const previewBox = document.getElementById("quiz-preview-box");
       const submitBtn = document.getElementById("btn-quiz-synth");
 
       if (!courseTitle) {
@@ -481,6 +574,22 @@
 
         statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
         alert(data.message);
+
+        if (data.questions && data.questions.length > 0) {
+          previewBox.style.display = "block";
+          previewBox.innerHTML = `
+            <div style="font-weight:800; font-size:0.88rem; color:var(--primary); margin-bottom:8px;">
+              <i class="fa-solid fa-list-check"></i> Saved Questions for "${courseTitle}" (${data.questions.length}):
+            </div>
+            ${data.questions.map((q, i) => `
+              <div style="margin-bottom:8px; font-size:0.8rem; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
+                <strong>${i + 1}. ${q.question}</strong>
+                <div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">Options: ${(q.options || []).join(' | ')}</div>
+              </div>
+            `).join("")}
+          `;
+        }
+
         document.getElementById("quizDocText").value = "";
         document.getElementById("quizPdfFile").value = "";
       } catch (err) {

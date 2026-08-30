@@ -28,9 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function submitAuth(role) {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const submitBtn = document.querySelector('#employeeForm button[type="submit"], #adminForm button[type="submit"], .btn-submit');
+    const emailInput = document.getElementById('email') || document.querySelector('input[type="email"]');
+    const passwordInput = document.getElementById('password') || document.querySelector('input[type="password"]');
+    
+    if (!emailInput || !passwordInput) return;
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    const submitBtn = document.querySelector('button[type="submit"]');
 
     if (submitBtn) {
         submitBtn.disabled = true;
@@ -48,11 +52,10 @@ async function submitAuth(role) {
         if (response.ok) {
             localStorage.setItem('mospi_user', JSON.stringify(data.user));
             
-            // Explicit redirection logic
             if (role === 'admin' || data.user.role === 'admin' || email.toLowerCase().includes('admin')) {
-                window.location.replace('admin.html');
+                window.location.href = 'admin.html';
             } else {
-                window.location.replace('dashboard.html');
+                window.location.href = 'dashboard.html';
             }
         } else {
             alert(`Authentication Error: ${data.error || 'Invalid credentials'}`);
@@ -95,7 +98,7 @@ async function submitRegistration() {
 
         if (response.ok) {
             localStorage.setItem('mospi_user', JSON.stringify(data.user));
-            window.location.replace('dashboard.html');
+            window.location.href = 'dashboard.html';
         } else {
             alert(`Registration Error: ${data.error || 'Unable to register'}`);
             if (submitBtn) {

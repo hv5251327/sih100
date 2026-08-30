@@ -60,6 +60,85 @@ async function generateAIResponse(prompt) {
     return null;
 }
 
+// Smart document text parser for MCQ extraction
+function parseQuizFromText(docText, courseTitle) {
+    const questions = [];
+    const lines = docText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+    // Pattern 1: State machine for explicit questions (e.g. Q1., Question 1., 1. with options A, B, C, D)
+    let curQ = null;
+    let curOpts = [];
+    let curAns = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const qMatch = line.match(/^(?:(?:Question|Q)[\s\.\d\:\-\)]+|(?:\d{1,3}[\.\)]\s+))(.+)/i);
+        const optMatch = line.match(/^(?:[\(\[]?([A-Da-d1-4])[\.\)\]\:\-]\s*)(.+)/);
+        const ansMatch = line.match(/^(?:Ans(?:wer)?|Correct(?:\s*Option)?|Key)[\s\:\-\=]*([A-Da-d1-4])/i);
+
+        if (ansMatch && curQ) {
+            const char = ansMatch[1].toUpperCase();
+            if (char === 'A' || char === '1') curAns = 0;
+            else if (char === 'B' || char === '2') curAns = 1;
+            else if (char === 'C' || char === '3') curAns = 2;
+            else if (char === 'D' || char === '4') curAns = 3;
+        } else if (optMatch && curQ) {
+            curOpts.push(optMatch[2].trim());
+            if (curOpts.length === 4) {
+                questions.push({
+                    question: curQ,
+                    options: [...curOpts],
+                    correct_index: curAns
+                });
+                curQ = null;
+                curOpts = [];
+                curAns = 0;
+            }
+        } else if (qMatch) {
+            if (curQ && curOpts.length >= 2) {
+                while (curOpts.length < 4) curOpts.push('None of the above');
+                questions.push({ question: curQ, options: curOpts, correct_index: curAns });
+            }
+            curQ = qMatch[1].trim();
+            curOpts = [];
+            curAns = 0;
+        }
+    }
+    if (curQ && curOpts.length >= 2) {
+        while (curOpts.length < 4) curOpts.push('None of the above');
+        questions.push({ question: curQ, options: curOpts, correct_index: curAns });
+    }
+
+    // Pattern 2: If no explicit MCQ questions parsed, synthesize from sentences / key points in docText
+    if (questions.length === 0) {
+        const cleanSentences = docText
+            .split(/[\r\n\.\;]+/)
+            .map(s => s.trim().replace(/\s+/g, ' '))
+            .filter(s => s.length > 25 && s.length < 180 && !/^(page|table|figure|\d+$)/i.test(s));
+
+        const unique = [...new Set(cleanSentences)];
+        for (let i = 0; i < unique.length && questions.length < 6; i += 2) {
+            const fact = unique[i];
+            const dist1 = unique[(i + 1) % unique.length] || 'Standard administrative verification protocol';
+            const dist2 = unique[(i + 2) % unique.length] || 'Informal verification without documentation';
+            const dist3 = unique[(i + 3) % unique.length] || 'Unregulated secondary procedural standard';
+
+            questions.push({
+                question: `Which of the following standards applies to: "${fact.slice(0, 90)}..."?`,
+                options: [
+                    fact,
+                    dist1,
+                    dist2,
+                    dist3
+                ],
+                correct_index: 0
+            });
+        }
+    }
+
+    return questions;
+}
+
 app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Engine Active', timestamp: new Date() });
 });
@@ -86,10 +165,15 @@ app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
 
     try {
         let questions = [];
-        const prompt = `Extract 5 multiple choice questions from this training material for the course: "${courseTitle}".
+        const prompt = `You are the Assessment Specialist at NSSTA, MoSPI.
+Extract or synthesize 5 to 8 high-quality multiple choice assessment questions for the course: "${courseTitle}" from the training material below.
 
 DOCUMENT CONTENT:
-${documentText.slice(0, 20000)}
+${documentText.slice(0, 25000)}
+
+Requirements:
+1. Provide exactly 4 realistic options per question.
+2. Indicate the zero-based index of the correct answer (0, 1, 2, or 3).
 
 Return ONLY a valid JSON array:
 [
@@ -110,12 +194,17 @@ Return ONLY a valid JSON array:
             }
         }
 
+        // Guaranteed fallback: parse directly from document text if AI was unavailable or returned empty
+        if (!questions || questions.length === 0) {
+            questions = parseQuizFromText(documentText, courseTitle);
+        }
+
         if (!questions || questions.length === 0) {
             questions = [
                 {
-                    question: `What is the core regulatory compliance standard discussed in ${courseTitle}?`,
+                    question: `What is the core regulatory and compliance standard in ${courseTitle}?`,
                     options: [
-                        "Statutory validation and data integrity protocols",
+                        "Statutory validation, data integrity, and compliance protocols",
                         "Manual log maintenance without supervisory review",
                         "Informal sampling without verification",
                         "Exemption from statutory audits"
@@ -123,7 +212,7 @@ Return ONLY a valid JSON array:
                     correct_index: 0
                 },
                 {
-                    question: `How are survey milestones verified under ${courseTitle}?`,
+                    question: `How are survey milestones and compliance verified under ${courseTitle}?`,
                     options: [
                         "Automated digital submission and supervisory spot-checks",
                         "Informal verbal updates",
@@ -146,11 +235,20 @@ Return ONLY a valid JSON array:
         }
 
         const rowsToInsert = questions.map(q => {
-            let safeOptions = Array.isArray(q.options) && q.options.length >= 2 ? q.options : ["Option A", "Option B", "Option C", "Option D"];
-            let safeIndex = typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < safeOptions.length ? q.correct_index : 0;
+            let safeOptions = Array.isArray(q.options) && q.options.length >= 2 
+                ? q.options.map(o => String(o).replace(/^[\s\(\[]*[A-Da-d1-4][\.\)\]\:\-\s]*/, '').trim()).filter(Boolean)
+                : ["Option A", "Option B", "Option C", "Option D"];
+            
+            while (safeOptions.length < 4) safeOptions.push('None of the above');
+            if (safeOptions.length > 4) safeOptions = safeOptions.slice(0, 4);
+
+            let safeIndex = typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < safeOptions.length 
+                ? q.correct_index 
+                : 0;
+
             return {
                 course_title: courseTitle,
-                question: String(q.question || `Question on ${courseTitle}`).trim(),
+                question: String(q.question || `Assessment question for ${courseTitle}`).trim(),
                 options: safeOptions,
                 correct_index: safeIndex,
                 source_document: 'Admin Uploaded PDF Manual'
@@ -168,7 +266,7 @@ Return ONLY a valid JSON array:
         }
 
         return res.json({
-            message: `Successfully generated and saved ${rowsToInsert.length} questions to course_quizzes table!`,
+            message: `Successfully generated and saved ${rowsToInsert.length} questions to course_quizzes for "${courseTitle}"!`,
             questions: inserted || rowsToInsert
         });
     } catch (err) {
@@ -429,11 +527,33 @@ app.post('/api/recommendations', async (req, res) => {
 
 app.post('/api/generate-quiz', async (req, res) => {
     const { courseTitle } = req.body;
+    const cleanTitle = (courseTitle || '').trim();
     try {
-        const { data: storedQuiz } = await supabase.from('course_quizzes').select('*').eq('course_title', courseTitle).limit(5);
-        if (storedQuiz && storedQuiz.length > 0) {
-            return res.json({ quiz: storedQuiz.map(q => ({ question: q.question, options: q.options, correctIndex: q.correct_index })) });
+        let { data: storedQuiz } = await supabase
+            .from('course_quizzes')
+            .select('*')
+            .ilike('course_title', `%${cleanTitle}%`)
+            .limit(10);
+
+        if (!storedQuiz || storedQuiz.length === 0) {
+            const { data: exactMatch } = await supabase
+                .from('course_quizzes')
+                .select('*')
+                .eq('course_title', cleanTitle)
+                .limit(10);
+            storedQuiz = exactMatch;
         }
+
+        if (storedQuiz && storedQuiz.length > 0) {
+            return res.json({ 
+                quiz: storedQuiz.map(q => ({ 
+                    question: q.question, 
+                    options: q.options, 
+                    correctIndex: q.correct_index 
+                })) 
+            });
+        }
+
         return res.json({
             quiz: [
                 { question: `What is the core regulatory objective of ${courseTitle}?`, options: ["Standard statutory compliance and data integrity", "Manual log keeping", "Unregulated survey sampling", "Exemption from audits"], correctIndex: 0 },
