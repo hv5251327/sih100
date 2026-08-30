@@ -948,6 +948,248 @@ app.post('/api/chatbot', async (req, res) => {
     return res.json({ reply: reply || `Namaste ${userProfile?.name || 'Officer'}! Complete your mandatory Foundation modules and departmental Functional Core courses below.` });
 });
 
+// --- IN-MEMORY FALLBACK CACHES FOR CERTIFICATES & WORKSHOPS ---
+let memoryCertificates = [
+    {
+        id: 1,
+        user_email: 'sunita.sharma@mospi.gov.in',
+        officer_name: 'Dr. Sunita Sharma',
+        course_title: 'National Accounts Compilation & Gross Domestic Product (GDP) Estimation (SNA 2008)',
+        certificate_file_name: 'iGOT_SNA2008_Certificate_Sunita.pdf',
+        status: 'pending',
+        submitted_at: new Date(Date.now() - 3600000 * 5).toISOString(),
+        admin_remarks: null
+    },
+    {
+        id: 2,
+        user_email: 'rajesh.verma@mospi.gov.in',
+        officer_name: 'Shri Rajesh Verma',
+        course_title: 'CAPI Tablet Data Collection, Field Auditing & Mobile Encryption',
+        certificate_file_name: 'CAPI_Master_Cert_Rajesh.pdf',
+        status: 'pending',
+        submitted_at: new Date(Date.now() - 3600000 * 24).toISOString(),
+        admin_remarks: null
+    }
+];
+
+let memoryWorkshops = [
+    {
+        id: 1,
+        title: 'Advanced Time Series Econometrics & X-13ARIMA-SEATS',
+        division: 'PSD',
+        cadre: 'Indian Statistical Service (ISS)',
+        mode: 'In-Person (NSSTA Greater Noida)',
+        start_date: '2026-09-15',
+        end_date: '2026-09-19',
+        max_seats: 35,
+        enrolled_seats: 24,
+        status: 'Scheduled'
+    },
+    {
+        id: 2,
+        title: 'CAPI Tablet Operations, Paradata Auditing & Field Validation',
+        division: 'FOD',
+        cadre: 'Subordinate Statistical Service (SSS)',
+        mode: 'Hybrid',
+        start_date: '2026-09-22',
+        end_date: '2026-09-26',
+        max_seats: 50,
+        enrolled_seats: 41,
+        status: 'Scheduled'
+    },
+    {
+        id: 3,
+        title: 'National Accounts Compilation & SNA 2008 Modernization',
+        division: 'NAD',
+        cadre: 'Indian Statistical Service (ISS)',
+        mode: 'In-Person (NSSTA Greater Noida)',
+        start_date: '2026-10-05',
+        end_date: '2026-10-09',
+        max_seats: 30,
+        enrolled_seats: 18,
+        status: 'Scheduled'
+    },
+    {
+        id: 4,
+        title: 'Digital Personal Data Protection (DPDP) Act 2023 & Respondent Anonymization',
+        division: 'ALL',
+        cadre: 'ALL',
+        mode: 'Virtual',
+        start_date: '2026-10-14',
+        end_date: '2026-10-16',
+        max_seats: 150,
+        enrolled_seats: 112,
+        status: 'Scheduled'
+    }
+];
+
+// --- 1. CERTIFICATE VERIFICATION & AUDIT WORKFLOW ENDPOINTS ---
+app.get('/api/admin/certificates', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('course_certificates').select('*').order('id', { ascending: false });
+        if (!error && data && data.length > 0) {
+            return res.json({ certificates: data });
+        }
+    } catch (e) {}
+    return res.json({ certificates: memoryCertificates });
+});
+
+app.post('/api/certificates/submit', async (req, res) => {
+    const { userEmail, officerName, courseTitle, fileName } = req.body;
+    if (!userEmail || !courseTitle) return res.status(400).json({ error: 'User email and course title required.' });
+
+    const newRecord = {
+        user_email: userEmail.trim().toLowerCase(),
+        officer_name: officerName || 'Officer Trainee',
+        course_title: courseTitle.trim(),
+        certificate_file_name: fileName || 'Certificate_Uploaded.pdf',
+        status: 'pending',
+        submitted_at: new Date().toISOString()
+    };
+
+    try {
+        const { data, error } = await supabase.from('course_certificates').insert([newRecord]).select().single();
+        if (!error && data) {
+            return res.json({ message: 'Certificate submitted successfully for administrative verification!', certificate: data });
+        }
+    } catch (e) {}
+
+    newRecord.id = Date.now();
+    memoryCertificates.unshift(newRecord);
+    return res.json({ message: 'Certificate submitted successfully for administrative verification!', certificate: newRecord });
+});
+
+app.post('/api/admin/certificates/review', async (req, res) => {
+    const { certificateId, status, adminRemarks } = req.body;
+    if (!certificateId || !status) return res.status(400).json({ error: 'Certificate ID and decision status required.' });
+
+    let targetCert = memoryCertificates.find(c => String(c.id) === String(certificateId));
+    try {
+        const { data } = await supabase.from('course_certificates').select('*').eq('id', certificateId).maybeSingle();
+        if (data) targetCert = data;
+    } catch (e) {}
+
+    if (!targetCert) return res.status(404).json({ error: 'Certificate record not found.' });
+
+    targetCert.status = status;
+    targetCert.admin_remarks = adminRemarks || (status === 'approved' ? 'Verified by NSSTA Authority' : 'Incomplete documentation');
+    targetCert.reviewed_at = new Date().toISOString();
+
+    try {
+        await supabase.from('course_certificates').update({
+            status: targetCert.status,
+            admin_remarks: targetCert.admin_remarks,
+            reviewed_at: targetCert.reviewed_at
+        }).eq('id', certificateId);
+    } catch (e) {}
+
+    // If approved, award competency credits & complete course
+    if (status === 'approved') {
+        const email = targetCert.user_email.toLowerCase();
+        try {
+            await supabase.from('user_course_progress').upsert([{
+                user_email: email,
+                course_title: targetCert.course_title,
+                video_completed: true,
+                quiz_passed: true,
+                score: 100,
+                completed_at: new Date()
+            }], { onConflict: 'user_email,course_title' });
+
+            const { data: comp } = await supabase.from('officer_competencies').select('*').eq('user_email', email).maybeSingle();
+            if (comp) {
+                await supabase.from('officer_competencies').update({
+                    statistical_score: Math.min(100, (comp.statistical_score || 0) + 25),
+                    technical_score: Math.min(100, (comp.technical_score || 0) + 25),
+                    governance_score: Math.min(100, (comp.governance_score || 0) + 25),
+                    leadership_score: Math.min(100, (comp.leadership_score || 0) + 25),
+                    updated_at: new Date()
+                }).eq('user_email', email);
+            }
+        } catch (e) {}
+    }
+
+    return res.json({ message: `Certificate ${status === 'approved' ? 'Approved & Competency Points Credited (+25 Pts)' : 'Rejected'} successfully!`, certificate: targetCert });
+});
+
+// --- 2. NSSTA ANNUAL TRAINING PLAN (ATP) & WORKSHOP SCHEDULER ---
+app.get('/api/workshops', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('training_workshops').select('*').order('start_date', { ascending: true });
+        if (!error && data && data.length > 0) {
+            return res.json({ workshops: data });
+        }
+    } catch (e) {}
+    return res.json({ workshops: memoryWorkshops });
+});
+
+app.post('/api/admin/workshops/create', async (req, res) => {
+    const { title, division, cadre, mode, startDate, endDate, maxSeats } = req.body;
+    if (!title || !startDate || !endDate) return res.status(400).json({ error: 'Title, Start Date, and End Date are required.' });
+
+    const newWs = {
+        title: title.trim(),
+        division: division || 'ALL',
+        cadre: cadre || 'ALL',
+        mode: mode || 'In-Person (NSSTA Greater Noida)',
+        start_date: startDate,
+        end_date: endDate,
+        max_seats: parseInt(maxSeats) || 40,
+        enrolled_seats: 0,
+        status: 'Scheduled',
+        created_at: new Date().toISOString()
+    };
+
+    try {
+        const { data, error } = await supabase.from('training_workshops').insert([newWs]).select().single();
+        if (!error && data) {
+            return res.status(201).json({ message: 'Workshop batch scheduled in Annual Training Plan (ATP)!', workshop: data });
+        }
+    } catch (e) {}
+
+    newWs.id = Date.now();
+    memoryWorkshops.push(newWs);
+    return res.status(201).json({ message: 'Workshop batch scheduled in Annual Training Plan (ATP)!', workshop: newWs });
+});
+
+app.delete('/api/admin/workshops/:id', async (req, res) => {
+    const id = req.params.id;
+    try {
+        await supabase.from('training_workshops').delete().eq('id', id);
+    } catch (e) {}
+    memoryWorkshops = memoryWorkshops.filter(w => String(w.id) !== String(id));
+    return res.json({ message: 'Workshop batch removed from calendar.' });
+});
+
+// --- 3. TRAINING BUDGET & CAPACITY SIMULATOR ENDPOINT ---
+app.post('/api/admin/budget-simulate', (req, res) => {
+    const { division, targetOfficers, durationDays, mode } = req.body;
+    const officers = Math.max(1, parseInt(targetOfficers) || 25);
+    const days = Math.max(1, parseInt(durationDays) || 5);
+    const personDays = officers * days;
+
+    let perDiemRate = 4500; // In-Person residential DA/TA + facility cost per person-day
+    if (mode === 'Hybrid') perDiemRate = 2200;
+    if (mode === 'Virtual') perDiemRate = 400; // Cloud infrastructure & digital licensing
+
+    const totalCostINR = personDays * perDiemRate;
+    const costInLakhs = (totalCostINR / 100000).toFixed(2);
+
+    // Projected competency uplift modeled by duration & intensity
+    let baseUplift = Math.min(48, Math.round(12 + (days * 3.5) + (mode === 'In-Person (NSSTA Greater Noida)' ? 10 : mode === 'Hybrid' ? 6 : 2)));
+
+    return res.json({
+        division: division || 'All Divisions',
+        target_officers: officers,
+        duration_days: days,
+        mode: mode || 'In-Person',
+        total_person_days: personDays,
+        estimated_budget_lakhs: costInLakhs,
+        projected_competency_uplift_pct: baseUplift,
+        facility_capacity_index: Math.min(100, Math.round((officers / 60) * 100)) + '% (NSSTA Main Complex)'
+    });
+});
+
 app.post('/api/progress/save', async (req, res) => {
     const { email, courseTitle, score } = req.body;
     const cleanEmail = (email || '').trim().toLowerCase();
