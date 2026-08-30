@@ -38,7 +38,7 @@ async function generateAIResponse(prompt) {
             const text = data?.choices?.[0]?.message?.content;
             if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
         } catch (e) {
-            console.warn('Grok API call failed:', e.message);
+            console.warn('Grok API fallback:', e.message);
         }
     }
 
@@ -53,7 +53,7 @@ async function generateAIResponse(prompt) {
             const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
         } catch (e) {
-            console.warn('Gemini API call failed:', e.message);
+            console.warn('Gemini API error:', e.message);
         }
     }
 
@@ -64,57 +64,196 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Skill Intelligence Engine Active', timestamp: new Date() });
 });
 
-// Admin Auth and APIs
-app.post('/api/auth/login', async (req, res) => {
-    const { email, password, role } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Email and password required.' });
-
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (role === 'admin' || cleanEmail.includes('admin')) {
-        return res.json({
-            message: 'Admin Authorized',
-            user: {
-                name: 'MoSPI Training Administrator',
-                email: cleanEmail,
-                role: 'admin'
-            }
-        });
-    }
-
+// Admin: Save generated draft directly into pending_courses table
+app.post('/api/admin/draft-course', async (req, res) => {
+    const { department, domain, topic } = req.body;
     try {
-        const { data, error } = await supabase
-            .from('employees')
-            .select('id, name, email, password, cadre, department, designation')
-            .ilike('email', cleanEmail)
-            .maybeSingle();
+        const randomCode = 'ADM-' + Math.floor(100000 + Math.random() * 900000);
+        let draft = {
+            course_code: randomCode,
+            title: `${topic || 'Competency Module'} (${department})`,
+            domain: domain || 'Statistical Competencies',
+            difficulty_level: 'Intermediate',
+            target_departments: [department || 'ALL'],
+            description: `Official training module targeted for officers under ${department}.`,
+            video_url: 'https://portal.igotkarmayogi.gov.in',
+            status: 'PENDING'
+        };
 
-        if (error || !data || data.password !== password) {
-            return res.status(401).json({ error: 'Invalid email or password.' });
+        const prompt = `Generate an NSSTA training module for MoSPI officers.
+Department: ${department}
+Domain: ${domain}
+Topic: ${topic}
+
+Return ONLY valid JSON:
+{
+  "title": "${topic || 'Competency Module'} (${department})",
+  "domain": "${domain}",
+  "difficulty_level": "Foundation | Intermediate | Advanced",
+  "description": "2-sentence practical operational purpose",
+  "video_url": "https://portal.igotkarmayogi.gov.in"
+}`;
+
+        const rawJson = await generateAIResponse(prompt);
+        if (rawJson) {
+            try {
+                const parsed = JSON.parse(rawJson);
+                draft.title = parsed.title || draft.title;
+                draft.domain = parsed.domain || draft.domain;
+                draft.difficulty_level = parsed.difficulty_level || draft.difficulty_level;
+                draft.description = parsed.description || draft.description;
+            } catch (e) {}
         }
-        const { password: _, ...userProfile } = data;
-        return res.json({ message: 'Authentication successful', user: { ...userProfile, role: 'employee' } });
+
+        const { data: saved, error } = await supabase
+            .from('pending_courses')
+            .insert([draft])
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Database write error:', error);
+            return res.status(400).json({ error: error.message });
+        }
+
+        return res.json({ message: 'Course drafted and saved to database successfully!', course: saved });
     } catch (err) {
-        return res.status(500).json({ error: 'Login error' });
+        console.error('Draft error:', err);
+        return res.status(500).json({ error: 'Failed to draft course.' });
     }
 });
 
-app.get('/api/admin/courses-list', async (req, res) => {
+// Admin: Parse syllabus and insert directly into master_courses table
+app.post('/api/admin/parse-syllabus', async (req, res) => {
+    const { syllabusText, defaultDivision } = req.body;
+    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text is required.' });
+
     try {
-        const { data, error } = await supabase.from('master_courses').select('id, course_code, title, domain').order('title');
+        const prompt = `Analyze this training syllabus and extract 3 to 6 modular courses for MoSPI statistical officers.
+SYLLABUS TEXT:
+${syllabusText.slice(0, 15000)}
+
+Return ONLY a valid JSON array of objects:
+[
+  {
+    "title": "Module Title",
+    "domain": "Statistical Competencies | Technical Competencies | Digital Governance | Behavioural & Managerial",
+    "difficulty_level": "Foundation | Intermediate | Advanced",
+    "description": "2-sentence operational purpose",
+    "video_url": "https://portal.igotkarmayogi.gov.in"
+  }
+]`;
+
+        const rawJson = await generateAIResponse(prompt);
+        let extractedModules = [];
+        if (rawJson) {
+            try { extractedModules = JSON.parse(rawJson); } catch (e) {}
+        }
+
+        if (!extractedModules || extractedModules.length === 0) {
+            extractedModules = [{
+                title: `Syllabus Unit: ${syllabusText.slice(0, 50)}...`,
+                domain: 'Statistical Competencies',
+                difficulty_level: 'Intermediate',
+                description: syllabusText.slice(0, 200),
+                video_url: 'https://portal.igotkarmayogi.gov.in'
+            }];
+        }
+
+        const rowsToInsert = extractedModules.map((m, idx) => ({
+            course_code: `NSSTA-${Date.now().toString().slice(-6)}-${idx + 1}`,
+            title: m.title || `Module ${idx + 1}`,
+            domain: m.domain || 'Statistical Competencies',
+            difficulty_level: m.difficulty_level || 'Intermediate',
+            target_departments: [defaultDivision || 'ALL'],
+            description: m.description || 'Mandatory statistical training module.',
+            video_url: m.video_url || 'https://portal.igotkarmayogi.gov.in',
+            is_general_mandatory: false
+        }));
+
+        const { data: inserted, error: insErr } = await supabase
+            .from('master_courses')
+            .insert(rowsToInsert)
+            .select();
+
+        if (insErr) {
+            console.error('Syllabus DB Insert error:', insErr);
+            return res.status(500).json({ error: insErr.message });
+        }
+
+        return res.json({
+            message: `Successfully parsed and inserted ${rowsToInsert.length} courses into master_courses DB!`,
+            modules: inserted || rowsToInsert
+        });
+    } catch (err) {
+        console.error('Syllabus error:', err);
+        return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
+    }
+});
+
+// Fetch pending approvals for admin UI
+app.get('/api/admin/pending-courses', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('pending_courses')
+            .select('*')
+            .eq('status', 'PENDING')
+            .order('created_at', { ascending: false });
+
         if (error) return res.status(500).json({ error: error.message });
-        return res.json({ courses: data });
+        return res.json({ courses: data || [] });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 });
 
+// Approve pending course and move into master_courses
+app.post('/api/admin/approve-course', async (req, res) => {
+    const { id } = req.body;
+    try {
+        const { data: pending, error: findErr } = await supabase
+            .from('pending_courses')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (findErr || !pending) return res.status(404).json({ error: 'Pending course not found.' });
+
+        const { error: insErr } = await supabase.from('master_courses').insert([{
+            course_code: pending.course_code,
+            title: pending.title,
+            domain: pending.domain,
+            difficulty_level: pending.difficulty_level,
+            target_departments: pending.target_departments,
+            description: pending.description,
+            video_url: pending.video_url,
+            is_general_mandatory: false
+        }]);
+
+        if (insErr) return res.status(400).json({ error: insErr.message });
+
+        await supabase.from('pending_courses').update({ status: 'APPROVED' }).eq('id', id);
+        return res.json({ message: 'Course approved and published to Master DB!' });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// List courses for dropdown
+app.get('/api/admin/courses-list', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('master_courses').select('id, course_code, title, domain').order('title');
+        if (error) return res.status(500).json({ error: error.message });
+        return res.json({ courses: data || [] });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// Admin officer analytics
 app.get('/api/admin/officers-analytics', async (req, res) => {
     try {
-        const { data: officers, error } = await supabase
-            .from('employees')
-            .select('id, name, email, cadre, department, designation, created_at');
-
+        const { data: officers, error } = await supabase.from('employees').select('id, name, email, cadre, department, designation, created_at');
         if (error) return res.status(500).json({ error: error.message });
 
         const { data: competencies } = await supabase.from('officer_competencies').select('*');
@@ -136,140 +275,16 @@ app.get('/api/admin/officers-analytics', async (req, res) => {
             byDesig[o.designation] = (byDesig[o.designation] || 0) + 1;
         });
 
-        return res.json({
-            total_officers: detailedOfficers.length,
-            officers: detailedOfficers,
-            breakdown: { byCadre, byDept, byDesig }
-        });
+        return res.json({ total_officers: detailedOfficers.length, officers: detailedOfficers, breakdown: { byCadre, byDept, byDesig } });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 });
 
-// Admin API: Parse syllabus text from PDF and bulk insert into master_courses DB
-app.post('/api/admin/parse-syllabus', async (req, res) => {
-    const { syllabusText, defaultDivision } = req.body;
-    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text is required.' });
-
-    try {
-        const prompt = `You are the NSSTA Curriculum Director. Analyze this training syllabus and extract 3 to 6 modular courses for MoSPI statistical officers.
-SYLLABUS TEXT:
-${syllabusText.slice(0, 15000)}
-
-Return ONLY a valid JSON array of objects structured as:
-[
-  {
-    "course_code": "NSSTA-${Date.now().toString().slice(-4)}-MOD",
-    "title": "Module Title",
-    "domain": "Statistical Competencies | Technical Competencies | Digital Governance | Behavioural & Managerial",
-    "difficulty_level": "Foundation | Intermediate | Advanced",
-    "target_departments": ["${defaultDivision || 'ALL'}"],
-    "description": "2-sentence practical operational purpose",
-    "video_url": "https://portal.igotkarmayogi.gov.in",
-    "is_general_mandatory": false
-  }
-]`;
-
-        const rawJson = await generateAIResponse(prompt);
-        let extractedModules = [];
-        if (rawJson) {
-            extractedModules = JSON.parse(rawJson);
-            for (let i = 0; i < extractedModules.length; i++) {
-                extractedModules[i].course_code = `NSSTA-${Date.now().toString().slice(-4)}-${i + 1}`;
-                extractedModules[i].target_departments = [defaultDivision || 'ALL'];
-            }
-            await supabase.from('master_courses').upsert(extractedModules, { onConflict: 'course_code' });
-        }
-
-        return res.json({
-            message: `Successfully parsed and added ${extractedModules.length} new courses to Master DB!`,
-            modules: extractedModules
-        });
-    } catch (err) {
-        console.error('Syllabus parsing error:', err);
-        return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
-    }
-});
-
-app.post('/api/admin/draft-course', async (req, res) => {
-    const { department, domain, topic } = req.body;
-    try {
-        let draft = {
-            course_code: `ADM-${Date.now().toString().slice(-4)}`,
-            title: `${topic || 'Advanced Module'} (${department})`,
-            domain: domain || 'Statistical Competencies',
-            difficulty_level: 'Intermediate',
-            target_departments: [department || 'ALL'],
-            description: `Official training module targeted for officers under ${department}.`,
-            video_url: 'https://portal.igotkarmayogi.gov.in'
-        };
-
-        const prompt = `Generate an NSSTA training module for MoSPI officers.
-Department: ${department}
-Domain: ${domain}
-Topic: ${topic}
-
-Return ONLY valid JSON:
-{
-  "course_code": "ADM-${Date.now().toString().slice(-4)}",
-  "title": "Title",
-  "domain": "${domain}",
-  "difficulty_level": "Foundation | Intermediate | Advanced",
-  "target_departments": ["${department}"],
-  "description": "2-sentence purpose",
-  "video_url": "https://portal.igotkarmayogi.gov.in"
-}`;
-
-        const rawJson = await generateAIResponse(prompt);
-        if (rawJson) draft = JSON.parse(rawJson);
-
-        const { data: saved, error } = await supabase.from('pending_courses').insert([{ ...draft, status: 'PENDING' }]).select().single();
-        if (error) return res.status(400).json({ error: error.message });
-        return res.json({ message: 'Course drafted successfully for approval', course: saved });
-    } catch (err) {
-        return res.status(500).json({ error: 'Failed to draft course.' });
-    }
-});
-
-app.get('/api/admin/pending-courses', async (req, res) => {
-    try {
-        const { data, error } = await supabase.from('pending_courses').select('*').eq('status', 'PENDING').order('created_at', { ascending: false });
-        if (error) return res.status(500).json({ error: error.message });
-        return res.json({ courses: data });
-    } catch (err) {
-        return res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/api/admin/approve-course', async (req, res) => {
-    const { id } = req.body;
-    try {
-        const { data: pending, error: findErr } = await supabase.from('pending_courses').select('*').eq('id', id).single();
-        if (findErr || !pending) return res.status(404).json({ error: 'Pending course not found.' });
-
-        const { error: insErr } = await supabase.from('master_courses').insert([{
-            course_code: pending.course_code,
-            title: pending.title,
-            domain: pending.domain,
-            difficulty_level: pending.difficulty_level,
-            target_departments: pending.target_departments,
-            description: pending.description,
-            video_url: pending.video_url,
-            is_general_mandatory: false
-        }]);
-
-        if (insErr) return res.status(400).json({ error: insErr.message });
-
-        await supabase.from('pending_courses').update({ status: 'APPROVED' }).eq('id', id);
-        return res.json({ message: 'Course approved and published to Master Course Bank!' });
-    } catch (err) {
-        return res.status(500).json({ error: err.message });
-    }
-});
-
+// Quiz generation from manual / PDF text
 app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
     const { courseTitle, documentText } = req.body;
-    if (!courseTitle || !documentText) return res.status(400).json({ error: 'Course Title and Document Text are required.' });
+    if (!courseTitle || !documentText) return res.status(400).json({ error: 'Course Title and Document Text required.' });
 
     try {
         let questions = [
@@ -286,7 +301,9 @@ Return ONLY valid JSON array:
 [{"question": "Question?", "options": ["A", "B", "C", "D"], "correct_index": 0}]`;
 
         const rawJson = await generateAIResponse(prompt);
-        if (rawJson) questions = JSON.parse(rawJson);
+        if (rawJson) {
+            try { questions = JSON.parse(rawJson); } catch (e) {}
+        }
 
         const rowsToInsert = questions.map(q => ({
             course_title: courseTitle,
@@ -331,27 +348,20 @@ function parseDeptCode(deptStr) {
     return deptStr.trim().toUpperCase();
 }
 
-// Guaranteed Robust Recommendations Engine
 app.post('/api/recommendations', async (req, res) => {
-    const { department, cadre, designation } = req.body;
+    const { department } = req.body;
     const deptCode = parseDeptCode(department);
 
     try {
         let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
-        
-        if (!allCourses || allCourses.length === 0) {
-            return res.json({ courses: [], source: 'empty_db' });
-        }
+        if (!allCourses || allCourses.length === 0) return res.json({ courses: [] });
 
-        // 1. Mandatory Foundation Courses for ALL officers
         const mandatoryFoundation = allCourses
             .filter(c => c.is_general_mandatory === true)
             .map(c => ({ ...c, learning_stage: 'Foundation' }));
 
-        // 2. Domain pool (non-mandatory courses)
         const domainPool = allCourses.filter(c => c.is_general_mandatory !== true);
 
-        // Matching logic: if department matches or course targets ALL
         let functionalMatches = domainPool.filter(c => {
             const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
             return targets.includes(deptCode);
@@ -362,7 +372,6 @@ app.post('/api/recommendations', async (req, res) => {
             return !targets.includes(deptCode) && (targets.includes('ALL') || c.difficulty_level === 'Advanced');
         }).map(c => ({ ...c, learning_stage: 'Advanced Strategic' }));
 
-        // Ensure every stage has courses
         if (functionalMatches.length === 0) {
             functionalMatches = domainPool.slice(0, 3).map(c => ({ ...c, learning_stage: 'Functional Core' }));
         }
@@ -370,10 +379,8 @@ app.post('/api/recommendations', async (req, res) => {
             strategicMatches = domainPool.slice(3, 6).map(c => ({ ...c, learning_stage: 'Advanced Strategic' }));
         }
 
-        const combined = [...mandatoryFoundation, ...functionalMatches, ...strategicMatches];
-        return res.json({ courses: combined, source: 'database_guaranteed' });
+        return res.json({ courses: [...mandatoryFoundation, ...functionalMatches, ...strategicMatches] });
     } catch (err) {
-        console.error('Recommendation API error:', err);
         return res.status(500).json({ error: 'Failed to recommend courses.' });
     }
 });
@@ -441,6 +448,25 @@ app.post('/api/auth/register', async (req, res) => {
         return res.status(201).json({ message: 'Registered successfully', user: data[0] });
     } catch (err) {
         return res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const { email, password, role } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password required.' });
+
+    const cleanEmail = email.trim().toLowerCase();
+    if (role === 'admin' || cleanEmail.includes('admin')) {
+        return res.json({ message: 'Admin Authorized', user: { name: 'MoSPI Training Administrator', email: cleanEmail, role: 'admin' } });
+    }
+
+    try {
+        const { data, error } = await supabase.from('employees').select('id, name, email, password, cadre, department, designation').ilike('email', cleanEmail).maybeSingle();
+        if (error || !data || data.password !== password) return res.status(401).json({ error: 'Invalid email or password.' });
+        const { password: _, ...userProfile } = data;
+        return res.json({ message: 'Authentication successful', user: { ...userProfile, role: 'employee' } });
+    } catch (err) {
+        return res.status(500).json({ error: 'Login error' });
     }
 });
 
