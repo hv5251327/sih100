@@ -1200,24 +1200,31 @@ RESPONSE GUIDELINES:
         }
 
         // --- HIGH-INTELLIGENCE DOMAIN KNOWLEDGE GRAPH FALLBACK ---
-        const msgLower = (message || '').toLowerCase();
+        const msgLower = (message || '').toLowerCase().trim();
 
-        // 1. Certificate Upload Query
-        if (msgLower.includes('certificate') || msgLower.includes('upload') || msgLower.includes('submit cert') || msgLower.includes('verify')) {
+        // 0. Greetings & Identity
+        if (msgLower === 'hi' || msgLower === 'hello' || msgLower === 'hey' || msgLower === 'namaste' || msgLower === 'namaskar' || msgLower.includes('who are you') || msgLower.includes('what can you do') || msgLower.includes('help')) {
             return res.json({
-                reply: `📜 **How to Upload Your Certificate:**\n1. Locate the target course card in your **AI-Curated Roadmap**.\n2. Click the orange **"Certificate"** button.\n3. Choose your PDF or image certificate file (from iGOT Karmayogi, NSSTA Greater Noida, DoPT, ISI, etc.).\n4. The **MoSPI AI Credential Auditor** automatically reads the document, verifies your identity (${officerName}) and issuing body, marks the course complete in the database, and awards your competency credits!`
+                reply: `🙏 **Namaste ${officerName}!**\nI am **Bhashini AI**, your Intelligent Training Assistant for the **National Statistical Systems Training Academy (NSSTA), MoSPI**.\n\nHere is how I can assist you:\n• 📊 **Check Remaining Courses:** Ask *"How many courses left?"*\n• 📜 **Certificate Verification:** Ask *"How to upload certificate?"*\n• 📝 **Take Assessments:** Ask *"How to take a quiz?"*\n• 🎓 **Official Transcript:** Ask *"How to download Competency Passport?"*\n• 📈 **Score Breakdown:** Ask *"How is my score calculated?"*\n• 🏛️ **Domain Questions:** Ask about SNA 2008, PLFS, CAPI, DPDP Act 2023, CPI/IIP, POSH, etc.`
             });
         }
 
-        // 2. Quiz / Assessment Query
-        if (msgLower.includes('quiz') || msgLower.includes('assessment') || msgLower.includes('test') || msgLower.includes('exam') || msgLower.includes('question')) {
+        // 1. Certificate Upload Query (English + Hindi)
+        if (msgLower.includes('certificate') || msgLower.includes('upload') || msgLower.includes('submit cert') || msgLower.includes('verify') || msgLower.includes('praman patra') || msgLower.includes('certificate upload kaise')) {
+            return res.json({
+                reply: `📜 **How to Upload Your Certificate:**\n1. Locate the target course card in your **AI-Curated Roadmap**.\n2. Click the orange **"Certificate"** button.\n3. Choose your PDF or image certificate file (from iGOT Karmayogi, NSSTA Greater Noida, DoPT, ISI, etc.).\n4. The **MoSPI AI Credential Auditor** automatically reads the document, verifies your identity (**${officerName}**) and issuing body, marks the course complete in the database, and awards your competency credits!`
+            });
+        }
+
+        // 2. Quiz / Assessment Query (English + Hindi)
+        if (msgLower.includes('quiz') || msgLower.includes('assessment') || msgLower.includes('test') || msgLower.includes('exam') || msgLower.includes('question') || msgLower.includes('pariksha') || msgLower.includes('quiz kaise')) {
             return res.json({
                 reply: `📝 **How to Take a Course Assessment Quiz:**\n1. Click the blue **"Quiz"** button on any course card in your roadmap.\n2. You will be presented with 5 multiple-choice questions fetched directly from the accredited MoSPI Database Question Bank.\n3. Select your answers and click **"Submit Assessment"**.\n4. Scoring 60% or higher instantly passes the module, marks it complete, credits points to your competency profile, and promotes the next course in your pathway!`
             });
         }
 
-        // 3. Remaining Courses & Progress Query
-        if (msgLower.includes('left') || msgLower.includes('remain') || msgLower.includes('how many') || msgLower.includes('progress') || msgLower.includes('roadmap')) {
+        // 3. Remaining Courses & Progress Query (English + Hindi)
+        if (msgLower.includes('left') || msgLower.includes('remain') || msgLower.includes('how many') || msgLower.includes('progress') || msgLower.includes('roadmap') || msgLower.includes('kitne course') || msgLower.includes('bache hai')) {
             return res.json({
                 reply: `📊 **Your Live Training Status & Remaining Courses:**\n• **Completed Modules:** ${completedCount} course(s)\n• **Remaining in Roadmap:** ${remainingCount} course(s)\n• **Current Overall Readiness:** ${comp.overall_score}%\n\n🎯 **Next Priority Courses for ${dept}:**\n${nextRecommendedTitles || 'All core departmental modules completed!'}`
             });
@@ -1231,39 +1238,77 @@ RESPONSE GUIDELINES:
         }
 
         // 5. Score Calculation Query
-        if (msgLower.includes('score') || msgLower.includes('percent') || msgLower.includes('calculate') || msgLower.includes('point') || msgLower.includes('gap') || msgLower.includes('deficit')) {
+        if (msgLower.includes('score') || msgLower.includes('percent') || msgLower.includes('calculate') || msgLower.includes('point') || msgLower.includes('gap') || msgLower.includes('deficit') || msgLower.includes('marks')) {
             return res.json({
                 reply: `📈 **How Competency Scores Are Calculated:**\nYour proficiency is calculated dynamically across 4 pillars based on evaluation scores and curriculum capacity requirements:\n• **Statistical Methods:** ${comp.statistical_score}% (Target: 6 core modules)\n• **Technical & Analytical Tools:** ${comp.technical_score}% (Target: 4 core modules)\n• **Digital Governance & DPDP:** ${comp.governance_score}% (Target: 3 core modules)\n• **Leadership & Management:** ${comp.leadership_score}% (Target: 3 core modules)\nEach passed quiz or approved certificate increases the corresponding pillar score proportionally.`
             });
         }
 
-        // 6. Specific Domain / Methodology Queries
-        if (msgLower.includes('sna') || msgLower.includes('gdp') || msgLower.includes('national account')) {
+        // 6. POSH & Workplace Ethics
+        if (msgLower.includes('posh') || msgLower.includes('harassment') || msgLower.includes('sexual harassment') || msgLower.includes('gender')) {
+            return res.json({
+                reply: `⚖️ **Prevention of Sexual Harassment (POSH) at Workplace:**\nUnder the Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013, all MoSPI and government institutions maintain an Internal Complaints Committee (ICC), mandatory annual compliance training, and strict non-retaliation policies for official personnel.`
+            });
+        }
+
+        // 7. Price Statistics & Inflation (CPI / IIP)
+        if (msgLower.includes('cpi') || msgLower.includes('iip') || msgLower.includes('inflation') || msgLower.includes('price statistics') || msgLower.includes('index')) {
+            return res.json({
+                reply: `📊 **Consumer Price Index (CPI) & Index of Industrial Production (IIP):**\n• **CPI (Base 2012=100):** Compiled by the Price Statistics Division (PSD) measuring retail inflation across Rural, Urban, and Combined sectors.\n• **IIP (Base 2011-12=100):** Compiled by ESD tracking monthly physical volume output across Mining, Manufacturing, and Electricity.`
+            });
+        }
+
+        // 8. Surveys & Sampling (PLFS / ASUSE / HCES / ASI)
+        if (msgLower.includes('asuse') || msgLower.includes('hces') || msgLower.includes('asi') || msgLower.includes('sampling') || msgLower.includes('survey')) {
+            return res.json({
+                reply: `📑 **Major National Statistical Surveys:**\n• **PLFS:** Periodic Labour Force Survey for quarterly and annual employment indicators.\n• **ASUSE:** Annual Survey of Unincorporated Sector Enterprises measuring non-agricultural economic activity.\n• **HCES:** Household Consumption Expenditure Survey estimating monthly per capita consumption expenditure (MPCE).\n• **ASI:** Annual Survey of Industries covering formal manufacturing factories registered under Factories Act, 1948.`
+            });
+        }
+
+        // 9. Technical Tools (Python, R, SQL, Machine Learning)
+        if (msgLower.includes('python') || msgLower.includes('sql') || msgLower.includes('machine learning') || msgLower.includes('r language') || msgLower.includes('tableau') || msgLower.includes('data science')) {
+            return res.json({
+                reply: `💻 **Statistical Computing & Data Science Tools:**\nMoSPI empowers statistical officers with modern computational tools including **Python (Pandas, NumPy, Scikit-learn)**, **R for Statistical Computing**, **PostgreSQL** for relational survey microdata, and **Tableau/Power BI** for national indicator dashboards.`
+            });
+        }
+
+        // 10. System of National Accounts (SNA 2008 & GDP)
+        if (msgLower.includes('sna') || msgLower.includes('gdp') || msgLower.includes('national account') || msgLower.includes('gva') || msgLower.includes('sut')) {
             return res.json({
                 reply: `🏛️ **System of National Accounts (SNA 2008) & GDP:**\nSNA 2008 is the internationally accepted standard statistical framework for compiling macroeconomic aggregates, Gross Domestic Product (GDP), Gross Value Added (GVA), and Supply-Use Tables (SUT) maintained by NAD, MoSPI.`
             });
         }
 
-        if (msgLower.includes('plfs') || msgLower.includes('labour') || msgLower.includes('employment')) {
+        // 11. Labour Force (PLFS)
+        if (msgLower.includes('plfs') || msgLower.includes('labour') || msgLower.includes('employment') || msgLower.includes('unemployment')) {
             return res.json({
                 reply: `👥 **Periodic Labour Force Survey (PLFS):**\nPLFS is the nationwide primary household survey by NSSO/FOD to estimate key employment and unemployment indicators (UR, WPR, LFPR) in both Usual Status (ps+ss) and Current Weekly Status (CWS).`
             });
         }
 
-        if (msgLower.includes('capi') || msgLower.includes('tablet') || msgLower.includes('field')) {
+        // 12. Computer-Assisted Interviewing (CAPI)
+        if (msgLower.includes('capi') || msgLower.includes('tablet') || msgLower.includes('field audit')) {
             return res.json({
                 reply: `📱 **Computer-Assisted Personal Interviewing (CAPI):**\nCAPI replaces traditional paper schedules with encrypted digital tablets for field data collection in NSSO surveys, featuring real-time data validation, GPS tagging, and paradata auditing.`
             });
         }
 
-        if (msgLower.includes('dpdp') || msgLower.includes('privacy') || msgLower.includes('data protection')) {
+        // 13. Data Protection (DPDP Act 2023)
+        if (msgLower.includes('dpdp') || msgLower.includes('privacy') || msgLower.includes('data protection') || msgLower.includes('confidentiality')) {
             return res.json({
                 reply: `🔒 **Digital Personal Data Protection (DPDP) Act 2023:**\nUnder the DPDP Act 2023, official statistical organizations must implement strict data fiduciary obligations, respondent anonymization, encrypted transmission, and statutory confidentiality for microdata.`
             });
         }
 
+        // 14. NSSTA Academy & Cadres
+        if (msgLower.includes('nssta') || msgLower.includes('iss') || msgLower.includes('sss') || msgLower.includes('academy') || msgLower.includes('greater noida')) {
+            return res.json({
+                reply: `🏢 **National Statistical Systems Training Academy (NSSTA):**\nLocated in Greater Noida, UP, NSSTA is the apex training institute under MoSPI responsible for induction and in-service capacity building of Indian Statistical Service (ISS) officers, Subordinate Statistical Service (SSS) cadres, and State DES officials.`
+            });
+        }
+
         return res.json({
-            reply: `Namaste ${officerName}! You currently have ${completedCount} completed course(s) and ${remainingCount} course(s) remaining in your ${dept} roadmap.\n\n• To take a quiz, click **"Quiz"** on any course card.\n• To upload a certificate, click **"Certificate"** on any course card.\n• To view your certified transcript, click **"Download Official Competency Passport (PDF)"** below.`
+            reply: `Namaste ${officerName}! You currently have ${completedCount} completed course(s) and ${remainingCount} course(s) remaining in your ${dept} roadmap.\n\n• To take an assessment, click the blue **"Quiz"** button on any course card.\n• To upload a completion certificate, click the orange **"Certificate"** button.\n• To download your certified transcript, click **"Download Official Competency Passport (PDF)"** below.`
         });
     } catch (err) {
         console.error('Chatbot error:', err.message);
