@@ -814,20 +814,98 @@ app.get('/api/admin/courses-list', async (req, res) => {
     }
 });
 
+// In-Memory Storage for Progress & Competencies (Synced with DB)
+let memoryUserProgress = [];
+let memoryCompetencies = {};
+
+function normalizeTitle(t) {
+    return (t || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+async function getOfficerCompletedCourses(cleanEmail) {
+    const completed = new Set();
+    memoryUserProgress
+        .filter(p => p.user_email === cleanEmail && (p.quiz_passed || p.video_completed))
+        .forEach(p => completed.add(normalizeTitle(p.course_title)));
+    
+    memoryCertificates
+        .filter(c => c.user_email === cleanEmail && c.status === 'approved')
+        .forEach(c => completed.add(normalizeTitle(c.course_title)));
+
+    try {
+        const { data: dbProg } = await supabase.from('user_course_progress').select('course_title, quiz_passed, video_completed').eq('user_email', cleanEmail);
+        (dbProg || []).filter(p => p.quiz_passed || p.video_completed).forEach(p => completed.add(normalizeTitle(p.course_title)));
+    } catch (e) {}
+
+    try {
+        const { data: dbCert } = await supabase.from('course_certificates').select('course_title, status').eq('user_email', cleanEmail).eq('status', 'approved');
+        (dbCert || []).forEach(c => completed.add(normalizeTitle(c.course_title)));
+    } catch (e) {}
+
+    return completed;
+}
+
+async function recalculateCompetencies(cleanEmail) {
+    const completedNormTitles = await getOfficerCompletedCourses(cleanEmail);
+    
+    let { data: allCourses } = await supabase.from('master_courses').select('id, title, domain, is_general_mandatory');
+    if (!allCourses || allCourses.length === 0) allCourses = [];
+
+    let statScore = 0;
+    let techScore = 0;
+    let govScore = 0;
+    let leadScore = 0;
+
+    allCourses.forEach(c => {
+        const norm = normalizeTitle(c.title);
+        if (completedNormTitles.has(norm)) {
+            if (c.is_general_mandatory) {
+                statScore += 20;
+                techScore += 20;
+                govScore += 20;
+                leadScore += 20;
+            } else {
+                const dom = (c.domain || '').toLowerCase();
+                const titleLower = (c.title || '').toLowerCase();
+                if (dom.includes('stat') || titleLower.includes('gdp') || titleLower.includes('sna') || titleLower.includes('sampling') || titleLower.includes('plfs') || titleLower.includes('asuse') || titleLower.includes('hces') || titleLower.includes('sut') || titleLower.includes('time series') || titleLower.includes('index') || titleLower.includes('econometrics')) {
+                    statScore += 25;
+                } else if (dom.includes('tech') || titleLower.includes('python') || titleLower.includes('sql') || titleLower.includes('capi') || titleLower.includes('r ') || titleLower.includes('tableau') || titleLower.includes('cloud') || titleLower.includes('machine learning') || titleLower.includes('ai ')) {
+                    techScore += 25;
+                } else if (dom.includes('govern') || titleLower.includes('dpdp') || titleLower.includes('posh') || titleLower.includes('cyber') || titleLower.includes('rti') || titleLower.includes('official statistics') || titleLower.includes('sdg') || titleLower.includes('lif')) {
+                    govScore += 25;
+                } else {
+                    leadScore += 25;
+                }
+            }
+        }
+    });
+
+    const result = {
+        user_email: cleanEmail,
+        statistical_score: Math.min(100, statScore),
+        technical_score: Math.min(100, techScore),
+        governance_score: Math.min(100, govScore),
+        leadership_score: Math.min(100, leadScore),
+        overall_score: Math.min(100, Math.round((Math.min(100, statScore) + Math.min(100, techScore) + Math.min(100, govScore) + Math.min(100, leadScore)) / 4))
+    };
+
+    memoryCompetencies[cleanEmail] = result;
+
+    try {
+        await supabase.from('officer_competencies').upsert([result], { onConflict: 'user_email' });
+    } catch (e) {}
+
+    return result;
+}
+
 // Employee APIs
 app.get('/api/competencies/:email', async (req, res) => {
     const email = (req.params.email || '').trim().toLowerCase();
     try {
-        let { data } = await supabase.from('officer_competencies').select('*').eq('user_email', email).maybeSingle();
-        if (!data) {
-            const { data: created } = await supabase.from('officer_competencies').insert([{
-                user_email: email, statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0
-            }]).select().single();
-            data = created;
-        }
-        return res.json(data);
+        const comp = await recalculateCompetencies(email);
+        return res.json(comp);
     } catch (err) {
-        return res.json({ statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0 });
+        return res.json(memoryCompetencies[email] || { statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0 });
     }
 });
 
@@ -843,7 +921,8 @@ function parseDeptCode(deptStr) {
 }
 
 app.post('/api/recommendations', async (req, res) => {
-    const { department, designation, cadre } = req.body;
+    const { department, designation, cadre, email } = req.body;
+    const cleanEmail = (email || '').trim().toLowerCase();
     const deptCode = parseDeptCode(department);
     const desigUpper = (designation || '').toUpperCase();
     const cadreUpper = (cadre || '').toUpperCase();
@@ -856,11 +935,16 @@ app.post('/api/recommendations', async (req, res) => {
         let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
         if (!allCourses || allCourses.length === 0) return res.json({ courses: [] });
 
-        const mandatoryFoundation = allCourses
+        // Retrieve completed course titles for this specific officer to filter them out!
+        const completedNormTitles = cleanEmail ? await getOfficerCompletedCourses(cleanEmail) : new Set();
+
+        const uncompletedCourses = allCourses.filter(c => !completedNormTitles.has(normalizeTitle(c.title)));
+
+        const mandatoryFoundation = uncompletedCourses
             .filter(c => c.is_general_mandatory === true)
             .map(c => ({ ...c, learning_stage: 'Foundation' }));
 
-        const domainPool = allCourses.filter(c => c.is_general_mandatory !== true);
+        const domainPool = uncompletedCourses.filter(c => c.is_general_mandatory !== true);
 
         let functionalMatches = domainPool.filter(c => {
             const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
@@ -884,7 +968,7 @@ app.post('/api/recommendations', async (req, res) => {
         if (functionalMatches.length === 0) functionalMatches = domainPool.slice(0, 4).map(c => ({ ...c, learning_stage: 'Functional Core' }));
         if (strategicMatches.length === 0) strategicMatches = domainPool.slice(4, 8).map(c => ({ ...c, learning_stage: 'Advanced Strategic' }));
 
-        // Deduplicate and return clean list
+        // Deduplicate and return clean uncompleted list
         const seenIds = new Set();
         const finalRecommendations = [];
         for (const c of [...mandatoryFoundation, ...functionalMatches, ...strategicMatches]) {
@@ -894,7 +978,11 @@ app.post('/api/recommendations', async (req, res) => {
             }
         }
 
-        return res.json({ courses: finalRecommendations });
+        return res.json({ 
+            total_remaining: finalRecommendations.length,
+            completed_count: completedNormTitles.size,
+            courses: finalRecommendations 
+        });
     } catch (err) {
         return res.status(500).json({ error: 'Failed to recommend courses.' });
     }
@@ -1156,29 +1244,25 @@ REPLY ONLY WITH A STRICT JSON OBJECT (NO markdown formatting):
     } catch (e) {}
     memoryCertificates.unshift(certRecord);
 
-    // If approved, mark course completed in user_course_progress & credit 25 points
+    // If approved, mark course completed in memoryUserProgress & calculate competencies
     if (isApproved) {
-        try {
-            await supabase.from('user_course_progress').upsert([{
-                user_email: cleanEmail,
-                course_title: cleanCourseTitle,
-                video_completed: true,
-                quiz_passed: true,
-                score: 100,
-                completed_at: new Date()
-            }], { onConflict: 'user_email,course_title' });
+        const progRec = {
+            id: Date.now(),
+            user_email: cleanEmail,
+            course_title: cleanCourseTitle,
+            video_completed: true,
+            quiz_passed: true,
+            score: 100,
+            completed_at: new Date().toISOString()
+        };
+        memoryUserProgress = memoryUserProgress.filter(p => !(p.user_email === cleanEmail && normalizeTitle(p.course_title) === normalizeTitle(cleanCourseTitle)));
+        memoryUserProgress.unshift(progRec);
 
-            const { data: comp } = await supabase.from('officer_competencies').select('*').eq('user_email', cleanEmail).maybeSingle();
-            if (comp) {
-                await supabase.from('officer_competencies').update({
-                    statistical_score: Math.min(100, (comp.statistical_score || 0) + 25),
-                    technical_score: Math.min(100, (comp.technical_score || 0) + 25),
-                    governance_score: Math.min(100, (comp.governance_score || 0) + 25),
-                    leadership_score: Math.min(100, (comp.leadership_score || 0) + 25),
-                    updated_at: new Date()
-                }).eq('user_email', cleanEmail);
-            }
+        try {
+            await supabase.from('user_course_progress').insert([progRec]);
         } catch (e) {}
+
+        await recalculateCompetencies(cleanEmail);
     }
 
     return res.json({
@@ -1241,36 +1325,32 @@ app.post('/api/admin/certificates/review', async (req, res) => {
     // If approved, award competency credits & complete course
     if (status === 'approved') {
         const email = targetCert.user_email.toLowerCase();
-        try {
-            await supabase.from('user_course_progress').upsert([{
-                user_email: email,
-                course_title: targetCert.course_title,
-                video_completed: true,
-                quiz_passed: true,
-                score: 100,
-                completed_at: new Date()
-            }], { onConflict: 'user_email,course_title' });
+        const progRec = {
+            id: Date.now(),
+            user_email: email,
+            course_title: targetCert.course_title,
+            video_completed: true,
+            quiz_passed: true,
+            score: 100,
+            completed_at: new Date().toISOString()
+        };
+        memoryUserProgress = memoryUserProgress.filter(p => !(p.user_email === email && normalizeTitle(p.course_title) === normalizeTitle(targetCert.course_title)));
+        memoryUserProgress.unshift(progRec);
 
-            const { data: comp } = await supabase.from('officer_competencies').select('*').eq('user_email', email).maybeSingle();
-            if (comp) {
-                await supabase.from('officer_competencies').update({
-                    statistical_score: Math.min(100, (comp.statistical_score || 0) + 25),
-                    technical_score: Math.min(100, (comp.technical_score || 0) + 25),
-                    governance_score: Math.min(100, (comp.governance_score || 0) + 25),
-                    leadership_score: Math.min(100, (comp.leadership_score || 0) + 25),
-                    updated_at: new Date()
-                }).eq('user_email', email);
-            }
+        try {
+            await supabase.from('user_course_progress').insert([progRec]);
         } catch (e) {}
+
+        await recalculateCompetencies(email);
     }
 
-    return res.json({ message: `Certificate ${status === 'approved' ? 'Approved & Competency Points Credited (+25 Pts)' : 'Rejected'} successfully!`, certificate: targetCert });
+    return res.json({ message: `Certificate ${status} successfully!`, certificate: targetCert });
 });
 
 // --- 2. NSSTA ANNUAL TRAINING PLAN (ATP) & WORKSHOP SCHEDULER ---
 app.get('/api/workshops', async (req, res) => {
     try {
-        const { data, error } = await supabase.from('training_workshops').select('*').order('start_date', { ascending: true });
+        const { data, error } = await supabase.from('training_workshops').select('*').order('id', { ascending: false });
         if (!error && data && data.length > 0) {
             return res.json({ workshops: data });
         }
@@ -1280,19 +1360,18 @@ app.get('/api/workshops', async (req, res) => {
 
 app.post('/api/admin/workshops/create', async (req, res) => {
     const { title, division, cadre, mode, startDate, endDate, maxSeats } = req.body;
-    if (!title || !startDate || !endDate) return res.status(400).json({ error: 'Title, Start Date, and End Date are required.' });
+    if (!title) return res.status(400).json({ error: 'Workshop title is required.' });
 
     const newWs = {
         title: title.trim(),
         division: division || 'ALL',
         cadre: cadre || 'ALL',
         mode: mode || 'In-Person (NSSTA Greater Noida)',
-        start_date: startDate,
-        end_date: endDate,
+        start_date: startDate || new Date(Date.now() + 86400000 * 14).toISOString().slice(0, 10),
+        end_date: endDate || new Date(Date.now() + 86400000 * 19).toISOString().slice(0, 10),
         max_seats: parseInt(maxSeats) || 40,
         enrolled_seats: 0,
-        status: 'Scheduled',
-        created_at: new Date().toISOString()
+        status: 'Scheduled'
     };
 
     try {
@@ -1348,7 +1427,20 @@ app.post('/api/admin/budget-simulate', (req, res) => {
 app.get('/api/progress/:email', async (req, res) => {
     const email = (req.params.email || '').trim().toLowerCase();
     try {
-        const { data: progress } = await supabase.from('user_course_progress').select('*').eq('user_email', email).order('completed_at', { ascending: false });
+        let list = [...memoryUserProgress.filter(p => p.user_email === email)];
+        try {
+            const { data: dbProg } = await supabase.from('user_course_progress').select('*').eq('user_email', email).order('completed_at', { ascending: false });
+            if (dbProg && dbProg.length > 0) {
+                const seenTitles = new Set(list.map(p => normalizeTitle(p.course_title)));
+                dbProg.forEach(p => {
+                    if (!seenTitles.has(normalizeTitle(p.course_title))) {
+                        list.push(p);
+                        seenTitles.add(normalizeTitle(p.course_title));
+                    }
+                });
+            }
+        } catch (e) {}
+
         let certs = memoryCertificates.filter(c => c.user_email.toLowerCase() === email);
         try {
             const { data: dbCerts } = await supabase.from('course_certificates').select('*').eq('user_email', email);
@@ -1356,7 +1448,7 @@ app.get('/api/progress/:email', async (req, res) => {
         } catch (e) {}
 
         return res.json({
-            progress: progress || [],
+            progress: list,
             certificates: certs || []
         });
     } catch (err) {
@@ -1367,25 +1459,33 @@ app.get('/api/progress/:email', async (req, res) => {
 app.post('/api/progress/save', async (req, res) => {
     const { email, courseTitle, score } = req.body;
     const cleanEmail = (email || '').trim().toLowerCase();
-    try {
-        await supabase.from('user_course_progress').upsert([{
-            user_email: cleanEmail, course_title: courseTitle, video_completed: true, quiz_passed: score >= 60, score: score, completed_at: new Date()
-        }], { onConflict: 'user_email,course_title' });
+    const cleanTitle = (courseTitle || '').trim();
+    const numericScore = parseInt(score) || 100;
 
-        const { data: comp } = await supabase.from('officer_competencies').select('*').eq('user_email', cleanEmail).maybeSingle();
-        if (comp) {
-            await supabase.from('officer_competencies').update({
-                statistical_score: Math.min(100, (comp.statistical_score || 0) + 15),
-                technical_score: Math.min(100, (comp.technical_score || 0) + 15),
-                governance_score: Math.min(100, (comp.governance_score || 0) + 15),
-                leadership_score: Math.min(100, (comp.leadership_score || 0) + 15),
-                updated_at: new Date()
-            }).eq('user_email', cleanEmail);
-        }
-        return res.json({ message: 'Progress saved successfully' });
-    } catch (err) {
-        return res.status(500).json({ error: 'Save error' });
-    }
+    const progressRecord = {
+        id: Date.now(),
+        user_email: cleanEmail,
+        course_title: cleanTitle,
+        video_completed: true,
+        quiz_passed: numericScore >= 60,
+        score: numericScore,
+        completed_at: new Date().toISOString()
+    };
+
+    memoryUserProgress = memoryUserProgress.filter(p => !(p.user_email === cleanEmail && normalizeTitle(p.course_title) === normalizeTitle(cleanTitle)));
+    memoryUserProgress.unshift(progressRecord);
+
+    try {
+        await supabase.from('user_course_progress').insert([progressRecord]);
+    } catch (err) {}
+
+    // Recalculate competency scores across all 4 pillars
+    const updatedComp = await recalculateCompetencies(cleanEmail);
+
+    return res.json({ 
+        message: 'Progress saved successfully and competency scores updated.',
+        competency: updatedComp
+    });
 });
 
 app.post('/api/auth/register', async (req, res) => {

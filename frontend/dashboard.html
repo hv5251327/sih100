@@ -361,7 +361,8 @@
           body: JSON.stringify({
             cadre: currentUser.cadre,
             department: currentUser.department,
-            designation: currentUser.designation
+            designation: currentUser.designation,
+            email: currentUser.email
           })
         });
 
@@ -639,7 +640,7 @@
           `;
           statusDiv.innerHTML = `<span style="color:var(--success);"><i class="fa-solid fa-check-double"></i> Verification Complete & Saved to Database.</span>`;
           alert(`Success: "${currentActiveCourse}" is verified and marked as COMPLETED!`);
-          await Promise.all([loadCompetencies(), loadOfficerHistory()]);
+          await Promise.all([loadCompetencies(), loadOfficerRecommendations(), loadOfficerHistory()]);
           setTimeout(() => closeModal('cert-modal'), 2000);
         } else {
           feedbackDiv.style.background = "#fef3c7";
@@ -738,7 +739,7 @@
 
         alert(`Assessment Completed! Score: ${finalPercentage}%. Competency score increased.`);
         closeModal('quiz-modal');
-        await Promise.all([loadCompetencies(), loadOfficerHistory()]);
+        await Promise.all([loadCompetencies(), loadOfficerRecommendations(), loadOfficerHistory()]);
       } catch (e) {
         alert(`Score: ${finalPercentage}%. Error saving to database.`);
         closeModal('quiz-modal');
