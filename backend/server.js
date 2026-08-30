@@ -889,8 +889,19 @@ async function recalculateCompetencies(cleanEmail) {
     memoryCompetencies[cleanEmail] = result;
 
     try {
-        await supabase.from('officer_competencies').upsert([result], { onConflict: 'user_email' });
-    } catch (e) {}
+        const { error } = await supabase.from('officer_competencies').upsert([{
+            user_email: cleanEmail,
+            statistical_score: result.statistical_score,
+            technical_score: result.technical_score,
+            governance_score: result.governance_score,
+            leadership_score: result.leadership_score,
+            overall_score: result.overall_score,
+            updated_at: new Date().toISOString()
+        }], { onConflict: 'user_email' });
+        if (error) console.error('DB Upsert Competencies Error:', error.message);
+    } catch (e) {
+        console.error('DB Upsert Competencies Catch:', e.message);
+    }
 
     return result;
 }
@@ -1224,8 +1235,7 @@ REPLY ONLY WITH A STRICT JSON OBJECT (NO markdown formatting):
 
     const isApproved = Boolean(aiVerificationResult && aiVerificationResult.is_valid && aiVerificationResult.verification_status === "APPROVED");
 
-    const certRecord = {
-        id: Date.now(),
+    const certPayload = {
         user_email: cleanEmail,
         officer_name: cleanOfficerName,
         course_title: cleanCourseTitle,
@@ -1236,15 +1246,19 @@ REPLY ONLY WITH A STRICT JSON OBJECT (NO markdown formatting):
         reviewed_at: isApproved ? new Date().toISOString() : null
     };
 
+    let certRecord = { id: Date.now(), ...certPayload };
     try {
-        await supabase.from('course_certificates').insert([certRecord]);
-    } catch (e) {}
+        const { data, error } = await supabase.from('course_certificates').insert([certPayload]).select().single();
+        if (data && !error) certRecord = data;
+        if (error) console.error('DB Insert Cert Error:', error.message);
+    } catch (e) {
+        console.error('DB Insert Cert Catch:', e.message);
+    }
     memoryCertificates.unshift(certRecord);
 
     // If approved, mark course completed in memoryUserProgress & calculate competencies
     if (isApproved) {
-        const progRec = {
-            id: Date.now(),
+        const progPayload = {
             user_email: cleanEmail,
             course_title: cleanCourseTitle,
             video_completed: true,
@@ -1252,12 +1266,17 @@ REPLY ONLY WITH A STRICT JSON OBJECT (NO markdown formatting):
             score: 100,
             completed_at: new Date().toISOString()
         };
+        let progRec = { id: Date.now(), ...progPayload };
+        try {
+            const { data, error } = await supabase.from('user_course_progress').insert([progPayload]).select().single();
+            if (data && !error) progRec = data;
+            if (error) console.error('DB Insert Progress on Cert Error:', error.message);
+        } catch (e) {
+            console.error('DB Insert Progress on Cert Catch:', e.message);
+        }
+
         memoryUserProgress = memoryUserProgress.filter(p => !(p.user_email === cleanEmail && normalizeTitle(p.course_title) === normalizeTitle(cleanCourseTitle)));
         memoryUserProgress.unshift(progRec);
-
-        try {
-            await supabase.from('user_course_progress').insert([progRec]);
-        } catch (e) {}
 
         await recalculateCompetencies(cleanEmail);
     }
@@ -1283,16 +1302,19 @@ app.post('/api/certificates/submit', async (req, res) => {
         submitted_at: new Date().toISOString()
     };
 
+    let savedRecord = { id: Date.now(), ...newRecord };
     try {
         const { data, error } = await supabase.from('course_certificates').insert([newRecord]).select().single();
         if (!error && data) {
-            return res.json({ message: 'Certificate submitted successfully for administrative verification!', certificate: data });
+            savedRecord = data;
         }
-    } catch (e) {}
+        if (error) console.error('DB Insert Cert Error:', error.message);
+    } catch (e) {
+        console.error('DB Insert Cert Catch:', e.message);
+    }
 
-    newRecord.id = Date.now();
-    memoryCertificates.unshift(newRecord);
-    return res.json({ message: 'Certificate submitted successfully for administrative verification!', certificate: newRecord });
+    memoryCertificates.unshift(savedRecord);
+    return res.json({ message: 'Certificate submitted successfully for administrative verification!', certificate: savedRecord });
 });
 
 app.post('/api/admin/certificates/review', async (req, res) => {
@@ -1459,8 +1481,7 @@ app.post('/api/progress/save', async (req, res) => {
     const cleanTitle = (courseTitle || '').trim();
     const numericScore = parseInt(score) || 100;
 
-    const progressRecord = {
-        id: Date.now(),
+    const progPayload = {
         user_email: cleanEmail,
         course_title: cleanTitle,
         video_completed: true,
@@ -1469,12 +1490,17 @@ app.post('/api/progress/save', async (req, res) => {
         completed_at: new Date().toISOString()
     };
 
+    let progressRecord = { id: Date.now(), ...progPayload };
+    try {
+        const { data, error } = await supabase.from('user_course_progress').insert([progPayload]).select().single();
+        if (data && !error) progressRecord = data;
+        if (error) console.error('DB Insert Progress Error:', error.message);
+    } catch (err) {
+        console.error('DB Insert Progress Catch:', err.message);
+    }
+
     memoryUserProgress = memoryUserProgress.filter(p => !(p.user_email === cleanEmail && normalizeTitle(p.course_title) === normalizeTitle(cleanTitle)));
     memoryUserProgress.unshift(progressRecord);
-
-    try {
-        await supabase.from('user_course_progress').insert([progressRecord]);
-    } catch (err) {}
 
     // Recalculate competency scores across all 4 pillars
     const updatedComp = await recalculateCompetencies(cleanEmail);
