@@ -61,12 +61,15 @@ input { width: 100%; padding: 0.8rem 1rem; border: 1px solid #cbd5e1; border-rad
 .video-card h4 { font-size: 0.95rem; color: #0f172a; line-height: 1.4; margin-bottom: 8px; font-weight: 700; }
 .video-card .author { font-size: 0.78rem; color: #64748b; margin-top: auto; }
 
-/* --- PARTNER SECTION --- */
-.partner-section { padding: 3.5rem 4rem; background: #ffffff; border-top: 1px solid #e2e8f0; }
-.partner-section h3 { font-size: 1.2rem; color: #0f172a; margin-bottom: 1.4rem; font-weight: 700; }
-.partner-icons { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 2.8rem; }
-.partner-icons div { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: #ffffff; border: 1px solid #e2e8f0; padding: 18px 24px; border-radius: 12px; min-width: 125px; font-size: 0.88rem; font-weight: 700; color: #1e293b; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
-.partner-icons div:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); border-color: #cbd5e1; }
-.partner-icons div i { font-size: 2rem; color: #1a365d; }
-.ministry-list { display: flex; flex-wrap: wrap; gap: 12px; }
-.ministry-list span { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; color: #334155; }
+/* --- PARTNER SECTION (CENTERED LAYOUT AS PER REFERENCE) --- */
+.partner-section { padding: 3.5rem 2rem 4rem; background: #ffffff; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.partner-section h3 { font-size: 1.15rem; color: #0f172a; margin-bottom: 1.8rem; font-weight: 700; text-align: center; }
+.partner-icons { display: flex; justify-content: center; align-items: center; gap: 3.2rem; margin-bottom: 2.8rem; flex-wrap: wrap; }
+.partner-icons div { display: flex; flex-direction: column; align-items: center; gap: 8px; background: transparent; border: none; padding: 0; box-shadow: none; }
+.partner-icons div:hover { transform: none; box-shadow: none; }
+.partner-icons div i { font-size: 2.2rem; color: #1a365d; }
+.partner-icons div span { font-size: 0.78rem; font-weight: 600; color: #334155; letter-spacing: 0.5px; }
+.ministry-list { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 12px; max-width: 960px; line-height: 1.9; }
+.ministry-list span { background: transparent; border: none; padding: 0; font-size: 0.85rem; color: #2563eb; font-weight: 500; }
+.ministry-list .divider { color: #cbd5e1; font-weight: 300; font-size: 0.85rem; padding: 0 4px; }
+.ministry-break { flex-basis: 100%; height: 0; }
