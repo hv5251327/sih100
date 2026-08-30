@@ -64,9 +64,25 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Engine Active', timestamp: new Date() });
 });
 
+// Fetch all cadres, departments, and designations directly from mospi_metadata table
+app.get('/api/metadata', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('mospi_metadata').select('cadre, department_code, department_name, designation');
+        if (error) return res.status(500).json({ error: error.message });
+
+        const cadres = [...new Set((data || []).map(d => d.cadre).filter(Boolean))];
+        const depts = [...new Map((data || []).map(d => [d.department_code, { code: d.department_code, name: d.department_name || d.department_code }])).values()];
+        const designations = [...new Set((data || []).map(d => d.designation).filter(Boolean))];
+
+        return res.json({ cadres, departments: depts, designations });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 // Quick Course Creator -> Writes directly to master_courses table
 app.post('/api/admin/draft-course', async (req, res) => {
-    const { department, domain, topic } = req.body;
+    const { department, domain, topic, cadre, designation } = req.body;
     if (!topic) return res.status(400).json({ error: 'Course topic is required.' });
 
     try {
@@ -77,6 +93,8 @@ app.post('/api/admin/draft-course', async (req, res) => {
 
         const prompt = `Generate a title and 2-sentence operational description for a MoSPI course.
 Department: ${department}
+Cadre: ${cadre || 'All Cadres'}
+Designation: ${designation || 'All Officers'}
 Domain: ${domain}
 Topic: ${topic}
 

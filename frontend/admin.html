@@ -99,7 +99,7 @@
       </div>
     </section>
 
-    <!-- PDF Syllabus Parser Panel -->
+    <!-- PDF Syllabus Parser Panel with all Database Divisions -->
     <section class="panel">
       <div class="panel-header">
         <h2><i class="fa-solid fa-book-open-reader"></i> NSSTA Training Syllabus PDF Parser & Course Generator</h2>
@@ -108,17 +108,9 @@
       <form id="syllabusParserForm" onsubmit="handleSyllabusSubmit(event)">
         <div class="grid-2">
           <div class="form-group">
-            <label>Target Statistical Division</label>
+            <label>Target Statistical Division / Department</label>
             <select id="syllabusDept" required>
               <option value="ALL">Universal (All MoSPI Officers)</option>
-              <option value="NAD">National Accounts Division (NAD)</option>
-              <option value="ESD">Economic Statistics Division (ESD)</option>
-              <option value="PSD">Price Statistics Division (PSD)</option>
-              <option value="SSD">Social Statistics Division (SSD)</option>
-              <option value="FOD">Field Operations Division (FOD)</option>
-              <option value="SDRD">Survey Design and Research Division (SDRD)</option>
-              <option value="IPMD">Infrastructure & Project Monitoring Division (IPMD)</option>
-              <option value="SDG_LAB">SDG Unit & Data Innovation Lab</option>
             </select>
           </div>
           <div class="form-group">
@@ -136,36 +128,44 @@
     </section>
 
     <div class="grid-2">
-      <!-- Quick Course Creator directly into DB -->
+      <!-- Quick Course Creator with dynamic Cadre, Division, Designation from Metadata -->
       <section class="panel">
         <div class="panel-header">
           <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Quick Course Creator</h2>
         </div>
         <form id="draftCourseForm" onsubmit="handleDraftCourse(event)">
-          <div class="form-group">
-            <label>Target Division / Department</label>
-            <select id="draftDept" required>
-              <option value="NAD">National Accounts Division (NAD)</option>
-              <option value="ESD">Economic Statistics Division (ESD)</option>
-              <option value="PSD">Price Statistics Division (PSD)</option>
-              <option value="SSD">Social Statistics Division (SSD)</option>
-              <option value="FOD">Field Operations Division (FOD)</option>
-              <option value="SDRD">Survey Design and Research Division (SDRD)</option>
-              <option value="IPMD">Infrastructure & Project Monitoring Division (IPMD)</option>
-              <option value="SDG_LAB">SDG Unit & Data Innovation Lab</option>
-              <option value="ALL">Universal (All Officers)</option>
-            </select>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Target Division / Department</label>
+              <select id="draftDept" required>
+                <option value="ALL">Universal (All Divisions)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Target Cadre</label>
+              <select id="draftCadre" required>
+                <option value="ALL">All Cadres</option>
+              </select>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Competency Domain</label>
-            <select id="draftDomain" required>
-              <option value="Statistical Competencies">Statistical Competencies</option>
-              <option value="Technical Competencies">Technical Competencies</option>
-              <option value="Digital Governance">Digital Governance</option>
-              <option value="Behavioural & Managerial">Behavioural & Managerial</option>
-            </select>
+          <div class="grid-2" style="margin-top:8px;">
+            <div class="form-group">
+              <label>Target Designation</label>
+              <select id="draftDesignation" required>
+                <option value="ALL">All Designations</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Competency Domain</label>
+              <select id="draftDomain" required>
+                <option value="Statistical Competencies">Statistical Competencies</option>
+                <option value="Technical Competencies">Technical Competencies</option>
+                <option value="Digital Governance">Digital Governance</option>
+                <option value="Behavioural & Managerial">Behavioural & Managerial</option>
+              </select>
+            </div>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-top:8px;">
             <label>Course Topic / Core Objective</label>
             <input type="text" id="draftTopic" placeholder="e.g., CAPI Tablet Quality Auditing, OCMS Cost Tracking" required>
           </div>
@@ -177,7 +177,7 @@
         <div id="recent-courses-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;"></div>
       </section>
 
-      <!-- PDF / Document AI Quiz Synthesizer with Course Selector -->
+      <!-- Training Material Quiz Synthesizer with Course Selector -->
       <section class="panel">
         <div class="panel-header">
           <h2><i class="fa-solid fa-file-pdf"></i> Training Material Quiz Synthesizer</h2>
@@ -211,8 +211,57 @@
     let allOfficers = [];
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await Promise.all([loadOfficerAnalytics(), loadCoursesDropdown()]);
+      await Promise.all([loadMetadataDropdowns(), loadOfficerAnalytics(), loadCoursesDropdown()]);
     });
+
+    async function loadMetadataDropdowns() {
+      try {
+        const res = await fetch(`${API_URL}/api/metadata`);
+        const data = await res.json();
+
+        // 1. Populate Syllabus Division Dropdown
+        const syllabusSelect = document.getElementById("syllabusDept");
+        syllabusSelect.innerHTML = '<option value="ALL">Universal (All MoSPI Officers)</option>';
+        (data.departments || []).forEach(d => {
+          const opt = document.createElement("option");
+          opt.value = d.code;
+          opt.innerText = `${d.name} (${d.code})`;
+          syllabusSelect.appendChild(opt);
+        });
+
+        // 2. Populate Quick Course Creator Department Dropdown
+        const draftDeptSelect = document.getElementById("draftDept");
+        draftDeptSelect.innerHTML = '<option value="ALL">Universal (All Divisions)</option>';
+        (data.departments || []).forEach(d => {
+          const opt = document.createElement("option");
+          opt.value = d.code;
+          opt.innerText = `${d.name} (${d.code})`;
+          draftDeptSelect.appendChild(opt);
+        });
+
+        // 3. Populate Quick Course Creator Cadre Dropdown
+        const cadreSelect = document.getElementById("draftCadre");
+        cadreSelect.innerHTML = '<option value="ALL">All Cadres</option>';
+        (data.cadres || []).forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c;
+          opt.innerText = c;
+          cadreSelect.appendChild(opt);
+        });
+
+        // 4. Populate Quick Course Creator Designation Dropdown
+        const desigSelect = document.getElementById("draftDesignation");
+        desigSelect.innerHTML = '<option value="ALL">All Designations</option>';
+        (data.designations || []).forEach(des => {
+          const opt = document.createElement("option");
+          opt.value = des;
+          opt.innerText = des;
+          desigSelect.appendChild(opt);
+        });
+      } catch (e) {
+        console.error("Failed to load metadata dropdowns:", e);
+      }
+    }
 
     async function loadCoursesDropdown() {
       try {
@@ -304,6 +353,8 @@
     async function handleDraftCourse(e) {
       e.preventDefault();
       const department = document.getElementById("draftDept").value;
+      const cadre = document.getElementById("draftCadre").value;
+      const designation = document.getElementById("draftDesignation").value;
       const domain = document.getElementById("draftDomain").value;
       const topic = document.getElementById("draftTopic").value;
       const statusDiv = document.getElementById("draft-status");
@@ -316,7 +367,7 @@
         const res = await fetch(`${API_URL}/api/admin/draft-course`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ department, domain, topic })
+          body: JSON.stringify({ department, cadre, designation, domain, topic })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to create course');
@@ -432,9 +483,9 @@
         alert(data.message);
         document.getElementById("quizDocText").value = "";
         document.getElementById("quizPdfFile").value = "";
-      } catch (e) {
-        statusDiv.innerHTML = `<span style="color:#ef4444;">Error: ${e.message}</span>`;
-        alert(`Quiz error: ${e.message}`);
+      } catch (err) {
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Error: ${err.message}</span>`;
+        alert(`Quiz error: ${err.message}`);
       } finally {
         submitBtn.disabled = false;
       }
