@@ -53,7 +53,6 @@
     th { background: #f8fafc; text-align: left; padding: 10px 12px; font-weight: 700; border-bottom: 1px solid var(--border); }
     td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
     .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; background: #e0f2fe; color: #0369a1; }
-    .btn-approve { background: var(--success); color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 0.75rem; }
   </style>
 </head>
 <body>
@@ -72,7 +71,7 @@
       <div class="kpi-card"><span>Total Officers Enrolled</span><h3 id="stat-total-officers">0</h3></div>
       <div class="kpi-card"><span>Active Divisions</span><h3 id="stat-total-depts">0</h3></div>
       <div class="kpi-card"><span>Registered Cadres</span><h3 id="stat-total-cadres">0</h3></div>
-      <div class="kpi-card"><span>Pending Approvals</span><h3 id="stat-pending-approvals" style="color:var(--warning);">0</h3></div>
+      <div class="kpi-card"><span>Total Master DB Courses</span><h3 id="stat-total-courses" style="color:var(--success);">0</h3></div>
     </div>
 
     <!-- Officer Directory -->
@@ -105,7 +104,7 @@
       <div class="panel-header">
         <h2><i class="fa-solid fa-book-open-reader"></i> NSSTA Training Syllabus PDF Parser & Course Generator</h2>
       </div>
-      <p style="font-size:0.85rem; color:var(--text-muted);">Upload official NSSTA syllabus documents or circular PDFs. AI will extract structured modules and automatically save them into the Master Database for officer recommendations.</p>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Upload official NSSTA syllabus documents or circular PDFs. AI will extract structured modules and automatically save them into the Master Database for immediate officer recommendations.</p>
       <form id="syllabusParserForm" onsubmit="handleSyllabusSubmit(event)">
         <div class="grid-2">
           <div class="form-group">
@@ -137,7 +136,7 @@
     </section>
 
     <div class="grid-2">
-      <!-- Course Creator & Approval Workflow -->
+      <!-- Quick Course Creator directly into DB -->
       <section class="panel">
         <div class="panel-header">
           <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Quick Course Creator</h2>
@@ -170,11 +169,11 @@
             <label>Course Topic / Core Objective</label>
             <input type="text" id="draftTopic" placeholder="e.g., CAPI Tablet Quality Auditing, OCMS Cost Tracking" required>
           </div>
-          <button type="submit" class="btn-action" style="margin-top:10px;"><i class="fa-solid fa-brain"></i> Generate & Queue for Approval</button>
+          <button type="submit" class="btn-action" style="margin-top:10px;"><i class="fa-solid fa-database"></i> Generate & Save Directly to Database</button>
         </form>
 
-        <h3 style="font-size:0.95rem; font-weight:800; margin-top:12px; color:var(--primary);"><i class="fa-solid fa-list-check"></i> Pending Approvals</h3>
-        <div id="pending-courses-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+        <h3 style="font-size:0.95rem; font-weight:800; margin-top:12px; color:var(--primary);"><i class="fa-solid fa-list-check"></i> Recently Added Master Courses</h3>
+        <div id="recent-courses-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;"></div>
       </section>
 
       <!-- PDF / Document AI Quiz Synthesizer with Course Selector -->
@@ -211,22 +210,34 @@
     let allOfficers = [];
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await Promise.all([loadOfficerAnalytics(), loadPendingCourses(), loadCoursesDropdown()]);
+      await Promise.all([loadOfficerAnalytics(), loadCoursesDropdown()]);
     });
 
     async function loadCoursesDropdown() {
       try {
         const res = await fetch(`${API_URL}/api/admin/courses-list`);
         const data = await res.json();
+        const courses = data.courses || [];
+
+        document.getElementById("stat-total-courses").innerText = courses.length;
+
         const select = document.getElementById("quizCourseSelect");
         select.innerHTML = '<option value="">-- Choose Target Course from DB --</option>';
 
-        (data.courses || []).forEach(c => {
+        courses.forEach(c => {
           const opt = document.createElement("option");
           opt.value = c.title;
           opt.innerText = `${c.title} (${c.course_code})`;
           select.appendChild(opt);
         });
+
+        const recentList = document.getElementById("recent-courses-list");
+        recentList.innerHTML = courses.slice(0, 5).map(c => `
+          <div style="background:#f8fafc; border:1px solid var(--border); padding:8px 10px; border-radius:6px; font-size:0.85rem;">
+            <strong>${c.title}</strong>
+            <div style="font-size:0.75rem; color:var(--text-muted);">${c.domain} | Target: ${(c.target_departments || ['ALL']).join(', ')}</div>
+          </div>
+        `).join("");
       } catch (e) {
         console.error("Failed to load courses dropdown:", e);
       }
@@ -265,7 +276,7 @@
       const submitBtn = document.getElementById("btn-syllabus-submit");
 
       submitBtn.disabled = true;
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing syllabus with AI and creating database courses...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing syllabus with AI and saving courses to Master DB...`;
 
       try {
         const res = await fetch(`${API_URL}/api/admin/parse-syllabus`, {
@@ -369,54 +380,11 @@
           body: JSON.stringify({ department, domain, topic })
         });
         const data = await res.json();
-        alert("Course generated by AI and added to Pending Approvals!");
+        alert(data.message || "Course created directly into database!");
         document.getElementById("draftTopic").value = "";
-        await loadPendingCourses();
+        await loadCoursesDropdown();
       } catch (err) {
-        alert("Draft creation failed.");
-      }
-    }
-
-    async function loadPendingCourses() {
-      try {
-        const res = await fetch(`${API_URL}/api/admin/pending-courses`);
-        const data = await res.json();
-        const list = data.courses || [];
-
-        document.getElementById("stat-pending-approvals").innerText = list.length;
-        const container = document.getElementById("pending-courses-list");
-
-        if (!list.length) {
-          container.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted);">No pending courses awaiting approval.</p>`;
-          return;
-        }
-
-        container.innerHTML = list.map(c => `
-          <div style="background:#f8fafc; border:1px solid var(--border); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <div style="font-weight:700; font-size:0.9rem;">${c.title}</div>
-              <div style="font-size:0.75rem; color:var(--text-muted);">${c.domain} | Target: ${c.target_departments.join(', ')}</div>
-            </div>
-            <button class="btn-approve" onclick="approveCourse(${c.id})"><i class="fa-solid fa-check"></i> Approve & Recommend</button>
-          </div>
-        `).join("");
-      } catch (e) {
-        console.error("Pending courses load error:", e);
-      }
-    }
-
-    async function approveCourse(id) {
-      try {
-        const res = await fetch(`${API_URL}/api/admin/approve-course`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id })
-        });
-        const data = await res.json();
-        alert(data.message || "Course approved!");
-        await Promise.all([loadPendingCourses(), loadCoursesDropdown()]);
-      } catch (e) {
-        alert("Approval failed.");
+        alert("Course creation failed.");
       }
     }
 
