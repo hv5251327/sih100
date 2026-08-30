@@ -3,31 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iGOT Karmayogi | MoSPI Intelligence</title>
+    <title>iGOT Karmayogi | MoSPI / NSSTA Competency Portal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .tricolor-strip {
+            height: 4px;
+            background: linear-gradient(90deg, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%);
+            width: 100%;
+        }
+        .govt-top-bar {
+            background: #0f2038;
+            color: #f1f5f9;
+            padding: 5px 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.76rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .govt-top-bar a {
+            color: #93c5fd;
+            text-decoration: none;
+            margin-left: 12px;
+        }
+        .live-bulletin-card {
+            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+            border: 1px solid #334155;
+            color: #ffffff;
+            padding: 1.6rem 1.8rem;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+            max-width: 440px;
+            width: 100%;
+        }
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #ef4444;
+        }
+        .bulletin-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 14px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .bulletin-item {
+            font-size: 0.82rem;
+            line-height: 1.4;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        .bulletin-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .bulletin-item i {
+            color: #38bdf8;
+            margin-top: 2px;
+            font-size: 0.9rem;
+        }
+        .bulletin-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #0284c7 0%, #1e3a8a 100%);
+            color: #fff;
+            border: 1px solid #38bdf8;
+            padding: 9px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .bulletin-btn:hover {
+            filter: brightness(1.15);
+        }
+        .pillar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            padding: 2rem 4rem;
+        }
+        .pillar-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border-top: 4px solid var(--primary, #1e3a8a);
+        }
+        .pillar-card h4 {
+            color: #0f172a;
+            font-size: 1rem;
+            margin: 8px 0 6px;
+        }
+        .pillar-card p {
+            color: #64748b;
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+    </style>
 </head>
 <body>
-    <div class="top-nav">
-        <span><i class="fa-solid fa-flag"></i> Government of India | Ministry of Statistics & Programme Implementation</span>
-        <span>iGOT Karmayogi Bharat Integrated</span>
+    <div class="tricolor-strip"></div>
+    <div class="govt-top-bar">
+        <span><i class="fa-solid fa-flag"></i> <strong>भारत सरकार</strong> | Government of India &nbsp;•&nbsp; <strong>सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय</strong> | MoSPI</span>
+        <span>
+            <a href="https://igotkarmayogi.gov.in" target="_blank" rel="noopener"><i class="fa-solid fa-graduation-cap"></i> iGOT Karmayogi</a>
+            <a href="https://www.mospi.gov.in" target="_blank" rel="noopener"><i class="fa-solid fa-landmark"></i> MoSPI Portal</a>
+            <a href="employee-login.html"><i class="fa-solid fa-headset"></i> Support</a>
+        </span>
     </div>
 
     <header class="navbar">
         <div class="brand">
-            <i class="fa-solid fa-graduation-cap brand-icon"></i>
+            <i class="fa-solid fa-landmark brand-icon" style="color:#0f2038;"></i>
             <div class="brand-text">
-                <h2>कर्मयोगी भारत</h2>
-                <small>iGOT MoSPI Intelligence</small>
+                <h2>कर्मयोगी भारत • MoSPI</h2>
+                <small>National Statistical Systems Training Academy (NSSTA)</small>
             </div>
         </div>
         <nav class="nav-links">
             <a href="#showcased-courses">Courses</a>
             <a href="#case-studies">Case Studies</a>
-            <a href="#partners">Partners</a>
-            <a href="https://www.mospi.gov.in" target="_blank" rel="noopener">MoSPI Official <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i></a>
-            <a href="https://igotkarmayogi.gov.in" target="_blank" rel="noopener">iGOT Portal <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i></a>
-            <a href="employee-login.html">Help & Support</a>
+            <a href="#competency-pillars">Competency Framework</a>
+            <a href="#partners">Accredited Partners</a>
+            <a href="https://www.mospi.gov.in" target="_blank" rel="noopener">MoSPI Official <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.7rem;"></i></a>
         </nav>
         <div class="auth-buttons">
             <button class="btn btn-outline" onclick="window.location.href='admin-login.html'"><i class="fa-solid fa-shield-halved"></i> Admin Login</button>
@@ -37,31 +160,86 @@
     </header>
 
     <section class="hero-section">
-        <div class="hero-content">
-            <span class="sub-badge">iGOT Karmayogi MoSPI</span>
-            <h1>Empowering National Statistical<br>& Administrative Excellence</h1>
+        <div class="hero-content" style="max-width: 600px;">
+            <span class="sub-badge" style="background:#e0f2fe; color:#0369a1; padding:4px 10px; border-radius:12px; display:inline-block; margin-bottom:8px;">
+                <i class="fa-solid fa-shield-halved"></i> Official Statistical Competency Architecture
+            </span>
+            <h1 style="color:#0f2038; font-size:2.2rem; line-height:1.25;">Empowering National Statistical<br>& Administrative Excellence</h1>
+            <p style="color:#475569; font-size:0.95rem; line-height:1.55; margin-bottom:1.2rem;">
+                AI-driven competency modeling, personalized iGOT Karmayogi learning pathways, and automated credential verification for <strong>ISS</strong>, <strong>SSS</strong>, and <strong>State DES</strong> statistical officers.
+            </p>
+            <div style="display:flex; gap:10px; margin-bottom:1.2rem; flex-wrap:wrap;">
+                <button class="btn btn-primary" style="padding:0.6rem 1.3rem; font-size:0.9rem;" onclick="window.location.href='employee-login.html'"><i class="fa-solid fa-right-to-bracket"></i> Access Officer Portal</button>
+                <button class="btn btn-outline" style="padding:0.6rem 1.3rem; font-size:0.9rem;" onclick="window.location.href='admin-login.html'"><i class="fa-solid fa-gauge-high"></i> Admin Control Hub</button>
+            </div>
             <div class="social-icons">
-                <span>Connect with MoSPI</span>
+                <span>Connect with MoSPI:</span>
                 <a href="https://www.linkedin.com/company/ministry-of-statistics-and-programme-implementation" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
                 <a href="https://www.youtube.com/@mospigofficial" target="_blank" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
                 <a href="https://twitter.com/GoIStats" target="_blank" title="Twitter / X"><i class="fa-brands fa-x-twitter"></i></a>
                 <a href="https://facebook.com/GoIStats" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
             </div>
         </div>
-        <div class="hero-card">
-            <h4>CONGRATULATIONS, KARMAYOGIS!</h4>
-            <div class="counter">1.7 Crore+</div>
-            <p><strong>Users Onboarded</strong></p>
-            <small>Let's continue to learn, grow and lead!</small>
+
+        <div class="live-bulletin-card">
+            <div class="live-badge"><span class="pulse-dot"></span> LIVE NSSTA CADRE BULLETIN</div>
+            <ul class="bulletin-list">
+                <li class="bulletin-item">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <div><strong>ISS & SSS Induction Batches:</strong> 100% Mandatory foundational mapping live across all divisions.</div>
+                </li>
+                <li class="bulletin-item">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <div><strong>AI Deficit Matrix:</strong> Dynamic skill assessment active across 16 MoSPI divisions (NAD, FOD, ESD, PSD, etc.).</div>
+                </li>
+                <li class="bulletin-item">
+                    <i class="fa-solid fa-shield-virus"></i>
+                    <div><strong>Statutory Mandate:</strong> DPDP Act 2023 & SNA 2008 Modernization modules integrated.</div>
+                </li>
+                <li class="bulletin-item">
+                    <i class="fa-solid fa-award"></i>
+                    <div><strong>AI Credential Auditor:</strong> Instant verification for iGOT Karmayogi & NSSTA certificates.</div>
+                </li>
+            </ul>
+            <button class="bulletin-btn" onclick="window.location.href='employee-login.html'"><i class="fa-solid fa-compass"></i> View My Cadre Roadmap →</button>
         </div>
     </section>
 
     <section class="stats-ribbon">
-        <div class="stat-item"><i class="fa-solid fa-users"></i><h3>1,72,04,488</h3><p>Total Karmayogis Onboarded</p></div>
-        <div class="stat-item"><i class="fa-solid fa-book-open"></i><h3>6,252</h3><p>Total Courses</p></div>
-        <div class="stat-item"><i class="fa-solid fa-circle-check"></i><h3>14,96,44,900</h3><p>Total Completions</p></div>
-        <div class="stat-item"><i class="fa-solid fa-user-check"></i><h3>16,53,660</h3><p>Monthly Active Users</p></div>
-        <div class="stat-item"><i class="fa-solid fa-certificate"></i><h3>2,90,521</h3><p>Certificates Issued Yesterday</p></div>
+        <div class="stat-item"><i class="fa-solid fa-sitemap"></i><h3>16</h3><p>MoSPI Divisions Covered</p></div>
+        <div class="stat-item"><i class="fa-solid fa-users-gear"></i><h3>3 Cadres</h3><p>ISS, SSS & State DES</p></div>
+        <div class="stat-item"><i class="fa-solid fa-book-bookmark"></i><h3>45+ Modules</h3><p>Accredited Curriculum</p></div>
+        <div class="stat-item"><i class="fa-solid fa-list-check"></i><h3>400+ MCQs</h3><p>Accredited Question Bank</p></div>
+        <div class="stat-item"><i class="fa-solid fa-certificate"></i><h3>100% AI Verified</h3><p>Credential Audit Engine</p></div>
+    </section>
+
+    <section class="course-section" id="competency-pillars" style="background:#f8fafc; padding:2.5rem 2rem;">
+        <div class="section-title" style="text-align:center; margin-bottom:1.5rem;">
+            <span style="color:#0284c7; font-weight:700; font-size:0.85rem; text-transform:uppercase;">Standardized Assessment Structure</span>
+            <h2 style="color:#0f172a; margin-top:4px;">National Statistical Competency Framework</h2>
+        </div>
+        <div class="pillar-grid" style="padding:0 2rem;">
+            <div class="pillar-card">
+                <i class="fa-solid fa-chart-pie" style="font-size:1.8rem; color:#0284c7;"></i>
+                <h4>1. Statistical Methods & Sampling</h4>
+                <p>National accounts compilation (SNA 2008), survey design (PLFS, ASUSE), macroeconomic indicators, and index numbers (CPI, IIP).</p>
+            </div>
+            <div class="pillar-card">
+                <i class="fa-solid fa-laptop-code" style="font-size:1.8rem; color:#10b981;"></i>
+                <h4>2. Technical & Analytical Tools</h4>
+                <p>CAPI tablet data collection, Python/Pandas data wrangling, R statistical computing, SQL microdata warehousing, and GIS analytics.</p>
+            </div>
+            <div class="pillar-card">
+                <i class="fa-solid fa-scale-balanced" style="font-size:1.8rem; color:#8b5cf6;"></i>
+                <h4>3. Digital Governance & Policy</h4>
+                <p>Digital Personal Data Protection (DPDP) Act 2023, respondent confidentiality, Government Cloud Security, and metadata standards.</p>
+            </div>
+            <div class="pillar-card">
+                <i class="fa-solid fa-user-tie" style="font-size:1.8rem; color:#f59e0b;"></i>
+                <h4>4. Leadership & Administration</h4>
+                <p>Prevention of Sexual Harassment (POSH), e-Office records lifecycle, public procurement (GeM), and evidence-based decision making.</p>
+            </div>
+        </div>
     </section>
 
     <section class="course-section" id="showcased-courses">
@@ -76,7 +254,7 @@
                     <span class="duration"><i class="fa-regular fa-clock"></i> 1h 52m</span>
                 </div>
                 <div class="card-body">
-                    <span class="tag orange">Course</span>
+                    <span class="tag orange">Accredited Module</span>
                     <h4>Prevention of Sexual Harassment (POSH) at Workplace</h4>
                     <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
                 </div>
@@ -87,7 +265,7 @@
                     <span class="duration"><i class="fa-regular fa-clock"></i> 1h 23m</span>
                 </div>
                 <div class="card-body">
-                    <span class="tag orange">Course</span>
+                    <span class="tag orange">Accredited Module</span>
                     <h4>Fire Safety & Emergency Protocols in Facilities</h4>
                     <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
                 </div>
@@ -98,7 +276,7 @@
                     <span class="duration"><i class="fa-regular fa-clock"></i> 1h 17m</span>
                 </div>
                 <div class="card-body">
-                    <span class="tag orange">Course</span>
+                    <span class="tag orange">Accredited Module</span>
                     <h4>Civil Defence Services: Fundamentals of Disaster Response</h4>
                     <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
                 </div>
@@ -109,7 +287,7 @@
                     <span class="duration"><i class="fa-regular fa-clock"></i> 20m</span>
                 </div>
                 <div class="card-body">
-                    <span class="tag orange">Course</span>
+                    <span class="tag orange">Official Statistics</span>
                     <h4>Official Statistics, Survey Methodology & AI Tools</h4>
                     <p class="author"><i class="fa-solid fa-user-shield"></i> By NSSTA & MoSPI</p>
                 </div>
@@ -134,7 +312,7 @@
                     <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
                 </div>
             </div>
-            <div class="video-card">
+            <div class="video-card" onclick="window.location.href='employee-login.html'" style="cursor:pointer;">
                 <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&auto=format&fit=crop');">
                     <div class="play-btn"><i class="fa-solid fa-play"></i></div>
                     <span class="duration"><i class="fa-regular fa-clock"></i> 1h 10m</span>
@@ -145,7 +323,7 @@
                     <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
                 </div>
             </div>
-            <div class="video-card">
+            <div class="video-card" onclick="window.location.href='employee-login.html'" style="cursor:pointer;">
                 <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop');">
                     <div class="play-btn"><i class="fa-solid fa-play"></i></div>
                     <span class="duration"><i class="fa-regular fa-clock"></i> 1h 30m</span>
@@ -156,7 +334,7 @@
                     <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
                 </div>
             </div>
-            <div class="video-card">
+            <div class="video-card" onclick="window.location.href='employee-login.html'" style="cursor:pointer;">
                 <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&auto=format&fit=crop');">
                     <div class="play-btn"><i class="fa-solid fa-play"></i></div>
                     <span class="duration"><i class="fa-regular fa-clock"></i> 1h 30m</span>
@@ -170,31 +348,32 @@
         </div>
     </section>
 
-    <section class="partner-section">
-        <h3>Content Partners</h3>
+    <section class="partner-section" id="partners">
+        <h3>Accredited Training & Knowledge Partners</h3>
         <div class="partner-icons">
-            <div><i class="fa-solid fa-building-columns"></i><span>DPIIT</span></div>
-            <div><i class="fa-solid fa-shield-halved"></i><span>RAKNPA</span></div>
-            <div><i class="fa-solid fa-feather-pointed"></i><span>WF</span></div>
-            <div><i class="fa-solid fa-graduation-cap"></i><span>ISB</span></div>
-            <div><i class="fa-solid fa-award"></i><span>LBSNAA</span></div>
-            <div><i class="fa-solid fa-tree"></i><span>MoEFCC</span></div>
-            <div><i class="fa-solid fa-landmark"></i><span>ISTM</span></div>
+            <div><i class="fa-solid fa-landmark"></i><span>NSSTA Greater Noida</span></div>
+            <div><i class="fa-solid fa-graduation-cap"></i><span>ISI Kolkata</span></div>
+            <div><i class="fa-solid fa-award"></i><span>LBSNAA Mussoorie</span></div>
+            <div><i class="fa-solid fa-building-columns"></i><span>ISTM New Delhi</span></div>
+            <div><i class="fa-solid fa-shield-halved"></i><span>Capacity Building Commission</span></div>
+            <div><i class="fa-solid fa-sitemap"></i><span>NITI Aayog</span></div>
         </div>
 
-        <h3>Organisation Partners</h3>
+        <h3>Participating Ministries & National Cadres</h3>
         <div class="ministry-list">
-            <span>Ministry of Agriculture & Farmers Welfare</span>
-            <span>Ministry of AYUSH</span>
-            <span>Ministry of Chemicals & Fertilizers</span>
-            <span>Ministry of Civil Aviation</span>
-            <span>Ministry of Coal</span>
-            <span>Ministry of Statistics & Programme Implementation (MoSPI)</span>
+            <span>Indian Statistical Service (ISS) — Group 'A' Central Civil Service</span>
+            <span>Subordinate Statistical Service (SSS) — Group 'B' Central Civil Service</span>
+            <span>State Directorate of Economics and Statistics (State DES) Cadres</span>
+            <span>Ministry of Statistics and Programme Implementation (MoSPI)</span>
+            <span>National Sample Survey Office (NSSO)</span>
         </div>
     </section>
 
     <footer>
-        <p>&copy; 2026 iGOT Karmayogi Bharat | Ministry of Statistics & Programme Implementation. All Rights Reserved.</p>
+        <div class="tricolor-strip" style="margin-bottom:12px;"></div>
+        <p style="font-weight:600; color:#e2e8f0; margin-bottom:6px;">Ministry of Statistics and Programme Implementation (MoSPI) • Government of India</p>
+        <p style="font-size:0.75rem; color:#94a3b8;">National Statistical Systems Training Academy (NSSTA) • iGOT Karmayogi Competency Architecture</p>
+        <p style="font-size:0.72rem; color:#64748b; margin-top:8px;">&copy; 2026 Government of India. All Rights Reserved. Designed for Smart India Hackathon.</p>
     </footer>
 </body>
 </html>
