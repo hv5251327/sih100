@@ -1124,9 +1124,87 @@ Reply ONLY with a valid JSON array of 5 objects (NO markdown):
 
 app.post('/api/chatbot', async (req, res) => {
     const { message, userProfile } = req.body;
-    const prompt = `You are Bhashini AI on MoSPI Portal. Officer: ${userProfile?.name}, Dept: ${userProfile?.department}. Question: "${message}". Reply concisely in 2 sentences recommending their courses.`;
-    const reply = await generateAIResponse(prompt);
-    return res.json({ reply: reply || `Namaste ${userProfile?.name || 'Officer'}! Complete your mandatory Foundation modules and departmental Functional Core courses below.` });
+    const cleanEmail = (userProfile?.email || '').trim().toLowerCase();
+    const officerName = userProfile?.name || 'Officer Trainee';
+    const dept = userProfile?.department || 'National Statistical Systems';
+    const cadre = userProfile?.cadre || 'Official Statistics';
+    const desig = userProfile?.designation || 'Statistical Officer';
+
+    let completedCount = 0;
+    let remainingCount = 45;
+
+    try {
+        const completedNormTitles = cleanEmail ? await getOfficerCompletedCourses(cleanEmail) : new Set();
+        const comp = cleanEmail ? await recalculateCompetencies(cleanEmail) : { statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0, overall_score: 0 };
+        
+        let { data: allCourses } = await supabase.from('master_courses').select('id, course_code, title, domain, difficulty_level, target_departments, is_general_mandatory');
+        if (!allCourses) allCourses = [];
+
+        const uncompleted = allCourses.filter(c => !completedNormTitles.has(normalizeTitle(c.title)));
+        completedCount = completedNormTitles.size;
+        remainingCount = uncompleted.length;
+        const nextRecommendedTitles = uncompleted.slice(0, 4).map(c => `• ${c.title} (${c.domain})`).join('\n');
+
+        const systemPrompt = `You are "Bhashini AI", the official Intelligent Virtual Assistant for the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India.
+
+OFFICER LIVE PROFILE & CONTEXT:
+- Officer Name: ${officerName}
+- Cadre: ${cadre}
+- Division / Department: ${dept}
+- Designation: ${desig}
+- Completed Courses: ${completedCount} course(s)
+- Remaining Courses in Catalog: ${remainingCount} course(s)
+- Next Priority Recommended Modules:
+${nextRecommendedTitles || 'All foundational and core modules completed!'}
+- Live Competency Proficiency Scores:
+  * Statistical Methods & Sampling: ${comp.statistical_score}%
+  * Technical & Analytical Tools: ${comp.technical_score}%
+  * Digital Governance & DPDP: ${comp.governance_score}%
+  * Leadership & Administration: ${comp.leadership_score}%
+  * Overall Readiness Index: ${comp.overall_score}%
+
+COMPREHENSIVE KNOWLEDGE & OPERATIONAL PROCEDURES:
+1. HOW TO UPLOAD A CERTIFICATE:
+   - On your dashboard roadmap, find the relevant course and click the orange "Certificate" button.
+   - Select your PDF or image certificate file (e.g. from iGOT Karmayogi, NSSTA Greater Noida, DoPT, ISI Kolkata, World Bank Academy, etc.).
+   - The MoSPI AI Credential Auditor scans the document text, verifies candidate identity, domain match, and issuing authority, automatically marks the course complete in the database, and credits competency points.
+
+2. HOW TO TAKE A QUIZ / ASSESSMENT:
+   - Click the blue "Quiz" button next to any course card in your roadmap.
+   - Answer the 5 multiple-choice questions fetched directly from the accredited database question bank.
+   - Scoring 60% or higher automatically passes the course, records completion, updates your competency score, and removes it from pending recommendations.
+
+3. HOW TO DOWNLOAD COMPETENCY PASSPORT:
+   - Scroll to the bottom of the dashboard and click the "Download Official Competency Passport (PDF)" button.
+   - This generates a sealed, formatted official digital transcript and credential certificate with all 4 competency pillar scores.
+
+4. COURSES LEFT & PROGRESS QUERIES:
+   - When asked "how many left" or "my progress", state clearly: "${remainingCount} courses remaining and ${completedCount} completed", and list the next priority courses for ${dept}.
+
+5. HOW COMPETENCY SCORES WORK:
+   - Scores are calculated across 4 pillars (Statistical Methods, Technical Tools, Digital Governance, Leadership) based on evaluation scores and curriculum benchmark capacity requirements.
+
+6. GENERAL MOSPI / STATISTICAL QUESTIONS:
+   - Answer general queries about MoSPI divisions (NAD, FOD, ESD, PSD, SSD, SDRD, DPD, DIID, NSSTA), statistical cadres (ISS, SSS, State DES), national surveys (PLFS, ASUSE, HCES, CPI, IIP), and the DPDP Act 2023.
+
+RESPONSE GUIDELINES:
+- Deliver structured, polite, crisp, and highly accurate answers with clear bullet points.
+- Always provide practical step-by-step instructions.
+- If asked in regional Indian languages (Hindi, etc.), reply gracefully in that language or English.`;
+
+        const userPrompt = `Officer Question: "${message}"`;
+        const aiReply = await generateAIResponse(userPrompt, systemPrompt);
+
+        if (aiReply && aiReply.trim()) {
+            return res.json({ reply: aiReply.trim() });
+        }
+    } catch (err) {
+        console.error('Chatbot error:', err.message);
+    }
+
+    return res.json({
+        reply: `Namaste ${officerName}! You currently have ${completedCount} completed course(s) and ${remainingCount} course(s) remaining in your roadmap. To earn credits, click "Quiz" on any course card to take the 5-question evaluation, or click "Certificate" to upload your accredited certificate.`
+    });
 });
 
 // --- IN-MEMORY FALLBACK CACHES FOR CERTIFICATES & WORKSHOPS ---
