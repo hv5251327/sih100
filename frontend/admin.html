@@ -286,12 +286,16 @@
           body: JSON.stringify({ syllabusText, defaultDivision })
         });
         const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to extract syllabus');
+
         statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
+        alert(data.message);
         document.getElementById("syllabusText").value = "";
         document.getElementById("syllabusPdfFile").value = "";
         await loadCoursesDropdown();
       } catch (err) {
-        statusDiv.innerHTML = `<span style="color:#ef4444;">Failed to extract syllabus.</span>`;
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Error: ${err.message}</span>`;
+        alert(`Error parsing syllabus: ${err.message}`);
       } finally {
         submitBtn.disabled = false;
       }
@@ -315,11 +319,15 @@
           body: JSON.stringify({ department, domain, topic })
         });
         const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to create course');
+
         statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message || 'Course added successfully!'}`;
+        alert(data.message || 'Course added directly to database!');
         document.getElementById("draftTopic").value = "";
         await loadCoursesDropdown();
       } catch (err) {
-        statusDiv.innerHTML = `<span style="color:#ef4444;">Course creation failed.</span>`;
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Error: ${err.message}</span>`;
+        alert(`Course creation error: ${err.message}`);
       } finally {
         submitBtn.disabled = false;
       }
@@ -418,11 +426,15 @@
           body: JSON.stringify({ courseTitle, documentText })
         });
         const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to generate quiz');
+
         statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
+        alert(data.message);
         document.getElementById("quizDocText").value = "";
         document.getElementById("quizPdfFile").value = "";
       } catch (e) {
-        statusDiv.innerHTML = `<span style="color:#ef4444;">Failed to generate quiz from document.</span>`;
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Error: ${e.message}</span>`;
+        alert(`Quiz error: ${e.message}`);
       } finally {
         submitBtn.disabled = false;
       }

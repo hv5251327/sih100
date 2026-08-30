@@ -38,7 +38,7 @@ async function generateAIResponse(prompt) {
             const text = data?.choices?.[0]?.message?.content;
             if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
         } catch (e) {
-            console.warn('Grok API fallback:', e.message);
+            console.warn('Grok fallback:', e.message);
         }
     }
 
@@ -53,7 +53,7 @@ async function generateAIResponse(prompt) {
             const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
         } catch (e) {
-            console.warn('Gemini API fallback:', e.message);
+            console.warn('Gemini fallback:', e.message);
         }
     }
 
@@ -61,10 +61,10 @@ async function generateAIResponse(prompt) {
 }
 
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'MoSPI Skill Intelligence Engine Active', timestamp: new Date() });
+    res.json({ status: 'MoSPI Engine Active', timestamp: new Date() });
 });
 
-// Admin API: Quick Course Creator -> Matches master_courses (all NOT NULL fields satisfied)
+// Quick Course Creator -> Writes directly to master_courses table
 app.post('/api/admin/draft-course', async (req, res) => {
     const { department, domain, topic } = req.body;
     if (!topic) return res.status(400).json({ error: 'Course topic is required.' });
@@ -72,20 +72,19 @@ app.post('/api/admin/draft-course', async (req, res) => {
     try {
         const uniqueCode = 'MOD-' + Date.now().toString().slice(-6);
         let courseTitle = `${topic} (${department || 'Universal'})`;
-        let courseDesc = `Practical competency and operational methodology training on ${topic} for ${department || 'ALL'} officers.`;
+        let courseDesc = `Practical operational training on ${topic} for ${department || 'ALL'} officers.`;
         let courseDiff = 'Intermediate';
 
-        const prompt = `Generate a title, domain, and 2-sentence practical operational purpose for a MoSPI course.
+        const prompt = `Generate a title and 2-sentence operational description for a MoSPI course.
 Department: ${department}
 Domain: ${domain}
 Topic: ${topic}
 
-Return ONLY valid JSON:
+Return ONLY JSON:
 {
   "title": "${topic} (${department})",
-  "domain": "${domain || 'Statistical Competencies'}",
-  "difficulty_level": "Intermediate",
-  "description": "2-sentence practical operational purpose"
+  "description": "2-sentence practical operational purpose",
+  "difficulty_level": "Intermediate"
 }`;
 
         const rawJson = await generateAIResponse(prompt);
@@ -101,7 +100,7 @@ Return ONLY valid JSON:
             } catch (e) {}
         }
 
-        const newCourseRow = {
+        const newRow = {
             course_code: uniqueCode,
             title: courseTitle,
             domain: domain || 'Statistical Competencies',
@@ -112,40 +111,38 @@ Return ONLY valid JSON:
             target_departments: [department || 'ALL']
         };
 
-        const { data: saved, error } = await supabase
+        const { data: saved, error: dbErr } = await supabase
             .from('master_courses')
-            .insert([newCourseRow])
+            .insert([newRow])
             .select()
             .single();
 
-        if (error) {
-            console.error('Database direct insert error:', error);
-            return res.status(400).json({ error: error.message });
+        if (dbErr) {
+            console.error('Database write error:', dbErr);
+            return res.status(500).json({ error: dbErr.message });
         }
 
         return res.json({ message: `Course "${saved.title}" successfully added to master_courses!`, course: saved });
     } catch (err) {
-        console.error('Quick course error:', err);
-        return res.status(500).json({ error: 'Server error while inserting course.' });
+        return res.status(500).json({ error: err.message });
     }
 });
 
-// Admin API: PDF Syllabus Parser -> Matches master_courses (all NOT NULL fields satisfied)
+// PDF Syllabus Parser -> Organizes and writes directly to master_courses
 app.post('/api/admin/parse-syllabus', async (req, res) => {
     const { syllabusText, defaultDivision } = req.body;
     if (!syllabusText) return res.status(400).json({ error: 'Syllabus text is required.' });
 
     try {
         let extractedModules = [];
-        const prompt = `You are the NSSTA Curriculum Director.
-Break down this syllabus into 3 to 6 modular courses for MoSPI ${defaultDivision || 'ALL'} statisticians.
-SYLLABUS CONTENT:
+        const prompt = `Break down this syllabus into 3 to 6 distinct courses for MoSPI ${defaultDivision || 'ALL'} statisticians.
+SYLLABUS:
 ${syllabusText.slice(0, 15000)}
 
-Return ONLY a valid JSON array of objects:
+Return ONLY a valid JSON array:
 [
   {
-    "title": "Module Title",
+    "title": "Course Title",
     "domain": "Statistical Competencies",
     "difficulty_level": "Intermediate",
     "description": "2-sentence practical operational purpose"
@@ -157,7 +154,7 @@ Return ONLY a valid JSON array of objects:
             try {
                 const match = rawJson.match(/\[[\s\S]*\]/);
                 if (match) extractedModules = JSON.parse(match[0]);
-            } catch (pErr) {}
+            } catch (e) {}
         }
 
         if (!extractedModules || extractedModules.length === 0) {
@@ -205,12 +202,11 @@ Return ONLY a valid JSON array of objects:
             modules: inserted || rowsToInsert
         });
     } catch (err) {
-        console.error('Syllabus error:', err);
-        return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
+        return res.status(500).json({ error: err.message });
     }
 });
 
-// Admin API: Course list for dropdown in quiz creator
+// Course List for admin dropdown
 app.get('/api/admin/courses-list', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -225,7 +221,7 @@ app.get('/api/admin/courses-list', async (req, res) => {
     }
 });
 
-// Admin API: Synthesize & Assign Quizzes -> Matches course_quizzes (all NOT NULL fields satisfied)
+// Quiz Generator -> Inserts into course_quizzes
 app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
     const { courseTitle, documentText } = req.body;
     if (!courseTitle || !documentText) return res.status(400).json({ error: 'Course Title and Document Text required.' });
@@ -237,18 +233,12 @@ app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
             { question: "Which framework governs respondent privacy and data protection?", options: ["DPDP Act 2023 & MoSPI Standards", "Generic public domain rules", "Unverified guidelines", "Local administrative orders only"], correct_index: 0 }
         ];
 
-        const prompt = `Generate 5 multiple-choice questions from this document text specifically for the course: "${courseTitle}".
+        const prompt = `Generate 5 multiple-choice questions from this document text for the course: "${courseTitle}".
 DOCUMENT:
 ${documentText.slice(0, 15000)}
 
-Return ONLY a valid JSON array matching this exact format:
-[
-  {
-    "question": "Question text?",
-    "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-    "correct_index": 0
-  }
-]`;
+Return ONLY JSON array:
+[{"question": "Question text?", "options": ["A", "B", "C", "D"], "correct_index": 0}]`;
 
         const rawJson = await generateAIResponse(prompt);
         if (rawJson) {
@@ -267,18 +257,15 @@ Return ONLY a valid JSON array matching this exact format:
         }));
 
         const { error: quizErr } = await supabase.from('course_quizzes').insert(rowsToInsert);
-        if (quizErr) {
-            console.error('Quiz insertion error:', quizErr);
-            return res.status(400).json({ error: quizErr.message });
-        }
+        if (quizErr) return res.status(500).json({ error: quizErr.message });
 
         return res.json({ message: `${questions.length} questions successfully generated & inserted into course_quizzes for "${courseTitle}"!`, questions });
     } catch (err) {
-        return res.status(500).json({ error: 'Quiz synthesis failed.' });
+        return res.status(500).json({ error: err.message });
     }
 });
 
-// Admin officer analytics
+// Officer Analytics
 app.get('/api/admin/officers-analytics', async (req, res) => {
     try {
         const { data: officers, error } = await supabase.from('employees').select('id, name, email, cadre, department, designation, created_at');
