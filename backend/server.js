@@ -28,7 +28,7 @@ async function generateAIResponse(prompt) {
                 body: JSON.stringify({
                     model: 'grok-beta',
                     messages: [
-                        { role: 'system', content: 'You are the Chief Academic Training Director at NSSTA, MoSPI. Always return raw, valid JSON only.' },
+                        { role: 'system', content: 'You are the Chief Academic Training Director at NSSTA (National Statistical Systems Training Academy), MoSPI, Government of India. Always output valid, unpadded JSON.' },
                         { role: 'user', content: prompt }
                     ],
                     temperature: 0.2
@@ -64,24 +64,40 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'MoSPI Skill Intelligence Engine Active', timestamp: new Date() });
 });
 
-// Admin API: Parse syllabus text and directly save into master_courses table
+// Helper: Normalize department acronyms
+function parseDeptCode(deptStr) {
+    if (!deptStr) return 'ALL';
+    const match = deptStr.match(/\(([^)]+)\)/);
+    if (match && match[1]) return match[1].trim().toUpperCase();
+    const knownCodes = ['NAD', 'ESD', 'PSD', 'SSD', 'FOD', 'SDRD', 'DPD', 'DIID', 'NSSTA', 'CAPD', 'NSSO', 'IPMD', 'SDG_LAB', 'STATE_DES', 'DSO', 'TALUK'];
+    for (const code of knownCodes) {
+        if (deptStr.toUpperCase().includes(code)) return code;
+    }
+    return deptStr.trim().toUpperCase();
+}
+
+// Admin API: Structured PDF syllabus organizer into role-tailored courses
 app.post('/api/admin/parse-syllabus', async (req, res) => {
     const { syllabusText, defaultDivision } = req.body;
-    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text is required.' });
+    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text content is required.' });
 
     try {
         let extractedModules = [];
-        const prompt = `Extract 3 to 6 modular courses from this syllabus for MoSPI statistical officers.
-SYLLABUS TEXT:
-${syllabusText.slice(0, 15000)}
+        const prompt = `You are the NSSTA Curriculum & Competency Director at MoSPI.
+Analyze this raw training document/syllabus text. Organize and break down the contents into clear, modular courses tailored for officers in the "${defaultDivision || 'ALL'}" division of MoSPI.
 
-Return ONLY a valid JSON array of objects:
+DOCUMENT/SYLLABUS CONTENT:
+${syllabusText.slice(0, 18000)}
+
+Structure every chapter/topic logically into distinct courses.
+Return ONLY a valid JSON array of objects structured as:
 [
   {
-    "title": "Module Title",
-    "domain": "Statistical Competencies",
-    "difficulty_level": "Intermediate",
-    "description": "2-sentence practical operational purpose"
+    "title": "Clear, concise course title",
+    "domain": "Statistical Competencies | Technical Competencies | Digital Governance | Behavioural & Managerial",
+    "difficulty_level": "Foundation | Intermediate | Advanced",
+    "description": "2-sentence practical operational purpose explaining what the officer will learn and execute",
+    "video_url": "https://portal.igotkarmayogi.gov.in"
   }
 ]`;
 
@@ -95,34 +111,34 @@ Return ONLY a valid JSON array of objects:
             }
         }
 
-        // Guaranteed fallback if LLM returned unstructured text
+        // Fallback: organize text lines if LLM output fails
         if (!extractedModules || extractedModules.length === 0) {
-            const lines = syllabusText.split('\n').filter(l => l.trim().length > 15).slice(0, 4);
+            const lines = syllabusText.split('\n').filter(l => l.trim().length > 20).slice(0, 5);
             if (lines.length > 0) {
                 extractedModules = lines.map((line, i) => ({
-                    title: line.trim().slice(0, 60),
+                    title: `Module ${i + 1}: ` + line.trim().slice(0, 55),
                     domain: 'Statistical Competencies',
                     difficulty_level: 'Intermediate',
-                    description: `Training unit extracted from syllabus on ${line.trim().slice(0, 120)}`
+                    description: `Practical operational training covering ${line.trim().slice(0, 140)} for ${defaultDivision} officers.`
                 }));
             } else {
                 extractedModules = [{
-                    title: `Syllabus Module: ${syllabusText.slice(0, 40)}`,
+                    title: `NSSTA Specialized Module (${defaultDivision})`,
                     domain: 'Statistical Competencies',
                     difficulty_level: 'Intermediate',
-                    description: syllabusText.slice(0, 180)
+                    description: syllabusText.slice(0, 200)
                 }];
             }
         }
 
         const rowsToInsert = extractedModules.map((m, idx) => ({
-            course_code: 'NSSTA-' + Date.now().toString().slice(-5) + '-' + (idx + 1),
-            title: m.title || ('NSSTA Module ' + (idx + 1)),
+            course_code: `NSSTA-${Date.now().toString().slice(-5)}-${idx + 1}`,
+            title: m.title || `NSSTA Module ${idx + 1}`,
             domain: m.domain || 'Statistical Competencies',
             difficulty_level: m.difficulty_level || 'Intermediate',
             target_departments: [defaultDivision || 'ALL'],
-            description: m.description || 'Mandatory statistical competency training module.',
-            video_url: 'https://portal.igotkarmayogi.gov.in',
+            description: m.description || `Competency training module for ${defaultDivision} statisticians.`,
+            video_url: m.video_url || 'https://portal.igotkarmayogi.gov.in',
             is_general_mandatory: false
         }));
 
@@ -137,16 +153,16 @@ Return ONLY a valid JSON array of objects:
         }
 
         return res.json({
-            message: `Successfully parsed and saved ${rowsToInsert.length} courses to Master Database!`,
+            message: `Successfully organized and inserted ${rowsToInsert.length} courses tailored for ${defaultDivision} into the Master Database!`,
             modules: inserted || rowsToInsert
         });
     } catch (err) {
-        console.error('Syllabus error:', err);
-        return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
+        console.error('Syllabus parsing error:', err);
+        return res.status(500).json({ error: 'Failed to organize syllabus courses.' });
     }
 });
 
-// Admin API: Quick Course Creator directly saving into master_courses (No pending queue)
+// Admin API: Quick Course Creator directly into master_courses
 app.post('/api/admin/draft-course', async (req, res) => {
     const { department, domain, topic } = req.body;
     try {
@@ -162,7 +178,7 @@ app.post('/api/admin/draft-course', async (req, res) => {
             is_general_mandatory: false
         };
 
-        const prompt = `Generate title and 2-sentence description for a MoSPI course.
+        const prompt = `Generate a clear title and a 2-sentence practical description for a MoSPI official course.
 Department: ${department}
 Domain: ${domain}
 Topic: ${topic}
@@ -256,11 +272,11 @@ app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
             { question: "Which framework governs respondent privacy and data protection?", options: ["DPDP Act 2023 & MoSPI Standards", "Generic public domain rules", "Unverified guidelines", "Local administrative orders only"], correct_index: 0 }
         ];
 
-        const prompt = `Generate 5 multiple-choice questions from this document text for the course: "${courseTitle}".
+        const prompt = `Generate 5 multiple-choice questions from this document text specifically for the course: "${courseTitle}".
 DOCUMENT:
 ${documentText.slice(0, 15000)}
 
-Return ONLY valid JSON array:
+Return ONLY a valid JSON array:
 [{"question": "Question?", "options": ["A", "B", "C", "D"], "correct_index": 0}]`;
 
         const rawJson = await generateAIResponse(prompt);
@@ -302,17 +318,6 @@ app.get('/api/competencies/:email', async (req, res) => {
         return res.json({ statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0 });
     }
 });
-
-function parseDeptCode(deptStr) {
-    if (!deptStr) return 'ALL';
-    const match = deptStr.match(/\(([^)]+)\)/);
-    if (match && match[1]) return match[1].trim().toUpperCase();
-    const knownCodes = ['NAD', 'ESD', 'PSD', 'SSD', 'FOD', 'SDRD', 'DPD', 'DIID', 'NSSTA', 'CAPD', 'NSSO', 'IPMD', 'SDG_LAB', 'STATE_DES', 'DSO', 'TALUK'];
-    for (const code of knownCodes) {
-        if (deptStr.toUpperCase().includes(code)) return code;
-    }
-    return deptStr.trim().toUpperCase();
-}
 
 app.post('/api/recommendations', async (req, res) => {
     const { department } = req.body;
