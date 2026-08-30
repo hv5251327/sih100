@@ -47,10 +47,12 @@ async function submitAuth(role) {
 
         if (response.ok) {
             localStorage.setItem('mospi_user', JSON.stringify(data.user));
-            if (role === 'admin' || email.toLowerCase().includes('admin')) {
-                window.location.href = 'admin.html';
+            
+            // Explicit redirection logic
+            if (role === 'admin' || data.user.role === 'admin' || email.toLowerCase().includes('admin')) {
+                window.location.replace('admin.html');
             } else {
-                window.location.href = 'dashboard.html';
+                window.location.replace('dashboard.html');
             }
         } else {
             alert(`Authentication Error: ${data.error || 'Invalid credentials'}`);
@@ -60,7 +62,7 @@ async function submitAuth(role) {
             }
         }
     } catch (err) {
-        alert('Server unreachable. Please retry in a few moments.');
+        alert('Server unreachable. Please check connection and retry.');
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.innerText = role === 'admin' ? 'Authorize & Access Portal' : 'Login';
@@ -93,7 +95,7 @@ async function submitRegistration() {
 
         if (response.ok) {
             localStorage.setItem('mospi_user', JSON.stringify(data.user));
-            window.location.href = 'dashboard.html';
+            window.location.replace('dashboard.html');
         } else {
             alert(`Registration Error: ${data.error || 'Unable to register'}`);
             if (submitBtn) {

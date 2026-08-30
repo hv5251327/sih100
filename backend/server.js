@@ -16,7 +16,6 @@ const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp
 
 const supabase = createClient(cleanUrl, supabaseKey);
 
-// Unified LLM Generator: Primary Grok API -> Fallback Gemini API
 async function generateAIResponse(prompt) {
     if (GROK_API_KEY) {
         try {
@@ -62,51 +61,42 @@ async function generateAIResponse(prompt) {
 }
 
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'MoSPI Skill Intelligence Engine Active with Grok & Gemini', timestamp: new Date() });
+    res.json({ status: 'MoSPI Skill Intelligence Engine Active', timestamp: new Date() });
 });
 
-// Admin API: Parse PDF Syllabus and auto-generate structured courses into DB
-app.post('/api/admin/parse-syllabus', async (req, res) => {
-    const { syllabusText, defaultDivision } = req.body;
-    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text content is required.' });
+// Admin Auth and APIs
+app.post('/api/auth/login', async (req, res) => {
+    const { email, password, role } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password required.' });
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Check Admin Login (matches explicit role or email containing 'admin')
+    if (role === 'admin' || cleanEmail.includes('admin')) {
+        return res.json({
+            message: 'Admin Authorized',
+            user: {
+                name: 'MoSPI Training Administrator',
+                email: cleanEmail,
+                role: 'admin'
+            }
+        });
+    }
 
     try {
-        const prompt = `Analyze the following official NSSTA syllabus/circular text and break it down into clean, standalone competency courses for official statisticians.
+        const { data, error } = await supabase
+            .from('employees')
+            .select('id, name, email, password, cadre, department, designation')
+            .ilike('email', cleanEmail)
+            .maybeSingle();
 
-SYLLABUS TEXT:
-${syllabusText.slice(0, 20000)}
-
-For each topic/chapter found, return ONLY a valid JSON array of objects structured as:
-[
-  {
-    "course_code": "NSSTA-GEN-CODE",
-    "title": "Exact Course Module Title",
-    "domain": "Statistical Competencies | Technical Competencies | Digital Governance | Behavioural & Managerial",
-    "difficulty_level": "Foundation | Intermediate | Advanced",
-    "target_departments": ["${defaultDivision || 'ALL'}"],
-    "description": "2-sentence practical operational purpose for MoSPI statisticians",
-    "video_url": "https://portal.igotkarmayogi.gov.in",
-    "is_general_mandatory": false
-  }
-]`;
-
-        const rawJson = await generateAIResponse(prompt);
-        let extractedModules = [];
-        if (rawJson) {
-            extractedModules = JSON.parse(rawJson);
+        if (error || !data || data.password !== password) {
+            return res.status(401).json({ error: 'Invalid email or password.' });
         }
-
-        if (extractedModules.length > 0) {
-            await supabase.from('master_courses').upsert(extractedModules, { onConflict: 'course_code' });
-        }
-
-        return res.json({
-            message: `Successfully parsed and saved ${extractedModules.length} courses to Master DB!`,
-            modules: extractedModules
-        });
+        const { password: _, ...userProfile } = data;
+        return res.json({ message: 'Authentication successful', user: { ...userProfile, role: 'employee' } });
     } catch (err) {
-        console.error('Syllabus parsing error:', err);
-        return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
+        return res.status(500).json({ error: 'Login error' });
     }
 });
 
@@ -157,6 +147,46 @@ app.get('/api/admin/officers-analytics', async (req, res) => {
     }
 });
 
+app.post('/api/admin/parse-syllabus', async (req, res) => {
+    const { syllabusText, defaultDivision } = req.body;
+    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text content is required.' });
+
+    try {
+        const prompt = `Analyze the following official NSSTA syllabus text and extract standalone training courses for MoSPI official statisticians.
+
+SYLLABUS:
+${syllabusText.slice(0, 20000)}
+
+Return ONLY a valid JSON array:
+[
+  {
+    "course_code": "NSSTA-MOD-CODE",
+    "title": "Module Title",
+    "domain": "Statistical Competencies | Technical Competencies | Digital Governance | Behavioural & Managerial",
+    "difficulty_level": "Foundation | Intermediate | Advanced",
+    "target_departments": ["${defaultDivision || 'ALL'}"],
+    "description": "2-sentence practical operational purpose",
+    "video_url": "https://portal.igotkarmayogi.gov.in",
+    "is_general_mandatory": false
+  }
+]`;
+
+        const rawJson = await generateAIResponse(prompt);
+        let extractedModules = [];
+        if (rawJson) {
+            extractedModules = JSON.parse(rawJson);
+            await supabase.from('master_courses').upsert(extractedModules, { onConflict: 'course_code' });
+        }
+
+        return res.json({
+            message: `Successfully parsed and saved ${extractedModules.length} courses!`,
+            modules: extractedModules
+        });
+    } catch (err) {
+        return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
+    }
+});
+
 app.post('/api/admin/draft-course', async (req, res) => {
     const { department, domain, topic } = req.body;
     try {
@@ -170,26 +200,24 @@ app.post('/api/admin/draft-course', async (req, res) => {
             video_url: 'https://portal.igotkarmayogi.gov.in'
         };
 
-        const prompt = `Generate a detailed NSSTA training module for MoSPI officers.
+        const prompt = `Generate an NSSTA training module for MoSPI officers.
 Department: ${department}
 Domain: ${domain}
-Topic Focus: ${topic}
+Topic: ${topic}
 
-Return ONLY valid JSON format:
+Return ONLY valid JSON:
 {
   "course_code": "COURSE_CODE",
-  "title": "Comprehensive Title",
+  "title": "Title",
   "domain": "${domain}",
   "difficulty_level": "Foundation | Intermediate | Advanced",
   "target_departments": ["${department}"],
-  "description": "2-sentence practical operational purpose",
+  "description": "2-sentence purpose",
   "video_url": "https://portal.igotkarmayogi.gov.in"
 }`;
 
         const rawJson = await generateAIResponse(prompt);
-        if (rawJson) {
-            draft = JSON.parse(rawJson);
-        }
+        if (rawJson) draft = JSON.parse(rawJson);
 
         const { data: saved, error } = await supabase.from('pending_courses').insert([{ ...draft, status: 'PENDING' }]).select().single();
         if (error) return res.status(400).json({ error: error.message });
@@ -246,24 +274,22 @@ app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
             { question: "Which framework governs respondent privacy and data protection?", options: ["DPDP Act 2023 & MoSPI Standards", "Generic public domain rules", "Unverified guidelines", "Local administrative orders only"], correct_index: 0 }
         ];
 
-        const prompt = `Generate 5 multiple-choice questions from the provided training document text specifically for the course: "${courseTitle}".
-DOCUMENT CONTENT:
+        const prompt = `Generate 5 multiple-choice questions from this document text for the course: "${courseTitle}".
+DOCUMENT:
 ${documentText.slice(0, 15000)}
 
-Return ONLY a valid JSON array of objects:
-[{"question": "Clear question text?", "options": ["Option A", "Option B", "Option C", "Option D"], "correct_index": 0}]`;
+Return ONLY valid JSON array:
+[{"question": "Question?", "options": ["A", "B", "C", "D"], "correct_index": 0}]`;
 
         const rawJson = await generateAIResponse(prompt);
-        if (rawJson) {
-            questions = JSON.parse(rawJson);
-        }
+        if (rawJson) questions = JSON.parse(rawJson);
 
         const rowsToInsert = questions.map(q => ({
             course_title: courseTitle,
             question: q.question,
             options: q.options,
             correct_index: q.correct_index,
-            source_document: 'Admin Uploaded PDF/Manual'
+            source_document: 'Admin Uploaded Manual'
         }));
 
         await supabase.from('course_quizzes').insert(rowsToInsert);
@@ -273,6 +299,7 @@ Return ONLY a valid JSON array of objects:
     }
 });
 
+// Employee APIs
 app.get('/api/competencies/:email', async (req, res) => {
     const email = (req.params.email || '').trim().toLowerCase();
     try {
@@ -419,22 +446,6 @@ app.post('/api/auth/register', async (req, res) => {
         return res.status(201).json({ message: 'Registered successfully', user: data[0] });
     } catch (err) {
         return res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/api/auth/login', async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Email and password required.' });
-    try {
-        if (email.toLowerCase().includes('admin')) {
-            return res.json({ message: 'Admin Authorized', user: { name: 'MoSPI Training Administrator', email: email, role: 'admin' } });
-        }
-        const { data, error } = await supabase.from('employees').select('id, name, email, password, cadre, department, designation').ilike('email', email.trim().toLowerCase()).maybeSingle();
-        if (error || !data || data.password !== password) return res.status(401).json({ error: 'Invalid email or password.' });
-        const { password: _, ...userProfile } = data;
-        return res.json({ message: 'Authentication successful', user: userProfile });
-    } catch (err) {
-        return res.status(500).json({ error: 'Login error' });
     }
 });
 
