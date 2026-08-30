@@ -38,7 +38,7 @@ async function generateAIResponse(prompt) {
             const text = data?.choices?.[0]?.message?.content;
             if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
         } catch (e) {
-            console.warn('Grok API call failed, falling back to Gemini:', e.message);
+            console.warn('Grok API call failed:', e.message);
         }
     }
 
@@ -71,7 +71,6 @@ app.post('/api/auth/login', async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // Check Admin Login (matches explicit role or email containing 'admin')
     if (role === 'admin' || cleanEmail.includes('admin')) {
         return res.json({
             message: 'Admin Authorized',
@@ -147,20 +146,20 @@ app.get('/api/admin/officers-analytics', async (req, res) => {
     }
 });
 
+// Admin API: Parse syllabus text from PDF and bulk insert into master_courses DB
 app.post('/api/admin/parse-syllabus', async (req, res) => {
     const { syllabusText, defaultDivision } = req.body;
-    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text content is required.' });
+    if (!syllabusText) return res.status(400).json({ error: 'Syllabus text is required.' });
 
     try {
-        const prompt = `Analyze the following official NSSTA syllabus text and extract standalone training courses for MoSPI official statisticians.
+        const prompt = `You are the NSSTA Curriculum Director. Analyze this training syllabus and extract 3 to 6 modular courses for MoSPI statistical officers.
+SYLLABUS TEXT:
+${syllabusText.slice(0, 15000)}
 
-SYLLABUS:
-${syllabusText.slice(0, 20000)}
-
-Return ONLY a valid JSON array:
+Return ONLY a valid JSON array of objects structured as:
 [
   {
-    "course_code": "NSSTA-MOD-CODE",
+    "course_code": "NSSTA-${Date.now().toString().slice(-4)}-MOD",
     "title": "Module Title",
     "domain": "Statistical Competencies | Technical Competencies | Digital Governance | Behavioural & Managerial",
     "difficulty_level": "Foundation | Intermediate | Advanced",
@@ -175,14 +174,19 @@ Return ONLY a valid JSON array:
         let extractedModules = [];
         if (rawJson) {
             extractedModules = JSON.parse(rawJson);
+            for (let i = 0; i < extractedModules.length; i++) {
+                extractedModules[i].course_code = `NSSTA-${Date.now().toString().slice(-4)}-${i + 1}`;
+                extractedModules[i].target_departments = [defaultDivision || 'ALL'];
+            }
             await supabase.from('master_courses').upsert(extractedModules, { onConflict: 'course_code' });
         }
 
         return res.json({
-            message: `Successfully parsed and saved ${extractedModules.length} courses!`,
+            message: `Successfully parsed and added ${extractedModules.length} new courses to Master DB!`,
             modules: extractedModules
         });
     } catch (err) {
+        console.error('Syllabus parsing error:', err);
         return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
     }
 });
@@ -207,7 +211,7 @@ Topic: ${topic}
 
 Return ONLY valid JSON:
 {
-  "course_code": "COURSE_CODE",
+  "course_code": "ADM-${Date.now().toString().slice(-4)}",
   "title": "Title",
   "domain": "${domain}",
   "difficulty_level": "Foundation | Intermediate | Advanced",
@@ -324,61 +328,52 @@ function parseDeptCode(deptStr) {
     for (const code of knownCodes) {
         if (deptStr.toUpperCase().includes(code)) return code;
     }
-    return deptStr.trim();
+    return deptStr.trim().toUpperCase();
 }
 
+// Guaranteed Robust Recommendations Engine
 app.post('/api/recommendations', async (req, res) => {
     const { department, cadre, designation } = req.body;
     const deptCode = parseDeptCode(department);
 
     try {
         let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
-        if (!allCourses || allCourses.length === 0) return res.status(500).json({ error: 'No courses in database.' });
+        
+        if (!allCourses || allCourses.length === 0) {
+            return res.json({ courses: [], source: 'empty_db' });
+        }
 
-        const mandatoryFoundation = allCourses.filter(c => c.is_general_mandatory === true).map(c => ({ ...c, learning_stage: 'Foundation' }));
+        // 1. Mandatory Foundation Courses for ALL officers
+        const mandatoryFoundation = allCourses
+            .filter(c => c.is_general_mandatory === true)
+            .map(c => ({ ...c, learning_stage: 'Foundation' }));
+
+        // 2. Domain pool (non-mandatory courses)
         const domainPool = allCourses.filter(c => c.is_general_mandatory !== true);
 
-        let domainCourses = [];
-        const prompt = `Officer: Cadre: ${cadre}, Department: ${department} (Code: ${deptCode}), Designation: ${designation}.
-Select the most relevant domain courses from this list:
-${JSON.stringify(domainPool.map(c => ({ id: c.id, code: c.course_code, title: c.title, domain: c.domain, target: c.target_departments, desc: c.description })))}
+        // Matching logic: if department matches or course targets ALL
+        let functionalMatches = domainPool.filter(c => {
+            const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
+            return targets.includes(deptCode);
+        }).map(c => ({ ...c, learning_stage: 'Functional Core' }));
 
-Assign each selected course to either "Functional Core" or "Advanced Strategic".
-Return ONLY valid JSON array with format:
-[{"id": 1, "learning_stage": "Functional Core"}]`;
+        let strategicMatches = domainPool.filter(c => {
+            const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
+            return !targets.includes(deptCode) && (targets.includes('ALL') || c.difficulty_level === 'Advanced');
+        }).map(c => ({ ...c, learning_stage: 'Advanced Strategic' }));
 
-        const rawJson = await generateAIResponse(prompt);
-        if (rawJson) {
-            try {
-                const aiSelections = JSON.parse(rawJson);
-                const poolMap = new Map(domainPool.map(c => [c.id, c]));
-                domainCourses = aiSelections
-                    .filter(item => poolMap.has(item.id))
-                    .map(item => ({
-                        ...poolMap.get(item.id),
-                        learning_stage: item.learning_stage || 'Functional Core'
-                    }));
-            } catch (e) {
-                console.warn('AI ranking parsing fallback');
-            }
+        // Ensure every stage has courses
+        if (functionalMatches.length === 0) {
+            functionalMatches = domainPool.slice(0, 3).map(c => ({ ...c, learning_stage: 'Functional Core' }));
+        }
+        if (strategicMatches.length === 0) {
+            strategicMatches = domainPool.slice(3, 6).map(c => ({ ...c, learning_stage: 'Advanced Strategic' }));
         }
 
-        if (domainCourses.length === 0) {
-            domainCourses = domainPool.filter(c => {
-                const targets = Array.isArray(c.target_departments) ? c.target_departments : ['ALL'];
-                return targets.includes('ALL') || targets.includes(deptCode);
-            }).map(c => {
-                const targets = Array.isArray(c.target_departments) ? c.target_departments : ['ALL'];
-                return {
-                    ...c,
-                    learning_stage: targets.includes(deptCode) ? 'Functional Core' : 'Advanced Strategic'
-                };
-            });
-        }
-
-        const combined = [...mandatoryFoundation, ...domainCourses];
-        return res.json({ courses: combined, source: 'master_courses_direct' });
+        const combined = [...mandatoryFoundation, ...functionalMatches, ...strategicMatches];
+        return res.json({ courses: combined, source: 'database_guaranteed' });
     } catch (err) {
+        console.error('Recommendation API error:', err);
         return res.status(500).json({ error: 'Failed to recommend courses.' });
     }
 });

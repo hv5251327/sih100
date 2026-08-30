@@ -75,7 +75,7 @@
       <div class="kpi-card"><span>Pending Approvals</span><h3 id="stat-pending-approvals" style="color:var(--warning);">0</h3></div>
     </div>
 
-    <!-- Grouped Officer Matrix -->
+    <!-- Officer Directory -->
     <section class="panel">
       <div class="panel-header">
         <h2><i class="fa-solid fa-users-viewfinder"></i> Officer Registry (Grouped by Cadre, Department & Designation)</h2>
@@ -100,11 +100,47 @@
       </div>
     </section>
 
+    <!-- PDF Syllabus Parser Panel -->
+    <section class="panel">
+      <div class="panel-header">
+        <h2><i class="fa-solid fa-book-open-reader"></i> NSSTA Training Syllabus PDF Parser & Course Generator</h2>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Upload official NSSTA syllabus documents or circular PDFs. AI will extract structured modules and automatically save them into the Master Database for officer recommendations.</p>
+      <form id="syllabusParserForm" onsubmit="handleSyllabusSubmit(event)">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Target Statistical Division</label>
+            <select id="syllabusDept" required>
+              <option value="ALL">Universal (All MoSPI Officers)</option>
+              <option value="NAD">National Accounts Division (NAD)</option>
+              <option value="ESD">Economic Statistics Division (ESD)</option>
+              <option value="PSD">Price Statistics Division (PSD)</option>
+              <option value="SSD">Social Statistics Division (SSD)</option>
+              <option value="FOD">Field Operations Division (FOD)</option>
+              <option value="SDRD">Survey Design and Research Division (SDRD)</option>
+              <option value="IPMD">Infrastructure & Project Monitoring Division (IPMD)</option>
+              <option value="SDG_LAB">SDG Unit & Data Innovation Lab</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Upload Syllabus PDF Document</label>
+            <input type="file" id="syllabusPdfFile" accept=".pdf" onchange="extractSyllabusPdf(event)" style="padding:8px; border:1px dashed var(--border); border-radius:6px; cursor:pointer;">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:10px;">
+          <label>Extracted Syllabus Content (Auto-filled from PDF or paste directly)</label>
+          <textarea id="syllabusText" rows="5" placeholder="Upload a syllabus PDF or paste circular topics here..." required></textarea>
+        </div>
+        <button type="submit" class="btn-action" id="btn-syllabus-submit" style="margin-top:8px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract & Save Courses to Database</button>
+      </form>
+      <div id="syllabus-status" style="font-size:0.85rem; font-weight:700; color:var(--success);"></div>
+    </section>
+
     <div class="grid-2">
       <!-- Course Creator & Approval Workflow -->
       <section class="panel">
         <div class="panel-header">
-          <h2><i class="fa-solid fa-wand-magic-sparkles"></i> AI Course Creator for Divisions</h2>
+          <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Quick Course Creator</h2>
         </div>
         <form id="draftCourseForm" onsubmit="handleDraftCourse(event)">
           <div class="form-group">
@@ -144,9 +180,9 @@
       <!-- PDF / Document AI Quiz Synthesizer with Course Selector -->
       <section class="panel">
         <div class="panel-header">
-          <h2><i class="fa-solid fa-file-pdf"></i> PDF & Training Material Quiz Synthesizer</h2>
+          <h2><i class="fa-solid fa-file-pdf"></i> Training Material Quiz Synthesizer</h2>
         </div>
-        <p style="font-size:0.85rem; color:var(--text-muted);">Select the target course from the database and upload a training PDF or paste manual text. AI will synthesize 5 MCQs and assign them directly to that course for officer evaluations.</p>
+        <p style="font-size:0.85rem; color:var(--text-muted);">Select the course and upload a training manual PDF. AI will synthesize MCQs and assign them directly to that course for officer evaluations.</p>
         <form id="quizDocForm" onsubmit="handleDocQuiz(event)">
           <div class="form-group">
             <label>Assign Assessment to Course</label>
@@ -159,8 +195,8 @@
             <input type="file" id="quizPdfFile" accept=".pdf" onchange="extractPdfText(event)" style="padding:8px; border:1px dashed var(--border); border-radius:6px; cursor:pointer;">
           </div>
           <div class="form-group">
-            <label>Document / Manual Content (Auto-filled from PDF or paste directly)</label>
-            <textarea id="quizDocText" rows="5" placeholder="Upload a PDF above or paste training manual text/circulars here..." required></textarea>
+            <label>Document Content</label>
+            <textarea id="quizDocText" rows="4" placeholder="Upload a PDF above or paste training text here..." required></textarea>
           </div>
           <button type="submit" class="btn-action" id="btn-quiz-synth"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Assign Quiz to Course</button>
         </form>
@@ -196,12 +232,65 @@
       }
     }
 
+    async function extractSyllabusPdf(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById("syllabus-status");
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Reading & extracting Syllabus PDF...`;
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let extractedText = "";
+
+        for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          extractedText += content.items.map(item => item.str).join(" ") + "\n";
+        }
+
+        document.getElementById("syllabusText").value = extractedText.trim();
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> Extracted ${pdf.numPages} pages from Syllabus PDF!`;
+      } catch (err) {
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Could not read PDF automatically. Please paste the text directly.</span>`;
+      }
+    }
+
+    async function handleSyllabusSubmit(e) {
+      e.preventDefault();
+      const defaultDivision = document.getElementById("syllabusDept").value;
+      const syllabusText = document.getElementById("syllabusText").value;
+      const statusDiv = document.getElementById("syllabus-status");
+      const submitBtn = document.getElementById("btn-syllabus-submit");
+
+      submitBtn.disabled = true;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing syllabus with AI and creating database courses...`;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/parse-syllabus`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ syllabusText, defaultDivision })
+        });
+        const data = await res.json();
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
+        document.getElementById("syllabusText").value = "";
+        document.getElementById("syllabusPdfFile").value = "";
+        await loadCoursesDropdown();
+      } catch (err) {
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Failed to extract syllabus.</span>`;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
     async function extractPdfText(e) {
       const file = e.target.files[0];
       if (!file) return;
 
       const statusDiv = document.getElementById("quiz-gen-status");
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Reading & extracting PDF text...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Reading Training PDF...`;
 
       try {
         const arrayBuffer = await file.arrayBuffer();
@@ -215,10 +304,9 @@
         }
 
         document.getElementById("quizDocText").value = extractedText.trim();
-        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> PDF text extracted successfully (${pdf.numPages} pages)! Ready to synthesize.`;
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> PDF text extracted (${pdf.numPages} pages)! Ready to synthesize.`;
       } catch (err) {
-        console.error("PDF extraction error:", err);
-        statusDiv.innerHTML = `<span style="color:#ef4444;">Could not read PDF directly. Please paste the text below.</span>`;
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Could not read PDF directly. Please paste text.</span>`;
       }
     }
 
