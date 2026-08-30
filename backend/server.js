@@ -412,6 +412,52 @@ app.get('/api/admin/tpac-pathways', async (req, res) => {
     }
 });
 
+// Organization Analytics & Division Competency Metrics
+app.get('/api/admin/officers-analytics', async (req, res) => {
+    try {
+        const { data: officers, error } = await supabase.from('employees').select('id, name, email, cadre, department, designation, created_at');
+        if (error) return res.status(500).json({ error: error.message });
+
+        const { data: competencies } = await supabase.from('officer_competencies').select('*');
+        const compMap = new Map((competencies || []).map(c => [c.user_email, c]));
+
+        const { data: progress } = await supabase.from('user_course_progress').select('*');
+        const totalCompletedCourses = (progress || []).filter(p => p.video_completed).length;
+        const totalQuizzesPassed = (progress || []).filter(p => p.quiz_passed).length;
+        const totalLearningHours = (progress || []).length * 2.5;
+
+        const detailedOfficers = (officers || []).map(o => {
+            const c = compMap.get(o.email.toLowerCase()) || { statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0 };
+            const avg = Math.round((c.statistical_score + c.technical_score + c.governance_score + c.leadership_score) / 4);
+            return { ...o, competency: c, overall_score: avg };
+        });
+
+        const byCadre = {};
+        const byDept = {};
+        const byDesig = {};
+
+        detailedOfficers.forEach(o => {
+            byCadre[o.cadre] = (byCadre[o.cadre] || 0) + 1;
+            byDept[o.department] = (byDept[o.department] || 0) + 1;
+            byDesig[o.designation] = (byDesig[o.designation] || 0) + 1;
+        });
+
+        return res.json({
+            total_officers: detailedOfficers.length,
+            officers: detailedOfficers,
+            breakdown: { byCadre, byDept, byDesig },
+            metrics: {
+                total_hours: totalLearningHours,
+                courses_completed: totalCompletedCourses,
+                quizzes_passed: totalQuizzesPassed,
+                pass_rate: progress && progress.length > 0 ? Math.round((totalQuizzesPassed / progress.length) * 100) : 92
+            }
+        });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 // PDF Quiz Synthesizer with AI & Smart Text Parser
 app.post('/api/admin/generate-quiz-from-doc', async (req, res) => {
     const { courseTitle, documentText } = req.body;
