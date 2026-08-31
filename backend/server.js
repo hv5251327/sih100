@@ -1701,10 +1701,37 @@ app.post('/api/recommendations', async (req, res) => {
             }
         }
 
+        // Retrieve and match NSSTA TPAC Training Programmes
+        let tpacMatches = [];
+        try {
+            const { data: dbTpac } = await supabase.from('training_workshops').select('*').order('start_date');
+            const tpacPool = (dbTpac && dbTpac.length > 0) ? dbTpac : memoryWorkshops;
+
+            tpacMatches = tpacPool.map(prog => {
+                const targetCadre = (prog.target_cadre || '').toUpperCase();
+                const progDiv = (prog.division || '').toUpperCase();
+                let matchScore = 50;
+
+                if (progDiv.includes(deptCode) || prog.division === 'National Statistical Systems Training Academy (NSSTA)') matchScore += 30;
+                if (cadreUpper.includes('ISS') && targetCadre.includes('ISS')) matchScore += 20;
+                if (cadreUpper.includes('SSS') && targetCadre.includes('SSS')) matchScore += 20;
+                if (cadreUpper.includes('DES') && targetCadre.includes('DES')) matchScore += 20;
+
+                return {
+                    ...prog,
+                    relevance_score: matchScore,
+                    recommendation_rationale: `Approved by NSSTA TPAC Advisory Committee for ${prog.division || 'Official Statistics'}. Aligned with your ${cadre || 'Cadre'} profile.`
+                };
+            }).sort((a, b) => b.relevance_score - a.relevance_score);
+        } catch (e) {
+            tpacMatches = memoryWorkshops;
+        }
+
         return res.json({ 
             total_remaining: finalRecommendations.length,
             completed_count: completedNormTitles.size,
-            courses: finalRecommendations 
+            courses: finalRecommendations,
+            tpac_programmes: tpacMatches
         });
     } catch (err) {
         return res.status(500).json({ error: 'Failed to recommend courses.' });
