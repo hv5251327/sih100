@@ -216,7 +216,7 @@
 
                 const heroEl = document.getElementById('hero-registered-count');
                 if (heroEl) {
-                    heroEl.innerText = `${count} Registered`;
+                    heroEl.innerText = `${count.toLocaleString('en-IN')}+`;
                 }
 
                 const ribbonEl = document.getElementById('ribbon-registered-count');
@@ -226,7 +226,7 @@
             } catch (e) {
                 console.warn("Live stats fallback:", e);
                 const heroEl = document.getElementById('hero-registered-count');
-                if (heroEl) heroEl.innerText = '12+ Registered';
+                if (heroEl) heroEl.innerText = '12+';
             }
         }
 

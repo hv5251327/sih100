@@ -2549,13 +2549,42 @@ app.post('/api/auth/login', async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
     if (role === 'admin' || cleanEmail.includes('admin')) {
+        if (password !== '1234' && password !== 'admin123') {
+            return res.status(401).json({ error: 'Invalid admin password.' });
+        }
         return res.json({ message: 'Admin Authorized', user: { name: 'MoSPI Training Administrator', email: cleanEmail, role: 'admin' } });
     }
 
     try {
-        const { data, error } = await supabase.from('employees').select('id, name, email, password, cadre, department, designation').ilike('email', cleanEmail).maybeSingle();
-        if (error || !data || (data.password !== password && password !== '1234' && password !== 'mospi123')) return res.status(401).json({ error: 'Invalid email or password.' });
-        const { password: _, ...userProfile } = data;
+        let userRecord = null;
+
+        // 1. Check in-memory directories
+        const foundMem = memoryParichayUsers.find(u => u.email.toLowerCase() === cleanEmail) ||
+                         memoryIgotUsers.find(u => u.email.toLowerCase() === cleanEmail);
+        if (foundMem) userRecord = foundMem;
+
+        // 2. Check employees table
+        if (!userRecord) {
+            const { data } = await supabase.from('employees').select('id, name, email, password, cadre, department, designation').ilike('email', cleanEmail).maybeSingle();
+            if (data) userRecord = data;
+        }
+
+        // 3. Check govt_sso_directory table
+        if (!userRecord) {
+            const { data } = await supabase.from('govt_sso_directory').select('id, name, email, password, cadre, department, designation').ilike('email', cleanEmail).maybeSingle();
+            if (data) userRecord = data;
+        }
+
+        if (!userRecord) {
+            return res.status(401).json({ error: 'Account not found. Please register or sign in with Government SSO.' });
+        }
+
+        // Password verification (accepts 1234 or matching password)
+        if (password !== '1234' && password !== 'mospi123' && userRecord.password && password !== userRecord.password) {
+            return res.status(401).json({ error: 'Invalid password. Please enter password 1234.' });
+        }
+
+        const { password: _, ...userProfile } = userRecord;
         return res.json({ message: 'Authentication successful', user: { ...userProfile, role: 'employee' } });
     } catch (err) {
         return res.status(500).json({ error: 'Login error' });
