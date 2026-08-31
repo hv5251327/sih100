@@ -21,15 +21,18 @@
                 <small>iGOT MoSPI Intelligence</small>
             </div>
         </div>
-        <nav class="nav-links">
-            <a href="#showcased-courses">Courses</a>
-            <a href="#case-studies">Case Studies</a>
-            <a href="#partners">Partners</a>
+        <button class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle Menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <nav class="nav-links" id="mainNavLinks">
+            <a href="#showcased-courses" onclick="closeMobileNav()">Courses</a>
+            <a href="#case-studies" onclick="closeMobileNav()">Case Studies</a>
+            <a href="#partners" onclick="closeMobileNav()">Partners</a>
             <a href="https://www.mospi.gov.in" target="_blank" rel="noopener">MoSPI Official <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i></a>
             <a href="https://igotkarmayogi.gov.in" target="_blank" rel="noopener">iGOT Portal <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i></a>
-            <a href="employee-login.html">Help & Support</a>
+            <a href="employee-login.html" onclick="closeMobileNav()">Help & Support</a>
         </nav>
-        <div class="auth-buttons">
+        <div class="auth-buttons" id="mainAuthButtons">
             <button class="btn btn-outline" onclick="window.location.href='admin-login.html'"><i class="fa-solid fa-shield-halved"></i> Admin Login</button>
             <button class="btn btn-outline" onclick="window.location.href='employee-login.html'"><i class="fa-solid fa-user-tie"></i> Employee Login</button>
             <button class="btn btn-primary" onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> New Registration</button>
@@ -228,6 +231,20 @@
                 const heroEl = document.getElementById('hero-registered-count');
                 if (heroEl) heroEl.innerText = '12+';
             }
+        }
+
+        function toggleMobileNav() {
+            const navLinks = document.getElementById('mainNavLinks');
+            const authBtns = document.getElementById('mainAuthButtons');
+            if (navLinks) navLinks.classList.toggle('open');
+            if (authBtns) authBtns.classList.toggle('open');
+        }
+
+        function closeMobileNav() {
+            const navLinks = document.getElementById('mainNavLinks');
+            const authBtns = document.getElementById('mainAuthButtons');
+            if (navLinks) navLinks.classList.remove('open');
+            if (authBtns) authBtns.classList.remove('open');
         }
 
         document.addEventListener('DOMContentLoaded', fetchLiveRegisteredStats);

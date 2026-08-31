@@ -30,6 +30,14 @@
             border-color: var(--primary, #1e3a8a);
             box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
         }
+        @media (max-width: 600px) {
+            .center-body { padding: 0.8rem; }
+            .login-card { padding: 1.5rem 1.1rem !important; border-radius: 12px; }
+            .icon-box { font-size: 2.2rem; margin-bottom: 0.5rem; }
+            .subtitle { font-size: 0.85rem; margin-bottom: 1.2rem; }
+            .form-group select, input { padding: 10px 12px; font-size: 0.88rem; }
+            .btn-submit { padding: 12px; font-size: 0.9rem; min-height: 44px; }
+        }
     </style>
 </head>
 <body class="center-body">
@@ -221,47 +229,6 @@
     </div>
 
     <script>
-        const CATEGORIZED_DESIGNATIONS = {
-            "Central Statistical Services (ISS & SSS Group 'A' & 'B')": [
-                "Director General (DG)",
-                "Additional Director General (ADG)",
-                "Deputy Director General (DDG)",
-                "Director / Joint Director",
-                "Director",
-                "Joint Director",
-                "Deputy Director / Assistant Director",
-                "Deputy Director",
-                "Assistant Director",
-                "Assistant Director / SSO",
-                "Assistant Director / JSO",
-                "Senior Statistical Officer (SSO)",
-                "Junior Statistical Officer (JSO)",
-                "Senior Statistical Officer",
-                "Junior Statistical Officer",
-                "ISS Probationer / Officer Trainee (NSSTA)"
-            ],
-            "Field Operations Division & Primary Cadres (FOD / NSSO)": [
-                "Deputy Director General (DDG / Regional Head)",
-                "Senior Statistical Officer (SSO / Field Supervisor)",
-                "Junior Statistical Officer (JSO / Field Investigator)",
-                "Primary Field Investigator / Enumerator",
-                "Statistical Compiler / Computer Operator"
-            ],
-            "State Directorate of Economics & Statistics (State DES & DSO)": [
-                "Director / Commissioner of Economics & Statistics (State Head)",
-                "Joint Director (DES)",
-                "Joint Director / Deputy Director (State DES)",
-                "District Statistical Officer (DSO)",
-                "Assistant Statistical Officer (ASO)",
-                "Assistant Statistical Officer / Statistical Officer (State)",
-                "Statistical Inspector / Research Assistant (DES)",
-                "Sub-Divisional / Taluk Statistical Officer"
-            ],
-            "Training Academy Faculty (NSSTA Greater Noida)": [
-                "Additional Director General (ADG / Head of Academy)",
-                "Director / Joint Director (Faculty)",
-                "Deputy Director / Assistant Director (Course Coordinator)"
-            ]
         const CATEGORIZED_DESIGNATIONS = {
             "Central Statistical Services (ISS & SSS Group 'A' & 'B')": [
                 "Director General (DG)",
