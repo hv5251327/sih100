@@ -1146,24 +1146,95 @@ app.get('/api/officer/forecast/:email', async (req, res) => {
 });
 
 // Public Live Metadata & Registered Officers Stats API
-app.get(['/api/public/stats', '/api/metadata', '/api/officer-count'], async (req, res) => {
+app.get(['/api/public/stats', '/api/officer-count'], async (req, res) => {
     try {
         const { count, error } = await supabase.from('employees').select('*', { count: 'exact', head: true });
-        const registeredCount = (!error && typeof count === 'number') ? count : 12;
+        const registeredCount = (!error && typeof count === 'number') ? count : 13;
         return res.json({
             total_registered_officers: registeredCount,
             registered_officers_display: `${registeredCount}+`,
             total_courses: 45,
-            total_divisions: 8,
+            total_divisions: 10,
             server_time: new Date().toISOString()
         });
     } catch (e) {
         return res.json({
-            total_registered_officers: 12,
-            registered_officers_display: "12+",
-            total_courses: 45
+            total_registered_officers: 13,
+            registered_officers_display: "13+",
+            total_courses: 45,
+            total_divisions: 10
         });
     }
+});
+
+// Comprehensive Ministry Metadata Endpoint
+app.get('/api/metadata', (req, res) => {
+    const departments = [
+        { code: 'NAD', name: 'National Accounts Division (NAD)' },
+        { code: 'ESD', name: 'Economic Statistics Division (ESD)' },
+        { code: 'PSD', name: 'Price Statistics Division (PSD)' },
+        { code: 'SSD', name: 'Social Statistics Division (SSD)' },
+        { code: 'FOD', name: 'Field Operations Division (FOD)' },
+        { code: 'SDRD', name: 'Survey Design & Research Division (SDRD)' },
+        { code: 'DPD', name: 'Data Processing Division (DPD)' },
+        { code: 'DIID', name: 'Data Informatics & Innovation Division (DIID)' },
+        { code: 'NSSTA', name: 'National Statistical Systems Training Academy (NSSTA)' },
+        { code: 'CAPD', name: 'Coordination & Publication Division (CAPD)' },
+        { code: 'NSSO', name: 'National Sample Survey Office Secretariat (NSSO HQs)' },
+        { code: 'IPMD', name: 'Infrastructure & Project Monitoring Division (IPMD)' },
+        { code: 'SDG_LAB', name: 'Sustainable Development Goals (SDG) Unit / Data Innovation Lab' },
+        { code: 'STATE_DES', name: 'State Directorate of Economics & Statistics (State DES)' },
+        { code: 'DSO', name: 'District Statistical Office (DSO)' },
+        { code: 'TALUK', name: 'State Sub-Divisional / Taluk Statistical Unit' }
+    ];
+
+    const cadres = [
+        "Indian Statistical Service (ISS)",
+        "Subordinate Statistical Service (SSS)",
+        "State DES Cadre"
+    ];
+
+    const designations = [
+        "Director General (DG)",
+        "Additional Director General (ADG)",
+        "Deputy Director General (DDG)",
+        "Director / Joint Director",
+        "Director",
+        "Joint Director",
+        "Deputy Director / Assistant Director",
+        "Deputy Director",
+        "Assistant Director",
+        "Assistant Director / SSO",
+        "Assistant Director / JSO",
+        "Senior Statistical Officer (SSO)",
+        "Junior Statistical Officer (JSO)",
+        "Senior Statistical Officer",
+        "Junior Statistical Officer",
+        "Deputy Director General (DDG / Regional Head)",
+        "Senior Statistical Officer (SSO / Field Supervisor)",
+        "Junior Statistical Officer (JSO / Field Investigator)",
+        "Additional Director General (ADG / Head of Academy)",
+        "Director / Joint Director (Faculty)",
+        "Deputy Director / Assistant Director (Course Coordinator)",
+        "ISS Probationer / Officer Trainee (NSSTA)",
+        "Director / Commissioner of Economics & Statistics (State Head)",
+        "Joint Director (DES)",
+        "Joint Director / Deputy Director (State DES)",
+        "District Statistical Officer (DSO)",
+        "Assistant Statistical Officer (ASO)",
+        "Assistant Statistical Officer / Statistical Officer (State)",
+        "Statistical Inspector / Research Assistant (DES)",
+        "Primary Field Investigator / Enumerator",
+        "Sub-Divisional / Taluk Statistical Officer",
+        "Statistical Compiler / Computer Operator"
+    ];
+
+    return res.json({
+        success: true,
+        departments,
+        cadres,
+        designations
+    });
 });
 
 // NSSTA TPAC Training Pathways API
