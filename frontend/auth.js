@@ -150,11 +150,16 @@ function triggerGovSSO(provider) {
     currentSSOProvider = provider || 'Parichay (MeriPehchan)';
     const modal = document.getElementById('ssoModal');
     const title = document.getElementById('ssoModalTitle');
+    const input = document.getElementById('ssoGovEmailInput');
     if (title) title.innerText = `${currentSSOProvider} Identity Gateway`;
     if (modal) {
         modal.style.display = 'flex';
+        if (input) {
+            input.value = '';
+            setTimeout(() => input.focus(), 100);
+        }
     } else {
-        const email = prompt(`🇮🇳 ${currentSSOProvider}\n\nEnter official Government Email ID (@gov.in / @nic.in / @mospi.gov.in):`, 'sunita.sharma@mospi.gov.in');
+        const email = prompt(`🇮🇳 ${currentSSOProvider}\n\nEnter official Government Email ID (@gov.in / @nic.in / @mospi.gov.in):`, '');
         if (email) selectSSOOfficer(email);
     }
 }
@@ -162,6 +167,49 @@ function triggerGovSSO(provider) {
 function closeSSOModal() {
     const modal = document.getElementById('ssoModal');
     if (modal) modal.style.display = 'none';
+}
+
+async function submitParichaySSO(event) {
+    if (event) event.preventDefault();
+    const input = document.getElementById('ssoGovEmailInput');
+    const email = input ? input.value.trim() : '';
+    if (!email) {
+        alert('Please enter your official Government Email ID (@gov.in / @nic.in / @mospi.gov.in).');
+        return;
+    }
+
+    const submitBtn = document.getElementById('ssoSubmitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Verifying with ${currentSSOProvider}...`;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/sso`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, role: 'employee', sso_provider: currentSSOProvider })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.user) {
+            localStorage.setItem('mospi_user', JSON.stringify(data.user));
+            closeSSOModal();
+            window.location.href = 'dashboard.html';
+        } else {
+            alert(`SSO Authentication Error: ${data.error || 'Identity verification failed.'}`);
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Authenticate & Retrieve Profile`;
+            }
+        }
+    } catch (e) {
+        alert(`SSO Gateway connection error: ${e.message}`);
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Authenticate & Retrieve Profile`;
+        }
+    }
 }
 
 async function selectSSOOfficer(email) {
@@ -186,16 +234,6 @@ async function selectSSOOfficer(email) {
     } catch (e) {
         alert(`SSO Gateway connection error: ${e.message}`);
     }
-}
-
-function submitCustomSSO() {
-    const input = document.getElementById('ssoCustomInput');
-    const val = input ? input.value.trim() : '';
-    if (!val) {
-        alert('Please enter a valid official Government Email ID.');
-        return;
-    }
-    selectSSOOfficer(val);
 }
 
 async function triggerGovAdminSSO() {

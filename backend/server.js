@@ -586,7 +586,17 @@ app.post('/api/auth/sso', async (req, res) => {
             });
         }
 
-        // Check if officer exists in DB
+        // Check govt_sso_directory table first (Parichay & iGOT Directory)
+        let ssoDirRecord = null;
+        try {
+            const { data: ssoData } = await supabase
+                .from('govt_sso_directory')
+                .select('*')
+                .ilike('email', cleanEmail);
+            if (ssoData && ssoData.length > 0) ssoDirRecord = ssoData[0];
+        } catch (e) {}
+
+        // Check if officer exists in employees table
         let existingUser = null;
         try {
             const { data } = await supabase
@@ -596,7 +606,32 @@ app.post('/api/auth/sso', async (req, res) => {
             if (data && data.length > 0) existingUser = data[0];
         } catch (e) {}
 
-        if (!existingUser) {
+        // If not in employees, but in govt_sso_directory, auto-provision with official record
+        if (!existingUser && ssoDirRecord) {
+            try {
+                const { data: newUser } = await supabase
+                    .from('employees')
+                    .insert([{
+                        name: ssoDirRecord.name,
+                        email: ssoDirRecord.email,
+                        password: 'GOV_SSO_AUTHENTICATED',
+                        cadre: ssoDirRecord.cadre,
+                        department: ssoDirRecord.department,
+                        designation: ssoDirRecord.designation
+                    }])
+                    .select();
+                if (newUser && newUser.length > 0) {
+                    existingUser = newUser[0];
+                    await supabase.from('officer_competencies').insert([{
+                        user_email: cleanEmail,
+                        statistical_score: 50,
+                        technical_score: 50,
+                        governance_score: 50,
+                        leadership_score: 50
+                    }]);
+                }
+            } catch (e) {}
+        } else if (!existingUser) {
             const officerName = cleanEmail.split('@')[0].replace(/[^a-zA-Z]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim() || 'Officer Trainee';
             try {
                 const { data: newUser } = await supabase
