@@ -522,6 +522,96 @@ app.get('/api/admin/igot-sync-status', async (req, res) => {
     }
 });
 
+// Predictive Capacity Planning & Future Skill Forecasting API
+app.post('/api/admin/skill-forecast', async (req, res) => {
+    const { division, horizon } = req.body;
+    const targetDept = division || 'ALL';
+    const targetHorizon = horizon || 'Q4 2026';
+
+    try {
+        const { data: officers } = await supabase.from('employees').select('id, name, email, department, designation');
+        const { data: competencies } = await supabase.from('officer_competencies').select('*');
+
+        const filteredOfficers = (officers || []).filter(o => targetDept === 'ALL' || (o.department || '').includes(targetDept));
+        const totalOfficers = filteredOfficers.length || 15;
+
+        const compMap = new Map((competencies || []).map(c => [c.user_email.toLowerCase(), c]));
+        let totalStat = 0, totalTech = 0, totalGov = 0, totalLead = 0;
+        let count = 0;
+
+        filteredOfficers.forEach(o => {
+            const c = compMap.get((o.email || '').toLowerCase()) || { statistical_score: 20, technical_score: 15, governance_score: 30, leadership_score: 25 };
+            totalStat += c.statistical_score || 0;
+            totalTech += c.technical_score || 0;
+            totalGov += c.governance_score || 0;
+            totalLead += c.leadership_score || 0;
+            count++;
+        });
+
+        const avgStat = count ? Math.round(totalStat / count) : 25;
+        const avgTech = count ? Math.round(totalTech / count) : 20;
+        const avgGov = count ? Math.round(totalGov / count) : 35;
+        const avgLead = count ? Math.round(totalLead / count) : 30;
+
+        const forecasts = [];
+
+        if (avgTech < 60) {
+            forecasts.push({
+                domain: 'Technical & Analytical Tools',
+                priority: 'CRITICAL PRIORITY',
+                badge_bg: '#fee2e2',
+                badge_color: '#b91c1c',
+                border_color: '#ef4444',
+                title: `AI/ML & Python Survey Automation (${targetDept === 'ALL' ? 'Multi-Division' : targetDept})`,
+                deficit_pct: `${100 - avgTech}% Competency Gap`,
+                projected_officers_at_risk: Math.round(totalOfficers * 0.65) || 8,
+                forecast_timeline: targetHorizon,
+                action: 'Mandate automated Python/R & CAPI Microdata certification batch on iGOT Karmayogi.'
+            });
+        }
+
+        if (avgStat < 60) {
+            forecasts.push({
+                domain: 'Statistical Sampling & Survey Design',
+                priority: 'HIGH PRIORITY',
+                badge_bg: '#fef3c7',
+                badge_color: '#b45309',
+                border_color: '#f59e0b',
+                title: `SNA 2008 & Multi-Stage Stratified Sampling (${targetDept === 'ALL' ? 'National Scope' : targetDept})`,
+                deficit_pct: `${100 - avgStat}% Competency Gap`,
+                projected_officers_at_risk: Math.round(totalOfficers * 0.55) || 7,
+                forecast_timeline: targetHorizon,
+                action: 'Deploy specialized iGOT & NSSTA curriculum for Supply-Use Tables & Industrial Production Indices.'
+            });
+        }
+
+        if (avgGov < 70) {
+            forecasts.push({
+                domain: 'Digital Governance & Compliance',
+                priority: 'MODERATE PRIORITY',
+                badge_bg: '#e0f2fe',
+                badge_color: '#0369a1',
+                border_color: '#0284c7',
+                title: `DPDP Act 2023 & Respondent Anonymization Protocols`,
+                deficit_pct: `${100 - avgGov}% Competency Gap`,
+                projected_officers_at_risk: Math.round(totalOfficers * 0.40) || 5,
+                forecast_timeline: targetHorizon,
+                action: 'Enroll officers in automated DPDP compliance pathway before upcoming national survey round.'
+            });
+        }
+
+        return res.json({
+            division: targetDept,
+            horizon: targetHorizon,
+            total_officers_audited: totalOfficers,
+            readiness_averages: { statistical: avgStat, technical: avgTech, governance: avgGov, leadership: avgLead },
+            forecasts
+        });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+});
+
 // NSSTA TPAC Training Pathways API
 app.get('/api/admin/tpac-pathways', async (req, res) => {
     try {

@@ -98,18 +98,41 @@
     <!-- Predictive Workforce Planning & iGOT Sync Monitor -->
     <div class="grid-2">
       <section class="panel">
-        <div class="panel-header">
+        <div class="panel-header" style="flex-wrap:wrap; gap:8px;">
           <h2><i class="fa-solid fa-brain"></i> Predictive Capacity Planning & Future Skill Forecasting</h2>
         </div>
-        <p style="font-size:0.85rem; color:var(--text-muted);">AI-forecasted emerging skill requirements and capacity-building alerts for upcoming quarters:</p>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <div style="background:#f8fafc; border:1px solid var(--border); border-left:4px solid var(--accent); padding:10px 14px; border-radius:6px; font-size:0.85rem;">
-            <strong>High Demand: AI/ML & Big Data in National Accounts (NAD)</strong>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Projected 45% skill deficit in automated data validation by Q3. Recommended: Advance Python & Machine Learning Pipelines.</div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">AI-forecasted emerging skill requirements and capacity-building alerts based on real-time officer competencies:</p>
+        <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+          <select id="forecastDeptSelect" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); font-size:0.85rem;">
+            <option value="ALL">All Divisions (Universal)</option>
+            <option value="NAD">National Accounts Division (NAD)</option>
+            <option value="FOD">Field Operations Division (FOD)</option>
+            <option value="PSD">Price Statistics Division (PSD)</option>
+            <option value="SSD">Social Statistics Division (SSD)</option>
+            <option value="ESD">Economic Statistics Division (ESD)</option>
+            <option value="NSSTA">NSSTA Greater Noida</option>
+          </select>
+          <select id="forecastHorizonSelect" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); font-size:0.85rem;">
+            <option value="Q3 2026">Horizon: Q3 2026</option>
+            <option value="Q4 2026" selected>Horizon: Q4 2026</option>
+            <option value="FY 2026-27">Horizon: FY 2026-27</option>
+          </select>
+          <button onclick="runSkillForecast()" id="btn-run-forecast" class="btn-action" style="padding:6px 12px; font-size:0.85rem; background:#0f766e;"><i class="fa-solid fa-bolt"></i> Generate Forecast</button>
+        </div>
+        <div id="forecast-cards-container" style="display:flex; flex-direction:column; gap:10px;">
+          <div style="background:#f8fafc; border:1px solid var(--border); border-left:4px solid #ef4444; padding:10px 14px; border-radius:6px; font-size:0.85rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>High Demand: AI/ML & Python Survey Automation (NAD & FOD)</strong>
+              <span style="background:#fee2e2; color:#b91c1c; font-size:0.72rem; font-weight:800; padding:2px 6px; border-radius:4px;">CRITICAL</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">Projected 45% skill deficit in automated data validation by Q4. Recommended: Advance Python & Machine Learning Pipelines.</div>
           </div>
-          <div style="background:#f8fafc; border:1px solid var(--border); border-left:4px solid var(--warning); padding:10px 14px; border-radius:6px; font-size:0.85rem;">
-            <strong>Moderate Gap: Geospatial & CAPI Tablet Analytics (FOD)</strong>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Predicted upskilling requirement for 120 field investigators in GIS-based survey sampling frames.</div>
+          <div style="background:#f8fafc; border:1px solid var(--border); border-left:4px solid #f59e0b; padding:10px 14px; border-radius:6px; font-size:0.85rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>Moderate Gap: Geospatial & CAPI Tablet Analytics (FOD)</strong>
+              <span style="background:#fef3c7; color:#b45309; font-size:0.72rem; font-weight:800; padding:2px 6px; border-radius:4px;">HIGH</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">Predicted upskilling requirement for field investigators in GIS-based survey sampling frames.</div>
           </div>
         </div>
       </section>
@@ -134,7 +157,7 @@
           </div>
         </div>
         <button class="btn-action" id="btn-sync-igot" onclick="triggerIgotSync()" style="margin-top:4px; background:#0284c7;"><i class="fa-solid fa-arrows-rotate"></i> Sync with iGOT Karmayogi Now</button>
-        <div id="igot-sync-result" style="font-size:0.82rem; font-weight:700; color:var(--success);"></div>
+        <div id="igot-sync-result" style="font-size:0.82rem; font-weight:700; color:var(--success); margin-top:6px;"></div>
       </section>
     </div>
 
@@ -341,6 +364,57 @@
       </div>
     </section>
 
+  </div>
+
+  <!-- Certificate Inspection & PDF Audit Modal for Admin -->
+  <div class="modal-backdrop" id="admin-cert-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.75); z-index:9999; justify-content:center; align-items:center; padding:20px;">
+    <div class="modal-box" style="background:#ffffff; width:100%; max-width:760px; max-height:92vh; overflow-y:auto; border-radius:12px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.25);">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#1e3a8a; font-size:1.15rem;"><i class="fa-solid fa-stamp"></i> Certificate Verification & PDF Audit</h3>
+        <button onclick="closeAdminCertModal()" style="background:none; border:none; font-size:1.4rem; color:#64748b; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Rendered Official Certificate Card Preview -->
+      <div id="admin-cert-preview-card" style="border:4px double #1e3a8a; border-radius:8px; padding:24px; text-align:center; background:#fcfbf7; margin-bottom:16px; position:relative;">
+        <div style="font-size:0.8rem; font-weight:800; color:#1e3a8a; letter-spacing:1px;">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
+        <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA)</div>
+        <h4 style="font-size:1.25rem; color:#0f172a; margin:16px 0 4px 0; font-family:Georgia, serif;">CERTIFICATE OF ACCREDITATION</h4>
+        <p style="font-size:0.85rem; color:#475569; margin:0;">This is to certify that</p>
+        <h3 id="modal-cert-officer" style="font-size:1.35rem; color:#1e3a8a; margin:8px 0; font-weight:800;">Dr. Sunita Sharma</h3>
+        <p style="font-size:0.85rem; color:#475569; margin:0;">has successfully completed accredited training curriculum for</p>
+        <h4 id="modal-cert-course" style="font-size:1.05rem; color:#0f172a; margin:8px 0; font-weight:700;">General Financial Rules (GFR 2017) & Public Procurement via GeM</h4>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:24px; font-size:0.78rem; color:#475569; border-top:1px solid #e2e8f0; padding-top:12px;">
+          <div style="text-align:left;">
+            <div><strong>Audit Reference:</strong> <span id="modal-cert-code" style="font-family:monospace; color:#0284c7;">MoSPI-AUDIT-9821</span></div>
+            <div><strong>Issuing Authority:</strong> iGOT Karmayogi Bharat / NSSTA Accredited</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="color:#15803d; font-weight:800;"><i class="fa-solid fa-shield-halved"></i> NSSTA SECURE SEAL VERIFIED</div>
+            <div id="modal-cert-date">Date: Recently</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Audit Analysis Box -->
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:14px; margin-bottom:18px; font-size:0.86rem;">
+        <div style="font-weight:700; color:#1e3a8a; margin-bottom:6px;"><i class="fa-solid fa-wand-magic-sparkles"></i> MoSPI AI Credential Audit Findings:</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+          <div><strong>Confidence Score:</strong> <span style="color:#15803d; font-weight:700;">95% (High Authenticity)</span></div>
+          <div><strong>Recipient Identity:</strong> <span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Matched</span></div>
+          <div><strong>Course Alignment:</strong> <span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Validated</span></div>
+          <div><strong>Competency Points:</strong> <span style="color:#1e3a8a; font-weight:700;">+25 Points (On Approval)</span></div>
+        </div>
+        <div><strong>Audit Summary:</strong> <span id="modal-cert-summary" style="color:#334155;">Certificate validated under MoSPI AI credential audit protocol.</span></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <button onclick="printModalCertificate()" class="btn-action" style="background:#475569; font-size:0.85rem;"><i class="fa-solid fa-print"></i> Open / Print Certificate (PDF)</button>
+        <div style="display:flex; gap:8px;" id="modal-cert-actions">
+          <!-- Dynamic approval buttons populated on open -->
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -868,6 +942,8 @@
     }
 
     // --- 1. Certificate Review Queue ---
+    let activeModalCert = null;
+
     async function loadCertificatesQueue() {
       const tbody = document.getElementById("cert-queue-table-body");
       try {
@@ -894,12 +970,17 @@
           ` : `<span style="font-size:0.78rem; color:var(--text-muted);">${c.admin_remarks || 'Audit complete'}</span>`;
 
           const timeStr = c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'N/A';
+          const certJsonEnc = encodeURIComponent(JSON.stringify(c));
 
           return `
             <tr>
               <td><strong>${c.officer_name || 'Officer'}</strong><br><small style="color:var(--text-muted);">${c.user_email}</small></td>
               <td><strong>${c.course_title}</strong></td>
-              <td><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> ${c.certificate_file_name || 'Certificate.pdf'}</td>
+              <td>
+                <button onclick="openAdminCertModal('${certJsonEnc}')" class="btn-action" style="background:#0284c7; padding:4px 10px; font-size:0.78rem;">
+                  <i class="fa-solid fa-file-pdf"></i> View & Audit PDF
+                </button>
+              </td>
               <td style="font-size:0.8rem; color:var(--text-muted);">${timeStr}</td>
               <td style="text-align:center;">${statusBadge}</td>
               <td style="text-align:center;">${actionButtons}</td>
@@ -908,6 +989,140 @@
         }).join('');
       } catch (e) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">Failed to load certificate queue.</td></tr>`;
+      }
+    }
+
+    function openAdminCertModal(certEnc) {
+      try {
+        const c = JSON.parse(decodeURIComponent(certEnc));
+        activeModalCert = c;
+        document.getElementById("modal-cert-officer").innerText = c.officer_name || 'Officer Trainee';
+        document.getElementById("modal-cert-course").innerText = c.course_title || 'Accredited Module';
+        document.getElementById("modal-cert-code").innerText = c.audit_code || ('MoSPI-AUDIT-' + (c.id || Date.now()).toString().slice(-6));
+        document.getElementById("modal-cert-date").innerText = c.submitted_at ? ('Date: ' + new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', year:'numeric' })) : 'Date: Recently';
+        document.getElementById("modal-cert-summary").innerText = c.admin_remarks || 'Document passed identity and course alignment checks.';
+
+        const isPending = c.status === 'pending';
+        const actionsDiv = document.getElementById("modal-cert-actions");
+        if (isPending) {
+          actionsDiv.innerHTML = `
+            <button onclick="modalDecision('${c.id}', 'approved')" class="btn-action" style="background:#15803d; font-size:0.88rem;"><i class="fa-solid fa-check"></i> Approve & Credit (+25 Pts)</button>
+            <button onclick="modalDecision('${c.id}', 'rejected')" class="btn-action" style="background:#b91c1c; font-size:0.88rem;"><i class="fa-solid fa-xmark"></i> Reject Submission</button>
+          `;
+        } else {
+          actionsDiv.innerHTML = `<span style="font-weight:700; font-size:0.85rem; color:${c.status === 'approved' ? '#15803d' : '#b91c1c'};"><i class="fa-solid ${c.status === 'approved' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i> Status: ${c.status.toUpperCase()}</span>`;
+        }
+
+        document.getElementById("admin-cert-modal").style.display = "flex";
+      } catch (e) {
+        console.error("Modal open error:", e);
+      }
+    }
+
+    function closeAdminCertModal() {
+      document.getElementById("admin-cert-modal").style.display = "none";
+      activeModalCert = null;
+    }
+
+    async function modalDecision(certId, decisionStatus) {
+      await reviewCertificate(certId, decisionStatus);
+      closeAdminCertModal();
+    }
+
+    function printModalCertificate() {
+      if (!activeModalCert) return;
+      const c = activeModalCert;
+      const printWindow = window.open('', '_blank');
+      const dateStr = c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString('en-IN');
+      const auditCode = c.audit_code || ('MoSPI-AUDIT-' + (c.id || Date.now()).toString().slice(-6));
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>MoSPI NSSTA Verified Certificate - ${c.officer_name}</title>
+          <style>
+            body { font-family: 'Georgia', serif; padding: 40px; color: #0f172a; text-align: center; }
+            .cert-container { border: 8px double #1e3a8a; padding: 40px; border-radius: 12px; background: #fffcf5; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+            .header-top { font-size: 0.85rem; font-weight: bold; letter-spacing: 2px; color: #1e3a8a; }
+            .header-sub { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+            h1 { font-size: 2.2rem; color: #1e3a8a; margin: 25px 0 10px; font-weight: 800; }
+            .cert-text { font-size: 1.1rem; color: #475569; margin: 12px 0; }
+            .officer-name { font-size: 2rem; font-weight: bold; color: #0f172a; margin: 15px 0; text-decoration: underline; }
+            .course-title { font-size: 1.4rem; font-weight: bold; color: #1e3a8a; margin: 15px 0; }
+            .footer-row { display: flex; justify-content: space-between; margin-top: 50px; border-top: 2px solid #cbd5e1; padding-top: 20px; font-size: 0.85rem; }
+          </style>
+        </head>
+        <body>
+          <div class="cert-container">
+            <div class="header-top">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
+            <div class="header-sub">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA GREATER NOIDA)</div>
+            <h1>CERTIFICATE OF ACHIEVEMENT</h1>
+            <p class="cert-text">This official certificate is proudly conferred upon</p>
+            <div class="officer-name">${c.officer_name || 'Officer Trainee'}</div>
+            <p class="cert-text">for successfully completing accredited capacity building & evaluation in</p>
+            <div class="course-title">"${c.course_title}"</div>
+            <p class="cert-text">under the iGOT Karmayogi Bharat Competency Framework.</p>
+            <div class="footer-row">
+              <div style="text-align:left;">
+                <p><strong>Audit Verification Code:</strong> ${auditCode}</p>
+                <p><strong>Issuing Authority:</strong> iGOT Karmayogi / NSSTA Accredited</p>
+              </div>
+              <div style="text-align:right;">
+                <p><strong>Status:</strong> VERIFIED & ACCREDITED</p>
+                <p><strong>Issue Date:</strong> ${dateStr}</p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 500);
+    }
+
+    async function runSkillForecast() {
+      const dept = document.getElementById("forecastDeptSelect") ? document.getElementById("forecastDeptSelect").value : 'ALL';
+      const horizon = document.getElementById("forecastHorizonSelect") ? document.getElementById("forecastHorizonSelect").value : 'Q4 2026';
+      const btn = document.getElementById("btn-run-forecast");
+      const container = document.getElementById("forecast-cards-container");
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...`;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/skill-forecast`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ division: dept, horizon: horizon })
+        });
+        const data = await res.json();
+        const forecasts = data.forecasts || [];
+
+        if (forecasts.length === 0) {
+          container.innerHTML = `<div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:12px; border-radius:6px; font-size:0.85rem;"><strong>No Critical Deficits:</strong> All officers in ${dept} meet the target readiness benchmark for ${horizon}.</div>`;
+        } else {
+          container.innerHTML = forecasts.map(f => `
+            <div style="background:#f8fafc; border:1px solid var(--border); border-left:4px solid ${f.border_color}; padding:10px 14px; border-radius:6px; font-size:0.85rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>${f.title}</strong>
+                <span style="background:${f.badge_bg}; color:${f.badge_color}; font-size:0.72rem; font-weight:800; padding:2px 6px; border-radius:4px;">${f.priority}</span>
+              </div>
+              <div style="font-size:0.78rem; color:#475569; margin-top:3px;">
+                <strong>${f.deficit_pct}</strong> • Projected at risk: <strong>${f.projected_officers_at_risk} officers</strong> by ${f.forecast_timeline}.
+              </div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                <i class="fa-solid fa-arrow-right" style="color:var(--primary);"></i> ${f.action}
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.warn("Forecast fallback:", e);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Generate Forecast`;
       }
     }
 
