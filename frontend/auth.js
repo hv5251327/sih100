@@ -144,34 +144,58 @@ async function submitRegistration() {
     }
 }
 
-async function triggerGovSSO(provider, targetEmail) {
-    const defaultEmail = targetEmail || (document.getElementById('email') ? document.getElementById('email').value.trim() : '') || 'sunita.sharma@mospi.gov.in';
+let currentSSOProvider = 'Parichay (MeriPehchan)';
 
-    let authEmail = defaultEmail;
-    if (!authEmail || authEmail === 'e.g. sunita.sharma@mospi.gov.in') {
-        const choice = prompt(`🇮🇳 Government Single Sign-On Gateway (${provider})\n\nEnter your official Government Email ID (@gov.in / @nic.in / @mospi.gov.in):\n\n(Default: sunita.sharma@mospi.gov.in)`, 'sunita.sharma@mospi.gov.in');
-        if (!choice) return;
-        authEmail = choice.trim();
+function triggerGovSSO(provider) {
+    currentSSOProvider = provider || 'Parichay (MeriPehchan)';
+    const modal = document.getElementById('ssoModal');
+    const title = document.getElementById('ssoModalTitle');
+    if (title) title.innerText = `${currentSSOProvider} Identity Gateway`;
+    if (modal) {
+        modal.style.display = 'flex';
+    } else {
+        const email = prompt(`🇮🇳 ${currentSSOProvider}\n\nEnter official Government Email ID (@gov.in / @nic.in / @mospi.gov.in):`, 'sunita.sharma@mospi.gov.in');
+        if (email) selectSSOOfficer(email);
     }
+}
+
+function closeSSOModal() {
+    const modal = document.getElementById('ssoModal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function selectSSOOfficer(email) {
+    if (!email) return;
+    const cleanEmail = email.trim();
+    closeSSOModal();
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/auth/sso`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: authEmail, role: 'employee', sso_provider: provider })
+            body: JSON.stringify({ email: cleanEmail, role: 'employee', sso_provider: currentSSOProvider })
         });
         const data = await res.json();
 
         if (res.ok && data.user) {
             localStorage.setItem('mospi_user', JSON.stringify(data.user));
-            alert(`✅ ${provider} Identity Verified!\n\n• Officer: ${data.user.name}\n• Cadre: ${data.user.cadre}\n• Division: ${data.user.department}\n• Session: Verified & CERT-In Compliant\n\nRedirecting to Officer Competency Dashboard...`);
             window.location.href = 'dashboard.html';
         } else {
-            alert(`SSO Error: ${data.error || 'Authentication failed'}`);
+            alert(`SSO Authentication Error: ${data.error || 'Identity verification failed'}`);
         }
     } catch (e) {
         alert(`SSO Gateway connection error: ${e.message}`);
     }
+}
+
+function submitCustomSSO() {
+    const input = document.getElementById('ssoCustomInput');
+    const val = input ? input.value.trim() : '';
+    if (!val) {
+        alert('Please enter a valid official Government Email ID.');
+        return;
+    }
+    selectSSOOfficer(val);
 }
 
 async function triggerGovAdminSSO() {

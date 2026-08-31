@@ -47,6 +47,103 @@
         <p class="footer-text">New Employee? <a href="register.html">Register here</a></p>
         <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
     </div>
+
+    <!-- Parichay / iGOT SSO Identity Picker Modal -->
+    <div id="ssoModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.85); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(4px); padding:20px;">
+        <div style="background:#ffffff; border-radius:12px; max-width:560px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); border:1px solid #e2e8f0; padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="background:#1e3a8a; color:#fff; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.1rem;"><i class="fa-solid fa-id-card"></i></div>
+                    <div>
+                        <h3 id="ssoModalTitle" style="font-size:1.05rem; font-weight:800; color:#1e293b; margin:0;">Parichay (MeriPehchan) National SSO</h3>
+                        <p style="font-size:0.75rem; color:#64748b; margin:0;">Government of India Single Sign-On Gateway</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeSSOModal()" style="background:none; border:none; font-size:1.3rem; color:#94a3b8; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p style="font-size:0.82rem; color:#475569; margin-bottom:14px;"><strong>Select your official civil service profile</strong> to authenticate directly from the national database without creating separate passwords:</p>
+
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+                <!-- Profile 1: Dr. Sunita Sharma -->
+                <div onclick="selectSSOOfficer('sunita.sharma@mospi.gov.in')" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#0284c7'; this.style.background='#f0f9ff';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:34px; height:34px; border-radius:50%; background:#0284c7; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.85rem;">SS</div>
+                            <div>
+                                <div style="font-weight:700; font-size:0.88rem; color:#0f172a;">Dr. Sunita Sharma</div>
+                                <div style="font-size:0.75rem; color:#0284c7; font-weight:600;">sunita.sharma@mospi.gov.in</div>
+                            </div>
+                        </div>
+                        <span style="background:#dbeafe; color:#1e40af; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:4px;">ISS • Director</span>
+                    </div>
+                    <div style="font-size:0.74rem; color:#64748b; margin-top:6px; padding-left:44px;">
+                        Division: <strong>National Accounts (NAD)</strong> • 2 Verified Modules Synced
+                    </div>
+                </div>
+
+                <!-- Profile 2: Shri Rajesh Verma -->
+                <div onclick="selectSSOOfficer('rajesh.verma@mospi.gov.in')" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#0284c7'; this.style.background='#f0f9ff';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:34px; height:34px; border-radius:50%; background:#10b981; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.85rem;">RV</div>
+                            <div>
+                                <div style="font-weight:700; font-size:0.88rem; color:#0f172a;">Shri Rajesh Verma</div>
+                                <div style="font-size:0.75rem; color:#059669; font-weight:600;">rajesh.verma@mospi.gov.in</div>
+                            </div>
+                        </div>
+                        <span style="background:#d1fae5; color:#065f46; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:4px;">SSS • SSO</span>
+                    </div>
+                    <div style="font-size:0.74rem; color:#64748b; margin-top:6px; padding-left:44px;">
+                        Division: <strong>Field Operations (FOD)</strong> • 1 Verified Module Synced
+                    </div>
+                </div>
+
+                <!-- Profile 3: Smt. Ananya Sen -->
+                <div onclick="selectSSOOfficer('ananya.sen@mospi.gov.in')" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#0284c7'; this.style.background='#f0f9ff';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:34px; height:34px; border-radius:50%; background:#f59e0b; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.85rem;">AS</div>
+                            <div>
+                                <div style="font-weight:700; font-size:0.88rem; color:#0f172a;">Smt. Ananya Sen</div>
+                                <div style="font-size:0.75rem; color:#d97706; font-weight:600;">ananya.sen@mospi.gov.in</div>
+                            </div>
+                        </div>
+                        <span style="background:#fef3c7; color:#92400e; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:4px;">State DES • Joint Director</span>
+                    </div>
+                    <div style="font-size:0.74rem; color:#64748b; margin-top:6px; padding-left:44px;">
+                        Division: <strong>Economic Statistics (ESD)</strong> • 1 Verified Module Synced
+                    </div>
+                </div>
+
+                <!-- Profile 4: Shri Amit Meena -->
+                <div onclick="selectSSOOfficer('amit.meena@mospi.gov.in')" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#0284c7'; this.style.background='#f0f9ff';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:34px; height:34px; border-radius:50%; background:#8b5cf6; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.85rem;">AM</div>
+                            <div>
+                                <div style="font-weight:700; font-size:0.88rem; color:#0f172a;">Shri Amit Meena</div>
+                                <div style="font-size:0.75rem; color:#7c3aed; font-weight:600;">amit.meena@mospi.gov.in</div>
+                            </div>
+                        </div>
+                        <span style="background:#ede9fe; color:#5b21b6; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:4px;">ISS • Assistant Director</span>
+                    </div>
+                    <div style="font-size:0.74rem; color:#64748b; margin-top:6px; padding-left:44px;">
+                        Division: <strong>Price Statistics (PSD)</strong> • 1 Verified Module Synced
+                    </div>
+                </div>
+            </div>
+
+            <div style="border-top:1px solid #e2e8f0; padding-top:14px;">
+                <label style="font-size:0.78rem; font-weight:700; color:#334155; display:block; margin-bottom:6px;">Or Enter Official NIC / Gov Email ID:</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="email" id="ssoCustomInput" placeholder="e.g. officer.iss@nic.in" style="flex:1; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
+                    <button type="button" onclick="submitCustomSSO()" style="background:#1e3a8a; color:#fff; border:none; border-radius:6px; padding:8px 14px; font-size:0.82rem; font-weight:700; cursor:pointer;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="auth.js"></script>
 </body>
 </html>
