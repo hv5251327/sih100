@@ -387,6 +387,15 @@
       }
       try {
         currentUser = JSON.parse(stored);
+
+        // Enforce 8-hour CERT-In civil service session expiration
+        if (currentUser.session_expiry && new Date().getTime() > new Date(currentUser.session_expiry).getTime()) {
+          alert('⚠️ Security Session Expired: Your 8-hour official civil service session token has expired in compliance with CERT-In security directives. Please re-authenticate.');
+          localStorage.removeItem('mospi_user');
+          window.location.href = 'employee-login.html';
+          return;
+        }
+
         document.getElementById("officer-name-display").innerText = currentUser.name || 'Officer Trainee';
         document.getElementById("disp-officer-name").innerText = currentUser.name || 'N/A';
         document.getElementById("disp-officer-email").innerText = currentUser.email || 'N/A';
