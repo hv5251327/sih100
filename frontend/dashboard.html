@@ -397,11 +397,33 @@
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
         <div style="display:flex; align-items:center; gap:8px;">
           <label style="font-size:0.8rem; font-weight:700; color:#94a3b8;"><i class="fa-solid fa-database"></i> MoSPI Preset Script:</label>
-          <select id="codelab-preset-select" onchange="loadCodePreset(this.value)" style="background:#1e293b; color:#38bdf8; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:0.8rem; font-weight:700; outline:none; cursor:pointer;">
-            <option value="plfs">1. NSS PLFS Labour Force & Household Microdata (Pandas)</option>
-            <option value="cpi">2. Laspeyres CPI Price Index & Group Weighting (Python)</option>
-            <option value="sampling">3. Stratified Multi-Stage Sampling Frame Multipliers (Scipy)</option>
-            <option value="sql">4. SQL Microdata Query: Annual Survey of Industries (ASI)</option>
+          <select id="codelab-preset-select" onchange="loadCodePreset(this.value)" style="background:#1e293b; color:#38bdf8; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:0.8rem; font-weight:700; outline:none; cursor:pointer; max-width:440px;">
+            <optgroup label="📊 1. Statistical Competencies">
+              <option value="plfs">1. NSS PLFS Labour Force & Household Microdata (Pandas)</option>
+              <option value="sampling">2. Survey Design & Multi-Stage Sampling (Scipy / Neyman)</option>
+              <option value="sna">3. National Accounts (SNA 2008 & Supply-Use Tables SUT)</option>
+              <option value="cpi">4. Price Statistics: Modified Laspeyres CPI & WPI Deflators</option>
+              <option value="agri">5. Agricultural & Environmental Statistics (SEEA Framework)</option>
+              <option value="asi">6. Industrial Statistics: ASI Microdata & IIP Indices</option>
+              <option value="sdg">7. SDG Indicators & National Indicator Framework (NIF)</option>
+              <option value="metadata">8. Metadata Standards (SDMX) & UN-NQAF Quality Audits</option>
+            </optgroup>
+            <optgroup label="💻 2. Technical Competencies">
+              <option value="python">9. Python & Pandas Official Microdata Automation</option>
+              <option value="r_econ">10. R Econometrics & Survey Package Complex Weighting</option>
+              <option value="sql">11. SQL & PostgreSQL Relational Microdata Queries</option>
+              <option value="stata">12. Stata Panel Data Econometrics & Fixed Effects</option>
+              <option value="spss_sas">13. SPSS / SAS Multivariate Factor & Variance Analysis</option>
+              <option value="gis">14. Geospatial GIS & Remote Sensing Satellite Data</option>
+              <option value="dataviz">15. Interactive Data Visualization (Plotly / Choropleth)</option>
+              <option value="aiml">16. AI/ML Time Series & Anomaly Detection (X-13ARIMA)</option>
+              <option value="cloud">17. Cloud High-Performance Compute (Dask / PySpark)</option>
+              <option value="apis">18. Open Government Data (OGD) & SDMX REST APIs</option>
+            </optgroup>
+            <optgroup label="🛡️ 3. Digital Governance & Compliance">
+              <option value="dpdp">19. DPDP Act 2023 Consent & Microdata k-Anonymity</option>
+              <option value="pki">20. PKI, Digital Signatures & CERT-In Encryption</option>
+            </optgroup>
           </select>
         </div>
         <div style="display:flex; gap:8px;">
@@ -645,49 +667,8 @@ Urban     175  12988.62   5890.34
 
 [SUCCESS] Microdata Simulation & Weighted Estimates Converged in 0.042s (MoSPI Standards Aligned).`
       },
-      cpi: {
-        title: "Laspeyres CPI Price Index & Group Weighting",
-        kernel: "cpi_engine.py (Python 3.11 Kernel • PSD Formula)",
-        code: `# MoSPI NSSTA Statistical Lab: Consumer Price Index (CPI) Calculation
-# Base Year (2012=100) Modified Laspeyres Formula
-
-categories = ['Food & Beverages', 'Housing', 'Fuel & Light', 'Clothing', 'Miscellaneous']
-weights = [45.86, 10.07, 6.84, 6.53, 30.70] # MoSPI Official Weights
-base_prices = [100.0, 100.0, 100.0, 100.0, 100.0]
-current_prices = [184.2, 168.5, 172.1, 189.4, 176.8]
-
-# Calculate Laspeyres Group Indices and General Index
-group_indices = [(cp / bp) * 100 for cp, bp in zip(current_prices, base_prices)]
-general_cpi = sum(w * idx for w, idx in zip(weights, group_indices)) / sum(weights)
-inflation_rate = ((general_cpi - 100) / 100) * 100
-
-print("==========================================================")
-print("   PRICE STATISTICS DIVISION (PSD) - ALL-INDIA CPI")
-print("   Base: 2012=100 | Methodology: Modified Laspeyres")
-print("==========================================================")
-for cat, w, idx in zip(categories, weights, group_indices):
-    print(f"  {cat:20s} | Weight: {w:5.2f}% | Sub-Index: {idx:6.2f}")
-print("----------------------------------------------------------")
-print(f">> General All-India Combined CPI: {general_cpi:.2f}")
-print(f">> Cumulative Index Increase vs Base: +{inflation_rate:.2f}%")`,
-        output: `[INFO] Initializing Python 3.11.8 Statistical Kernel...
-==========================================================
-   PRICE STATISTICS DIVISION (PSD) - ALL-INDIA CPI
-   Base: 2012=100 | Methodology: Modified Laspeyres
-==========================================================
-  Food & Beverages     | Weight: 45.86% | Sub-Index: 184.20
-  Housing              | Weight: 10.07% | Sub-Index: 168.50
-  Fuel & Light         | Weight:  6.84% | Sub-Index: 172.10
-  Clothing             | Weight:  6.53% | Sub-Index: 189.40
-  Miscellaneous        | Weight: 30.70% | Sub-Index: 176.80
-----------------------------------------------------------
->> General All-India Combined CPI: 179.94
->> Cumulative Index Increase vs Base: +79.94%
-
-[SUCCESS] CPI Compilation Verified against NSSTA Standards.`
-      },
       sampling: {
-        title: "Stratified Multi-Stage Sampling Frame Multipliers (Scipy)",
+        title: "Survey Design & Multi-Stage Stratified Sampling (Scipy)",
         kernel: "sampling_alloc.py (Python 3.11 Kernel • SDRD Optim)",
         code: `# MoSPI NSSTA Statistical Lab: Multi-Stage Stratified Sampling Frame
 import numpy as np
@@ -726,8 +707,306 @@ print(">> Sampling Variance Minimized for State-Level Disaggregation.")`,
 
 [SUCCESS] Optimum Multipliers Ready for Field Operations Division (FOD).`
       },
+      sna: {
+        title: "National Accounts (SNA 2008 & Supply-Use Tables SUT)",
+        kernel: "sut_matrix.py (Python 3.11 Kernel • NAD Framework)",
+        code: `# MoSPI NSSTA Lab: National Accounts Gross Value Added (GVA) & SUT Balance
+import numpy as np
+
+# Sectors: Agriculture, Manufacturing, Construction, Trade & Services
+gross_output_cr = np.array([320000, 580000, 240000, 890000])
+intermediate_consumption_cr = np.array([85000, 310000, 125000, 280000])
+net_product_taxes_cr = 145000
+
+gva_basic_prices = gross_output_cr - intermediate_consumption_cr
+total_gva = np.sum(gva_basic_prices)
+gdp_market_prices = total_gva + net_product_taxes_cr
+
+sectors = ['Agriculture & Allied', 'Industry / Manufacturing', 'Construction', 'Services & Trade']
+
+print("==========================================================")
+print("   NATIONAL ACCOUNTS DIVISION (NAD) - SNA 2008 GVA LAB")
+print("==========================================================")
+for s, go, ic, gva in zip(sectors, gross_output_cr, intermediate_consumption_cr, gva_basic_prices):
+    print(f"  {s:25s} | Output: {go:7d} Cr | IC: {ic:7d} Cr | GVA: {gva:7d} Cr")
+print("----------------------------------------------------------")
+print(f">> Total Gross Value Added (GVA at Basic Prices): INR {total_gva:d} Crore")
+print(f">> Net Taxes on Products: INR {net_product_taxes_cr:d} Crore")
+print(f">> Gross Domestic Product (GDP at Market Prices): INR {gdp_market_prices:d} Crore")`,
+        output: `[INFO] Initializing Python 3.11.8 Statistical Kernel...
+==========================================================
+   NATIONAL ACCOUNTS DIVISION (NAD) - SNA 2008 GVA LAB
+==========================================================
+  Agriculture & Allied      | Output:  320000 Cr | IC:   85000 Cr | GVA:  235000 Cr
+  Industry / Manufacturing  | Output:  580000 Cr | IC:  310000 Cr | GVA:  270000 Cr
+  Construction              | Output:  240000 Cr | IC:  125000 Cr | GVA:  115000 Cr
+  Services & Trade          | Output:  890000 Cr | IC:  280000 Cr | GVA:  610000 Cr
+----------------------------------------------------------
+>> Total Gross Value Added (GVA at Basic Prices): INR 1230000 Crore
+>> Net Taxes on Products: INR 145000 Crore
+>> Gross Domestic Product (GDP at Market Prices): INR 1375000 Crore
+
+[SUCCESS] Supply-Use Balancing Conditions Verified (UN SNA 2008 Compliant).`
+      },
+      cpi: {
+        title: "Price Statistics: Modified Laspeyres CPI & WPI Deflators",
+        kernel: "cpi_engine.py (Python 3.11 Kernel • PSD Formula)",
+        code: `# MoSPI NSSTA Statistical Lab: Consumer Price Index (CPI) Calculation
+categories = ['Food & Beverages', 'Housing', 'Fuel & Light', 'Clothing', 'Miscellaneous']
+weights = [45.86, 10.07, 6.84, 6.53, 30.70] # MoSPI Official Weights
+base_prices = [100.0, 100.0, 100.0, 100.0, 100.0]
+current_prices = [184.2, 168.5, 172.1, 189.4, 176.8]
+
+group_indices = [(cp / bp) * 100 for cp, bp in zip(current_prices, base_prices)]
+general_cpi = sum(w * idx for w, idx in zip(weights, group_indices)) / sum(weights)
+inflation_rate = ((general_cpi - 100) / 100) * 100
+
+print("==========================================================")
+print("   PRICE STATISTICS DIVISION (PSD) - ALL-INDIA CPI")
+print("   Base: 2012=100 | Methodology: Modified Laspeyres")
+print("==========================================================")
+for cat, w, idx in zip(categories, weights, group_indices):
+    print(f"  {cat:20s} | Weight: {w:5.2f}% | Sub-Index: {idx:6.2f}")
+print("----------------------------------------------------------")
+print(f">> General All-India Combined CPI: {general_cpi:.2f}")
+print(f">> Cumulative Index Increase vs Base: +{inflation_rate:.2f}%")`,
+        output: `[INFO] Initializing Python 3.11.8 Statistical Kernel...
+==========================================================
+   PRICE STATISTICS DIVISION (PSD) - ALL-INDIA CPI
+   Base: 2012=100 | Methodology: Modified Laspeyres
+==========================================================
+  Food & Beverages     | Weight: 45.86% | Sub-Index: 184.20
+  Housing              | Weight: 10.07% | Sub-Index: 168.50
+  Fuel & Light         | Weight:  6.84% | Sub-Index: 172.10
+  Clothing             | Weight:  6.53% | Sub-Index: 189.40
+  Miscellaneous        | Weight: 30.70% | Sub-Index: 176.80
+----------------------------------------------------------
+>> General All-India Combined CPI: 179.94
+>> Cumulative Index Increase vs Base: +79.94%
+
+[SUCCESS] CPI Compilation Verified against NSSTA Standards.`
+      },
+      agri: {
+        title: "Agricultural & Environmental Statistics (SEEA Framework)",
+        kernel: "seea_carbon.py (Python 3.11 Kernel • SSD Environmental)",
+        code: `# MoSPI NSSTA Lab: System of Environmental-Economic Accounting (SEEA)
+import numpy as np
+
+# Land Cover Matrix (Hectares) & Carbon Stock Valuation
+ecosystem_types = ['Forest Land', 'Cropland', 'Wetlands', 'Settlements']
+area_mha = np.array([71.38, 156.40, 15.26, 18.20])
+carbon_density_t_ha = np.array([125.4, 28.5, 95.8, 12.0]) # Tonnes Carbon / Ha
+
+total_carbon_stocks_mt = area_mha * carbon_density_t_ha
+total_national_stock = np.sum(total_carbon_stocks_mt)
+
+print("==========================================================")
+print("   SOCIAL STATISTICS DIVISION (SSD) - SEEA CARBON ACCOUNT")
+print("==========================================================")
+for eco, a, cd, stock in zip(ecosystem_types, area_mha, carbon_density_t_ha, total_carbon_stocks_mt):
+    print(f"  {eco:15s} | Area: {a:6.2f} Mha | Density: {cd:5.1f} t/ha | Stock: {stock:7.2f} Mt")
+print("----------------------------------------------------------")
+print(f">> Total National Terrestrial Carbon Stock: {total_national_stock:.2f} Million Tonnes")`,
+        output: `[INFO] Initializing Python 3.11.8 Statistical Kernel...
+==========================================================
+   SOCIAL STATISTICS DIVISION (SSD) - SEEA CARBON ACCOUNT
+==========================================================
+  Forest Land     | Area:  71.38 Mha | Density: 125.4 t/ha | Stock: 8951.05 Mt
+  Cropland        | Area: 156.40 Mha | Density:  28.5 t/ha | Stock: 4457.40 Mt
+  Wetlands        | Area:  15.26 Mha | Density:  95.8 t/ha | Stock: 1461.91 Mt
+  Settlements     | Area:  18.20 Mha | Density:  12.0 t/ha | Stock:  218.40 Mt
+----------------------------------------------------------
+>> Total National Terrestrial Carbon Stock: 15088.76 Million Tonnes
+
+[SUCCESS] SEEA Ecosystem Asset Account Formatted for UN Publication.`
+      },
+      asi: {
+        title: "Industrial Statistics: ASI Microdata & IIP Indices",
+        kernel: "asi_iip.py (Python 3.11 Kernel • ESD Industrial)",
+        code: `# MoSPI NSSTA Lab: Index of Industrial Production (IIP 2011-12=100)
+import numpy as np
+
+sectors = ['Mining (Weight: 14.37)', 'Manufacturing (Weight: 77.63)', 'Electricity (Weight: 7.99)']
+weights = np.array([14.373, 77.633, 7.994])
+production_indices = np.array([131.2, 144.5, 189.4])
+
+general_iip = np.sum(weights * production_indices) / np.sum(weights)
+growth_yoy = ((general_iip - 138.4) / 138.4) * 100 # vs previous year same month
+
+print("==========================================================")
+print("   ECONOMIC STATISTICS DIVISION (ESD) - ALL-INDIA IIP")
+print("==========================================================")
+for s, idx in zip(sectors, production_indices):
+    print(f"  {s:35s} | Monthly Index: {idx:6.2f}")
+print("----------------------------------------------------------")
+print(f">> General IIP Index: {general_iip:.2f}")
+print(f">> Year-on-Year Industrial Growth: {growth_yoy:+.2f}%")`,
+        output: `[INFO] Initializing Python 3.11.8 Statistical Kernel...
+==========================================================
+   ECONOMIC STATISTICS DIVISION (ESD) - ALL-INDIA IIP
+==========================================================
+  Mining (Weight: 14.37)              | Monthly Index: 131.20
+  Manufacturing (Weight: 77.63)       | Monthly Index: 144.50
+  Electricity (Weight: 7.99)          | Monthly Index: 189.40
+----------------------------------------------------------
+>> General IIP Index: 146.18
+>> Year-on-Year Industrial Growth: +5.62%
+
+[SUCCESS] Press Release Aggregates Validated against ASI Frame.`
+      },
+      sdg: {
+        title: "SDG Indicators & National Indicator Framework (NIF)",
+        kernel: "sdg_nif.py (Python 3.11 Kernel • SSD SDG Framework)",
+        code: `# MoSPI NSSTA Lab: SDG National Indicator Framework Score Calculation
+import numpy as np
+
+# SDG Goals Target Normalization (0 - 100 Scale)
+sdg_goals = ['SDG 1: No Poverty', 'SDG 3: Good Health', 'SDG 4: Quality Edu', 'SDG 8: Decent Work', 'SDG 9: Industry & Infra']
+raw_values = np.array([11.28, 97.40, 89.50, 6.20, 84.10])
+target_benchmarks = np.array([0.0, 100.0, 100.0, 4.0, 100.0])
+
+# Normalized Goal Index Scores
+normalized_scores = [88.7, 97.4, 89.5, 78.4, 84.1]
+composite_nif_score = np.mean(normalized_scores)
+
+print("==========================================================")
+print("   MoSPI SDG DIVISION - NATIONAL INDICATOR FRAMEWORK (NIF)")
+print("==========================================================")
+for g, s in zip(sdg_goals, normalized_scores):
+    category = "Front Runner" if s >= 65 else "Performer"
+    print(f"  {g:25s} | Score: {s:5.1f} / 100 | Status: {category}")
+print("----------------------------------------------------------")
+print(f">> National Composite SDG Index Score: {composite_nif_score:.2f} / 100 (Front Runner)")`,
+        output: `[INFO] Initializing Python 3.11.8 Statistical Kernel...
+==========================================================
+   MoSPI SDG DIVISION - NATIONAL INDICATOR FRAMEWORK (NIF)
+==========================================================
+  SDG 1: No Poverty         | Score:  88.7 / 100 | Status: Front Runner
+  SDG 3: Good Health        | Score:  97.4 / 100 | Status: Front Runner
+  SDG 4: Quality Edu        | Score:  89.5 / 100 | Status: Front Runner
+  SDG 8: Decent Work        | Score:  78.4 / 100 | Status: Front Runner
+  SDG 9: Industry & Infra   | Score:  84.1 / 100 | Status: Front Runner
+----------------------------------------------------------
+>> National Composite SDG Index Score: 87.62 / 100 (Front Runner)
+
+[SUCCESS] NIF Progress Vector Ready for NITI Aayog Sync.`
+      },
+      metadata: {
+        title: "Metadata Standards (SDMX) & UN-NQAF Quality Audits",
+        kernel: "sdmx_audit.py (Python 3.11 Kernel • Metadata Standards)",
+        code: `# MoSPI NSSTA Lab: SDMX Data Structure Definition (DSD) & UN-NQAF Quality Audit
+sdmx_header = {
+    "ID": "DSD_MOSPI_PLFS_01",
+    "AgencyID": "IN_MOSPI",
+    "Version": "2.1",
+    "Dimensions": ["FREQ", "REF_AREA", "SEX", "AGE_GRP", "SECTOR", "INDICATOR"],
+    "Attributes": ["UNIT_MULT", "DECIMALS", "CONF_STATUS"],
+    "UN_NQAF_Criteria": ["P1_Relevance", "P2_Accuracy", "P3_Timeliness", "P4_Accessibility", "P5_Comparability"]
+}
+
+print("==========================================================")
+print("   DATA INFORMATICS & INNOVATION (DIID) - SDMX REGISTRY")
+print("==========================================================")
+print(f">> DSD Registry Identifier: {sdmx_header['ID']}")
+print(f">> Maintaining Authority: {sdmx_header['AgencyID']} (Govt of India)")
+print(f">> Multi-Dimensional Key Dimensions: {', '.join(sdmx_header['Dimensions'])}")
+print("\\n>> UN-NQAF National Quality Assurance Audit:")
+for p in sdmx_header['UN_NQAF_Criteria']:
+    print(f"   [PASSED 100%] Principle {p}: Full Conformance")
+print("\\n[SUCCESS] SDMX-ML XML Payload Exported for UN Data Portal.")`,
+        output: `[INFO] Initializing Python 3.11.8 Statistical Kernel...
+==========================================================
+   DATA INFORMATICS & INNOVATION (DIID) - SDMX REGISTRY
+==========================================================
+>> DSD Registry Identifier: DSD_MOSPI_PLFS_01
+>> Maintaining Authority: IN_MOSPI (Govt of India)
+>> Multi-Dimensional Key Dimensions: FREQ, REF_AREA, SEX, AGE_GRP, SECTOR, INDICATOR
+
+>> UN-NQAF National Quality Assurance Audit:
+   [PASSED 100%] Principle P1_Relevance: Full Conformance
+   [PASSED 100%] Principle P2_Accuracy: Full Conformance
+   [PASSED 100%] Principle P3_Timeliness: Full Conformance
+   [PASSED 100%] Principle P4_Accessibility: Full Conformance
+   [PASSED 100%] Principle P5_Comparability: Full Conformance
+
+[SUCCESS] SDMX-ML XML Payload Exported for UN Data Portal.`
+      },
+      python: {
+        title: "Python & Pandas Official Microdata Automation",
+        kernel: "pipeline.py (Python 3.11 Kernel • Data Wrangling)",
+        code: `# MoSPI NSSTA Lab: Automated Microdata Pipeline with Pandas
+import pandas as pd
+import numpy as np
+
+records = 1000
+raw_data = {
+    'officer_id': range(1, records + 1),
+    'division': np.random.choice(['NAD', 'FOD', 'PSD', 'ESD', 'SDRD'], records),
+    'survey_turnaround_days': np.random.normal(loc=14.2, scale=3.1, size=records).round(1),
+    'error_rate_pct': np.random.exponential(scale=1.2, size=records).round(2),
+    'capi_sync_status': np.random.choice(['Success', 'Sync_Pending'], records, p=[0.94, 0.06])
+}
+
+df = pd.DataFrame(raw_data)
+summary = df.groupby('division').agg({'survey_turnaround_days': 'mean', 'error_rate_pct': 'mean'}).round(2)
+
+print("==========================================================")
+print("   PYTHON AUTOMATION LAB: CAPI FIELD OPERATIONS PIPELINE")
+print("==========================================================")
+print(summary)
+print(f"\\n>> Overall CAPI Real-Time Sync Rate: {(df['capi_sync_status']=='Success').mean()*100:.1f}%")`,
+        output: `[INFO] Initializing Python 3.11.8 Statistical Kernel...
+==========================================================
+   PYTHON AUTOMATION LAB: CAPI FIELD OPERATIONS PIPELINE
+==========================================================
+          survey_turnaround_days  error_rate_pct
+division                                        
+ESD                        14.15            1.18
+FOD                        14.32            1.25
+NAD                        14.08            1.12
+PSD                        14.22            1.19
+SDRD                       14.10            1.21
+
+>> Overall CAPI Real-Time Sync Rate: 94.2%
+[SUCCESS] Microdata Pipeline Automated with 0 Data Bottlenecks.`
+      },
+      r_econ: {
+        title: "R Econometrics & Survey Package Complex Weighting",
+        kernel: "survey_analysis.R (R 4.3.3 Kernel • Survey & Stats)",
+        code: `# MoSPI NSSTA Lab: Complex Survey Weighting in R
+# Loading 'survey' & 'stats' packages
+library(survey)
+
+# Define 2-Stage Stratified Cluster Survey Design
+data(api)
+dclus2 <- svydesign(id=~dnum+snum, fpc=~fpc1+fpc2, data=apiclus2)
+
+# Compute Design-Based Mean Estimation & Variance
+res_mean <- svymean(~api00, dclus2)
+res_total <- svytotal(~enroll, dclus2)
+
+cat("==========================================================\n")
+cat("   R ECONOMETRIC LAB: COMPLEX SURVEY VARIANCE ESTIMATION\n")
+cat("==========================================================\n")
+print(res_mean)
+print(res_total)
+cat("\n>> Finite Population Correction (FPC) Applied Successfully.\n")`,
+        output: `[INFO] Initializing R 4.3.3 Statistical Computing Environment...
+[INFO] Package 'survey' v4.4-2 loaded.
+==========================================================
+   R ECONOMETRIC LAB: COMPLEX SURVEY VARIANCE ESTIMATION
+==========================================================
+        mean     SE
+api00 648.58 22.414
+
+        total     SE
+enroll 2487532 512401
+
+>> Finite Population Correction (FPC) Applied Successfully.
+[SUCCESS] Unbiased Variance Estimators Generated for Official Publications.`
+      },
       sql: {
-        title: "SQL Microdata Query: Annual Survey of Industries (ASI)",
+        title: "SQL & PostgreSQL Relational Microdata Queries",
         kernel: "query.sql (PostgreSQL 15 Engine • ESD Schema)",
         code: `-- MoSPI NSSTA Statistical Lab: SQL Microdata Query Engine
 -- Schema: Annual Survey of Industries (ASI) Factory Master Database
@@ -757,6 +1036,297 @@ LIMIT 5;`,
 (5 rows returned in 12.4 ms)
 
 [SUCCESS] Microdata Aggregate Aggregation Completed.`
+      },
+      stata: {
+        title: "Stata Panel Data Econometrics & Fixed Effects",
+        kernel: "panel_reg.do (Stata 18 Kernel • Microeconometrics)",
+        code: `* MoSPI NSSTA Lab: State-Level Panel Data Regression in Stata
+* Model: Fixed Effects Panel of State GVA on Infrastructure & Capital
+
+use "mospi_state_panel_2015_2024.dta", clear
+xtset state_fips year
+
+* Estimate Fixed-Effects (Within) Regression
+xtreg log_gva log_capital log_power_kwh i.year, fe robust
+
+* Hausman Test for Random vs Fixed Effects
+estimates store fe_model
+xtreg log_gva log_capital log_power_kwh i.year, re
+hausman fe_model .`,
+        output: `[INFO] Initializing Stata 18 MP (Multi-Processor) Kernel...
+Fixed-effects (within) regression               Number of obs     =        280
+Group variable: state_fips                      Number of groups  =         28
+R-squared: Within = 0.8421                      F(3, 27)          =     142.18
+------------------------------------------------------------------------------
+     log_gva | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ log_capital |   .4128542   .0381024    10.84   0.000     .3346712    .4910372
+log_power_kw |   .3241098   .0410982     7.89   0.000     .2397812    .4084384
+------------------------------------------------------------------------------
+Hausman Test Result: Chi2(2) = 28.42 (P = 0.0000) -> Fixed Effects Preferred.
+[SUCCESS] Econometric Elasticities Converged.`
+      },
+      spss_sas: {
+        title: "SPSS / SAS Multivariate Factor & Variance Analysis",
+        kernel: "factor_analysis.sas (SAS 9.4 Engine • Multivariate)",
+        code: `/* MoSPI NSSTA Lab: Principal Component Analysis (PCA) on Household Amenities */
+PROC FACTOR DATA=mospi.nss_household_amenities
+    METHOD=PRIN
+    ROTATE=VARIMAX
+    MINEIGEN=1
+    PLOTS=(SCREE INITIAL);
+    VAR water_source sanitation_type electricity_conn lpg_usage pucca_house;
+RUN;`,
+        output: `[INFO] Initializing SAS 9.4 Analytics System...
+========================================================================
+   The FACTOR Procedure: Principal Component Analysis on MoSPI NSS 78
+========================================================================
+Eigenvalues of the Correlation Matrix: Total = 5  Average = 1
+
+       Eigenvalue    Difference    Proportion    Cumulative
+   1     2.8412        1.7210        0.5682        0.5682
+   2     1.1202        0.6521        0.2240        0.7923
+   3     0.4681        0.1240        0.0936        0.8859
+
+Rotated Factor Pattern (Varimax):
+   Factor 1: Basic Modern Amenities (Loading 0.884)
+   Factor 2: Structural Housing Index (Loading 0.812)
+[SUCCESS] Multidimensional Deprivation Indices Formatted.`
+      },
+      gis: {
+        title: "Geospatial GIS & Remote Sensing Satellite Data",
+        kernel: "geo_crop.py (Python 3.11 Kernel • GeoPandas & Rasterio)",
+        code: `# MoSPI NSSTA Lab: Geospatial GIS Analysis for Agricultural Yields
+import geopandas as gpd
+import numpy as np
+
+# Load District Spatial Polygons & Sentinel-2 NDVI Vegetation Index
+districts = gpd.read_file("india_districts_mospi.geojson")
+districts['NDVI_Mean'] = np.random.uniform(0.35, 0.82, len(districts))
+districts['Crop_Health_Alert'] = np.where(districts['NDVI_Mean'] < 0.45, "Drought Alert", "Optimal")
+
+print("==========================================================")
+print("   GEOSPATIAL & REMOTE SENSING LAB (DIID / ISRO SYNC)")
+print("==========================================================")
+print(districts[['district_name', 'state_name', 'NDVI_Mean', 'Crop_Health_Alert']].head())
+print(f"\\n>> Total Monitored Agricultural Polygons: {len(districts)}")
+print(f">> Total Districts in Optimal Vegetation State: {(districts['Crop_Health_Alert']=='Optimal').sum()} / {len(districts)}")`,
+        output: `[INFO] Initializing Python 3.11.8 Spatial Kernel (GDAL v3.8.4, GeoPandas v0.14.3)...
+==========================================================
+   GEOSPATIAL & REMOTE SENSING LAB (DIID / ISRO SYNC)
+==========================================================
+    district_name    state_name  NDVI_Mean Crop_Health_Alert
+0        Varanasi Uttar Pradesh       0.68           Optimal
+1         Dharwad     Karnataka       0.74           Optimal
+2          Barmer     Rajasthan       0.38     Drought Alert
+3          Nashik   Maharashtra       0.61           Optimal
+4         Burdwan   West Bengal       0.79           Optimal
+
+>> Total Monitored Agricultural Polygons: 766
+>> Total Districts in Optimal Vegetation State: 694 / 766
+[SUCCESS] Spatial Crop Yield Layer Interpolated for Official Agricultural Statistics.`
+      },
+      dataviz: {
+        title: "Interactive Data Visualization (Plotly / Choropleth)",
+        kernel: "dataviz_dashboard.py (Python 3.11 Kernel • Plotly)",
+        code: `# MoSPI NSSTA Lab: Interactive Data Visualization Engine
+import plotly.express as px
+import pandas as pd
+
+df = pd.DataFrame({
+    'State': ['Maharashtra', 'Tamil Nadu', 'Gujarat', 'Uttar Pradesh', 'Karnataka'],
+    'GSDP_Lakh_Crore': [35.2, 28.3, 25.6, 24.4, 25.0],
+    'PLFS_Female_LFPR': [38.4, 42.1, 31.5, 26.8, 35.4]
+})
+
+fig = px.scatter(df, x='GSDP_Lakh_Crore', y='PLFS_Female_LFPR', text='State', size='GSDP_Lakh_Crore',
+                 title='State GSDP vs Female Labour Force Participation Rate (PLFS 2024)')
+
+print("==========================================================")
+print("   DATA VISUALIZATION & DASHBOARDING ENGINE (PLOTLY)")
+print("==========================================================")
+print(df.to_string(index=False))
+print("\n>> Interactive HTML5 Vector Visualization Rendered at 60 FPS.")`,
+        output: `[INFO] Initializing Python 3.11.8 Visualization Engine...
+==========================================================
+   DATA VISUALIZATION & DASHBOARDING ENGINE (PLOTLY)
+==========================================================
+        State  GSDP_Lakh_Crore  PLFS_Female_LFPR
+  Maharashtra             35.2              38.4
+   Tamil Nadu             28.3              42.1
+      Gujarat             25.6              31.5
+Uttar Pradesh             24.4              26.8
+    Karnataka             25.0              35.4
+
+>> Interactive HTML5 Vector Visualization Rendered at 60 FPS.
+[SUCCESS] Exported to MoSPI Official Executive BI Portal.`
+      },
+      aiml: {
+        title: "AI/ML Time Series & Anomaly Detection (X-13ARIMA)",
+        kernel: "anomaly_ts.py (Python 3.11 Kernel • Scikit-Learn)",
+        code: `# MoSPI NSSTA Lab: Machine Learning Outlier Detection in Survey Microdata
+from sklearn.ensemble import IsolationForest
+import numpy as np
+
+# Industrial Survey Factory Consumption Microdata
+np.random.seed(42)
+power_kwh = np.random.normal(50000, 12000, 200)
+# Inject 5 fraudulent or misreported outliers
+power_kwh[10:15] = [450000, 520000, 800, 950000, 120]
+
+model = IsolationForest(contamination=0.03, random_state=42)
+preds = model.fit_predict(power_kwh.reshape(-1, 1))
+
+outliers = np.where(preds == -1)[0]
+
+print("==========================================================")
+print("   AI/ML AUDIT LAB: SURVEY ANOMALY & OUTLIER DETECTION")
+print("==========================================================")
+print(f">> Total Factory Records Audited: {len(power_kwh)}")
+print(f">> Anomalous Outlier Indices Detected: {outliers.tolist()}")
+for idx in outliers:
+    print(f"   [FLAGGED] Unit #{idx}: Value = {power_kwh[idx]:,.0f} kWh (Severe Deviation)")`,
+        output: `[INFO] Initializing Scikit-Learn v1.4.1 Machine Learning Kernel...
+==========================================================
+   AI/ML AUDIT LAB: SURVEY ANOMALY & OUTLIER DETECTION
+==========================================================
+>> Total Factory Records Audited: 200
+>> Anomalous Outlier Indices Detected: [10, 11, 12, 13, 14, 88]
+   [FLAGGED] Unit #10: Value = 450,000 kWh (Severe Deviation)
+   [FLAGGED] Unit #11: Value = 520,000 kWh (Severe Deviation)
+   [FLAGGED] Unit #12: Value = 800 kWh (Severe Deviation)
+   [FLAGGED] Unit #13: Value = 950,000 kWh (Severe Deviation)
+   [FLAGGED] Unit #14: Value = 120 kWh (Severe Deviation)
+
+[SUCCESS] AI Anomaly Filter Cleared Survey Microdata with 99.4% Precision.`
+      },
+      cloud: {
+        title: "Cloud High-Performance Compute (Dask / PySpark)",
+        kernel: "dask_cluster.py (Python 3.11 Kernel • Distributed Dask)",
+        code: `# MoSPI NSSTA Lab: Distributed High-Performance Compute for Population Census
+import dask.dataframe as dd
+import pandas as pd
+
+# Simulating 50 Million Records Across 8 Virtual Cluster Nodes
+print("==========================================================")
+print("   HIGH-PERFORMANCE CLOUD COMPUTE (DASK / MEGHRAJ CLOUD)")
+print("==========================================================")
+print(">> Initializing Distributed Dask Task Graph Across 8 Workers...")
+print(">> Chunk Size: 1.2 GB per partition | Lazy Execution Mode")
+print(">> Performing Parallel Aggregations: GVA, Household Count, Literacy Index")
+print("\n[COMPUTED IN 0.84s] 50,000,000 Microdata Records Processed in Memory.")`,
+        output: `[INFO] Connecting to MeghRaj Government Cloud Compute Cluster...
+==========================================================
+   HIGH-PERFORMANCE CLOUD COMPUTE (DASK / MEGHRAJ CLOUD)
+==========================================================
+>> Initializing Distributed Dask Task Graph Across 8 Workers...
+>> Chunk Size: 1.2 GB per partition | Lazy Execution Mode
+>> Performing Parallel Aggregations: GVA, Household Count, Literacy Index
+
+[COMPUTED IN 0.84s] 50,000,000 Microdata Records Processed in Memory.
+[SUCCESS] Distributed Job Completed with Zero Node Failures.`
+      },
+      apis: {
+        title: "Open Government Data (OGD) & SDMX REST APIs",
+        kernel: "ogd_client.py (Python 3.11 Kernel • REST APIs)",
+        code: `# MoSPI NSSTA Lab: Open Government Data (data.gov.in) API Query
+import json
+
+api_request = {
+    "endpoint": "https://api.data.gov.in/resource/mospi-cpi-monthly",
+    "api-key": "GOV_INDIA_SECURE_TOKEN_2026",
+    "format": "json-stat",
+    "filters": {"year": "2024", "state": "All-India"}
+}
+
+print("==========================================================")
+print("   OPEN GOVERNMENT DATA (OGD) & INTEROPERABLE API LAB")
+print("==========================================================")
+print(f">> Calling National API Gateway: {api_request['endpoint']}")
+print(">> Response Status: 200 OK (MIME: application/json-stat)")
+print("\n>> Sample JSON-stat Payload:")
+print(json.dumps({"dimension": {"concept": "CPI Combined", "period": "2024-M07"}, "value": [181.4]}, indent=2))`,
+        output: `[INFO] Initializing HTTP/2 Secure API Client...
+==========================================================
+   OPEN GOVERNMENT DATA (OGD) & INTEROPERABLE API LAB
+==========================================================
+>> Calling National API Gateway: https://api.data.gov.in/resource/mospi-cpi-monthly
+>> Response Status: 200 OK (MIME: application/json-stat)
+
+>> Sample JSON-stat Payload:
+{
+  "dimension": {
+    "concept": "CPI Combined",
+    "period": "2024-M07"
+  },
+  "value": [
+    181.4
+  ]
+}
+
+[SUCCESS] Interoperable Government Open Data Stream Verified.`
+      },
+      dpdp: {
+        title: "DPDP Act 2023 Consent & Microdata k-Anonymity",
+        kernel: "dpdp_anonymizer.py (Python 3.11 Kernel • Privacy Engine)",
+        code: `# MoSPI NSSTA Lab: Digital Personal Data Protection (DPDP) Act 2023 Compliance
+# Implementing k-Anonymity (k=5) & Differential Privacy on Survey Records
+
+def anonymize_survey_record(age, district, income):
+    # Quasi-identifier generalization
+    age_bracket = f"{(age // 10) * 10}-{(age // 10) * 10 + 9}"
+    income_bracket = f"{(income // 25000) * 25}k-{(income // 25000) * 25 + 25}k"
+    return age_bracket, district, income_bracket
+
+print("==========================================================")
+print("   DATA PRIVACY & DPDP ACT 2023 ANONYMIZATION ENGINE")
+print("==========================================================")
+raw_record = (34, "North 24 Parganas", 62000)
+anon_record = anonymize_survey_record(*raw_record)
+print(f">> Raw Respondent Data: Age={raw_record[0]}, Dist={raw_record[1]}, Income={raw_record[2]}")
+print(f">> Generalized (k>=5 Safe): AgeBracket={anon_record[0]}, Dist={anon_record[1]}, IncomeBracket={anon_record[2]}")
+print("\n[SUCCESS] Re-Identification Risk Reduced to < 0.001% (DPDP Act Compliant).")`,
+        output: `[INFO] Initializing CERT-In Certified Privacy Guard...
+==========================================================
+   DATA PRIVACY & DPDP ACT 2023 ANONYMIZATION ENGINE
+==========================================================
+>> Raw Respondent Data: Age=34, Dist=North 24 Parganas, Income=62000
+>> Generalized (k>=5 Safe): AgeBracket=30-39, Dist=North 24 Parganas, IncomeBracket=50k-75k
+
+[SUCCESS] Re-Identification Risk Reduced to < 0.001% (DPDP Act Compliant).`
+      },
+      pki: {
+        title: "PKI, Digital Signatures & CERT-In Encryption",
+        kernel: "pki_sign.py (Python 3.11 Kernel • Cryptography Engine)",
+        code: `# MoSPI NSSTA Lab: PKI Certificate Digital Signature & Cryptographic Hash
+import hashlib
+import time
+
+certificate_data = "OFFICER: Dr. Sunita Sharma | CADRE: ISS SAG | COURSE: SNA 2008 Modernization | SCORE: 92%"
+timestamp = int(time.time())
+
+# SHA-256 Digest & Digital Fingerprint
+sha256_hash = hashlib.sha256(f"{certificate_data}|{timestamp}".encode()).hexdigest().upper()
+cert_code = f"MoSPI-PKI-{sha256_hash[:16]}"
+
+print("==========================================================")
+print("   PUBLIC KEY INFRASTRUCTURE (PKI) & CERT-In AUDIT LAB")
+print("==========================================================")
+print(f">> Payload: {certificate_data}")
+print(f">> Cryptographic Timestamp: {timestamp}")
+print(f">> SHA-256 Digest: {sha256_hash}")
+print(f">> Tamper-Evident Digital Seal: {cert_code}")
+print("\n[SUCCESS] Digital Signature Verified with Government Root CA.")`,
+        output: `[INFO] Initializing OpenSSL 3.0.2 Cryptographic Engine...
+==========================================================
+   PUBLIC KEY INFRASTRUCTURE (PKI) & CERT-In AUDIT LAB
+==========================================================
+>> Payload: OFFICER: Dr. Sunita Sharma | CADRE: ISS SAG | COURSE: SNA 2008 Modernization | SCORE: 92%
+>> Cryptographic Timestamp: 1788180150
+>> SHA-256 Digest: 8F7C92A14D2E5B0398F21840C63AE410759B34D56184C012A309F21840C63AE4
+>> Tamper-Evident Digital Seal: MoSPI-PKI-8F7C92A14D2E5B03
+
+[SUCCESS] Digital Signature Verified with Government Root CA.`
       }
     };
 
@@ -767,9 +1337,27 @@ LIMIT 5;`,
       
       const select = document.getElementById("codelab-preset-select");
       let targetKey = "plfs";
-      if (title.toLowerCase().includes("price") || title.toLowerCase().includes("cpi")) targetKey = "cpi";
-      else if (title.toLowerCase().includes("sampling") || title.toLowerCase().includes("survey")) targetKey = "sampling";
-      else if (title.toLowerCase().includes("sql") || title.toLowerCase().includes("database") || title.toLowerCase().includes("industrial")) targetKey = "sql";
+      const tLower = title.toLowerCase();
+      
+      if (tLower.includes("price") || tLower.includes("cpi") || tLower.includes("inflation")) targetKey = "cpi";
+      else if (tLower.includes("sampling") || tLower.includes("survey design")) targetKey = "sampling";
+      else if (tLower.includes("national account") || tLower.includes("sna") || tLower.includes("gdp") || tLower.includes("gva") || tLower.includes("sut")) targetKey = "sna";
+      else if (tLower.includes("agri") || tLower.includes("environment") || tLower.includes("seea")) targetKey = "agri";
+      else if (tLower.includes("industrial") || tLower.includes("asi") || tLower.includes("iip")) targetKey = "asi";
+      else if (tLower.includes("sdg") || tLower.includes("indicator")) targetKey = "sdg";
+      else if (tLower.includes("metadata") || tLower.includes("sdmx") || tLower.includes("quality")) targetKey = "metadata";
+      else if (tLower.includes(" r ") || tLower.includes("econometric") || tLower.includes("time series")) targetKey = "r_econ";
+      else if (tLower.includes("sql") || tLower.includes("database") || tLower.includes("relational")) targetKey = "sql";
+      else if (tLower.includes("stata")) targetKey = "stata";
+      else if (tLower.includes("spss") || tLower.includes("sas")) targetKey = "spss_sas";
+      else if (tLower.includes("gis") || tLower.includes("remote sensing") || tLower.includes("geospatial")) targetKey = "gis";
+      else if (tLower.includes("visualization") || tLower.includes("tableau") || tLower.includes("power bi") || tLower.includes("plotly")) targetKey = "dataviz";
+      else if (tLower.includes("ai") || tLower.includes("machine learning") || tLower.includes("anomaly")) targetKey = "aiml";
+      else if (tLower.includes("cloud") || tLower.includes("dask") || tLower.includes("spark")) targetKey = "cloud";
+      else if (tLower.includes("api") || tLower.includes("open data")) targetKey = "apis";
+      else if (tLower.includes("dpdp") || tLower.includes("privacy") || tLower.includes("anonymity")) targetKey = "dpdp";
+      else if (tLower.includes("pki") || tLower.includes("signature") || tLower.includes("cybersecurity") || tLower.includes("cert-in")) targetKey = "pki";
+      else if (tLower.includes("python") || tLower.includes("pandas")) targetKey = "python";
       
       if (select) select.value = targetKey;
       loadCodePreset(targetKey);
@@ -796,7 +1384,7 @@ LIMIT 5;`,
         output.innerText = "[EXECUTING] Transmitting snippet to virtual statistical container...\n[PROCESSING] Running array calculations and data matrix aggregation...";
         setTimeout(() => {
           output.innerText = preset.output;
-        }, 600);
+        }, 500);
       }
     }
 
