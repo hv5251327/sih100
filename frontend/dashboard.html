@@ -273,30 +273,11 @@
       <div class="panel-header">
         <div class="panel-header-left">
           <i class="fa-solid fa-graduation-cap"></i>
-          <h2>Track 1: Personalized iGOT Course Modules (Foundation → Functional Core → Advanced Strategic)</h2>
+          <h2>AI-Curated NSSTA & iGOT Competency Roadmap (Foundation → Functional Core → Advanced Strategic)</h2>
         </div>
         <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Fetching recommended courses...</span>
       </div>
       <div id="dynamic-modules-container"></div>
-    </section>
-
-    <!-- Track 2: NSSTA TPAC Recommended Training Programmes -->
-    <section class="dashboard-panel" style="border-top:4px solid #f59e0b;">
-      <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
-        <div class="panel-header-left">
-          <i class="fa-solid fa-chalkboard-user" style="color:#d97706;"></i>
-          <h2>Track 2: NSSTA’s TPAC Recommended Training Programmes (In-Service Cohorts)</h2>
-        </div>
-        <span style="font-size:0.75rem; background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-weight:700;">
-          <i class="fa-solid fa-building-columns"></i> NSSTA Training Programme Advisory Committee
-        </span>
-      </div>
-      <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:14px;">
-        Physical, Residential and Hybrid in-service training masterclasses recommended by the Training Programme Advisory Committee (TPAC) based on your Cadre, Division, and Competency Deficits:
-      </p>
-      <div id="tpac-programmes-container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
-        <div style="color:var(--text-muted); font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> Loading NSSTA TPAC Training Calendar...</div>
-      </div>
     </section>
 
     <!-- My Verified Credentials & Completed Courses -->
@@ -500,7 +481,7 @@
                   <div class="module-card">
                     <div class="igot-banner">
                       <span style="font-weight:800; font-size:0.9rem;"><i class="fa-solid fa-graduation-cap"></i> ${course.course_code || 'NSSTA-MOD'}</span>
-                      <span class="igot-tag">iGOT Karmayogi</span>
+                      <span class="igot-tag">NSSTA / iGOT Accredited</span>
                     </div>
                     <div class="module-body">
                       <div class="badge-row" style="flex-wrap:wrap; gap:6px;">
@@ -527,41 +508,6 @@
         });
 
         container.innerHTML = htmlContent || '<p>No courses mapped for this profile.</p>';
-
-        // Render Track 2: NSSTA TPAC Training Programmes
-        const tpacContainer = document.getElementById('tpac-programmes-container');
-        const tpacList = data.tpac_programmes || [];
-
-        if (tpacContainer) {
-          if (tpacList.length === 0) {
-            tpacContainer.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No TPAC in-service batches currently scheduled for this quarter.</p>';
-          } else {
-            tpacContainer.innerHTML = tpacList.map(prog => `
-              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:8px;">
-                    <span style="background:#fef3c7; color:#92400e; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:4px;"><i class="fa-solid fa-calendar-check"></i> ${prog.category || 'TPAC Workshop'}</span>
-                    <span style="background:#dcfce7; color:#15803d; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:4px;"><i class="fa-solid fa-circle-dot"></i> ${prog.status || 'Open'}</span>
-                  </div>
-                  <h4 style="font-size:0.92rem; font-weight:800; color:#0f172a; margin-bottom:6px; line-height:1.35;">${prog.title}</h4>
-                  <div style="font-size:0.76rem; color:#475569; margin-bottom:6px;"><i class="fa-solid fa-building" style="color:#0284c7;"></i> <strong>Division:</strong> ${prog.division || 'MoSPI'}</div>
-                  <div style="font-size:0.76rem; color:#475569; margin-bottom:6px;"><i class="fa-solid fa-location-dot" style="color:#ef4444;"></i> <strong>Venue:</strong> ${prog.venue || 'NSSTA Greater Noida'}</div>
-                  <div style="font-size:0.76rem; color:#475569; margin-bottom:6px;"><i class="fa-regular fa-clock" style="color:#8b5cf6;"></i> <strong>Dates:</strong> ${prog.start_date || 'Upcoming'} to ${prog.end_date || 'TBD'}</div>
-                  <div style="font-size:0.76rem; color:#475569; margin-bottom:8px;"><i class="fa-solid fa-user-tie" style="color:#10b981;"></i> <strong>Faculty:</strong> ${prog.instructor || 'Senior NSSTA Faculty'}</div>
-                  <div style="background:#f8fafc; border-left:3px solid #f59e0b; padding:6px 8px; border-radius:0 4px 4px 0; font-size:0.74rem; color:#334155; margin-bottom:12px;">
-                    <strong><i class="fa-solid fa-lightbulb" style="color:#d97706;"></i> TPAC Rationale:</strong> ${prog.recommendation_rationale || 'High priority for ' + (currentUser.cadre || 'Cadre')}
-                  </div>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; padding-top:10px;">
-                  <span style="font-size:0.72rem; color:#64748b;"><i class="fa-solid fa-users"></i> Capacity: ${prog.capacity || 30} Seats</span>
-                  <button type="button" onclick="nominateForTpac('${encodeURIComponent(prog.title)}')" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:0.76rem; font-weight:700; cursor:pointer;">
-                    <i class="fa-solid fa-paper-plane"></i> Nominate Now
-                  </button>
-                </div>
-              </div>
-            `).join('');
-          }
-        }
       } catch (err) {
         console.error("Failed to load recommendations:", err);
         statusLabel.innerText = "Error loading courses.";
