@@ -960,20 +960,42 @@
       panel.style.display = (panel.style.display === "flex") ? "none" : "flex";
     }
 
+    function formatMarkdown(text) {
+      if (!text) return "";
+      let html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Code blocks with syntax box
+      html = html.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+        return `<pre style="background:#1e293b; color:#f8fafc; padding:10px 14px; border-radius:6px; overflow-x:auto; font-family:monospace; font-size:0.8rem; margin:8px 0; border:1px solid #334155; text-align:left;"><code>${code.trim()}</code></pre>`;
+      });
+
+      // Inline code
+      html = html.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9; color:#0f172a; padding:2px 6px; border-radius:4px; font-family:monospace; font-size:0.85em; border:1px solid #cbd5e1;">$1</code>');
+
+      // Bold & Italic
+      html = html.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+      // Bullet points
+      html = html.replace(/^[•\-\*]\s+(.*)$/gm, '<div style="margin-left:14px; margin-bottom:2px;">• $1</div>');
+
+      // Line breaks
+      html = html.replace(/\n/g, '<br>');
+
+      return html;
+    }
+
     function appendChatMessage(text, sender) {
       const log = document.getElementById("bhashini-chat-log");
       const msg = document.createElement("div");
       msg.className = `chat-msg ${sender}`;
       
       if (sender === 'bot') {
-        let html = text
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/\*(.*?)\*/g, '<em>$1</em>')
-          .replace(/\n/g, '<br>');
-        msg.innerHTML = html;
+        msg.innerHTML = formatMarkdown(text);
       } else {
         msg.innerText = text;
       }
@@ -1001,14 +1023,7 @@
         const data = await res.json();
         
         let text = data.reply || "I am here to help you navigate your NSSTA training roadmap.";
-        let html = text
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/\*(.*?)\*/g, '<em>$1</em>')
-          .replace(/\n/g, '<br>');
-        thinkingMsg.innerHTML = html;
+        thinkingMsg.innerHTML = formatMarkdown(text);
         document.getElementById("bhashini-chat-log").scrollTop = document.getElementById("bhashini-chat-log").scrollHeight;
       } catch (e) {
         thinkingMsg.innerHTML = "Bhashini AI: Complete your recommended NSSTA courses below to increase your competency scores.";

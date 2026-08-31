@@ -17,43 +17,49 @@ const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp
 
 const supabase = createClient(cleanUrl, supabaseKey);
 
-async function generateAIResponse(prompt, systemInstruction) {
-    const sysPrompt = systemInstruction || 'You are the Principal Curriculum Director & Chief Psychometrician at the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India. Provide rigorous, precise, domain-accurate JSON without markdown formatting.';
+async function generateAIResponse(prompt, systemInstruction, isJson = false) {
+    const sysPrompt = systemInstruction || 'You are the Principal Curriculum Director & Chief Psychometrician at the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India.';
 
     // 1. Ollama AI Engine with User's Ollama API Key
     if (OLLAMA_API_KEY) {
-        try {
-            const res = await fetch(`${OLLAMA_BASE_URL}/chat/completions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OLLAMA_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: 'llama3.2',
-                    messages: [
-                        { role: 'system', content: sysPrompt },
-                        { role: 'user', content: prompt }
-                    ],
-                    temperature: 0.2
-                })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                const text = data?.choices?.[0]?.message?.content;
-                if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
-            }
-        } catch (e) {
-            console.warn('Ollama API note:', e.message);
+        const endpoints = [
+            `${OLLAMA_BASE_URL}/chat/completions`,
+            'https://api.ollama.com/v1/chat/completions',
+            'http://localhost:11434/v1/chat/completions'
+        ];
+
+        for (const ep of endpoints) {
+            try {
+                const res = await fetch(ep, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${OLLAMA_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'llama3.2',
+                        messages: [
+                            { role: 'system', content: sysPrompt },
+                            { role: 'user', content: prompt }
+                        ],
+                        temperature: isJson ? 0.1 : 0.4
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const text = data?.choices?.[0]?.message?.content;
+                    if (text) return isJson ? text.replace(/```json/gi, '').replace(/```/g, '').trim() : text.trim();
+                }
+            } catch (e) {}
         }
 
-        // Secondary Ollama endpoint fallback
+        // Secondary native Ollama endpoint fallback
         try {
             const res = await fetch('http://localhost:11434/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: 'llama3',
+                    model: 'llama3.2',
                     system: sysPrompt,
                     prompt: prompt,
                     stream: false
@@ -62,7 +68,7 @@ async function generateAIResponse(prompt, systemInstruction) {
             if (res.ok) {
                 const data = await res.json();
                 const text = data?.response;
-                if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
+                if (text) return isJson ? text.replace(/```json/gi, '').replace(/```/g, '').trim() : text.trim();
             }
         } catch (e) {}
     }
@@ -1368,55 +1374,46 @@ app.post('/api/chatbot', async (req, res) => {
         remainingCount = uncompleted.length;
         const nextRecommendedTitles = uncompleted.slice(0, 4).map(c => `• ${c.title} (${c.domain})`).join('\n');
 
-        const systemPrompt = `You are "Bhashini AI", the official Intelligent Virtual Assistant for the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India.
+        const systemPrompt = `You are "Bhashini AI Agent", the Autonomous Statistical Copilot, Career Counselor, and Training Intelligence Officer for the Ministry of Statistics and Programme Implementation (MoSPI) and National Statistical Systems Training Academy (NSSTA), Government of India.
 
-OFFICER LIVE PROFILE & CONTEXT:
+OFFICER PROFILE & REAL-TIME REPOSITORY STATE:
 - Officer Name: ${officerName}
 - Cadre: ${cadre}
 - Division / Department: ${dept}
 - Designation: ${desig}
-- Completed Courses: ${completedCount} course(s)
-- Remaining Courses in Catalog: ${remainingCount} course(s)
-- Next Priority Recommended Modules:
+- Completed Modules: ${completedCount} course(s)
+- Pending Modules in Roadmap: ${remainingCount} course(s)
+- Next Priority Recommended Modules for ${dept}:
 ${nextRecommendedTitles || 'All foundational and core modules completed!'}
-- Live Competency Proficiency Scores:
-  * Statistical Methods & Sampling: ${comp.statistical_score}%
-  * Technical & Analytical Tools: ${comp.technical_score}%
-  * Digital Governance & DPDP: ${comp.governance_score}%
-  * Leadership & Administration: ${comp.leadership_score}%
+- Live Competency Mastery Metrics (4 Pillars):
+  * Statistical Methods & Sampling: ${comp.statistical_score}% (Benchmark: >= 75%)
+  * Technical & Analytical Tools: ${comp.technical_score}% (Benchmark: >= 75%)
+  * Digital Governance & DPDP: ${comp.governance_score}% (Benchmark: >= 80%)
+  * Leadership & Administration: ${comp.leadership_score}% (Benchmark: >= 80%)
   * Overall Readiness Index: ${comp.overall_score}%
 
-COMPREHENSIVE KNOWLEDGE & OPERATIONAL PROCEDURES:
-1. HOW TO UPLOAD A CERTIFICATE:
-   - On your dashboard roadmap, find the relevant course and click the orange "Certificate" button.
-   - Select your PDF or image certificate file (e.g. from iGOT Karmayogi, NSSTA Greater Noida, DoPT, ISI Kolkata, World Bank Academy, etc.).
-   - The MoSPI AI Credential Auditor scans the document text, verifies candidate identity, domain match, and issuing authority, automatically marks the course complete in the database, and credits competency points.
+CORE AGENT CAPABILITIES & BEHAVIOR:
+1. AUTONOMOUS STATISTICAL & TECHNICAL COPILOT:
+   - You can write and explain complete, working Python, R, and SQL scripts for official statistical analysis (Pandas, Numpy, statsmodels, survey microdata cleaning, stratified sampling, multiplier estimation, outlier detection).
+   - Deep expertise in National Accounts Statistics (UN-SNA 2008 Supply-Use Tables, GSDP estimation, Deflators), Industrial Indices (IIP, ASI), Price Statistics (CPI Consumer Price Index basket weighting), Field Operations (CAPI tablet validation, Paradata auditing), and SDGs National Indicator Framework.
+   - When asked a math or coding question, write clean, robust code with clear comments.
 
-2. HOW TO TAKE A QUIZ / ASSESSMENT:
-   - Click the blue "Quiz" button next to any course card in your roadmap.
-   - Answer the 5 multiple-choice questions fetched directly from the accredited database question bank.
-   - Scoring 60% or higher automatically passes the course, records completion, updates your competency score, and removes it from pending recommendations.
+2. CIVIL SERVICE GOVERNANCE, PROCUREMENT & STATUTORY ADVISOR:
+   - Provide authoritative civil service guidance on General Financial Rules (GFR 2017), GeM e-Procurement thresholds, Digital Personal Data Protection (DPDP) Act 2023 consent architectures, Right to Information (RTI) Act, POSH Act compliance, and Official Secrets Act.
 
-3. HOW TO DOWNLOAD COMPETENCY PASSPORT:
-   - Scroll to the bottom of the dashboard and click the "Download Official Competency Passport (PDF)" button.
-   - This generates a sealed, formatted official digital transcript and credential certificate with all 4 competency pillar scores.
+3. LMS OPERATIONAL ASSISTANT:
+   - Explain how to take quizzes (minimum 80% passing mark required), upload certificates for MoSPI AI verification and Admin audit approval, sync existing iGOT Karmayogi learning history, and generate official landscape PDF Certificates of Completion & Competency Passports.
 
-4. COURSES LEFT & PROGRESS QUERIES:
-   - When asked "how many left" or "my progress", state clearly: "${remainingCount} courses remaining and ${completedCount} completed", and list the next priority courses for ${dept}.
+4. MULTILINGUAL AGENT (BHASHINI):
+   - You are fully multilingual. If the user writes in Hindi (हिन्दी), Hinglish, or any Indian regional language, reply fluently, respectfully, and accurately in that language.
 
-5. HOW COMPETENCY SCORES WORK:
-   - Scores are calculated across 4 pillars (Statistical Methods, Technical Tools, Digital Governance, Leadership) based on evaluation scores and curriculum benchmark capacity requirements.
-
-6. GENERAL MOSPI / STATISTICAL QUESTIONS:
-   - Answer general queries about MoSPI divisions (NAD, FOD, ESD, PSD, SSD, SDRD, DPD, DIID, NSSTA), statistical cadres (ISS, SSS, State DES), national surveys (PLFS, ASUSE, HCES, CPI, IIP), and the DPDP Act 2023.
-
-RESPONSE GUIDELINES:
-- Deliver structured, polite, crisp, and highly accurate answers with clear bullet points.
-- Always provide practical step-by-step instructions.
-- If asked in regional Indian languages (Hindi, etc.), reply gracefully in that language or English.`;
+RESPONSE DIRECTIVES:
+- Act as an intelligent, proactive agent. Provide structured steps, bullet points, and code blocks where helpful.
+- When giving coding or mathematical explanations, format code in proper markdown backticks.
+- Be warm, professional, encouraging, and maintain high standards of civil service decorum.`;
 
         const userPrompt = `Officer Question: "${message}"`;
-        const aiReply = await generateAIResponse(userPrompt, systemPrompt);
+        const aiReply = await generateAIResponse(userPrompt, systemPrompt, false);
 
         if (aiReply && aiReply.trim()) {
             return res.json({ reply: aiReply.trim() });
