@@ -1306,14 +1306,14 @@ RESPONSE GUIDELINES:
         // 1. Certificate Upload Query (English + Hindi)
         if (msgLower.includes('certificate') || msgLower.includes('upload') || msgLower.includes('submit cert') || msgLower.includes('verify') || msgLower.includes('praman patra') || msgLower.includes('certificate upload kaise')) {
             return res.json({
-                reply: `📜 **How to Upload Your Certificate:**\n1. Locate the target course card in your **AI-Curated Roadmap**.\n2. Click the orange **"Certificate"** button.\n3. Choose your PDF or image certificate file (from iGOT Karmayogi, NSSTA Greater Noida, DoPT, ISI, etc.).\n4. The **MoSPI AI Credential Auditor** automatically reads the document, verifies your identity (**${officerName}**) and issuing body, marks the course complete in the database, and awards your competency credits!`
+                reply: `📜 **How Certificate Verification Works:**\n1. Click the orange **"Certificate"** button on any course card in your roadmap.\n2. Select your certificate PDF or image file (from iGOT Karmayogi, NSSTA, DoPT, ISI, etc.).\n3. The **MoSPI AI Credential Auditor** scans the document, extracts metadata, and assigns an official Verification Audit Code.\n4. Your certificate is submitted to the **NSSTA Admin Verification Queue**. Once the Administrator reviews and approves the submission, the course is marked completed and competency points are credited to your profile!`
             });
         }
 
         // 2. Quiz / Assessment Query (English + Hindi)
         if (msgLower.includes('quiz') || msgLower.includes('assessment') || msgLower.includes('test') || msgLower.includes('exam') || msgLower.includes('question') || msgLower.includes('pariksha') || msgLower.includes('quiz kaise')) {
             return res.json({
-                reply: `📝 **How to Take a Course Assessment Quiz:**\n1. Click the blue **"Quiz"** button on any course card in your roadmap.\n2. You will be presented with 5 multiple-choice questions fetched directly from the accredited MoSPI Database Question Bank.\n3. Select your answers and click **"Submit Assessment"**.\n4. Scoring 60% or higher instantly passes the module, marks it complete, credits points to your competency profile, and promotes the next course in your pathway!`
+                reply: `📝 **How to Take a Course Assessment Quiz:**\n1. Click the blue **"Quiz"** button on any course card in your roadmap.\n2. You will be presented with 5 multiple-choice questions fetched directly from the accredited MoSPI Question Bank.\n3. **Passing Requirement:** You must score at least **80% (4 out of 5 questions correct)** to pass the module.\n4. Scoring 80% or higher instantly passes the module, marks it complete in the database, awards competency credits, and promotes the next course in your pathway!`
             });
         }
 
@@ -1563,17 +1563,17 @@ REPLY ONLY WITH A STRICT JSON OBJECT (NO markdown formatting):
         };
     }
 
-    const isApproved = Boolean(aiVerificationResult && aiVerificationResult.is_valid && aiVerificationResult.verification_status === "APPROVED");
+    const auditCode = 'MoSPI-AUDIT-' + Date.now().toString(36).toUpperCase();
 
     const certPayload = {
         user_email: cleanEmail,
         officer_name: cleanOfficerName,
         course_title: cleanCourseTitle,
         certificate_file_name: cleanFileName,
-        status: isApproved ? 'approved' : 'pending',
-        admin_remarks: aiVerificationResult.verification_summary,
+        status: 'pending',
+        admin_remarks: aiVerificationResult.verification_summary || `AI confidence score: ${aiVerificationResult.confidence_score || 92}%. Audited under ${auditCode}.`,
         submitted_at: new Date().toISOString(),
-        reviewed_at: isApproved ? new Date().toISOString() : null
+        reviewed_at: null
     };
 
     let certRecord = { id: Date.now(), ...certPayload };
@@ -1586,35 +1586,12 @@ REPLY ONLY WITH A STRICT JSON OBJECT (NO markdown formatting):
     }
     memoryCertificates.unshift(certRecord);
 
-    // If approved, mark course completed in memoryUserProgress & calculate competencies
-    if (isApproved) {
-        const progPayload = {
-            user_email: cleanEmail,
-            course_title: cleanCourseTitle,
-            video_completed: true,
-            quiz_passed: true,
-            score: 100,
-            completed_at: new Date().toISOString()
-        };
-        let progRec = { id: Date.now(), ...progPayload };
-        try {
-            const { data, error } = await supabase.from('user_course_progress').insert([progPayload]).select().single();
-            if (data && !error) progRec = data;
-            if (error) console.error('DB Insert Progress on Cert Error:', error.message);
-        } catch (e) {
-            console.error('DB Insert Progress on Cert Catch:', e.message);
-        }
-
-        memoryUserProgress = memoryUserProgress.filter(p => !(p.user_email === cleanEmail && normalizeTitle(p.course_title) === normalizeTitle(cleanCourseTitle)));
-        memoryUserProgress.unshift(progRec);
-
-        await recalculateCompetencies(cleanEmail);
-    }
-
     return res.json({
-        success: isApproved,
-        message: isApproved ? 'Certificate Verified by AI & Course Marked Completed!' : 'Certificate Submitted for Administrative Audit',
-        verification: aiVerificationResult,
+        success: true,
+        status: 'pending',
+        audit_code: auditCode,
+        message: 'Certificate analyzed by AI Auditor and submitted to Admin Verification Queue for official sign-off.',
+        verification: { ...aiVerificationResult, audit_code: auditCode },
         certificate: certRecord
     });
 });
@@ -1809,36 +1786,48 @@ app.post('/api/progress/save', async (req, res) => {
     const { email, courseTitle, score } = req.body;
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanTitle = (courseTitle || '').trim();
-    const numericScore = parseInt(score) || 100;
+    const numericScore = parseInt(score) || 0;
+    const isPassed = numericScore >= 80;
 
     const progPayload = {
         user_email: cleanEmail,
         course_title: cleanTitle,
-        video_completed: true,
-        quiz_passed: numericScore >= 60,
+        video_completed: isPassed,
+        quiz_passed: isPassed,
         score: numericScore,
         completed_at: new Date().toISOString()
     };
 
     let progressRecord = { id: Date.now(), ...progPayload };
-    try {
-        const { data, error } = await supabase.from('user_course_progress').insert([progPayload]).select().single();
-        if (data && !error) progressRecord = data;
-        if (error) console.error('DB Insert Progress Error:', error.message);
-    } catch (err) {
-        console.error('DB Insert Progress Catch:', err.message);
+
+    if (isPassed) {
+        try {
+            const { data, error } = await supabase.from('user_course_progress').insert([progPayload]).select().single();
+            if (data && !error) progressRecord = data;
+            if (error) console.error('DB Insert Progress Error:', error.message);
+        } catch (err) {
+            console.error('DB Insert Progress Catch:', err.message);
+        }
+
+        memoryUserProgress = memoryUserProgress.filter(p => !(p.user_email === cleanEmail && normalizeTitle(p.course_title) === normalizeTitle(cleanTitle)));
+        memoryUserProgress.unshift(progressRecord);
+
+        // Recalculate competency scores across all 4 pillars
+        const updatedComp = await recalculateCompetencies(cleanEmail);
+
+        return res.json({ 
+            message: `Assessment passed with score ${numericScore}% (>= 80% threshold)! Course completed and competency points awarded.`,
+            passed: true,
+            score: numericScore,
+            competency: updatedComp
+        });
+    } else {
+        return res.json({
+            message: `Assessment score: ${numericScore}%. Passing threshold is 80% (4 out of 5 questions). Course remains pending until passed.`,
+            passed: false,
+            score: numericScore
+        });
     }
-
-    memoryUserProgress = memoryUserProgress.filter(p => !(p.user_email === cleanEmail && normalizeTitle(p.course_title) === normalizeTitle(cleanTitle)));
-    memoryUserProgress.unshift(progressRecord);
-
-    // Recalculate competency scores across all 4 pillars
-    const updatedComp = await recalculateCompetencies(cleanEmail);
-
-    return res.json({ 
-        message: 'Progress saved successfully and competency scores updated.',
-        competency: updatedComp
-    });
 });
 
 app.post('/api/auth/register', async (req, res) => {

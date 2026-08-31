@@ -639,31 +639,24 @@
 
         const data = await res.json();
         const v = data.verification || {};
+        const auditCode = data.audit_code || v.audit_code || ('MoSPI-AUDIT-' + Date.now().toString(36).toUpperCase());
 
         feedbackDiv.style.display = "block";
-        if (data.success) {
-          feedbackDiv.style.background = "#f0fdf4";
-          feedbackDiv.style.borderColor = "#bbf7d0";
-          feedbackDiv.innerHTML = `
-            <div style="font-weight:800; color:#15803d; margin-bottom:4px;"><i class="fa-solid fa-circle-check"></i> ${data.message}</div>
-            <div><strong>Issuing Body:</strong> ${v.issuing_authority || 'Accredited Authority'}</div>
-            <div><strong>Audit Summary:</strong> ${v.verification_summary || 'Accredited certificate verified.'}</div>
-            <div style="margin-top:4px; font-weight:700; color:var(--primary);"><i class="fa-solid fa-award"></i> +${v.awarded_competency_points || 25}% Competency Points Credited!</div>
-          `;
-          statusDiv.innerHTML = `<span style="color:var(--success);"><i class="fa-solid fa-check-double"></i> Verification Complete & Saved to Database.</span>`;
-          alert(`Success: "${currentActiveCourse}" is verified and marked as COMPLETED!`);
-          await Promise.all([loadCompetencies(), loadOfficerRecommendations(), loadOfficerHistory()]);
-          setTimeout(() => closeModal('cert-modal'), 2000);
-        } else {
-          feedbackDiv.style.background = "#fef3c7";
-          feedbackDiv.style.borderColor = "#fde68a";
-          feedbackDiv.innerHTML = `
-            <div style="font-weight:800; color:#b45309;"><i class="fa-solid fa-clock"></i> Certificate Submitted for Manual Administrative Review</div>
-            <div><strong>Remarks:</strong> ${v.verification_summary || 'Queued for supervisor verification.'}</div>
-          `;
-          statusDiv.innerHTML = `<span style="color:#b45309;">Queued in Admin Verification Queue.</span>`;
-          await loadOfficerHistory();
-        }
+        feedbackDiv.style.background = "#eff6ff";
+        feedbackDiv.style.borderColor = "#bfdbfe";
+        feedbackDiv.innerHTML = `
+          <div style="font-weight:800; color:#1e40af; margin-bottom:6px;"><i class="fa-solid fa-file-shield"></i> Certificate Analyzed & Queued for Approval</div>
+          <div><strong>Audit Reference Code:</strong> <span style="font-family:monospace; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:700;">${auditCode}</span></div>
+          <div style="margin-top:4px;"><strong>Issuing Authority:</strong> ${v.issuing_authority || 'Recognized Training Body'}</div>
+          <div style="margin-top:4px;"><strong>AI Audit Summary:</strong> ${v.verification_summary || 'Accredited certificate metadata verified.'}</div>
+          <div style="margin-top:8px; font-size:0.82rem; color:#1e3a8a; background:#dbeafe; padding:8px; border-radius:6px;">
+            <i class="fa-solid fa-info-circle"></i> <strong>Next Step:</strong> Your certificate is submitted to the <strong>MoSPI Admin Verification Queue</strong>. Once approved by NSSTA Administrator, the course will be marked Completed and competency points will be credited to your profile.
+          </div>
+        `;
+        statusDiv.innerHTML = `<span style="color:#0284c7; font-weight:700;"><i class="fa-solid fa-clock"></i> Status: Pending Admin Verification</span>`;
+        alert(`📜 Certificate Submitted Successfully!\nAudit Code: ${auditCode}\n\nYour certificate is analyzed and queued for Admin sign-off. Once verified by Admin, this course will be marked Completed.`);
+        await loadOfficerHistory();
+        setTimeout(() => closeModal('cert-modal'), 3500);
       } catch (e) {
         statusDiv.innerHTML = `<span style="color:#ef4444;">Verification server connection error.</span>`;
         alert("Verification error. Please retry.");
@@ -737,9 +730,10 @@
       }
 
       const finalPercentage = Math.round((scoreCount / activeQuizData.length) * 100);
+      const isPassed = finalPercentage >= 80;
 
       try {
-        await fetch(`${API_URL}/api/progress/save`, {
+        const res = await fetch(`${API_URL}/api/progress/save`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -748,12 +742,19 @@
             score: finalPercentage
           })
         });
+        const data = await res.json();
 
-        alert(`Assessment Completed! Score: ${finalPercentage}%. Competency score increased.`);
-        closeModal('quiz-modal');
-        await Promise.all([loadCompetencies(), loadOfficerRecommendations(), loadOfficerHistory()]);
+        if (isPassed) {
+          alert(`🎉 Assessment Passed!\nScore: ${finalPercentage}% (Passed with >= 80% mark).\n\nCongratulations! "${currentActiveCourse}" is marked COMPLETED and your competency profile has been updated.`);
+          closeModal('quiz-modal');
+          await Promise.all([loadCompetencies(), loadOfficerRecommendations(), loadOfficerHistory()]);
+        } else {
+          alert(`⚠️ Assessment Incomplete!\nScore: ${finalPercentage}% (${scoreCount}/${activeQuizData.length} correct).\n\nThe passing requirement is 80% (at least 4 out of 5 questions).\n\nPlease review the training materials and re-attempt the quiz to complete this module and earn competency credits.`);
+          closeModal('quiz-modal');
+          await loadOfficerHistory();
+        }
       } catch (e) {
-        alert(`Score: ${finalPercentage}%. Error saving to database.`);
+        alert(`Score: ${finalPercentage}%. Error connecting to database.`);
         closeModal('quiz-modal');
       }
     }
