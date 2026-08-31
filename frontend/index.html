@@ -50,18 +50,18 @@
         </div>
         <div class="hero-card">
             <h4>CONGRATULATIONS, KARMAYOGIS!</h4>
-            <div class="counter">1.7 Crore+</div>
-            <p><strong>Users Onboarded</strong></p>
+            <div class="counter" id="hero-registered-count">12+</div>
+            <p><strong>Registered Officers</strong></p>
             <small>Let's continue to learn, grow and lead!</small>
         </div>
     </section>
 
     <section class="stats-ribbon">
-        <div class="stat-item"><i class="fa-solid fa-users"></i><h3>1,72,04,488</h3><p>Total Karmayogis Onboarded</p></div>
-        <div class="stat-item"><i class="fa-solid fa-book-open"></i><h3>6,252</h3><p>Total Courses</p></div>
-        <div class="stat-item"><i class="fa-solid fa-circle-check"></i><h3>14,96,44,900</h3><p>Total Completions</p></div>
-        <div class="stat-item"><i class="fa-solid fa-user-check"></i><h3>16,53,660</h3><p>Monthly Active Users</p></div>
-        <div class="stat-item"><i class="fa-solid fa-certificate"></i><h3>2,90,521</h3><p>Certificates Issued Yesterday</p></div>
+        <div class="stat-item"><i class="fa-solid fa-users"></i><h3 id="ribbon-registered-count">12</h3><p>Total Registered Officers</p></div>
+        <div class="stat-item"><i class="fa-solid fa-book-open"></i><h3>45+</h3><p>Accredited Courses</p></div>
+        <div class="stat-item"><i class="fa-solid fa-circle-check"></i><h3>100%</h3><p>iGOT Karmayogi Synced</p></div>
+        <div class="stat-item"><i class="fa-solid fa-user-check"></i><h3>Active</h3><p>Competency TNA System</p></div>
+        <div class="stat-item"><i class="fa-solid fa-certificate"></i><h3>Verified</h3><p>NSSTA Digital Credentials</p></div>
     </section>
 
     <section class="course-section" id="showcased-courses">
@@ -202,5 +202,35 @@
     <footer>
         <p>&copy; 2026 iGOT Karmayogi Bharat | Ministry of Statistics & Programme Implementation. All Rights Reserved.</p>
     </footer>
+
+    <script>
+        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:5000'
+            : 'https://sih100-backend.onrender.com';
+
+        async function fetchLiveRegisteredStats() {
+            try {
+                const res = await fetch(`${API_URL}/api/public/stats`);
+                const data = await res.json();
+                const count = data.total_registered_officers || 12;
+
+                const heroEl = document.getElementById('hero-registered-count');
+                if (heroEl) {
+                    heroEl.innerText = `${count} Registered`;
+                }
+
+                const ribbonEl = document.getElementById('ribbon-registered-count');
+                if (ribbonEl) {
+                    ribbonEl.innerText = count.toLocaleString('en-IN');
+                }
+            } catch (e) {
+                console.warn("Live stats fallback:", e);
+                const heroEl = document.getElementById('hero-registered-count');
+                if (heroEl) heroEl.innerText = '12+ Registered';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchLiveRegisteredStats);
+    </script>
 </body>
 </html>

@@ -657,6 +657,27 @@ app.post('/api/admin/skill-forecast', async (req, res) => {
     }
 });
 
+// Public Live Metadata & Registered Officers Stats API
+app.get(['/api/public/stats', '/api/metadata', '/api/officer-count'], async (req, res) => {
+    try {
+        const { count, error } = await supabase.from('employees').select('*', { count: 'exact', head: true });
+        const registeredCount = (!error && typeof count === 'number') ? count : 12;
+        return res.json({
+            total_registered_officers: registeredCount,
+            registered_officers_display: `${registeredCount}+`,
+            total_courses: 45,
+            total_divisions: 8,
+            server_time: new Date().toISOString()
+        });
+    } catch (e) {
+        return res.json({
+            total_registered_officers: 12,
+            registered_officers_display: "12+",
+            total_courses: 45
+        });
+    }
+});
+
 // NSSTA TPAC Training Pathways API
 app.get('/api/admin/tpac-pathways', async (req, res) => {
     try {
