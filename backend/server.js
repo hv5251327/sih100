@@ -2,6 +2,13 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
+const {
+    MOSPI_MASTER_KNOWLEDGE_BASE,
+    generateMoSPIAIResponse,
+    generateQuizQuestionsAI,
+    generateCourseCurriculumAI,
+    generateOfficerDossierData
+} = require('./mospi_ai_engine');
 
 const app = express();
 app.use(cors());
@@ -1768,8 +1775,8 @@ function jumbleQuestionOptions(questionObj) {
     };
 }
 
-app.post('/api/generate-quiz', async (req, res) => {
-    const { courseTitle } = req.body;
+app.post(['/api/generate-quiz', '/api/ai/generate-quiz', '/api/quiz/generate'], async (req, res) => {
+    const { courseTitle, domain, difficulty } = req.body;
     const cleanTitle = (courseTitle || '').trim();
     try {
         // 1. Try exact match from course_quizzes in DB
@@ -1814,43 +1821,76 @@ app.post('/api/generate-quiz', async (req, res) => {
             });
         }
 
-        // 4. AI prompt synthesis fallback
-        const quizPrompt = `You are a Senior Psychometrician at the National Statistical Systems Training Academy (NSSTA), MoSPI.
-Create exactly 5 professional, rigorous, multiple-choice questions for the following course:
-COURSE: "${cleanTitle}"
-Reply ONLY with a valid JSON array of 5 objects (NO markdown):
-[
-  {
-    "question": "Question text testing practical understanding?",
-    "options": ["Correct Answer A", "Distractor B", "Distractor C", "Distractor D"],
-    "correctIndex": 0
-  }
-]`;
-        const rawAiQuiz = await generateAIResponse(quizPrompt, null, true);
-        const cleanedJson = rawAiQuiz.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsedQuiz = JSON.parse(cleanedJson);
+        // 4. Upgraded Psychometric AI Generation Engine (NSSTA Standards)
+        const aiQuestions = await generateQuizQuestionsAI(cleanTitle, domain || 'Statistical Competencies', difficulty || 'Intermediate');
 
         return res.json({
-            source: "AI_SYNTHESIZED",
+            source: "AI_SYNTHESIZED_NSSTA",
             course_title: cleanTitle,
-            quiz: (Array.isArray(parsedQuiz) ? parsedQuiz : []).map(q => jumbleQuestionOptions(q))
+            quiz: (Array.isArray(aiQuestions) ? aiQuestions : []).map(q => jumbleQuestionOptions(q))
         });
     } catch (err) {
-        const fallback = [
-            { question: `What is the primary regulatory and statistical objective of ${cleanTitle}?`, options: ["Statutory compliance, methodological standardization & data integrity", "Manual log maintenance", "Unregulated survey sampling", "Audit exemptions"], correctIndex: 0 },
-            { question: `How are survey milestones verified under ${cleanTitle}?`, options: ["Automated digital validation & supervisory spot-checks", "Informal verbal notes", "Unchecked paper records", "No verification required"], correctIndex: 0 },
-            { question: "Which statutory framework protects respondent data confidentiality in MoSPI surveys?", options: ["MoSPI Data Policy & DPDP Act 2023", "Generic guidelines", "Social media rules", "Informal directives"], correctIndex: 0 },
-            { question: "What is the key benchmark for data quality assurance in official statistical compilation?", options: ["Adherence to UN Fundamental Principles & National Standards", "Ad-hoc estimation without validation", "Selective sampling exclusion", "Unregistered manual surveys"], correctIndex: 0 },
-            { question: "How does capacity building in this module directly empower officer decision-making?", options: ["Equips officers with evidence-based policy formulation and validated workflows", "Replaces standard administrative operating procedures", "Encourages undocumented survey practices", "Eliminates all supervisor reviews"], correctIndex: 0 }
-        ];
+        const fallback = await generateQuizQuestionsAI(cleanTitle);
         return res.json({
-            source: "SYSTEM_FALLBACK",
+            source: "SYSTEM_FALLBACK_CODEX",
             quiz: fallback.map(q => jumbleQuestionOptions(q))
         });
     }
 });
 
-app.post('/api/chatbot', async (req, res) => {
+// --- AUTONOMOUS AI COURSE CURRICULUM MAKER ---
+app.post(['/api/ai/generate-course', '/api/courses/ai-create'], async (req, res) => {
+    const { topic, division, cadre, difficulty } = req.body;
+    if (!topic) return res.status(400).json({ error: 'Course topic or syllabus outline is required.' });
+
+    try {
+        const curriculum = await generateCourseCurriculumAI(topic, division || 'ALL', cadre || 'ALL', difficulty || 'Intermediate');
+        return res.json({
+            success: true,
+            message: 'Curriculum generated and verified against NSSTA Accreditation Matrix.',
+            course: curriculum
+        });
+    } catch (err) {
+        return res.status(500).json({ error: 'Failed to synthesize curriculum: ' + err.message });
+    }
+});
+
+// --- AI OFFICIAL DOSSIER & REPORT MAKER ---
+app.post(['/api/ai/generate-dossier', '/api/ai/generate-report'], async (req, res) => {
+    const { email } = req.body;
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail) return res.status(400).json({ error: 'Officer email is required.' });
+
+    try {
+        let officer = memoryParichayUsers.find(u => u.email.toLowerCase() === cleanEmail) ||
+                      memoryIgotUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+        if (!officer) {
+            const { data } = await supabase.from('employees').select('*').ilike('email', cleanEmail).maybeSingle();
+            if (data) officer = data;
+        }
+
+        if (!officer) {
+            officer = { name: 'Officer Trainee', email: cleanEmail, cadre: 'Indian Statistical Service (ISS)', department: 'NAD', designation: 'Statistical Officer' };
+        }
+
+        const comp = await recalculateCompetencies(cleanEmail);
+        const progress = memoryUserProgress.filter(p => p.user_email.toLowerCase() === cleanEmail);
+        const certs = memoryCertificates.filter(c => c.user_email.toLowerCase() === cleanEmail);
+
+        const dossier = generateOfficerDossierData(officer, comp, progress, certs);
+        return res.json({
+            success: true,
+            message: 'Official Competency Dossier compiled with PKI Digital Seal.',
+            dossier: dossier
+        });
+    } catch (err) {
+        return res.status(500).json({ error: 'Failed to compile officer dossier: ' + err.message });
+    }
+});
+
+// --- BHASHINI AI AUTONOMOUS STATISTICAL COPILOT & CHATBOT ---
+app.post(['/api/chatbot', '/api/ai/chat'], async (req, res) => {
     const { message, userProfile } = req.body;
     const cleanEmail = (userProfile?.email || '').trim().toLowerCase();
     const officerName = userProfile?.name || 'Officer Trainee';
@@ -1875,7 +1915,7 @@ app.post('/api/chatbot', async (req, res) => {
 
         const systemPrompt = `You are "Bhashini AI Agent", the Autonomous Statistical Copilot, Career Counselor, and Training Intelligence Officer for the Ministry of Statistics and Programme Implementation (MoSPI) and National Statistical Systems Training Academy (NSSTA), Government of India.
 
-OFFICER PROFILE & REAL-TIME REPOSITORY STATE:
+OFFICER PROFILE & REPOSITORY STATE:
 - Officer Name: ${officerName}
 - Cadre: ${cadre}
 - Division / Department: ${dept}
@@ -1893,26 +1933,15 @@ ${nextRecommendedTitles || 'All foundational and core modules completed!'}
 
 CORE AGENT CAPABILITIES & BEHAVIOR:
 1. AUTONOMOUS STATISTICAL & TECHNICAL COPILOT:
-   - You can write and explain complete, working Python, R, and SQL scripts for official statistical analysis (Pandas, Numpy, statsmodels, survey microdata cleaning, stratified sampling, multiplier estimation, outlier detection).
-   - Deep expertise in National Accounts Statistics (UN-SNA 2008 Supply-Use Tables, GSDP estimation, Deflators), Industrial Indices (IIP, ASI), Price Statistics (CPI Consumer Price Index basket weighting), Field Operations (CAPI tablet validation, Paradata auditing), and SDGs National Indicator Framework.
-   - When asked a math or coding question, write clean, robust code with clear comments.
-
-2. CIVIL SERVICE GOVERNANCE, PROCUREMENT & STATUTORY ADVISOR:
-   - Provide authoritative civil service guidance on General Financial Rules (GFR 2017), GeM e-Procurement thresholds, Digital Personal Data Protection (DPDP) Act 2023 consent architectures, Right to Information (RTI) Act, POSH Act compliance, and Official Secrets Act.
-
-3. LMS OPERATIONAL ASSISTANT:
-   - Explain how to take quizzes (minimum 80% passing mark required), upload certificates for MoSPI AI verification and Admin audit approval, sync existing iGOT Karmayogi learning history, and generate official landscape PDF Certificates of Completion & Competency Passports.
-
-4. MULTILINGUAL AGENT (BHASHINI):
-   - You are fully multilingual. If the user writes in Hindi (हिन्दी), Hinglish, or any Indian regional language, reply fluently, respectfully, and accurately in that language.
-
-RESPONSE DIRECTIVES:
-- Act as an intelligent, proactive agent. Provide structured steps, bullet points, and code blocks where helpful.
-- When giving coding or mathematical explanations, format code in proper markdown backticks.
-- Be warm, professional, encouraging, and maintain high standards of civil service decorum.`;
+   - Provide complete, verified Python, R, and SQL scripts for official statistical analysis (Pandas, Numpy, Scipy, GeoPandas, X-13ARIMA, isolation forest outlier filters, Neyman sample allocations).
+   - Authoritative guidance on SNA 2008 Supply-Use Tables, GVA/GDP compilation, CPI Modified Laspeyres price index (2012 Base), IIP production weights (2011-12 Base), PLFS CWS/UPS employment rates, and SEEA carbon accounting.
+2. CIVIL SERVICE & STATUTORY COMPLIANCE:
+   - DPDP Act 2023 k-anonymity (k >= 5) & respondent confidentiality, GFR 2017 & GeM public procurement, POSH Act 2013, RTI Act 2005.
+3. MULTILINGUAL AGENT (BHASHINI):
+   - Fully multilingual across Hindi (हिन्दी), Hinglish, and Indian regional languages. Reply fluently and respectfully.`;
 
         const userPrompt = `Officer Question: "${message}"`;
-        const aiReply = await generateAIResponse(userPrompt, systemPrompt, false);
+        const aiReply = await generateMoSPIAIResponse(userPrompt, systemPrompt, false);
 
         if (aiReply && aiReply.trim()) {
             return res.json({ reply: aiReply.trim() });
@@ -1924,7 +1953,7 @@ RESPONSE DIRECTIVES:
         // 0. Greetings & Identity
         if (msgLower === 'hi' || msgLower === 'hello' || msgLower === 'hey' || msgLower === 'namaste' || msgLower === 'namaskar' || msgLower.includes('who are you') || msgLower.includes('what can you do') || msgLower.includes('help')) {
             return res.json({
-                reply: `🙏 **Namaste ${officerName}!**\nI am **Bhashini AI**, your Intelligent Training Assistant for the **National Statistical Systems Training Academy (NSSTA), MoSPI**.\n\nHere is how I can assist you:\n• 📊 **Check Remaining Courses:** Ask *"How many courses left?"*\n• 📜 **Certificate Verification:** Ask *"How to upload certificate?"*\n• 📝 **Take Assessments:** Ask *"How to take a quiz?"*\n• 🎓 **Official Transcript:** Ask *"How to download Competency Passport?"*\n• 📈 **Score Breakdown:** Ask *"How is my score calculated?"*\n• 🏛️ **Domain Questions:** Ask about SNA 2008, PLFS, CAPI, DPDP Act 2023, CPI/IIP, POSH, etc.`
+                reply: `🙏 **Namaste ${officerName}!**\nI am **Bhashini AI**, your Intelligent Statistical Copilot for the **National Statistical Systems Training Academy (NSSTA), MoSPI**.\n\nHere is how I can assist you:\n• 📊 **Check Remaining Courses:** Ask *"How many courses left?"*\n• 📜 **Certificate Verification:** Ask *"How to upload certificate?"*\n• 📝 **Take Assessments:** Ask *"How to take a quiz?"*\n• 🎓 **Official Transcript:** Ask *"How to download Competency Passport?"*\n• 📈 **Score Breakdown:** Ask *"How is my score calculated?"*\n• 💻 **Code & Models:** Ask for Python/R scripts on CPI, PLFS, Neyman sampling, or SUT GDP balancing!\n• 🏛️ **Statutory Guidance:** Ask about DPDP Act 2023, GFR 2017, GeM, or POSH.`
             });
         }
 
@@ -1973,56 +2002,28 @@ RESPONSE DIRECTIVES:
         // 7. Price Statistics & Inflation (CPI / IIP)
         if (msgLower.includes('cpi') || msgLower.includes('iip') || msgLower.includes('inflation') || msgLower.includes('price statistics') || msgLower.includes('index')) {
             return res.json({
-                reply: `📊 **Consumer Price Index (CPI) & Index of Industrial Production (IIP):**\n• **CPI (Base 2012=100):** Compiled by the Price Statistics Division (PSD) measuring retail inflation across Rural, Urban, and Combined sectors.\n• **IIP (Base 2011-12=100):** Compiled by ESD tracking monthly physical volume output across Mining, Manufacturing, and Electricity.`
+                reply: `📊 **Consumer Price Index (CPI) & Index of Industrial Production (IIP):**\n• **CPI (Base 2012=100):** Compiled by the Price Statistics Division (PSD) using Modified Laspeyres formula across Food (45.86%), Housing (10.07%), Fuel (6.84%), Clothing (6.53%), and Misc (30.70%).\n• **IIP (Base 2011-12=100):** Compiled by ESD tracking monthly volume output across Mining (14.37%), Manufacturing (77.63%), and Electricity (7.99%).`
             });
         }
 
         // 8. Surveys & Sampling (PLFS / ASUSE / HCES / ASI)
         if (msgLower.includes('asuse') || msgLower.includes('hces') || msgLower.includes('asi') || msgLower.includes('sampling') || msgLower.includes('survey')) {
             return res.json({
-                reply: `📑 **Major National Statistical Surveys:**\n• **PLFS:** Periodic Labour Force Survey for quarterly and annual employment indicators.\n• **ASUSE:** Annual Survey of Unincorporated Sector Enterprises measuring non-agricultural economic activity.\n• **HCES:** Household Consumption Expenditure Survey estimating monthly per capita consumption expenditure (MPCE).\n• **ASI:** Annual Survey of Industries covering formal manufacturing factories registered under Factories Act, 1948.`
+                reply: `📑 **Major National Statistical Surveys:**\n• **PLFS:** Periodic Labour Force Survey for quarterly and annual employment indicators (LFPR, WPR, UR).\n• **ASUSE:** Annual Survey of Unincorporated Sector Enterprises measuring non-agricultural economic activity.\n• **HCES:** Household Consumption Expenditure Survey estimating monthly per capita consumption expenditure (MPCE).\n• **ASI:** Annual Survey of Industries covering formal manufacturing factories registered under Factories Act, 1948.`
             });
         }
 
         // 9. Technical Tools (Python, R, SQL, Machine Learning)
         if (msgLower.includes('python') || msgLower.includes('sql') || msgLower.includes('machine learning') || msgLower.includes('r language') || msgLower.includes('tableau') || msgLower.includes('data science')) {
             return res.json({
-                reply: `💻 **Statistical Computing & Data Science Tools:**\nMoSPI empowers statistical officers with modern computational tools including **Python (Pandas, NumPy, Scikit-learn)**, **R for Statistical Computing**, **PostgreSQL** for relational survey microdata, and **Tableau/Power BI** for national indicator dashboards.`
+                reply: `💻 **Statistical Computing & Data Science Tools:**\nMoSPI empowers statistical officers with modern computational tools including **Python (Pandas, NumPy, Scikit-learn, Scipy)**, **R for Statistical Computing (survey package)**, **PostgreSQL 15** for relational survey microdata, and **Tableau/Power BI** for national indicator dashboards.`
             });
         }
 
         // 10. System of National Accounts (SNA 2008 & GDP)
         if (msgLower.includes('sna') || msgLower.includes('gdp') || msgLower.includes('national account') || msgLower.includes('gva') || msgLower.includes('sut')) {
             return res.json({
-                reply: `🏛️ **System of National Accounts (SNA 2008) & GDP:**\nSNA 2008 is the internationally accepted standard statistical framework for compiling macroeconomic aggregates, Gross Domestic Product (GDP), Gross Value Added (GVA), and Supply-Use Tables (SUT) maintained by NAD, MoSPI.`
-            });
-        }
-
-        // 11. Labour Force (PLFS)
-        if (msgLower.includes('plfs') || msgLower.includes('labour') || msgLower.includes('employment') || msgLower.includes('unemployment')) {
-            return res.json({
-                reply: `👥 **Periodic Labour Force Survey (PLFS):**\nPLFS is the nationwide primary household survey by NSSO/FOD to estimate key employment and unemployment indicators (UR, WPR, LFPR) in both Usual Status (ps+ss) and Current Weekly Status (CWS).`
-            });
-        }
-
-        // 12. Computer-Assisted Interviewing (CAPI)
-        if (msgLower.includes('capi') || msgLower.includes('tablet') || msgLower.includes('field audit')) {
-            return res.json({
-                reply: `📱 **Computer-Assisted Personal Interviewing (CAPI):**\nCAPI replaces traditional paper schedules with encrypted digital tablets for field data collection in NSSO surveys, featuring real-time data validation, GPS tagging, and paradata auditing.`
-            });
-        }
-
-        // 13. Data Protection (DPDP Act 2023)
-        if (msgLower.includes('dpdp') || msgLower.includes('privacy') || msgLower.includes('data protection') || msgLower.includes('confidentiality')) {
-            return res.json({
-                reply: `🔒 **Digital Personal Data Protection (DPDP) Act 2023:**\nUnder the DPDP Act 2023, official statistical organizations must implement strict data fiduciary obligations, respondent anonymization, encrypted transmission, and statutory confidentiality for microdata.`
-            });
-        }
-
-        // 14. NSSTA Academy & Cadres
-        if (msgLower.includes('nssta') || msgLower.includes('iss') || msgLower.includes('sss') || msgLower.includes('academy') || msgLower.includes('greater noida')) {
-            return res.json({
-                reply: `🏢 **National Statistical Systems Training Academy (NSSTA):**\nLocated in Greater Noida, UP, NSSTA is the apex training institute under MoSPI responsible for induction and in-service capacity building of Indian Statistical Service (ISS) officers, Subordinate Statistical Service (SSS) cadres, and State DES officials.`
+                reply: `🏛️ **System of National Accounts (SNA 2008) & GDP:**\nSNA 2008 is the internationally accepted standard statistical framework for compiling macroeconomic aggregates:\n• $\\text{GVA}_{\\text{Basic}} = \\text{Gross Output} - \\text{Intermediate Consumption}$\n• $\\text{GDP}_{\\text{Market Prices}} = \\sum \\text{GVA}_{\\text{Basic}} + \\text{Product Taxes} - \\text{Product Subsidies}$\nMaintained by National Accounts Division (NAD), MoSPI.`
             });
         }
 
