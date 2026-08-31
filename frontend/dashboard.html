@@ -823,7 +823,24 @@
           body: JSON.stringify({ courseTitle: title, category: cat })
         });
         const data = await res.json();
-        activeQuizData = data.quiz || [];
+        const rawQuiz = data.quiz || [];
+
+        // Shuffle options and recalculate correct index
+        activeQuizData = rawQuiz.map(q => {
+          if (!q || !Array.isArray(q.options) || q.options.length < 2) return q;
+          const origOpts = [...q.options];
+          const correctAns = origOpts[q.correctIndex !== undefined ? q.correctIndex : 0];
+          const shuffled = [...origOpts];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          return {
+            question: q.question,
+            options: shuffled,
+            correctIndex: shuffled.indexOf(correctAns) >= 0 ? shuffled.indexOf(correctAns) : 0
+          };
+        });
 
         if (badgeDiv) {
           if (data.source === 'DATABASE_GROUNDED') {

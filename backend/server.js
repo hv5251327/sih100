@@ -1272,6 +1272,35 @@ app.post('/api/recommendations', async (req, res) => {
     }
 });
 
+function jumbleQuestionOptions(questionObj) {
+    if (!questionObj || !Array.isArray(questionObj.options) || questionObj.options.length < 2) {
+        return questionObj;
+    }
+
+    const originalOptions = [...questionObj.options];
+    const correctIdx = (typeof questionObj.correctIndex === 'number') 
+        ? questionObj.correctIndex 
+        : ((typeof questionObj.correct_index === 'number') ? questionObj.correct_index : 0);
+    
+    const correctAnswer = originalOptions[correctIdx] !== undefined ? originalOptions[correctIdx] : originalOptions[0];
+
+    // Fisher-Yates shuffle options
+    const shuffledOptions = [...originalOptions];
+    for (let i = shuffledOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+    }
+
+    // Find the new randomized index of the correct answer
+    const newCorrectIndex = shuffledOptions.indexOf(correctAnswer);
+
+    return {
+        question: questionObj.question,
+        options: shuffledOptions,
+        correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0
+    };
+}
+
 app.post('/api/generate-quiz', async (req, res) => {
     const { courseTitle } = req.body;
     const cleanTitle = (courseTitle || '').trim();
@@ -1304,13 +1333,13 @@ app.post('/api/generate-quiz', async (req, res) => {
         }
 
         if (storedQuiz && storedQuiz.length > 0) {
-            // Shuffle and select 5 questions from DB
+            // Shuffle questions and jumble answer options randomly
             const shuffled = storedQuiz.sort(() => 0.5 - Math.random()).slice(0, 5);
             return res.json({ 
                 source: "DATABASE_GROUNDED",
                 course_title: cleanTitle,
                 total_in_bank: storedQuiz.length,
-                quiz: shuffled.map(q => ({ 
+                quiz: shuffled.map(q => jumbleQuestionOptions({ 
                     question: q.question, 
                     options: q.options, 
                     correctIndex: q.correct_index 
@@ -1330,23 +1359,26 @@ Reply ONLY with a valid JSON array of 5 objects (NO markdown):
     "correctIndex": 0
   }
 ]`;
-        const rawAiQuiz = await generateAIResponse(quizPrompt);
+        const rawAiQuiz = await generateAIResponse(quizPrompt, null, true);
         const cleanedJson = rawAiQuiz.replace(/```json/g, '').replace(/```/g, '').trim();
         const parsedQuiz = JSON.parse(cleanedJson);
 
         return res.json({
             source: "AI_SYNTHESIZED",
             course_title: cleanTitle,
-            quiz: parsedQuiz
+            quiz: (Array.isArray(parsedQuiz) ? parsedQuiz : []).map(q => jumbleQuestionOptions(q))
         });
     } catch (err) {
+        const fallback = [
+            { question: `What is the primary regulatory and statistical objective of ${cleanTitle}?`, options: ["Statutory compliance, methodological standardization & data integrity", "Manual log maintenance", "Unregulated survey sampling", "Audit exemptions"], correctIndex: 0 },
+            { question: `How are survey milestones verified under ${cleanTitle}?`, options: ["Automated digital validation & supervisory spot-checks", "Informal verbal notes", "Unchecked paper records", "No verification required"], correctIndex: 0 },
+            { question: "Which statutory framework protects respondent data confidentiality in MoSPI surveys?", options: ["MoSPI Data Policy & DPDP Act 2023", "Generic guidelines", "Social media rules", "Informal directives"], correctIndex: 0 },
+            { question: "What is the key benchmark for data quality assurance in official statistical compilation?", options: ["Adherence to UN Fundamental Principles & National Standards", "Ad-hoc estimation without validation", "Selective sampling exclusion", "Unregistered manual surveys"], correctIndex: 0 },
+            { question: "How does capacity building in this module directly empower officer decision-making?", options: ["Equips officers with evidence-based policy formulation and validated workflows", "Replaces standard administrative operating procedures", "Encourages undocumented survey practices", "Eliminates all supervisor reviews"], correctIndex: 0 }
+        ];
         return res.json({
             source: "SYSTEM_FALLBACK",
-            quiz: [
-                { question: `What is the primary regulatory objective of ${cleanTitle}?`, options: ["Statutory compliance & data integrity", "Manual log maintenance", "Unregulated survey sampling", "Audit exemptions"], correctIndex: 0 },
-                { question: `How are survey milestones verified under ${cleanTitle}?`, options: ["Automated digital validation & supervisory spot-checks", "Informal verbal notes", "Unchecked paper records", "No verification required"], correctIndex: 0 },
-                { question: "Which statutory framework protects respondent data confidentiality?", options: ["MoSPI Data Policy & DPDP Act 2023", "Generic guidelines", "Social media rules", "Informal directives"], correctIndex: 0 }
-            ]
+            quiz: fallback.map(q => jumbleQuestionOptions(q))
         });
     }
 });
