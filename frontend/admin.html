@@ -341,73 +341,6 @@
       </div>
     </section>
 
-    <!-- 3. Training Budget & Capacity Allocation Simulator -->
-    <section class="panel" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-left: 4px solid #0f766e;">
-      <div class="panel-header">
-        <div>
-          <h2><i class="fa-solid fa-calculator"></i> Training Budget, Person-Days & Capacity Allocation Simulator</h2>
-          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Simulate logistical expenditure, total training person-days, and projected competency uplift for upcoming capacity-building programs.</p>
-        </div>
-      </div>
-
-      <div class="grid-2" style="margin-top:10px;">
-        <div style="background:#ffffff; border:1px solid var(--border); border-radius:8px; padding:16px;">
-          <div style="font-weight:700; font-size:0.9rem; color:var(--text-main); margin-bottom:12px;"><i class="fa-solid fa-sliders"></i> Simulation Parameters</div>
-          <div class="form-group">
-            <label>Target Statistical Division</label>
-            <select id="simDept" onchange="runBudgetSimulator()">
-              <option value="All Divisions">Universal (All MoSPI Divisions)</option>
-              <option value="National Accounts Division (NAD)">National Accounts Division (NAD)</option>
-              <option value="Field Operations Division (FOD)">Field Operations Division (FOD)</option>
-              <option value="Price Statistics Division (PSD)">Price Statistics Division (PSD)</option>
-              <option value="Social Statistics Division (SSD)">Social Statistics Division (SSD)</option>
-            </select>
-          </div>
-          <div class="grid-2" style="margin-top:10px;">
-            <div class="form-group">
-              <label>Nominated Officers Count: <strong id="simOfficerVal">35</strong></label>
-              <input type="range" id="simOfficers" min="5" max="150" value="35" oninput="document.getElementById('simOfficerVal').innerText = this.value; runBudgetSimulator();">
-            </div>
-            <div class="form-group">
-              <label>Duration (Days): <strong id="simDaysVal">5</strong></label>
-              <input type="range" id="simDays" min="1" max="21" value="5" oninput="document.getElementById('simDaysVal').innerText = this.value; runBudgetSimulator();">
-            </div>
-          </div>
-          <div class="form-group" style="margin-top:10px;">
-            <label>Delivery Mode</label>
-            <select id="simMode" onchange="runBudgetSimulator()">
-              <option value="In-Person (NSSTA Greater Noida)">In-Person Residential (NSSTA Greater Noida)</option>
-              <option value="Hybrid">Hybrid (Classroom + Regional Live Streaming)</option>
-              <option value="Virtual">Virtual (Gov MeghRaj Cloud)</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-          <div class="stat-card" style="border-left:4px solid var(--primary);">
-            <div class="stat-label"><i class="fa-solid fa-user-clock"></i> Total Person-Days</div>
-            <div class="stat-val" id="sim-person-days">175</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Nominated officer-days</div>
-          </div>
-          <div class="stat-card" style="border-left:4px solid #0f766e;">
-            <div class="stat-label"><i class="fa-solid fa-indian-rupee-sign"></i> Estimated Budget</div>
-            <div class="stat-val" id="sim-budget-lakhs">₹ 7.88 L</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Logistics, TA/DA & Venue</div>
-          </div>
-          <div class="stat-card" style="border-left:4px solid var(--accent);">
-            <div class="stat-label"><i class="fa-solid fa-chart-line"></i> Projected Uplift</div>
-            <div class="stat-val" id="sim-uplift-pct" style="color:var(--success);">+39.5%</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Division competency gain</div>
-          </div>
-          <div class="stat-card" style="border-left:4px solid var(--warning);">
-            <div class="stat-label"><i class="fa-solid fa-building"></i> Facility Load</div>
-            <div class="stat-val" id="sim-facility-load">58%</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">NSSTA capacity utilization</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
   </div>
 
   <script>
@@ -421,7 +354,6 @@
         loadCoursesDropdown(),
         loadCertificatesQueue()
       ]);
-      runBudgetSimulator();
     });
 
     async function loadMetadataDropdowns() {
@@ -995,30 +927,6 @@
         await loadOfficerAnalytics();
       } catch (e) {
         alert("Failed to review certificate.");
-      }
-    }
-
-    // --- 2. Training Budget & Capacity Simulator ---
-    async function runBudgetSimulator() {
-      const division = document.getElementById("simDept") ? document.getElementById("simDept").value : 'All Divisions';
-      const targetOfficers = document.getElementById("simOfficers") ? document.getElementById("simOfficers").value : 35;
-      const durationDays = document.getElementById("simDays") ? document.getElementById("simDays").value : 5;
-      const mode = document.getElementById("simMode") ? document.getElementById("simMode").value : 'In-Person (NSSTA Greater Noida)';
-
-      try {
-        const res = await fetch(`${API_URL}/api/admin/budget-simulate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ division, targetOfficers, durationDays, mode })
-        });
-        const data = await res.json();
-
-        document.getElementById("sim-person-days").innerText = data.total_person_days || (targetOfficers * durationDays);
-        document.getElementById("sim-budget-lakhs").innerText = `₹ ${data.estimated_budget_lakhs || '0.00'} L`;
-        document.getElementById("sim-uplift-pct").innerText = `+${data.projected_competency_uplift_pct || 35}%`;
-        document.getElementById("sim-facility-load").innerText = data.facility_capacity_index || '50%';
-      } catch (e) {
-        console.warn("Budget simulator fallback calculation.");
       }
     }
 
