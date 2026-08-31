@@ -467,6 +467,14 @@ app.post('/api/auth/sso', async (req, res) => {
             } catch (e) {}
         }
 
+        const userProfile = existingUser || {
+            name: 'MoSPI Officer (Parichay Verified)',
+            email: cleanEmail,
+            cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service",
+            department: 'National Accounts Division (NAD)',
+            designation: 'Assistant Director'
+        };
+
         const sessionToken = 'GOV-SSO-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now();
         const complianceData = {
             auth_gateway: sso_provider || 'Parichay (MeriPehchan National Identity Framework)',
