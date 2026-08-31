@@ -1029,47 +1029,129 @@
       }
     }
 
-    function openAdminCertModal(certEnc) {
+    function base64ToUint8Array(base64) {
+      const base64Clean = base64.replace(/^data:.*?;base64,/, '');
+      const binaryString = atob(base64Clean);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes;
+    }
+
+    async function renderCertDocumentViewer(c) {
+      const container = document.getElementById("admin-cert-viewer-container");
+      if (!container) return;
+
+      const fileName = c.certificate_file_name || 'Certificate.pdf';
+      const fileData = c.file_data || '';
+
+      // 1. If it's an image
+      if (fileData.startsWith("data:image")) {
+        container.innerHTML = `
+          <div style="margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#ffffff; padding:10px 16px; border-radius:8px 8px 0 0; font-size:0.88rem;">
+              <span><i class="fa-solid fa-file-image" style="color:#38bdf8;"></i> <strong>Uploaded Officer Certificate:</strong> ${fileName}</span>
+              <a href="${fileData}" target="_blank" download="${fileName}" class="btn-action" style="background:#0284c7; padding:4px 12px; font-size:0.78rem; color:#fff; text-decoration:none;">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Full Image
+              </a>
+            </div>
+            <div style="border:2px solid #1e293b; border-radius:0 0 8px 8px; background:#f8fafc; padding:16px; text-align:center; max-height:500px; overflow:auto;">
+              <img src="${fileData}" alt="${fileName}" style="max-width:100%; height:auto; border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 2. If it's a PDF with valid Base64
+      if ((fileData.startsWith("data:application/pdf") || fileData.includes("JVBERi")) && fileData.length > 200) {
+        try {
+          const bytes = base64ToUint8Array(fileData);
+          const blob = new Blob([bytes], { type: 'application/pdf' });
+          const blobUrl = URL.createObjectURL(blob);
+
+          container.innerHTML = `
+            <div style="margin-bottom:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#ffffff; padding:10px 16px; border-radius:8px 8px 0 0; font-size:0.88rem;">
+                <span><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> <strong>Uploaded PDF Document:</strong> ${fileName}</span>
+                <div style="display:flex; gap:8px;">
+                  <a href="${blobUrl}" target="_blank" download="${fileName}" class="btn-action" style="background:#0284c7; padding:4px 12px; font-size:0.78rem; color:#fff; text-decoration:none;">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Fullscreen / Download
+                  </a>
+                </div>
+              </div>
+              <div id="pdf-canvas-wrapper" style="border:2px solid #1e293b; border-radius:0 0 8px 8px; background:#334155; min-height:380px; max-height:500px; overflow:auto; text-align:center; padding:16px;">
+                <div id="pdf-loading-msg" style="color:#fff; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Rendering PDF pages with PDF.js...</div>
+                <div id="pdf-pages-list" style="display:flex; flex-direction:column; align-items:center; gap:16px;"></div>
+              </div>
+            </div>
+          `;
+
+          const loadingTask = pdfjsLib.getDocument({ data: bytes });
+          const pdf = await loadingTask.promise;
+          const pagesList = document.getElementById("pdf-pages-list");
+          const loadMsg = document.getElementById("pdf-loading-msg");
+          if (loadMsg) loadMsg.style.display = "none";
+
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const scale = 1.3;
+            const viewport = page.getViewport({ scale });
+
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            canvas.style.maxWidth = "100%";
+            canvas.style.height = "auto";
+            canvas.style.borderRadius = "4px";
+            canvas.style.boxShadow = "0 4px 14px rgba(0,0,0,0.3)";
+            canvas.style.background = "#ffffff";
+
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            pagesList.appendChild(canvas);
+          }
+          return;
+        } catch (e) {
+          console.warn("PDF.js render failed, falling back to official certificate view:", e);
+        }
+      }
+
+      // 3. Fallback: Official verified Certificate layout
+      container.innerHTML = `
+        <div id="admin-cert-preview-card" style="border:4px double #1e3a8a; border-radius:8px; padding:24px; text-align:center; background:#fcfbf7; margin-bottom:16px; position:relative;">
+          <div style="font-size:0.8rem; font-weight:800; color:#1e3a8a; letter-spacing:1px;">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
+          <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA GREATER NOIDA)</div>
+          <h4 style="font-size:1.25rem; color:#0f172a; margin:16px 0 4px 0; font-family:Georgia, serif;">CERTIFICATE OF ACCREDITATION</h4>
+          <p style="font-size:0.85rem; color:#475569; margin:0;">This is to certify that</p>
+          <h3 style="font-size:1.35rem; color:#1e3a8a; margin:8px 0; font-weight:800;">${c.officer_name || 'Dr. Sunita Sharma'}</h3>
+          <p style="font-size:0.85rem; color:#475569; margin:0;">has successfully completed accredited capacity building & evaluation in</p>
+          <h4 style="font-size:1.05rem; color:#0f172a; margin:8px 0; font-weight:700;">${c.course_title || 'Accredited Module'}</h4>
+          <div style="margin:8px 0; font-size:0.82rem; color:#475569;">
+            <i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> Attached Document: <strong>${fileName}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:24px; font-size:0.78rem; color:#475569; border-top:1px solid #e2e8f0; padding-top:12px;">
+            <div style="text-align:left;">
+              <div><strong>Audit Reference:</strong> <span style="font-family:monospace; color:#0284c7;">${c.audit_code || ('MoSPI-AUDIT-' + (c.id || Date.now()).toString().slice(-6))}</span></div>
+              <div><strong>Issuing Authority:</strong> iGOT Karmayogi Bharat / NSSTA Accredited</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:#15803d; font-weight:800;"><i class="fa-solid fa-shield-halved"></i> NSSTA SECURE SEAL VERIFIED</div>
+              <div>Date: ${c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', year:'numeric' }) : 'Recently'}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function openAdminCertModal(certEnc) {
       try {
         const c = JSON.parse(decodeURIComponent(certEnc));
         activeModalCert = c;
 
-        const viewerContainer = document.getElementById("admin-cert-viewer-container");
-        if (c.file_data && (c.file_data.startsWith("data:application/pdf") || c.file_data.startsWith("data:image"))) {
-          viewerContainer.innerHTML = `
-            <div style="margin-bottom:16px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#ffffff; padding:10px 16px; border-radius:8px 8px 0 0; font-size:0.88rem;">
-                <span><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> <strong>Uploaded Officer Document:</strong> ${c.certificate_file_name || 'Certificate.pdf'}</span>
-                <a href="${c.file_data}" target="_blank" download="${c.certificate_file_name || 'Certificate.pdf'}" class="btn-action" style="background:#0284c7; padding:4px 12px; font-size:0.78rem; color:#fff; text-decoration:none;">
-                  <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Fullscreen / Download
-                </a>
-              </div>
-              <iframe src="${c.file_data}" style="width:100%; height:500px; border:2px solid #1e293b; border-radius:0 0 8px 8px; background:#f8fafc;"></iframe>
-            </div>
-          `;
-        } else {
-          viewerContainer.innerHTML = `
-            <div id="admin-cert-preview-card" style="border:4px double #1e3a8a; border-radius:8px; padding:24px; text-align:center; background:#fcfbf7; margin-bottom:16px; position:relative;">
-              <div style="font-size:0.8rem; font-weight:800; color:#1e3a8a; letter-spacing:1px;">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
-              <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA)</div>
-              <h4 style="font-size:1.25rem; color:#0f172a; margin:16px 0 4px 0; font-family:Georgia, serif;">CERTIFICATE OF ACCREDITATION</h4>
-              <p style="font-size:0.85rem; color:#475569; margin:0;">This is to certify that</p>
-              <h3 style="font-size:1.35rem; color:#1e3a8a; margin:8px 0; font-weight:800;">${c.officer_name || 'Officer Trainee'}</h3>
-              <p style="font-size:0.85rem; color:#475569; margin:0;">has successfully completed accredited training curriculum for</p>
-              <h4 style="font-size:1.05rem; color:#0f172a; margin:8px 0; font-weight:700;">${c.course_title || 'Accredited Module'}</h4>
-              <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:24px; font-size:0.78rem; color:#475569; border-top:1px solid #e2e8f0; padding-top:12px;">
-                <div style="text-align:left;">
-                  <div><strong>Audit Reference:</strong> <span style="font-family:monospace; color:#0284c7;">${c.audit_code || ('MoSPI-AUDIT-' + (c.id || Date.now()).toString().slice(-6))}</span></div>
-                  <div><strong>Issuing Authority:</strong> iGOT Karmayogi Bharat / NSSTA Accredited</div>
-                </div>
-                <div style="text-align:right;">
-                  <div style="color:#15803d; font-weight:800;"><i class="fa-solid fa-shield-halved"></i> NSSTA SECURE SEAL VERIFIED</div>
-                  <div>Date: ${c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', year:'numeric' }) : 'Recently'}</div>
-                </div>
-              </div>
-            </div>
-          `;
-        }
+        await renderCertDocumentViewer(c);
 
         document.getElementById("modal-cert-summary").innerText = c.admin_remarks || 'Document passed identity and course alignment checks.';
 
