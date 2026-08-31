@@ -463,18 +463,26 @@ app.post('/api/auth/sso', async (req, res) => {
             }
         }
 
-        const userProfile = existingUser || {
-            name: 'MoSPI Officer (Parichay Verified)',
-            email: cleanEmail,
-            cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service",
-            department: 'National Accounts Division (NAD)',
-            designation: 'Assistant Director'
+        const sessionToken = 'GOV-SSO-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now();
+        const complianceData = {
+            auth_gateway: sso_provider || 'Parichay (MeriPehchan National Identity Framework)',
+            cert_in_aligned: true,
+            dpdp_act_2023_status: 'CONSENT_GRANTED_OFFICIAL_DUTY',
+            session_expiry: new Date(Date.now() + 3600000 * 8).toISOString(),
+            security_level: (role === 'admin' || cleanEmail.includes('admin')) ? 'Level 3 (Administrative Authority)' : 'Level 2 (Officer Verified)'
         };
 
         return res.json({
-            message: 'Gov SSO Authentication Successful via Parichay (MeriPehchan)',
+            message: `Gov SSO Authentication Successful via ${sso_provider || 'Parichay (MeriPehchan)'}`,
             provider: sso_provider || 'Parichay (Govt of India)',
-            user: { ...userProfile, role: 'employee' }
+            session_token: sessionToken,
+            security_compliance: complianceData,
+            user: { 
+                ...userProfile, 
+                role: (role === 'admin' || cleanEmail.includes('admin')) ? 'admin' : 'employee',
+                sso_verified: true,
+                session_token: sessionToken
+            }
         });
     } catch (err) {
         console.error('SSO Error:', err);

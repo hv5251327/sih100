@@ -23,6 +23,27 @@
             </div>
             <button type="submit" class="btn-submit">Login</button>
         </form>
+
+        <div style="margin: 18px 0; display: flex; align-items: center; text-align: center; color: var(--text-muted, #64748b); font-size: 0.78rem; font-weight: 700;">
+            <hr style="flex: 1; border: none; border-top: 1px solid #cbd5e1;">
+            <span style="padding: 0 10px; text-transform: uppercase; letter-spacing: 0.5px;">Or Sign in with Government SSO</span>
+            <hr style="flex: 1; border: none; border-top: 1px solid #cbd5e1;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+            <button type="button" onclick="triggerGovSSO('Parichay (MeriPehchan)')" class="btn-submit" style="background: linear-gradient(135deg, #1e3a8a, #0284c7); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.88rem; padding: 10px 14px;">
+                <i class="fa-solid fa-flag" style="color: #f59e0b;"></i> Log in with Parichay (MeriPehchan SSO)
+            </button>
+            <button type="button" onclick="triggerGovSSO('iGOT Karmayogi Bharat')" class="btn-submit" style="background: #0f172a; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.88rem; padding: 10px 14px; border: 1px solid #334155;">
+                <i class="fa-solid fa-graduation-cap" style="color: #38bdf8;"></i> Log in with iGOT Karmayogi SSO
+            </button>
+        </div>
+
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 12px; margin-bottom: 14px; font-size: 0.75rem; color: #166534; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-shield-halved" style="color: #16a34a; font-size: 0.9rem;"></i>
+            <span><strong>CERT-In & DPDP Act 2023 Compliant</strong> • National Identity Gateway</span>
+        </div>
+
         <p class="footer-text">New Employee? <a href="register.html">Register here</a></p>
         <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
     </div>

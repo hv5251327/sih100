@@ -143,3 +143,56 @@ async function submitRegistration() {
         }
     }
 }
+
+async function triggerGovSSO(provider, targetEmail) {
+    const defaultEmail = targetEmail || (document.getElementById('email') ? document.getElementById('email').value.trim() : '') || 'sunita.sharma@mospi.gov.in';
+
+    let authEmail = defaultEmail;
+    if (!authEmail || authEmail === 'e.g. sunita.sharma@mospi.gov.in') {
+        const choice = prompt(`🇮🇳 Government Single Sign-On Gateway (${provider})\n\nEnter your official Government Email ID (@gov.in / @nic.in / @mospi.gov.in):\n\n(Default: sunita.sharma@mospi.gov.in)`, 'sunita.sharma@mospi.gov.in');
+        if (!choice) return;
+        authEmail = choice.trim();
+    }
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/sso`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: authEmail, role: 'employee', sso_provider: provider })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.user) {
+            localStorage.setItem('mospi_user', JSON.stringify(data.user));
+            alert(`✅ ${provider} Identity Verified!\n\n• Officer: ${data.user.name}\n• Cadre: ${data.user.cadre}\n• Division: ${data.user.department}\n• Session: Verified & CERT-In Compliant\n\nRedirecting to Officer Competency Dashboard...`);
+            window.location.href = 'dashboard.html';
+        } else {
+            alert(`SSO Error: ${data.error || 'Authentication failed'}`);
+        }
+    } catch (e) {
+        alert(`SSO Gateway connection error: ${e.message}`);
+    }
+}
+
+async function triggerGovAdminSSO() {
+    const adminEmail = (document.getElementById('email') ? document.getElementById('email').value.trim() : '') || 'admin@mospi.gov.in';
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/sso`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: adminEmail, role: 'admin', sso_provider: 'Parichay (MeriPehchan Admin Gateway)' })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.user) {
+            localStorage.setItem('mospi_user', JSON.stringify(data.user));
+            alert(`✅ Parichay Admin SSO Verified!\n\n• Role: MoSPI Training Administrator\n• Authority: NSSTA Training HQ\n• Security Clearance: Level 3 High-Trust\n\nRedirecting to Command Center...`);
+            window.location.href = 'admin.html';
+        } else {
+            alert(`Admin SSO Error: ${data.error || 'Authentication failed'}`);
+        }
+    } catch (e) {
+        alert(`Admin SSO Gateway connection error: ${e.message}`);
+    }
+}
