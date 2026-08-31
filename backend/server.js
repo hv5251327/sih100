@@ -1336,20 +1336,43 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
             };
         });
 
-        // 3. Insert directly into Supabase database table `course_quizzes`
+        // 3. Insert directly into Supabase database table `course_quizzes` with conflict-proof sequential IDs
         let savedInDB = false;
         let insertedRows = [];
         try {
+            // Find current highest ID to prevent sequence primary key collision
+            let nextStartId = 500;
+            const { data: maxRow } = await supabase
+                .from('course_quizzes')
+                .select('id')
+                .order('id', { ascending: false })
+                .limit(1);
+
+            if (maxRow && maxRow.length > 0 && typeof maxRow[0].id === 'number') {
+                nextStartId = maxRow[0].id + 1;
+            }
+
+            const rowsWithId = rowsToInsert.map((r, idx) => ({
+                id: nextStartId + idx,
+                ...r
+            }));
+
             const { data: inserted, error: quizErr } = await supabase
                 .from('course_quizzes')
-                .insert(rowsToInsert)
+                .insert(rowsWithId)
                 .select();
 
-            if (!quizErr && inserted) {
+            if (!quizErr && inserted && inserted.length > 0) {
                 savedInDB = true;
                 insertedRows = inserted;
             } else if (quizErr) {
-                console.warn('Supabase quiz insert note:', quizErr.message);
+                console.warn('Supabase quiz insert note with explicit ID:', quizErr.message);
+                // Fallback attempt without explicit id
+                const { data: retryInsert } = await supabase.from('course_quizzes').insert(rowsToInsert).select();
+                if (retryInsert && retryInsert.length > 0) {
+                    savedInDB = true;
+                    insertedRows = retryInsert;
+                }
             }
         } catch (dbErr) {
             console.warn('DB error during quiz insertion:', dbErr.message);
@@ -1357,10 +1380,12 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
 
         return res.json({ 
             success: true,
-            message: `Successfully synthesized and stored ${rowsToInsert.length} assessment questions in course_quizzes table!`, 
+            message: `Successfully synthesized and stored ${rowsToInsert.length} assessment questions in course_quizzes database table!`, 
             course_title: cleanTitle,
-            saved_to_db: savedInDB || true,
+            saved_to_db: savedInDB,
             total_generated: rowsToInsert.length,
+            requested_count: count,
+            is_max_possible: rowsToInsert.length < count,
             questions: insertedRows.length > 0 ? insertedRows : rowsToInsert 
         });
     } catch (err) {

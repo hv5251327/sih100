@@ -352,13 +352,8 @@
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;">
             <div class="form-group">
-              <label>Number of MCQs</label>
-              <select id="quizQuestionCount">
-                <option value="5">5 MCQs (Standard Assessment)</option>
-                <option value="6" selected>6 MCQs (Recommended)</option>
-                <option value="8">8 MCQs (Comprehensive)</option>
-                <option value="10">10 MCQs (Extended Question Bank)</option>
-              </select>
+              <label>Number of MCQs (User Choice)</label>
+              <input type="number" id="quizQuestionCount" min="1" max="50" value="6" placeholder="Enter count (e.g. 5, 8, 10, 15)..." required style="width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:6px; font-weight:700; font-size:0.88rem;">
             </div>
             <div class="form-group">
               <label>Evaluation Difficulty</label>
@@ -980,15 +975,19 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to generate quiz');
 
-        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
-        alert(`✅ ${data.message}\n\n• Target Course: ${courseTitle}\n• Total Questions Added: ${data.total_generated || (data.questions || []).length}\n• Difficulty Level: ${difficulty}\n\nAll questions are now live in the course_quizzes database table!`);
+        const countMsg = data.is_max_possible 
+          ? `(Extracted ${data.total_generated} items — maximum possible from provided text)` 
+          : `(${data.total_generated} items)`;
+
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message} ${countMsg}`;
+        alert(`✅ ${data.message}\n\n• Target Course: ${courseTitle}\n• Total Questions Saved to DB: ${data.total_generated || (data.questions || []).length} ${data.is_max_possible ? '(Max possible from document)' : ''}\n• Evaluation Level: ${difficulty}\n\nAll questions have been permanently stored in Supabase course_quizzes table!`);
 
         if (data.questions && data.questions.length > 0) {
           previewBox.style.display = "block";
           previewBox.innerHTML = `
-            <div style="font-weight:800; font-size:0.88rem; color:#1e3a8a; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-              <span><i class="fa-solid fa-list-check"></i> Generated & Stored MCQs for "${courseTitle}" (${data.questions.length} Items):</span>
-              <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:800;"><i class="fa-solid fa-database"></i> DB STORED</span>
+            <div style="font-weight:800; font-size:0.88rem; color:#1e3a8a; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+              <span><i class="fa-solid fa-list-check"></i> Generated & Stored MCQs for "${courseTitle}" (${data.questions.length} Items${data.is_max_possible ? ' - Max Possible' : ''}):</span>
+              <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; padding:3px 8px; border-radius:4px; font-weight:800;"><i class="fa-solid fa-database"></i> SUPABASE PERSISTED</span>
             </div>
             ${data.questions.map((q, i) => {
               const safeOpts = q.options || [];

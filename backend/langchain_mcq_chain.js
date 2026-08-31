@@ -148,23 +148,24 @@ async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions =
         console.warn('LangChain pipeline execution note:', err.message);
     }
 
-    // High-Precision NLP Sentence Extraction Fallback
+    // High-Precision NLP Sentence Extraction Fallback (Extract maximum possible questions from text)
     const sentences = cleanDoc
         .split(/[\r\n\.\;]+/)
         .map(s => s.trim().replace(/\s+/g, ' '))
-        .filter(s => s.length > 35 && s.length < 190 && !/^(page|table|figure|\d+$)/i.test(s));
+        .filter(s => s.length > 25 && s.length < 220 && !/^(page|table|figure|\d+$)/i.test(s));
 
     const uniqueSentences = [...new Set(sentences)];
     const fallbackQuestions = [];
 
-    for (let i = 0; i < uniqueSentences.length && fallbackQuestions.length < count; i += 2) {
+    for (let i = 0; i < uniqueSentences.length && fallbackQuestions.length < count; i++) {
         const fact = uniqueSentences[i];
-        const dist1 = uniqueSentences[(i + 1) % uniqueSentences.length] || 'Standard administrative verification protocol';
-        const dist2 = uniqueSentences[(i + 2) % uniqueSentences.length] || 'Informal unrecorded secondary observation';
-        const dist3 = uniqueSentences[(i + 3) % uniqueSentences.length] || 'Exemption from quality validation audits';
+        const otherSentences = uniqueSentences.filter((_, idx) => idx !== i);
+        const dist1 = otherSentences[0] || 'Standard administrative verification protocol';
+        const dist2 = otherSentences[1] || 'Informal unrecorded secondary observation';
+        const dist3 = otherSentences[2] || 'Exemption from quality validation audits';
 
         fallbackQuestions.push({
-            question: `Under ${courseTitle}, which protocol applies to: "${fact.slice(0, 95)}..."?`,
+            question: `According to the official document for ${courseTitle}, what protocol applies to: "${fact.slice(0, 95)}..."?`,
             options: [fact, dist1, dist2, dist3],
             correct_index: 0,
             explanation: `Statutory verification clause extracted from official course text: ${fact.slice(0, 80)}...`,
@@ -172,7 +173,7 @@ async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions =
         });
     }
 
-    if (fallbackQuestions.length < count) {
+    if (fallbackQuestions.length === 0) {
         fallbackQuestions.push({
             question: `What is the primary regulatory and data integrity requirement under ${courseTitle}?`,
             options: [
