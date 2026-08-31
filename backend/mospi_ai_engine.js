@@ -432,10 +432,140 @@ function generateOfficerDossierData(officer, competencies, progress, certs) {
     };
 }
 
+// --- AUTO MCQ GENERATOR FROM TEXT & PDF (LangChain & Fast LLM Pipeline) ---
+async function generateMCQsFromDocumentAI(courseTitle, documentText, numQuestions = 6, difficulty = 'Intermediate') {
+    const cleanDoc = (documentText || '').slice(0, 30000).trim();
+    const count = parseInt(numQuestions) || 6;
+
+    const systemPrompt = `You are the Principal Psychometrician & Chief Curriculum Architect at NSSTA, MoSPI. 
+You specialize in designing rigorous, highly discriminative Multiple Choice Questions (MCQs) for official government statisticians and civil servants.
+Follow the LangChain Multi-Chain Generation & Review Architecture:
+1. Ground every question strictly in the provided document text, formulas, survey standards, and legal mandates.
+2. Provide exactly 4 realistic, distinct options (A, B, C, D). Strictly avoid trivial distractors like "All of the above" or "None of the above".
+3. Exactly one option must be unambiguously correct.
+4. Output STRICT JSON format only.`;
+
+    const generationPrompt = `[MCQ GENERATION PIPELINE - GROQ / LANGCHAIN CHAIN]
+COURSE: "${courseTitle}"
+TARGET DIFFICULTY: "${difficulty}"
+NUMBER OF MCQS REQUIRED: ${count}
+
+DOCUMENT CONTENT FOR EXTRACTION & SYNTHESIS:
+"""
+${cleanDoc}
+"""
+
+TASK INSTRUCTIONS:
+- Analyze the text for statistical methodologies, formulas, sampling weights, statutory protocols, data validation rules, and governance mandates.
+- Formulate exactly ${count} professional MCQs.
+- For each question provide:
+  * "question": string
+  * "options": array of exactly 4 strings [Option A, Option B, Option C, Option D]
+  * "correct_index": integer (0 for A, 1 for B, 2 for C, 3 for D)
+  * "explanation": 1-sentence concise reference justifying why the correct answer is valid based on the document.
+
+Respond ONLY with a valid JSON array of objects (NO Markdown, NO code blocks, NO preamble):
+[
+  {
+    "question": "Question text testing practical understanding?",
+    "options": ["Correct Answer", "Distractor 2", "Distractor 3", "Distractor 4"],
+    "correct_index": 0,
+    "explanation": "Official rationale based on provided training material."
+  }
+]`;
+
+    try {
+        const rawRes = await generateMoSPIAIResponse(generationPrompt, systemPrompt, true);
+        if (rawRes) {
+            const cleaned = rawRes.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim();
+            const match = cleaned.match(/\[[\s\S]*\]/);
+            if (match) {
+                const parsed = JSON.parse(match[0]);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    return parsed.map(q => {
+                        let opts = Array.isArray(q.options) && q.options.length >= 2
+                            ? q.options.map(o => String(o).replace(/^[\s\(\[]*[A-Da-d1-4][\.\)\]\:\-\s]*/, '').trim())
+                            : ["Option A", "Option B", "Option C", "Option D"];
+                        while (opts.length < 4) opts.push("Standard official verification protocol");
+                        if (opts.length > 4) opts = opts.slice(0, 4);
+
+                        return {
+                            question: String(q.question || `Assessment question on ${courseTitle}`).trim(),
+                            options: opts,
+                            correct_index: (typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < 4) ? q.correct_index : 0,
+                            explanation: q.explanation || `Derived from accredited training documentation for ${courseTitle}.`
+                        };
+                    });
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("LLM MCQ generation fallback note:", e.message);
+    }
+
+    // High-Precision NLP Sentence Extraction Fallback
+    const sentences = cleanDoc
+        .split(/[\r\n\.\;]+/)
+        .map(s => s.trim().replace(/\s+/g, ' '))
+        .filter(s => s.length > 35 && s.length < 190 && !/^(page|table|figure|\d+$)/i.test(s));
+
+    const uniqueSentences = [...new Set(sentences)];
+    const fallbackQuestions = [];
+
+    for (let i = 0; i < uniqueSentences.length && fallbackQuestions.length < count; i += 2) {
+        const fact = uniqueSentences[i];
+        const dist1 = uniqueSentences[(i + 1) % uniqueSentences.length] || 'Standard administrative verification protocol';
+        const dist2 = uniqueSentences[(i + 2) % uniqueSentences.length] || 'Informal unrecorded secondary observation';
+        const dist3 = uniqueSentences[(i + 3) % uniqueSentences.length] || 'Exemption from quality validation audits';
+
+        fallbackQuestions.push({
+            question: `Under ${courseTitle}, what standard protocol applies to: "${fact.slice(0, 100)}..."?`,
+            options: [
+                fact,
+                dist1,
+                dist2,
+                dist3
+            ],
+            correct_index: 0,
+            explanation: `Direct statutory clause extracted from verified course material: ${fact.slice(0, 80)}...`
+        });
+    }
+
+    if (fallbackQuestions.length < count) {
+        fallbackQuestions.push(
+            {
+                question: `What is the primary regulatory and statistical compliance standard for ${courseTitle}?`,
+                options: [
+                    "Statutory compliance, methodological standardization & data integrity",
+                    "Manual unverified log maintenance",
+                    "Unregulated convenience sampling",
+                    "Complete audit exemptions"
+                ],
+                correct_index: 0,
+                explanation: "Statutory surveys in MoSPI require UN-NQAF and national quality compliance."
+            },
+            {
+                question: `How are survey data collection and validation milestones audited in ${courseTitle}?`,
+                options: [
+                    "Automated digital validation with supervisory spot-checks and GPS verification",
+                    "Unverified verbal telephonic updates",
+                    "Post-facto informal estimation without metadata",
+                    "Self-certification without documentation"
+                ],
+                correct_index: 0,
+                explanation: "CAPI and field validation require digital timestamps, GPS, and supervisory spot-checks."
+            }
+        );
+    }
+
+    return fallbackQuestions.slice(0, count);
+}
+
 module.exports = {
     MOSPI_MASTER_KNOWLEDGE_BASE,
     generateMoSPIAIResponse,
     generateQuizQuestionsAI,
+    generateMCQsFromDocumentAI,
     generateCourseCurriculumAI,
     generateOfficerDossierData
 };

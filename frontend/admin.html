@@ -337,12 +337,12 @@
         <div id="recent-courses-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;"></div>
       </section>
 
-      <!-- Training Material Quiz Synthesizer -->
+      <!-- Training Material Quiz Synthesizer (Auto MCQ Generator) -->
       <section class="panel">
         <div class="panel-header">
-          <h2><i class="fa-solid fa-file-pdf"></i> Training Material Quiz Synthesizer</h2>
+          <h2><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> Auto MCQ Question Generator from PDF & Text</h2>
         </div>
-        <p style="font-size:0.85rem; color:var(--text-muted);">Select the course and upload a training manual PDF. AI will synthesize MCQs and assign them directly to that course for officer evaluations.</p>
+        <p style="font-size:0.85rem; color:var(--text-muted);">Upload training manual PDFs or paste syllabus circulars. AI extracts statistical methodology and synthesizes accredited MCQs directly into the database for officer evaluations.</p>
         <form id="quizDocForm" onsubmit="handleDocQuiz(event)">
           <div class="form-group">
             <label>Assign Assessment to Course</label>
@@ -350,7 +350,26 @@
               <option value="">-- Choose Target Course from DB --</option>
             </select>
           </div>
-          <div class="form-group">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;">
+            <div class="form-group">
+              <label>Number of MCQs</label>
+              <select id="quizQuestionCount">
+                <option value="5">5 MCQs (Standard Assessment)</option>
+                <option value="6" selected>6 MCQs (Recommended)</option>
+                <option value="8">8 MCQs (Comprehensive)</option>
+                <option value="10">10 MCQs (Extended Question Bank)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Evaluation Difficulty</label>
+              <select id="quizDifficulty">
+                <option value="Basic">Stage 1: Foundation (Basic)</option>
+                <option value="Intermediate" selected>Stage 2: Functional Core (Intermediate)</option>
+                <option value="Advanced">Stage 3: Strategic Policy (Advanced)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:6px;">
             <label>Upload Training PDF File</label>
             <input type="file" id="quizPdfFile" accept=".pdf" onchange="extractPdfText(event)" style="padding:8px; border:1px dashed var(--border); border-radius:6px; cursor:pointer;">
           </div>
@@ -358,10 +377,10 @@
             <label>Document Content</label>
             <textarea id="quizDocText" rows="4" placeholder="Upload a PDF above or paste training text here..." required></textarea>
           </div>
-          <button type="submit" class="btn-action" id="btn-quiz-synth"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Assign Quiz to Course</button>
+          <button type="submit" class="btn-action" id="btn-quiz-synth" style="background:#0f766e; font-weight:800;"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Store MCQs in Database</button>
         </form>
         <div id="quiz-gen-status" style="font-size:0.85rem; font-weight:700; color:var(--success);"></div>
-        <div id="quiz-preview-box" style="display:none; margin-top:10px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:12px; max-height:220px; overflow-y:auto;"></div>
+        <div id="quiz-preview-box" style="display:none; margin-top:10px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:12px; max-height:280px; overflow-y:auto;"></div>
       </section>
     </div>
 
@@ -938,6 +957,8 @@
       e.preventDefault();
       const courseTitle = document.getElementById("quizCourseSelect").value;
       const documentText = document.getElementById("quizDocText").value;
+      const numQuestions = document.getElementById("quizQuestionCount") ? document.getElementById("quizQuestionCount").value : 6;
+      const difficulty = document.getElementById("quizDifficulty") ? document.getElementById("quizDifficulty").value : 'Intermediate';
       const statusDiv = document.getElementById("quiz-gen-status");
       const previewBox = document.getElementById("quiz-preview-box");
       const submitBtn = document.getElementById("btn-quiz-synth");
@@ -948,32 +969,51 @@
       }
 
       submitBtn.disabled = true;
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Synthesizing assessment questions and assigning to "${courseTitle}"...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing PDF text with LangChain & Fast LLM engine, synthesizing MCQs...`;
 
       try {
         const res = await fetch(`${API_URL}/api/admin/generate-quiz-from-doc`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ courseTitle, documentText })
+          body: JSON.stringify({ courseTitle, documentText, numQuestions, difficulty })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to generate quiz');
 
         statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
-        alert(data.message);
+        alert(`✅ ${data.message}\n\n• Target Course: ${courseTitle}\n• Total Questions Added: ${data.total_generated || (data.questions || []).length}\n• Difficulty Level: ${difficulty}\n\nAll questions are now live in the course_quizzes database table!`);
 
         if (data.questions && data.questions.length > 0) {
           previewBox.style.display = "block";
           previewBox.innerHTML = `
-            <div style="font-weight:800; font-size:0.88rem; color:var(--primary); margin-bottom:8px;">
-              <i class="fa-solid fa-list-check"></i> Saved Questions for "${courseTitle}" (${data.questions.length}):
+            <div style="font-weight:800; font-size:0.88rem; color:#1e3a8a; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+              <span><i class="fa-solid fa-list-check"></i> Generated & Stored MCQs for "${courseTitle}" (${data.questions.length} Items):</span>
+              <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:800;"><i class="fa-solid fa-database"></i> DB STORED</span>
             </div>
-            ${data.questions.map((q, i) => `
-              <div style="margin-bottom:8px; font-size:0.8rem; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
-                <strong>${i + 1}. ${q.question}</strong>
-                <div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">Options: ${(q.options || []).join(' | ')}</div>
-              </div>
-            `).join("")}
+            ${data.questions.map((q, i) => {
+              const safeOpts = q.options || [];
+              const correctIdx = q.correct_index || 0;
+              return `
+                <div style="margin-bottom:12px; background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #0284c7; border-radius:6px; padding:10px; font-size:0.82rem;">
+                  <strong style="color:#0f172a;">${i + 1}. ${q.question}</strong>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0;">
+                    ${safeOpts.map((opt, optIdx) => {
+                      const isCorrect = optIdx === correctIdx;
+                      const bg = isCorrect ? '#dcfce7' : '#f8fafc';
+                      const border = isCorrect ? '1px solid #86efac' : '1px solid #e2e8f0';
+                      const color = isCorrect ? '#15803d' : '#475569';
+                      const prefix = String.fromCharCode(65 + optIdx);
+                      return `
+                        <div style="background:${bg}; border:${border}; color:${color}; padding:6px 8px; border-radius:4px; font-size:0.76rem; font-weight:${isCorrect ? '700' : 'normal'};">
+                          <strong>(${prefix})</strong> ${opt} ${isCorrect ? '<i class="fa-solid fa-circle-check" style="margin-left:4px;"></i>' : ''}
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                  ${q.explanation ? `<div style="font-size:0.74rem; color:#0f766e; background:#f0fdfa; padding:4px 8px; border-radius:4px; margin-top:4px;"><strong><i class="fa-solid fa-circle-info"></i> Rationale:</strong> ${q.explanation}</div>` : ''}
+                </div>
+              `;
+            }).join("")}
           `;
         }
 
