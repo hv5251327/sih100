@@ -127,7 +127,12 @@ async function submitRegistration() {
 
         if (response.ok) {
             localStorage.setItem('mospi_user', JSON.stringify(data.user));
-            window.location.href = 'dashboard.html';
+            const diagModal = document.getElementById('diagnosticModal');
+            if (diagModal) {
+                diagModal.style.display = 'flex';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
         } else {
             alert(`Registration Error: ${data.error || 'Unable to register'}`);
             if (submitBtn) {
@@ -142,6 +147,42 @@ async function submitRegistration() {
             submitBtn.innerText = 'Register & Create Profile';
         }
     }
+}
+
+async function submitDiagnosticAssessment(event) {
+    if (event) event.preventDefault();
+    const userStr = localStorage.getItem('mospi_user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    const email = user ? user.email : (document.getElementById('regEmail') ? document.getElementById('regEmail').value.trim() : '');
+
+    const statScore = document.getElementById('diag_stat') ? document.getElementById('diag_stat').value : 65;
+    const techScore = document.getElementById('diag_tech') ? document.getElementById('diag_tech').value : 60;
+    const govScore = document.getElementById('diag_gov') ? document.getElementById('diag_gov').value : 65;
+    const leadScore = document.getElementById('diag_lead') ? document.getElementById('diag_lead').value : 60;
+
+    const btn = document.getElementById('diagSubmitBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Calibrating 4-Pillar Baseline...`;
+    }
+
+    try {
+        await fetch(`${API_BASE_URL}/api/initial-assessment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email,
+                statistical_score: statScore,
+                technical_score: techScore,
+                governance_score: govScore,
+                leadership_score: leadScore
+            })
+        });
+    } catch (e) {
+        console.warn("Offline calibration fallback:", e);
+    }
+
+    window.location.href = 'dashboard.html';
 }
 
 let currentSSOProvider = 'Parichay (MeriPehchan)';

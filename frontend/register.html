@@ -127,8 +127,87 @@
             <button type="submit" class="btn-submit" style="margin-top: 15px;">Register & Create Profile</button>
         </form>
 
-        <p class="footer-text">Already registered? <a href="employee-login.html">Employee Login</a></p>
-        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
+            <p class="footer-text">Already registered? <a href="employee-login.html">Login here</a></p>
+            <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
+    </div>
+
+    <!-- AI-Powered Diagnostic Baseline & Skill-Gap Assessment Modal -->
+    <div id="diagnosticModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.88); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px); padding:20px;">
+        <div style="background:#ffffff; border-radius:12px; max-width:650px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); border:1px solid #e2e8f0; padding:26px;">
+            <div style="display:flex; align-items:center; gap:12px; border-bottom:1px solid #e2e8f0; padding-bottom:14px; margin-bottom:18px;">
+                <div style="background:linear-gradient(135deg, #1e3a8a, #0284c7); color:#fff; width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.25rem;"><i class="fa-solid fa-brain"></i></div>
+                <div>
+                    <h3 style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:0;">AI Diagnostic Competency Assessment</h3>
+                    <p style="font-size:0.78rem; color:#64748b; margin:0;">MoSPI / NSSTA Baseline Skill-Gap Calibration</p>
+                </div>
+            </div>
+
+            <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px; margin-bottom:18px; font-size:0.8rem; color:#0369a1; line-height:1.5;">
+                <i class="fa-solid fa-circle-info" style="color:#0284c7;"></i> Welcome, Karmayogi! To personalize your 3-stage learning roadmap and identify your competency deficits, please answer this 4-pillar diagnostic self-assessment.
+            </div>
+
+            <form id="diagnosticForm" onsubmit="submitDiagnosticAssessment(event)" style="display:flex; flex-direction:column; gap:18px;">
+                <!-- Pillar 1: Statistical Methods -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
+                    <label style="font-weight:700; font-size:0.85rem; color:#1e3a8a; display:block; margin-bottom:6px;">
+                        <i class="fa-solid fa-chart-pie"></i> 1. Statistical Methods & Sampling
+                    </label>
+                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">What is your current practical experience with official survey sampling, National Accounts (SNA), or index numbers?</p>
+                    <select id="diag_stat" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
+                        <option value="90">Advanced — Regularly compile GVA/GDP, design stratified multi-stage frames, or compute deflators</option>
+                        <option value="65" selected>Intermediate — Familiar with NSS weighting, CPI baskets, and survey paradata auditing</option>
+                        <option value="40">Basic — Conceptual understanding of statistical indicators and descriptive summaries</option>
+                        <option value="20">Novice / Need Training — New to official statistics methodologies</option>
+                    </select>
+                </div>
+
+                <!-- Pillar 2: Technical Tools -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
+                    <label style="font-weight:700; font-size:0.85rem; color:#0284c7; display:block; margin-bottom:6px;">
+                        <i class="fa-solid fa-laptop-code"></i> 2. Technical & Data Analysis Tools
+                    </label>
+                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">Which data processing and analytical tools do you actively use for survey microdata?</p>
+                    <select id="diag_tech" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
+                        <option value="85">Advanced Programming — Python (Pandas/NumPy), R survey models, or complex SQL queries</option>
+                        <option value="60" selected>Intermediate Tools — Stata / SPSS / SAS panel econometrics or CAPI tablet validation</option>
+                        <option value="40">Basic Tools — Spreadsheets, basic formula-based calculations, and standard tabulations</option>
+                        <option value="20">Novice / Need Training — Require foundational training in Python, R, and relational SQL</option>
+                    </select>
+                </div>
+
+                <!-- Pillar 3: Digital Governance -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
+                    <label style="font-weight:700; font-size:0.85rem; color:#15803d; display:block; margin-bottom:6px;">
+                        <i class="fa-solid fa-shield-halved"></i> 3. Digital Governance & Data Privacy
+                    </label>
+                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">What is your familiarity with government data protection laws and cybersecurity protocols?</p>
+                    <select id="diag_gov" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
+                        <option value="85">Thorough — Active compliance with DPDP Act 2023, k-anonymity, and CERT-In guidelines</option>
+                        <option value="65" selected>Moderate — Aware of e-Office, PKI digital signatures, and official classification</option>
+                        <option value="40">Basic — General awareness of government IT and security policies</option>
+                        <option value="20">Novice / Need Training — Need comprehensive guidance on DPDP Act 2023 mandates</option>
+                    </select>
+                </div>
+
+                <!-- Pillar 4: Behavioural & Leadership -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
+                    <label style="font-weight:700; font-size:0.85rem; color:#b45309; display:block; margin-bottom:6px;">
+                        <i class="fa-solid fa-users-gear"></i> 4. Behavioural, Leadership & Public Administration
+                    </label>
+                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">What is your background in administrative decision-making, project monitoring, and civil service ethics?</p>
+                    <select id="diag_lead" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
+                        <option value="85">Executive / Senior — Drafting Cabinet notes, OCMS project monitoring, policy formulation</option>
+                        <option value="60" selected>Operational / Team Lead — Supervisory field inspection, POSH/GFR compliance, team coordination</option>
+                        <option value="40">Foundational — Participating in office workflows and standard administrative procedures</option>
+                        <option value="20">Entry Level — Orientation to civil services conduct rules and public administration</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="diagSubmitBtn" class="btn-submit" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); padding:12px; font-size:0.95rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <i class="fa-solid fa-chart-line"></i> Calibrate Competencies & Generate Roadmap
+                </button>
+            </form>
+        </div>
     </div>
 
     <script>

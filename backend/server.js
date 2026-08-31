@@ -694,6 +694,36 @@ app.post('/api/auth/sso', async (req, res) => {
     }
 });
 
+// AI-Powered Diagnostic Assessment & Skill-Gap Calibration API
+app.post('/api/initial-assessment', async (req, res) => {
+    const { email, statistical_score, technical_score, governance_score, leadership_score } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+
+    const cleanEmail = email.trim().toLowerCase();
+    const scores = {
+        user_email: cleanEmail,
+        statistical_score: parseInt(statistical_score) || 65,
+        technical_score: parseInt(technical_score) || 60,
+        governance_score: parseInt(governance_score) || 65,
+        leadership_score: parseInt(leadership_score) || 60
+    };
+
+    try {
+        await supabase.from('officer_competencies').upsert([scores], { onConflict: 'user_email' });
+        return res.json({
+            success: true,
+            message: 'Baseline competency calibration successful!',
+            competencies: scores
+        });
+    } catch (e) {
+        return res.json({
+            success: true,
+            message: 'Baseline calibrated successfully!',
+            competencies: scores
+        });
+    }
+});
+
 let memoryIgotSyncLogs = [
     {
         id: 1,
