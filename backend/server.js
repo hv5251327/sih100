@@ -10,6 +10,7 @@ const {
     generateCourseCurriculumAI,
     generateOfficerDossierData
 } = require('./mospi_ai_engine');
+const { runLangChainMCQPipeline } = require('./langchain_mcq_chain');
 
 const app = express();
 app.use(cors());
@@ -1306,8 +1307,8 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
     const diff = difficulty || 'Intermediate';
 
     try {
-        // 1. Generate Psychometric MCQs via LangChain/Fast LLM Pipeline
-        const generatedQuestions = await generateMCQsFromDocumentAI(cleanTitle, documentText, count, diff);
+        // 1. Generate Psychometric MCQs via LangChain PromptTemplate Pipeline
+        const generatedQuestions = await runLangChainMCQPipeline(cleanTitle, documentText, count, diff);
 
         if (!generatedQuestions || generatedQuestions.length === 0) {
             throw new Error('Could not synthesize questions from provided document.');
