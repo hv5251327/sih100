@@ -242,6 +242,38 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
     return null;
 }
 
+// Universal Question Jumbling & Option Shuffler (Fisher-Yates)
+function jumbleMCQ(q) {
+    let opts = Array.isArray(q.options) && q.options.length >= 2
+        ? q.options.map(o => String(o).replace(/^[\s\(\[]*[A-Da-d1-4][\.\)\]\:\-\s]*/, '').trim()).filter(Boolean)
+        : ["Option A", "Option B", "Option C", "Option D"];
+    while (opts.length < 4) opts.push("Standard official verification protocol");
+    if (opts.length > 4) opts = opts.slice(0, 4);
+
+    let rawIdx = typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < opts.length 
+        ? q.correct_index 
+        : (typeof q.correctIndex === 'number' ? q.correctIndex : 0);
+
+    const items = opts.map((text, idx) => ({ text, isCorrect: idx === rawIdx }));
+
+    // Fisher-Yates random shuffle
+    for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [items[i], items[j]] = [items[j], items[i]];
+    }
+
+    const shuffledOpts = items.map(it => it.text);
+    const newCorrectIdx = items.findIndex(it => it.isCorrect);
+
+    return {
+        question: String(q.question || 'Assessment question').trim(),
+        options: shuffledOpts,
+        correct_index: newCorrectIdx >= 0 ? newCorrectIdx : 0,
+        correctIndex: newCorrectIdx >= 0 ? newCorrectIdx : 0,
+        explanation: q.explanation || 'Accredited methodology rationale.'
+    };
+}
+
 async function generateQuizQuestionsAI(courseTitle, domain = 'Statistical Competencies', difficulty = 'Intermediate') {
     const prompt = `You are a Senior Psychometrician at the National Statistical Systems Training Academy (NSSTA), MoSPI.
 Create exactly 5 rigorous, psychometrically balanced multiple-choice questions for the following accredited module:
@@ -271,12 +303,12 @@ Reply ONLY with a valid JSON array of 5 objects (NO markdown formatting):
             const cleaned = rawRes.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim();
             const parsed = JSON.parse(cleaned);
             if (Array.isArray(parsed) && parsed.length >= 5) {
-                return parsed;
+                return parsed.map(q => jumbleMCQ(q));
             }
         }
     } catch (e) {}
 
-    return [
+    const defaultQuestions = [
         {
             question: `Under official MoSPI standards for "${courseTitle}", what is the primary methodological objective?`,
             options: [
@@ -330,9 +362,11 @@ Reply ONLY with a valid JSON array of 5 objects (NO markdown formatting):
                 "Eliminates all supervisor reviews"
             ],
             correctIndex: 0,
-            explanation: "Empirical analytical training bridges competency gaps across central and state cadres."
+            explanation: "Capacity building institutionalizes competency-based training under Mission Karmayogi."
         }
     ];
+
+    return defaultQuestions.map(q => jumbleMCQ(q));
 }
 
 async function generateCourseCurriculumAI(topic, division = 'ALL', cadre = 'ALL', difficulty = 'Intermediate') {
@@ -482,20 +516,11 @@ Respond ONLY with a valid JSON array of objects (NO Markdown, NO code blocks, NO
             if (match) {
                 const parsed = JSON.parse(match[0]);
                 if (Array.isArray(parsed) && parsed.length > 0) {
-                    return parsed.map(q => {
-                        let opts = Array.isArray(q.options) && q.options.length >= 2
-                            ? q.options.map(o => String(o).replace(/^[\s\(\[]*[A-Da-d1-4][\.\)\]\:\-\s]*/, '').trim())
-                            : ["Option A", "Option B", "Option C", "Option D"];
-                        while (opts.length < 4) opts.push("Standard official verification protocol");
-                        if (opts.length > 4) opts = opts.slice(0, 4);
-
-                        return {
-                            question: String(q.question || `Assessment question on ${courseTitle}`).trim(),
-                            options: opts,
-                            correct_index: (typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < 4) ? q.correct_index : 0,
-                            explanation: q.explanation || `Derived from accredited training documentation for ${courseTitle}.`
-                        };
-                    });
+                    return parsed.map(q => jumbleMCQ({
+                        ...q,
+                        question: String(q.question || `Assessment question on ${courseTitle}`).trim(),
+                        explanation: q.explanation || `Derived from accredited training documentation for ${courseTitle}.`
+                    }));
                 }
             }
         }
@@ -507,18 +532,19 @@ Respond ONLY with a valid JSON array of objects (NO Markdown, NO code blocks, NO
     const sentences = cleanDoc
         .split(/[\r\n\.\;]+/)
         .map(s => s.trim().replace(/\s+/g, ' '))
-        .filter(s => s.length > 35 && s.length < 190 && !/^(page|table|figure|\d+$)/i.test(s));
+        .filter(s => s.length > 25 && s.length < 220 && !/^(page|table|figure|\d+$)/i.test(s));
 
     const uniqueSentences = [...new Set(sentences)];
     const fallbackQuestions = [];
 
-    for (let i = 0; i < uniqueSentences.length && fallbackQuestions.length < count; i += 2) {
+    for (let i = 0; i < uniqueSentences.length && fallbackQuestions.length < count; i++) {
         const fact = uniqueSentences[i];
-        const dist1 = uniqueSentences[(i + 1) % uniqueSentences.length] || 'Standard administrative verification protocol';
-        const dist2 = uniqueSentences[(i + 2) % uniqueSentences.length] || 'Informal unrecorded secondary observation';
-        const dist3 = uniqueSentences[(i + 3) % uniqueSentences.length] || 'Exemption from quality validation audits';
+        const otherSentences = uniqueSentences.filter((_, idx) => idx !== i);
+        const dist1 = otherSentences[0] || 'Standard administrative verification protocol';
+        const dist2 = otherSentences[1] || 'Informal unrecorded secondary observation';
+        const dist3 = otherSentences[2] || 'Exemption from quality validation audits';
 
-        fallbackQuestions.push({
+        fallbackQuestions.push(jumbleMCQ({
             question: `Under ${courseTitle}, what standard protocol applies to: "${fact.slice(0, 100)}..."?`,
             options: [
                 fact,
@@ -528,34 +554,21 @@ Respond ONLY with a valid JSON array of objects (NO Markdown, NO code blocks, NO
             ],
             correct_index: 0,
             explanation: `Direct statutory clause extracted from verified course material: ${fact.slice(0, 80)}...`
-        });
+        }));
     }
 
-    if (fallbackQuestions.length < count) {
-        fallbackQuestions.push(
-            {
-                question: `What is the primary regulatory and statistical compliance standard for ${courseTitle}?`,
-                options: [
-                    "Statutory compliance, methodological standardization & data integrity",
-                    "Manual unverified log maintenance",
-                    "Unregulated convenience sampling",
-                    "Complete audit exemptions"
-                ],
-                correct_index: 0,
-                explanation: "Statutory surveys in MoSPI require UN-NQAF and national quality compliance."
-            },
-            {
-                question: `How are survey data collection and validation milestones audited in ${courseTitle}?`,
-                options: [
-                    "Automated digital validation with supervisory spot-checks and GPS verification",
-                    "Unverified verbal telephonic updates",
-                    "Post-facto informal estimation without metadata",
-                    "Self-certification without documentation"
-                ],
-                correct_index: 0,
-                explanation: "CAPI and field validation require digital timestamps, GPS, and supervisory spot-checks."
-            }
-        );
+    if (fallbackQuestions.length === 0) {
+        fallbackQuestions.push(jumbleMCQ({
+            question: `What is the primary regulatory and statistical compliance standard for ${courseTitle}?`,
+            options: [
+                "Statutory compliance, methodological standardization & data integrity",
+                "Manual unverified log maintenance",
+                "Unregulated convenience sampling",
+                "Complete audit exemptions"
+            ],
+            correct_index: 0,
+            explanation: "Statutory surveys in MoSPI require UN-NQAF and national quality compliance."
+        }));
     }
 
     return fallbackQuestions.slice(0, count);

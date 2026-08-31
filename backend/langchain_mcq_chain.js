@@ -106,7 +106,39 @@ async function callFastLLM(promptText) {
     return null;
 }
 
-// 3. LangChain Execution Pipeline
+// 3. Option Shuffler & Jumbling Engine (Fisher-Yates)
+function jumbleMCQ(q) {
+    let opts = Array.isArray(q.options) && q.options.length >= 2
+        ? q.options.map(o => String(o).replace(/^[\s\(\[]*[A-Da-d1-4][\.\)\]\:\-\s]*/, '').trim()).filter(Boolean)
+        : ["Option A", "Option B", "Option C", "Option D"];
+    while (opts.length < 4) opts.push("Standard official verification protocol");
+    if (opts.length > 4) opts = opts.slice(0, 4);
+
+    let rawIdx = typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < opts.length 
+        ? q.correct_index 
+        : (typeof q.correctIndex === 'number' ? q.correctIndex : 0);
+
+    const items = opts.map((text, idx) => ({ text, isCorrect: idx === rawIdx }));
+
+    // Fisher-Yates random shuffle
+    for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [items[i], items[j]] = [items[j], items[i]];
+    }
+
+    const shuffledOpts = items.map(it => it.text);
+    const newCorrectIdx = items.findIndex(it => it.isCorrect);
+
+    return {
+        question: String(q.question || 'Assessment question').trim(),
+        options: shuffledOpts,
+        correct_index: newCorrectIdx >= 0 ? newCorrectIdx : 0,
+        explanation: q.explanation || 'Accredited methodology rationale.',
+        chain_type: q.chain_type || 'LangChain_MCQ_Pipeline'
+    };
+}
+
+// 4. LangChain Execution Pipeline
 async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions = 6, difficulty = 'Intermediate') {
     const cleanDoc = (documentText || '').slice(0, 28000).trim();
     const count = parseInt(numQuestions) || 6;
@@ -126,21 +158,12 @@ async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions =
             if (match) {
                 const parsed = JSON.parse(match[0]);
                 if (Array.isArray(parsed) && parsed.length > 0) {
-                    return parsed.map(q => {
-                        let opts = Array.isArray(q.options) && q.options.length >= 2
-                            ? q.options.map(o => String(o).replace(/^[\s\(\[]*[A-Da-d1-4][\.\)\]\:\-\s]*/, '').trim())
-                            : ["Option A", "Option B", "Option C", "Option D"];
-                        while (opts.length < 4) opts.push("Standard official verification protocol");
-                        if (opts.length > 4) opts = opts.slice(0, 4);
-
-                        return {
-                            question: String(q.question || `Assessment question on ${courseTitle}`).trim(),
-                            options: opts,
-                            correct_index: (typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < 4) ? q.correct_index : 0,
-                            explanation: q.explanation || `Derived from accredited training documentation for ${courseTitle}.`,
-                            chain_type: 'LangChain_PromptTemplate_Inference_Chain'
-                        };
-                    });
+                    return parsed.map(q => jumbleMCQ({
+                        ...q,
+                        question: String(q.question || `Assessment question on ${courseTitle}`).trim(),
+                        explanation: q.explanation || `Derived from accredited training documentation for ${courseTitle}.`,
+                        chain_type: 'LangChain_PromptTemplate_Inference_Chain'
+                    }));
                 }
             }
         }
@@ -164,17 +187,17 @@ async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions =
         const dist2 = otherSentences[1] || 'Informal unrecorded secondary observation';
         const dist3 = otherSentences[2] || 'Exemption from quality validation audits';
 
-        fallbackQuestions.push({
+        fallbackQuestions.push(jumbleMCQ({
             question: `According to the official document for ${courseTitle}, what protocol applies to: "${fact.slice(0, 95)}..."?`,
             options: [fact, dist1, dist2, dist3],
             correct_index: 0,
             explanation: `Statutory verification clause extracted from official course text: ${fact.slice(0, 80)}...`,
             chain_type: 'LangChain_RuleBased_NLP_Extractor'
-        });
+        }));
     }
 
     if (fallbackQuestions.length === 0) {
-        fallbackQuestions.push({
+        fallbackQuestions.push(jumbleMCQ({
             question: `What is the primary regulatory and data integrity requirement under ${courseTitle}?`,
             options: [
                 "Statutory compliance, methodological standardization & respondent confidentiality",
@@ -185,7 +208,7 @@ async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions =
             correct_index: 0,
             explanation: "NSSTA requires strict adherence to UN-NQAF and national official statistics standards.",
             chain_type: 'LangChain_RuleBased_NLP_Extractor'
-        });
+        }));
     }
 
     return fallbackQuestions.slice(0, count);
@@ -193,5 +216,6 @@ async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions =
 
 module.exports = {
     mcqGenerationPromptTemplate,
+    jumbleMCQ,
     runLangChainMCQPipeline
 };
