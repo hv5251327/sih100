@@ -430,37 +430,41 @@ app.post('/api/auth/sso', async (req, res) => {
         }
 
         // Check if officer exists in DB
-        let { data: existingUser } = await supabase
-            .from('employees')
-            .select('id, name, email, cadre, department, designation')
-            .ilike('email', cleanEmail)
-            .maybeSingle();
+        let existingUser = null;
+        try {
+            const { data } = await supabase
+                .from('employees')
+                .select('id, name, email, cadre, department, designation')
+                .ilike('email', cleanEmail);
+            if (data && data.length > 0) existingUser = data[0];
+        } catch (e) {}
 
         if (!existingUser) {
             const officerName = cleanEmail.split('@')[0].replace(/[^a-zA-Z]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim() || 'Officer Trainee';
-            const { data: newUser, error: insErr } = await supabase
-                .from('employees')
-                .insert([{
-                    name: officerName,
-                    email: cleanEmail,
-                    password: 'GOV_SSO_AUTHENTICATED',
-                    cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service",
-                    department: 'National Accounts Division (NAD) — Macro Aggregates & GDP',
-                    designation: 'Assistant Director / SSO'
-                }])
-                .select()
-                .single();
+            try {
+                const { data: newUser } = await supabase
+                    .from('employees')
+                    .insert([{
+                        name: officerName,
+                        email: cleanEmail,
+                        password: 'GOV_SSO_AUTHENTICATED',
+                        cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service",
+                        department: 'National Accounts Division (NAD) — Macro Aggregates & GDP',
+                        designation: 'Assistant Director / SSO'
+                    }])
+                    .select();
 
-            if (!insErr && newUser) {
-                existingUser = newUser;
-                await supabase.from('officer_competencies').insert([{
-                    user_email: cleanEmail,
-                    statistical_score: 0,
-                    technical_score: 0,
-                    governance_score: 0,
-                    leadership_score: 0
-                }]);
-            }
+                if (newUser && newUser.length > 0) {
+                    existingUser = newUser[0];
+                    await supabase.from('officer_competencies').insert([{
+                        user_email: cleanEmail,
+                        statistical_score: 0,
+                        technical_score: 0,
+                        governance_score: 0,
+                        leadership_score: 0
+                    }]);
+                }
+            } catch (e) {}
         }
 
         const sessionToken = 'GOV-SSO-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now();
