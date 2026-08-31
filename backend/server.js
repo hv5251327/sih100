@@ -814,16 +814,34 @@ app.post('/api/initial-assessment', async (req, res) => {
     if (!email) return res.status(400).json({ error: 'Email is required.' });
 
     const cleanEmail = email.trim().toLowerCase();
+    const stat = parseInt(statistical_score) || 65;
+    const tech = parseInt(technical_score) || 60;
+    const gov = parseInt(governance_score) || 65;
+    const lead = parseInt(leadership_score) || 60;
+    const avg = Math.round((stat + tech + gov + lead) / 4);
+
     const scores = {
         user_email: cleanEmail,
-        statistical_score: parseInt(statistical_score) || 65,
-        technical_score: parseInt(technical_score) || 60,
-        governance_score: parseInt(governance_score) || 65,
-        leadership_score: parseInt(leadership_score) || 60
+        statistical_score: stat,
+        technical_score: tech,
+        governance_score: gov,
+        leadership_score: lead,
+        overall_score: avg,
+        updated_at: new Date().toISOString()
     };
 
+    memoryCompetencies[cleanEmail] = scores;
+
     try {
-        await supabase.from('officer_competencies').upsert([scores], { onConflict: 'user_email' });
+        const { data: existing } = await supabase.from('officer_competencies').select('id').eq('user_email', cleanEmail);
+        if (existing && existing.length > 0) {
+            await supabase.from('officer_competencies').update(scores).eq('user_email', cleanEmail);
+        } else {
+            let nextId = 50;
+            const { data: maxIdRow } = await supabase.from('officer_competencies').select('id').order('id', { ascending: false }).limit(1);
+            if (maxIdRow && maxIdRow[0] && maxIdRow[0].id) nextId = maxIdRow[0].id + 1;
+            await supabase.from('officer_competencies').insert([{ id: nextId, ...scores }]);
+        }
         return res.json({
             success: true,
             message: 'Baseline competency calibration successful!',
@@ -1660,18 +1678,33 @@ async function recalculateCompetencies(cleanEmail) {
     memoryCompetencies[cleanEmail] = result;
 
     try {
-        const { error } = await supabase.from('officer_competencies').upsert([{
-            user_email: cleanEmail,
-            statistical_score: statScore,
-            technical_score: techScore,
-            governance_score: govScore,
-            leadership_score: leadScore,
-            overall_score: overallScore,
-            updated_at: new Date().toISOString()
-        }], { onConflict: 'user_email' });
-        if (error) console.error('DB Upsert Competencies Error:', error.message);
+        const { data: existing } = await supabase.from('officer_competencies').select('id').eq('user_email', cleanEmail);
+        if (existing && existing.length > 0) {
+            await supabase.from('officer_competencies').update({
+                statistical_score: statScore,
+                technical_score: techScore,
+                governance_score: govScore,
+                leadership_score: leadScore,
+                overall_score: overallScore,
+                updated_at: new Date().toISOString()
+            }).eq('user_email', cleanEmail);
+        } else {
+            let nextId = 50;
+            const { data: maxIdRow } = await supabase.from('officer_competencies').select('id').order('id', { ascending: false }).limit(1);
+            if (maxIdRow && maxIdRow[0] && maxIdRow[0].id) nextId = maxIdRow[0].id + 1;
+            await supabase.from('officer_competencies').insert([{
+                id: nextId,
+                user_email: cleanEmail,
+                statistical_score: statScore,
+                technical_score: techScore,
+                governance_score: govScore,
+                leadership_score: leadScore,
+                overall_score: overallScore,
+                updated_at: new Date().toISOString()
+            }]);
+        }
     } catch (e) {
-        console.error('DB Upsert Competencies Catch:', e.message);
+        console.error('DB Competencies Persistence Catch:', e.message);
     }
 
     return result;
@@ -1769,52 +1802,75 @@ function assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp) {
     const descUpper = (c.description || '').toUpperCase();
     const dom = (c.domain || '').trim();
 
-    let subdomain = 'Official Statistics Core';
-    let reason = 'Essential competency module for MoSPI capacity building.';
+    // 1. Identify domain score & diagnostic deficit
+    let domainScore = 0;
+    let domainName = 'Core';
+    if (dom === 'Statistical Competencies') {
+        domainScore = comp?.statistical_score || 0;
+        domainName = 'Statistical Methods';
+    } else if (dom === 'Technical Competencies') {
+        domainScore = comp?.technical_score || 0;
+        domainName = 'Technical Tools';
+    } else if (dom === 'Digital Governance') {
+        domainScore = comp?.governance_score || 0;
+        domainName = 'Digital Governance';
+    } else if (dom === 'Behavioural & Managerial') {
+        domainScore = comp?.leadership_score || 0;
+        domainName = 'Leadership & Management';
+    }
+    const deficitPct = Math.max(5, 100 - domainScore);
 
-    // 1. Subdomain mapping
-    if (titleUpper.includes('NATIONAL ACCOUNTS') || titleUpper.includes('GDP') || titleUpper.includes('SNA') || titleUpper.includes('GVA')) {
+    let subdomain = 'Official Statistics Core';
+    let reason = `🎯 Calibrated Recommendation: Targets your ${deficitPct}% ${domainName} skill-gap based on AI Diagnostic Assessment.`;
+
+    // 2. Specialized Subdomain & Contextual Reasoning Mapping
+    if (titleUpper.includes('NATIONAL ACCOUNTS') || titleUpper.includes('GDP') || titleUpper.includes('SNA') || titleUpper.includes('GVA') || titleUpper.includes('SUT') || titleUpper.includes('CAPITAL FORMATION') || titleUpper.includes('FISIM')) {
         subdomain = 'National Accounts (SNA 2008 & SUT)';
-        reason = `🎯 Departmental Priority for ${deptCode}: Targets ${100 - (comp?.statistical_score || 0)}% Statistical gap in Macroeconomic Aggregates & GDP.`;
-    } else if (titleUpper.includes('PRICE') || titleUpper.includes('CPI') || titleUpper.includes('INFLATION')) {
+        reason = `🎯 High-Impact Macroeconomic Need: Bridges your ${deficitPct}% ${domainName} gap in National Accounts compilation and GDP/GVA aggregates for ${deptCode}.`;
+    } else if (titleUpper.includes('PRICE') || titleUpper.includes('CPI') || titleUpper.includes('INFLATION') || titleUpper.includes('WPI') || titleUpper.includes('LASPEYRES')) {
         subdomain = 'Price Statistics & CPI Deflators';
-        reason = `🎯 High Relevance for ${deptCode}: Strengthens index weighting, inflation forecasting, and rural-urban price aggregation.`;
-    } else if (titleUpper.includes('SAMPLING') || titleUpper.includes('SURVEY DESIGN') || titleUpper.includes('STRATIFIED') || titleUpper.includes('WEIGHTING')) {
+        reason = `🎯 Departmental Priority for ${deptCode}: Addresses your ${deficitPct}% deficit in price index weighting, market quotation scrutiny, and inflation modeling.`;
+    } else if (titleUpper.includes('SAMPLING') || titleUpper.includes('SURVEY DESIGN') || titleUpper.includes('STRATIFIED') || titleUpper.includes('WEIGHTING') || titleUpper.includes('NEYMAN') || titleUpper.includes('VARIANCE')) {
         subdomain = 'Survey Design & Multi-Stage Sampling';
-        reason = `🎯 Core Competency: Essential for minimizing non-sampling error and designing robust representative sampling frames.`;
-    } else if (titleUpper.includes('SDG') || titleUpper.includes('SOCIAL') || titleUpper.includes('NIF') || titleUpper.includes('LABOUR') || titleUpper.includes('PLFS')) {
+        reason = `🎯 Core Methodological Gap: Directly targets your ${deficitPct}% Statistical deficit in complex survey sampling frames, replicate weights, and variance estimation.`;
+    } else if (titleUpper.includes('SDG') || titleUpper.includes('SOCIAL') || titleUpper.includes('NIF') || titleUpper.includes('SEEA') || titleUpper.includes('TIME USE') || titleUpper.includes('TUS')) {
         subdomain = 'SDG Indicators & Social Statistics';
-        reason = `🎯 National Framework: Aligned with SDG National Indicator Framework tracking and disaggregated social metrics.`;
-    } else if (titleUpper.includes('ASI') || titleUpper.includes('IIP') || titleUpper.includes('INDUSTRIAL') || titleUpper.includes('FACTORY')) {
+        reason = `🎯 National Framework Need: Aligned with SDG National Indicator Framework tracking to bridge your ${deficitPct}% domain deficit.`;
+    } else if (titleUpper.includes('ASI') || titleUpper.includes('IIP') || titleUpper.includes('INDUSTRIAL') || titleUpper.includes('FACTORY') || titleUpper.includes('SERVICE PRODUCTION')) {
         subdomain = 'Industrial Statistics (ASI & IIP)';
-        reason = `🎯 Key Functional Area: Critical for industrial output validation, factory sector frames, and monthly production indices.`;
-    } else if (titleUpper.includes('CAPI') || titleUpper.includes('TABLET') || titleUpper.includes('FIELD') || titleUpper.includes('PARADATA')) {
+        reason = `🎯 Key Functional Competency: Critical for factory sector frames, monthly IIP production indices, and industrial output validation (Deficit: ${deficitPct}%).`;
+    } else if (titleUpper.includes('CAPI') || titleUpper.includes('TABLET') || titleUpper.includes('FIELD') || titleUpper.includes('PARADATA') || titleUpper.includes('PLFS') || titleUpper.includes('HCES') || titleUpper.includes('ASUSE')) {
         subdomain = 'Field Operations & CAPI Validation';
-        reason = `📱 Field Operations: Accelerates digital data collection, GPS paradata auditing, and mobile survey validation.`;
-    } else if (titleUpper.includes('PYTHON') || titleUpper.includes('MACHINE LEARNING') || titleUpper.includes('AI') || titleUpper.includes('AUTOMATION')) {
+        reason = `📱 Field Operations Priority: Accelerates CAPI tablet data capture, GPS paradata validation, and primary survey auditing (Deficit: ${deficitPct}%).`;
+    } else if (titleUpper.includes('PYTHON') || titleUpper.includes('MACHINE LEARNING') || titleUpper.includes('AI') || titleUpper.includes('AUTOMATION') || titleUpper.includes('PANDAS')) {
         subdomain = 'Python, R & ML Automation';
-        reason = `⚡ Emerging Technology: Empowers ${cadreUpper || 'officers'} with automated microdata pipelines, anomaly detection, and AI analytics.`;
-    } else if (titleUpper.includes('GIS') || titleUpper.includes('GEOSPATIAL') || titleUpper.includes('REMOTE SENSING')) {
+        reason = `⚡ High-Priority Technical Gap (Deficit: ${deficitPct}%): Empowers ${cadreUpper || 'officers'} with automated microdata pipelines, Python wrangling, and ML quality validation.`;
+    } else if (titleUpper.includes('GIS') || titleUpper.includes('GEOSPATIAL') || titleUpper.includes('REMOTE SENSING') || titleUpper.includes('QGIS') || titleUpper.includes('GEOPANDAS')) {
         subdomain = 'GIS Spatial Mapping & Remote Sensing';
-        reason = `🗺️ Emerging Geospatial: Delineates satellite-guided rural/urban survey frames and spatial thematic mapping.`;
-    } else if (titleUpper.includes('SQL') || titleUpper.includes('STATA') || titleUpper.includes('SPSS') || titleUpper.includes('DATABASE') || titleUpper.includes('OCMS') || titleUpper.includes('PROJECT')) {
+        reason = `🗺️ Emerging Spatial Technology: Delineates satellite-guided survey frames and spatial block mapping for ${deptCode} (Deficit: ${deficitPct}%).`;
+    } else if (titleUpper.includes('SQL') || titleUpper.includes('STATA') || titleUpper.includes('SPSS') || titleUpper.includes('DATABASE') || titleUpper.includes('DATA WAREHOUSE') || titleUpper.includes('NDW')) {
         subdomain = 'Data Tools, SQL & Project Monitoring';
-        reason = `💻 Technical Proficiency: Enhances relational survey queries, panel econometrics, and OCMS project tracking.`;
+        reason = `💻 Technical Proficiency Need: Enhances relational microdata queries, data lake extraction, and statistical tabulation (Deficit: ${deficitPct}%).`;
     } else if (titleUpper.includes('CYBER') || titleUpper.includes('SECURITY') || titleUpper.includes('ISO 27001') || titleUpper.includes('CLOUD')) {
         subdomain = 'Cybersecurity & Government Cloud';
-        reason = `🛡️ Digital Governance: Fulfills national CERT-In standards and secure cloud data classification requirements.`;
-    } else if (titleUpper.includes('DPDP') || titleUpper.includes('PRIVACY') || titleUpper.includes('ANONYMIZATION') || titleUpper.includes('DATA ACT')) {
+        reason = `🛡️ Mandatory Digital Standard: Fulfills national CERT-In cybersecurity guidelines and secure cloud classification (Deficit: ${deficitPct}%).`;
+    } else if (titleUpper.includes('DPDP') || titleUpper.includes('PRIVACY') || titleUpper.includes('ANONYMIZATION') || titleUpper.includes('DATA ACT') || titleUpper.includes('STATISTICS ACT')) {
         subdomain = 'Data Privacy & DPDP Act 2023';
-        reason = `⚖️ Statutory Mandate: Enforces citizen consent architecture, strict anonymization, and DPDP Act 2023 compliance.`;
-    } else if (titleUpper.includes('POSH') || titleUpper.includes('ETHICS') || titleUpper.includes('CONDUCT') || titleUpper.includes('ADMINISTRATION')) {
+        reason = `⚖️ Statutory Mandate: Enforces respondent consent architecture, k-anonymity privacy, and Collection of Statistics Act protocols (Deficit: ${deficitPct}%).`;
+    } else if (titleUpper.includes('POSH') || titleUpper.includes('ETHICS') || titleUpper.includes('CONDUCT') || titleUpper.includes('ADMINISTRATION') || titleUpper.includes('GFR') || titleUpper.includes('GEM')) {
         subdomain = 'Ethics, POSH & Public Administration';
-        reason = `🏛️ Mandatory Governance: Establishes civil service workplace ethics, ICC mechanisms, and regulatory transparency.`;
-    } else if (titleUpper.includes('LEADERSHIP') || titleUpper.includes('MANAGEMENT') || titleUpper.includes('DECISION') || titleUpper.includes('CHANGE')) {
+        reason = `🏛️ Statutory Governance: Establishes civil service conduct, GFR 2017 procurement thresholds, and administrative transparency.`;
+    } else if (titleUpper.includes('LEADERSHIP') || titleUpper.includes('MANAGEMENT') || titleUpper.includes('DECISION') || titleUpper.includes('CHANGE') || titleUpper.includes('POLICY')) {
         subdomain = 'Leadership & Decision Making';
-        reason = `📈 Career Progression: Prepares ${desigUpper || 'officers'} for executive leadership, change management, and evidence-based policy formulation.`;
+        reason = `📈 Executive Leadership: Prepares ${desigUpper || 'officers'} for evidence-based policy formulation, change management, and strategic decision making.`;
     }
 
-    return { subdomain, reason };
+    // 3. Compute Composite Relevance Match Score
+    const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
+    const isDeptMatch = targets.includes(deptCode) || targets.includes('ALL');
+    const matchScore = (deficitPct * 0.6) + (isDeptMatch ? 30 : 0) + (c.is_general_mandatory ? 40 : 0);
+
+    return { subdomain, reason, deficitPct, matchScore };
 }
 
 app.post('/api/recommendations', async (req, res) => {
@@ -1837,15 +1893,18 @@ app.post('/api/recommendations', async (req, res) => {
 
         const uncompletedCourses = allCourses.filter(c => !completedNormTitles.has(normalizeTitle(c.title)));
 
+        // 1. Stage 1: Mandatory Foundation Pathways
         const mandatoryFoundation = uncompletedCourses
             .filter(c => c.is_general_mandatory === true)
             .map(c => {
                 const meta = assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp);
-                return { ...c, learning_stage: 'Foundation', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason };
-            });
+                return { ...c, learning_stage: 'Foundation', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason, match_score: meta.matchScore };
+            })
+            .sort((a, b) => b.match_score - a.match_score);
 
         const domainPool = uncompletedCourses.filter(c => c.is_general_mandatory !== true);
 
+        // 2. Stage 2: Functional Core Pathways (Prioritized by Diagnostic Deficits)
         let functionalMatches = domainPool.filter(c => {
             const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
             const deptMatch = targets.includes(deptCode) || targets.includes('ALL');
@@ -1856,9 +1915,10 @@ app.post('/api/recommendations', async (req, res) => {
             return deptMatch;
         }).map(c => {
             const meta = assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp);
-            return { ...c, learning_stage: 'Functional Core', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason };
-        });
+            return { ...c, learning_stage: 'Functional Core', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason, match_score: meta.matchScore };
+        }).sort((a, b) => b.match_score - a.match_score);
 
+        // 3. Stage 3: Advanced Strategic Pathways (Executive & Emerging Frontier)
         let strategicMatches = domainPool.filter(c => {
             const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
             const isNotFunctional = !functionalMatches.some(f => f.id === c.id);
@@ -1868,23 +1928,23 @@ app.post('/api/recommendations', async (req, res) => {
             return isNotFunctional && (targets.includes('ALL') || c.difficulty_level === 'Intermediate' || c.difficulty_level === 'Advanced');
         }).map(c => {
             const meta = assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp);
-            return { ...c, learning_stage: 'Advanced Strategic', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason };
-        });
+            return { ...c, learning_stage: 'Advanced Strategic', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason, match_score: meta.matchScore };
+        }).sort((a, b) => b.match_score - a.match_score);
 
         if (functionalMatches.length === 0) {
-            functionalMatches = domainPool.slice(0, 4).map(c => {
+            functionalMatches = domainPool.slice(0, 6).map(c => {
                 const meta = assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp);
-                return { ...c, learning_stage: 'Functional Core', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason };
+                return { ...c, learning_stage: 'Functional Core', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason, match_score: meta.matchScore };
             });
         }
         if (strategicMatches.length === 0) {
-            strategicMatches = domainPool.slice(4, 8).map(c => {
+            strategicMatches = domainPool.slice(6, 12).map(c => {
                 const meta = assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp);
-                return { ...c, learning_stage: 'Advanced Strategic', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason };
+                return { ...c, learning_stage: 'Advanced Strategic', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason, match_score: meta.matchScore };
             });
         }
 
-        // Deduplicate and return clean uncompleted list
+        // Deduplicate and return clean uncompleted list ordered by learning stage and match score
         const seenIds = new Set();
         const finalRecommendations = [];
         for (const c of [...mandatoryFoundation, ...functionalMatches, ...strategicMatches]) {
