@@ -222,7 +222,7 @@ async function submitParichaySSO(event) {
         return;
     }
     if (!password) {
-        alert('Please enter your Civil Service SSO Password / PIN (e.g. mospi123).');
+        alert('Please enter your Civil Service SSO Password / PIN (e.g. 1234).');
         return;
     }
 
