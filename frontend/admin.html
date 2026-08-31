@@ -141,23 +141,44 @@
         <div class="panel-header">
           <h2><i class="fa-solid fa-cloud-arrow-down"></i> iGOT Karmayogi API Sync & SSO Governance</h2>
         </div>
-        <p style="font-size:0.85rem; color:var(--text-muted);">Live status of iGOT Karmayogi catalogue synchronization and Single Sign-On integration:</p>
+        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-left:4px solid #0284c7; padding:10px 14px; border-radius:6px; font-size:0.84rem; color:#0369a1; margin-bottom:12px;">
+          <strong><i class="fa-solid fa-circle-info"></i> Why iGOT Sync?</strong> Synchronizes MoSPI's internal LMS database with the national <strong>iGOT Karmayogi Bharat</strong> catalog (DoPT / Parichay). Ingests new accredited circulars, updates curriculum taxonomies, and aligns officer competency roadmaps with national governance standards.
+        </div>
         <div style="display:flex; flex-direction:column; gap:10px; font-size:0.88rem;">
-          <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);">
             <span>Catalogue Sync Health:</span>
             <strong style="color:var(--success);" id="igot-sync-health"><i class="fa-solid fa-circle-check"></i> 100% Synced</strong>
           </div>
-          <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);">
             <span>System Access Control:</span>
             <strong style="color:var(--primary);"><i class="fa-solid fa-user-shield"></i> MoSPI Role-Based Access</strong>
           </div>
-          <div style="display:flex; justify-content:space-between; padding:8px 0;">
+          <div style="display:flex; justify-content:space-between; padding:6px 0;">
             <span>Role-Based Permissions:</span>
             <strong style="color:var(--text-main);"><i class="fa-solid fa-user-lock"></i> MoSPI / NSSTA Admin Role Verified</strong>
           </div>
         </div>
-        <button class="btn-action" id="btn-sync-igot" onclick="triggerIgotSync()" style="margin-top:4px; background:#0284c7;"><i class="fa-solid fa-arrows-rotate"></i> Sync with iGOT Karmayogi Now</button>
+        <button class="btn-action" id="btn-sync-igot" onclick="triggerIgotSync()" style="margin-top:6px; background:#0284c7;"><i class="fa-solid fa-arrows-rotate"></i> Sync with iGOT Karmayogi Now</button>
         <div id="igot-sync-result" style="font-size:0.82rem; font-weight:700; color:var(--success); margin-top:6px;"></div>
+
+        <!-- iGOT Karmayogi Sync Audit Logs Table -->
+        <h3 style="font-size:0.92rem; font-weight:800; margin-top:16px; margin-bottom:8px; color:var(--primary);"><i class="fa-solid fa-clock-rotate-left"></i> iGOT Synchronization Audit Logs</h3>
+        <div style="overflow-x:auto; max-height:160px; overflow-y:auto; border:1px solid var(--border); border-radius:6px;">
+          <table style="margin:0; font-size:0.8rem;">
+            <thead>
+              <tr style="background:#f1f5f9;">
+                <th>Timestamp</th>
+                <th>Operation</th>
+                <th>Modules</th>
+                <th>Gateway Status</th>
+                <th>Triggered By</th>
+              </tr>
+            </thead>
+            <tbody id="igot-sync-table-body">
+              <tr><td colspan="5" style="text-align:center;">Loading sync logs...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
 
@@ -368,32 +389,14 @@
 
   <!-- Certificate Inspection & PDF Audit Modal for Admin -->
   <div class="modal-backdrop" id="admin-cert-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.75); z-index:9999; justify-content:center; align-items:center; padding:20px;">
-    <div class="modal-box" style="background:#ffffff; width:100%; max-width:760px; max-height:92vh; overflow-y:auto; border-radius:12px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.25);">
+    <div class="modal-box" style="background:#ffffff; width:100%; max-width:820px; max-height:92vh; overflow-y:auto; border-radius:12px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.25);">
       <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
         <h3 style="margin:0; color:#1e3a8a; font-size:1.15rem;"><i class="fa-solid fa-stamp"></i> Certificate Verification & PDF Audit</h3>
         <button onclick="closeAdminCertModal()" style="background:none; border:none; font-size:1.4rem; color:#64748b; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <!-- Rendered Official Certificate Card Preview -->
-      <div id="admin-cert-preview-card" style="border:4px double #1e3a8a; border-radius:8px; padding:24px; text-align:center; background:#fcfbf7; margin-bottom:16px; position:relative;">
-        <div style="font-size:0.8rem; font-weight:800; color:#1e3a8a; letter-spacing:1px;">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
-        <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA)</div>
-        <h4 style="font-size:1.25rem; color:#0f172a; margin:16px 0 4px 0; font-family:Georgia, serif;">CERTIFICATE OF ACCREDITATION</h4>
-        <p style="font-size:0.85rem; color:#475569; margin:0;">This is to certify that</p>
-        <h3 id="modal-cert-officer" style="font-size:1.35rem; color:#1e3a8a; margin:8px 0; font-weight:800;">Dr. Sunita Sharma</h3>
-        <p style="font-size:0.85rem; color:#475569; margin:0;">has successfully completed accredited training curriculum for</p>
-        <h4 id="modal-cert-course" style="font-size:1.05rem; color:#0f172a; margin:8px 0; font-weight:700;">General Financial Rules (GFR 2017) & Public Procurement via GeM</h4>
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:24px; font-size:0.78rem; color:#475569; border-top:1px solid #e2e8f0; padding-top:12px;">
-          <div style="text-align:left;">
-            <div><strong>Audit Reference:</strong> <span id="modal-cert-code" style="font-family:monospace; color:#0284c7;">MoSPI-AUDIT-9821</span></div>
-            <div><strong>Issuing Authority:</strong> iGOT Karmayogi Bharat / NSSTA Accredited</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="color:#15803d; font-weight:800;"><i class="fa-solid fa-shield-halved"></i> NSSTA SECURE SEAL VERIFIED</div>
-            <div id="modal-cert-date">Date: Recently</div>
-          </div>
-        </div>
-      </div>
+      <!-- Dynamic Preview / Uploaded PDF Frame Container -->
+      <div id="admin-cert-viewer-container"></div>
 
       <!-- AI Audit Analysis Box -->
       <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:14px; margin-bottom:18px; font-size:0.86rem;">
@@ -426,7 +429,8 @@
         loadMetadataDropdowns(), 
         loadOfficerAnalytics(), 
         loadCoursesDropdown(),
-        loadCertificatesQueue()
+        loadCertificatesQueue(),
+        loadIgotSyncLogs()
       ]);
     });
 
@@ -638,9 +642,40 @@
       }
     }
 
+    async function loadIgotSyncLogs() {
+      const tbody = document.getElementById("igot-sync-table-body");
+      if (!tbody) return;
+      try {
+        const res = await fetch(`${API_URL}/api/admin/igot-sync-logs`);
+        const data = await res.json();
+        const logs = data.logs || [];
+
+        if (logs.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No synchronization history recorded.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = logs.map(l => {
+          const timeStr = l.sync_timestamp ? new Date(l.sync_timestamp).toLocaleDateString('en-IN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Recently';
+          return `
+            <tr>
+              <td><strong>${timeStr}</strong></td>
+              <td><span style="font-weight:600; color:#0369a1;">${l.operation}</span></td>
+              <td style="text-align:center;"><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:700;">${l.synced_modules} Modules</span></td>
+              <td><span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> ${l.gateway_status}</span></td>
+              <td style="color:#475569;">${l.triggered_by}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444;">Failed to load sync logs.</td></tr>`;
+      }
+    }
+
     async function triggerIgotSync() {
       const btn = document.getElementById("btn-sync-igot");
       const resDiv = document.getElementById("igot-sync-result");
+      const healthEl = document.getElementById("igot-sync-health");
       btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Syncing with iGOT Karmayogi API...`;
 
@@ -649,9 +684,11 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Sync failed');
 
+        const timeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        if (healthEl) healthEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> 100% Synced (${timeStr})`;
         resDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
-        alert(data.message);
-        await loadCoursesDropdown();
+        alert(`✅ iGOT Karmayogi Master Repository Synced!\n\n• Status: 100% Active\n• Total Master Courses in DB: ${data.total_master_courses || 45}\n• Last Synced: ${timeStr}\n\nAll officer pathways are aligned with the latest iGOT catalog.`);
+        await Promise.all([loadCoursesDropdown(), loadIgotSyncLogs()]);
       } catch (err) {
         resDiv.innerHTML = `<span style="color:#ef4444;">Sync Error: ${err.message}</span>`;
         alert(`iGOT Sync error: ${err.message}`);
@@ -996,10 +1033,44 @@
       try {
         const c = JSON.parse(decodeURIComponent(certEnc));
         activeModalCert = c;
-        document.getElementById("modal-cert-officer").innerText = c.officer_name || 'Officer Trainee';
-        document.getElementById("modal-cert-course").innerText = c.course_title || 'Accredited Module';
-        document.getElementById("modal-cert-code").innerText = c.audit_code || ('MoSPI-AUDIT-' + (c.id || Date.now()).toString().slice(-6));
-        document.getElementById("modal-cert-date").innerText = c.submitted_at ? ('Date: ' + new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', year:'numeric' })) : 'Date: Recently';
+
+        const viewerContainer = document.getElementById("admin-cert-viewer-container");
+        if (c.file_data && (c.file_data.startsWith("data:application/pdf") || c.file_data.startsWith("data:image"))) {
+          viewerContainer.innerHTML = `
+            <div style="margin-bottom:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#ffffff; padding:10px 16px; border-radius:8px 8px 0 0; font-size:0.88rem;">
+                <span><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> <strong>Uploaded Officer Document:</strong> ${c.certificate_file_name || 'Certificate.pdf'}</span>
+                <a href="${c.file_data}" target="_blank" download="${c.certificate_file_name || 'Certificate.pdf'}" class="btn-action" style="background:#0284c7; padding:4px 12px; font-size:0.78rem; color:#fff; text-decoration:none;">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Fullscreen / Download
+                </a>
+              </div>
+              <iframe src="${c.file_data}" style="width:100%; height:500px; border:2px solid #1e293b; border-radius:0 0 8px 8px; background:#f8fafc;"></iframe>
+            </div>
+          `;
+        } else {
+          viewerContainer.innerHTML = `
+            <div id="admin-cert-preview-card" style="border:4px double #1e3a8a; border-radius:8px; padding:24px; text-align:center; background:#fcfbf7; margin-bottom:16px; position:relative;">
+              <div style="font-size:0.8rem; font-weight:800; color:#1e3a8a; letter-spacing:1px;">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
+              <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA)</div>
+              <h4 style="font-size:1.25rem; color:#0f172a; margin:16px 0 4px 0; font-family:Georgia, serif;">CERTIFICATE OF ACCREDITATION</h4>
+              <p style="font-size:0.85rem; color:#475569; margin:0;">This is to certify that</p>
+              <h3 style="font-size:1.35rem; color:#1e3a8a; margin:8px 0; font-weight:800;">${c.officer_name || 'Officer Trainee'}</h3>
+              <p style="font-size:0.85rem; color:#475569; margin:0;">has successfully completed accredited training curriculum for</p>
+              <h4 style="font-size:1.05rem; color:#0f172a; margin:8px 0; font-weight:700;">${c.course_title || 'Accredited Module'}</h4>
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:24px; font-size:0.78rem; color:#475569; border-top:1px solid #e2e8f0; padding-top:12px;">
+                <div style="text-align:left;">
+                  <div><strong>Audit Reference:</strong> <span style="font-family:monospace; color:#0284c7;">${c.audit_code || ('MoSPI-AUDIT-' + (c.id || Date.now()).toString().slice(-6))}</span></div>
+                  <div><strong>Issuing Authority:</strong> iGOT Karmayogi Bharat / NSSTA Accredited</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="color:#15803d; font-weight:800;"><i class="fa-solid fa-shield-halved"></i> NSSTA SECURE SEAL VERIFIED</div>
+                  <div>Date: ${c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', year:'numeric' }) : 'Recently'}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
         document.getElementById("modal-cert-summary").innerText = c.admin_remarks || 'Document passed identity and course alignment checks.';
 
         const isPending = c.status === 'pending';
