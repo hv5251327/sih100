@@ -269,6 +269,42 @@
       </div>
     </section>
 
+    <!-- Predictive Capacity Planning & Future Skill Forecasting (Individual Officer Trajectory) -->
+    <section class="dashboard-panel" style="background: linear-gradient(135deg, #f8fafc 0%, #f0fdfa 100%); border-left: 4px solid #0f766e;">
+      <div class="panel-header" style="flex-wrap:wrap; gap:8px;">
+        <div class="panel-header-left">
+          <i class="fa-solid fa-brain" style="color:#0f766e;"></i>
+          <h2>Predictive Capacity Planning & Future Skill Forecasting</h2>
+        </div>
+        <span style="font-size:0.78rem; background:#ccfbf1; color:#0f766e; font-weight:800; padding:3px 8px; border-radius:4px;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Forecasting Engine</span>
+      </div>
+      <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:12px;">AI-projected skill evolution, technological transitions (CAPI Tablet Microdata, SNA 2008 Base Year Revision, DPDP 2023), and targeted capacity building for your deployment:</p>
+      
+      <div id="officer-forecast-container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px, 1fr)); gap:14px;">
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; font-size:0.82rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong style="color:#0f172a;"><i class="fa-solid fa-code" style="color:#0284c7;"></i> Technical Automation</strong>
+            <span style="background:#fee2e2; color:#b91c1c; font-weight:800; font-size:0.7rem; padding:2px 6px; border-radius:4px;">PRIORITY</span>
+          </div>
+          <p style="color:#475569; font-size:0.76rem; margin-top:2px;">Predicted 45% deficit in automated microdata validation & Python pipelines by Q4 2026.</p>
+        </div>
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; font-size:0.82rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong style="color:#0f172a;"><i class="fa-solid fa-chart-pie" style="color:#15803d;"></i> Macroeconomic Accounts</strong>
+            <span style="background:#fef3c7; color:#b45309; font-weight:800; font-size:0.7rem; padding:2px 6px; border-radius:4px;">HIGH</span>
+          </div>
+          <p style="color:#475569; font-size:0.76rem; margin-top:2px;">Upcoming National Base Year revision requires proficiency in Supply-Use Tables (SUT).</p>
+        </div>
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; font-size:0.82rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong style="color:#0f172a;"><i class="fa-solid fa-shield-halved" style="color:#7c3aed;"></i> Statutory Privacy</strong>
+            <span style="background:#e0f2fe; color:#0369a1; font-weight:800; font-size:0.7rem; padding:2px 6px; border-radius:4px;">MANDATORY</span>
+          </div>
+          <p style="color:#475569; font-size:0.76rem; margin-top:2px;">DPDP Act 2023 compliance certification required prior to next survey cycle.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="dashboard-panel">
       <div class="panel-header">
         <div class="panel-header-left">
@@ -507,12 +543,47 @@
           loadIgotProfile(),
           loadCompetencies(), 
           loadOfficerRecommendations(),
-          loadOfficerHistory()
+          loadOfficerHistory(),
+          loadOfficerForecast()
         ]);
       } catch (e) {
         console.error("Session load error:", e);
       }
     });
+
+    async function loadOfficerForecast() {
+      const container = document.getElementById("officer-forecast-container");
+      if (!container || !currentUser?.email) return;
+
+      try {
+        const res = await fetch(`${API_URL}/api/officer/forecast/${encodeURIComponent(currentUser.email)}`);
+        const data = await res.json();
+        const f = data.forecast;
+        if (!f) return;
+
+        const deficits = f.predicted_deficits || [];
+        if (deficits.length > 0) {
+          container.innerHTML = deficits.map((d, i) => {
+            const badgeColor = d.gap_pct > 50 ? '#fee2e2' : (d.gap_pct > 20 ? '#fef3c7' : '#e0f2fe');
+            const textColor = d.gap_pct > 50 ? '#b91c1c' : (d.gap_pct > 20 ? '#b45309' : '#0369a1');
+            const icon = i === 0 ? 'fa-code' : (i === 1 ? 'fa-chart-pie' : 'fa-shield-halved');
+            return `
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid ${textColor}; border-radius:8px; padding:12px 14px; font-size:0.82rem; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <strong style="color:#0f172a;"><i class="fa-solid ${icon}" style="color:${textColor};"></i> ${d.area}</strong>
+                  <span style="background:${badgeColor}; color:${textColor}; font-weight:800; font-size:0.7rem; padding:2px 6px; border-radius:4px;">
+                    ${d.gap_pct > 0 ? d.gap_pct + '% DEFICIT' : 'OPTIMAL'}
+                  </span>
+                </div>
+                <p style="color:#475569; font-size:0.77rem; margin-top:3px; line-height:1.4;">${d.recommendation}</p>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.warn("Forecast fetch fallback:", err);
+      }
+    }
 
     async function loadCompetencies() {
       try {

@@ -99,41 +99,49 @@
     <div class="grid-2">
       <section class="panel">
         <div class="panel-header" style="flex-wrap:wrap; gap:8px;">
-          <h2><i class="fa-solid fa-brain"></i> Predictive Capacity Planning & Future Skill Forecasting</h2>
+          <h2><i class="fa-solid fa-brain" style="color:#0f766e;"></i> Predictive Capacity Planning & Future Skill Forecasting</h2>
         </div>
-        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">AI-forecasted emerging skill requirements and capacity-building alerts based on real-time officer competencies:</p>
-        <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
-          <select id="forecastDeptSelect" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); font-size:0.85rem;">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">AI-driven predictive analytics forecasting emerging technology demands, methodology transitions, and proactive upskilling requirements across MoSPI & State DES cadres:</p>
+        
+        <!-- Filter Controls -->
+        <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
+          <select id="forecastDeptSelect" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); font-size:0.82rem; font-weight:700;">
             <option value="ALL">All Divisions (Universal)</option>
             <option value="NAD">National Accounts Division (NAD)</option>
             <option value="FOD">Field Operations Division (FOD)</option>
             <option value="PSD">Price Statistics Division (PSD)</option>
             <option value="SSD">Social Statistics Division (SSD)</option>
             <option value="ESD">Economic Statistics Division (ESD)</option>
+            <option value="SDRD">Survey Design & Research (SDRD)</option>
+            <option value="DIID">Data Informatics & AI (DIID)</option>
             <option value="NSSTA">NSSTA Greater Noida</option>
+            <option value="STATE_DES">State DES Cadres</option>
           </select>
-          <select id="forecastHorizonSelect" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); font-size:0.85rem;">
-            <option value="Q3 2026">Horizon: Q3 2026</option>
-            <option value="Q4 2026" selected>Horizon: Q4 2026</option>
-            <option value="FY 2026-27">Horizon: FY 2026-27</option>
+          <select id="forecastCadreSelect" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); font-size:0.82rem; font-weight:700;">
+            <option value="ALL">All Cadres (ISS, SSS, DES)</option>
+            <option value="ISS">Indian Statistical Service (ISS)</option>
+            <option value="SSS">Subordinate Statistical Service (SSS)</option>
+            <option value="DES">State DES Cadre</option>
           </select>
-          <button onclick="runSkillForecast()" id="btn-run-forecast" class="btn-action" style="padding:6px 12px; font-size:0.85rem; background:#0f766e;"><i class="fa-solid fa-bolt"></i> Generate Forecast</button>
+          <select id="forecastHorizonSelect" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border); font-size:0.82rem; font-weight:700;">
+            <option value="Q3 2026">Horizon: Q3 2026 (Immediate)</option>
+            <option value="Q4 2026" selected>Horizon: Q4 2026 (Target Base Year)</option>
+            <option value="FY 2026-27">Horizon: FY 2026-27 (Medium-Term)</option>
+            <option value="FY 2027-28">Horizon: FY 2027-28 (Strategic Vision)</option>
+          </select>
+          <button onclick="runSkillForecast()" id="btn-run-forecast" class="btn-action" style="padding:6px 14px; font-size:0.82rem; background:#0f766e; font-weight:800;"><i class="fa-solid fa-bolt"></i> Generate Forecast</button>
         </div>
-        <div id="forecast-cards-container" style="display:flex; flex-direction:column; gap:10px;">
-          <div style="background:#f8fafc; border:1px solid var(--border); border-left:4px solid #ef4444; padding:10px 14px; border-radius:6px; font-size:0.85rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <strong>High Demand: AI/ML & Python Survey Automation (NAD & FOD)</strong>
-              <span style="background:#fee2e2; color:#b91c1c; font-size:0.72rem; font-weight:800; padding:2px 6px; border-radius:4px;">CRITICAL</span>
-            </div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">Projected 45% skill deficit in automated data validation by Q4. Recommended: Advance Python & Machine Learning Pipelines.</div>
-          </div>
-          <div style="background:#f8fafc; border:1px solid var(--border); border-left:4px solid #f59e0b; padding:10px 14px; border-radius:6px; font-size:0.85rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <strong>Moderate Gap: Geospatial & CAPI Tablet Analytics (FOD)</strong>
-              <span style="background:#fef3c7; color:#b45309; font-size:0.72rem; font-weight:800; padding:2px 6px; border-radius:4px;">HIGH</span>
-            </div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">Predicted upskilling requirement for field investigators in GIS-based survey sampling frames.</div>
-          </div>
+
+        <!-- Predictive Summary KPI Strip -->
+        <div id="forecast-kpi-strip" style="background:#f0fdfa; border:1px solid #ccfbf1; border-radius:8px; padding:10px 14px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-size:0.8rem;">
+          <div><span style="color:#64748b;">Audited Officers:</span> <strong id="f-audited" style="color:#0f766e;">13+ Officers</strong></div>
+          <div><span style="color:#64748b;">Mean Competency:</span> <strong id="f-mean" style="color:#0284c7;">48%</strong></div>
+          <div><span style="color:#64748b;">Critical Action Gaps:</span> <strong id="f-critical" style="color:#dc2626;">3 Priority Areas</strong></div>
+          <div><span style="color:#64748b;">Target Horizon:</span> <strong id="f-horizon" style="color:#7c3aed;">Q4 2026</strong></div>
+        </div>
+
+        <div id="forecast-cards-container" style="display:flex; flex-direction:column; gap:12px; max-height:480px; overflow-y:auto; padding-right:4px;">
+          <!-- Populated dynamically by runSkillForecast() -->
         </div>
       </section>
 
@@ -430,7 +438,8 @@
         loadOfficerAnalytics(), 
         loadCoursesDropdown(),
         loadCertificatesQueue(),
-        loadIgotSyncLogs()
+        loadIgotSyncLogs(),
+        runSkillForecast()
       ]);
     });
 
@@ -1237,46 +1246,98 @@
 
     async function runSkillForecast() {
       const dept = document.getElementById("forecastDeptSelect") ? document.getElementById("forecastDeptSelect").value : 'ALL';
+      const cadre = document.getElementById("forecastCadreSelect") ? document.getElementById("forecastCadreSelect").value : 'ALL';
       const horizon = document.getElementById("forecastHorizonSelect") ? document.getElementById("forecastHorizonSelect").value : 'Q4 2026';
       const btn = document.getElementById("btn-run-forecast");
       const container = document.getElementById("forecast-cards-container");
 
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...`;
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...`;
+      }
 
       try {
         const res = await fetch(`${API_URL}/api/admin/skill-forecast`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ division: dept, horizon: horizon })
+          body: JSON.stringify({ division: dept, horizon: horizon, cadre: cadre })
         });
         const data = await res.json();
         const forecasts = data.forecasts || [];
 
+        // Update Summary KPI Strip
+        if (document.getElementById("f-audited")) document.getElementById("f-audited").innerText = `${data.total_officers_audited || 13}+ Officers`;
+        if (document.getElementById("f-mean")) document.getElementById("f-mean").innerText = `${data.mean_overall_proficiency || 48}%`;
+        if (document.getElementById("f-critical")) document.getElementById("f-critical").innerText = `${forecasts.filter(f => f.priority.includes('CRITICAL')).length || 2} Priority Areas`;
+        if (document.getElementById("f-horizon")) document.getElementById("f-horizon").innerText = data.horizon || horizon;
+
         if (forecasts.length === 0) {
-          container.innerHTML = `<div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:12px; border-radius:6px; font-size:0.85rem;"><strong>No Critical Deficits:</strong> All officers in ${dept} meet the target readiness benchmark for ${horizon}.</div>`;
+          container.innerHTML = `<div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:14px; border-radius:8px; font-size:0.85rem; font-weight:700;"><i class="fa-solid fa-circle-check"></i> All officers in ${dept} (${cadre}) meet target competency readiness benchmarks for ${horizon}.</div>`;
         } else {
-          container.innerHTML = forecasts.map(f => `
-            <div style="background:#f8fafc; border:1px solid var(--border); border-left:4px solid ${f.border_color}; padding:10px 14px; border-radius:6px; font-size:0.85rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong>${f.title}</strong>
-                <span style="background:${f.badge_bg}; color:${f.badge_color}; font-size:0.72rem; font-weight:800; padding:2px 6px; border-radius:4px;">${f.priority}</span>
+          container.innerHTML = forecasts.map(f => {
+            const curNum = parseInt(f.current_proficiency) || 35;
+            const targetNum = parseInt(f.target_proficiency) || 80;
+            return `
+              <div style="background:#ffffff; border:1px solid var(--border); border-left:5px solid ${f.border_color}; padding:14px 16px; border-radius:8px; font-size:0.85rem; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px;">
+                  <div>
+                    <span style="font-size:0.7rem; font-weight:800; color:#0284c7; text-transform:uppercase;">${f.domain}</span>
+                    <h4 style="font-size:0.92rem; font-weight:800; color:#0f172a; margin-top:2px;">${f.title}</h4>
+                  </div>
+                  <span style="background:${f.badge_bg}; color:${f.badge_color}; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:4px; white-space:nowrap;">${f.priority}</span>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; margin:8px 0; font-size:0.78rem;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:700;">
+                    <span style="color:#64748b;">Current Readiness: <strong style="color:#0f172a;">${f.current_proficiency || '35%'}</strong></span>
+                    <span style="color:#64748b;">Target Benchmark: <strong style="color:#15803d;">${f.target_proficiency || '80%'}</strong></span>
+                  </div>
+                  <div style="width:100%; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                    <div style="width:${curNum}%; height:100%; background:${f.border_color}; border-radius:3px;"></div>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-top:6px; color:#475569; font-size:0.75rem;">
+                    <span><i class="fa-solid fa-users-viewfinder"></i> Projected at Risk: <strong style="color:#b91c1c;">${f.projected_officers_at_risk} Officers</strong></span>
+                    <span><i class="fa-solid fa-clock"></i> Target Horizon: <strong>${f.forecast_timeline}</strong></span>
+                  </div>
+                </div>
+
+                <div style="font-size:0.78rem; color:#334155; margin-bottom:8px;">
+                  <strong style="color:#0f766e;"><i class="fa-solid fa-lightbulb"></i> Emerging Driver:</strong> ${f.emerging_driver || 'Transition to modernized official statistics methodologies.'}
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-top:1px dashed #e2e8f0; padding-top:8px;">
+                  <span style="font-size:0.74rem; color:var(--text-muted);"><i class="fa-solid fa-circle-arrow-right" style="color:var(--primary);"></i> ${f.action}</span>
+                  <button onclick="prefillWorkshop('${encodeURIComponent(f.title)}', '${dept}')" class="btn-action" style="padding:4px 10px; font-size:0.75rem; background:#1e3a8a; font-weight:700; border-radius:4px; white-space:nowrap;">
+                    <i class="fa-solid fa-calendar-plus"></i> Schedule Cohort
+                  </button>
+                </div>
               </div>
-              <div style="font-size:0.78rem; color:#475569; margin-top:3px;">
-                <strong>${f.deficit_pct}</strong> • Projected at risk: <strong>${f.projected_officers_at_risk} officers</strong> by ${f.forecast_timeline}.
-              </div>
-              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
-                <i class="fa-solid fa-arrow-right" style="color:var(--primary);"></i> ${f.action}
-              </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
         }
       } catch (e) {
-        console.warn("Forecast fallback:", e);
+        console.warn("Forecast error:", e);
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Generate Forecast`;
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Generate Forecast`;
+        }
       }
+    }
+
+    function prefillWorkshop(titleEnc, dept) {
+      const title = decodeURIComponent(titleEnc);
+      const titleInput = document.querySelector('input[placeholder*="Advanced Survey"]');
+      const deptSelect = document.getElementById("wsDept");
+      if (titleInput) {
+        titleInput.value = title;
+        titleInput.scrollIntoView({ behavior: 'smooth' });
+        titleInput.style.border = "2px solid #0284c7";
+      }
+      if (deptSelect && dept !== 'ALL') {
+        deptSelect.value = dept;
+      }
+      alert(`🎯 Pre-filled Workshop Batch for Annual Training Plan (ATP):\n\n"${title}"\n\nScroll down to the "Schedule New Training Workshop" panel to confirm dates and seats.`);
     }
 
     async function reviewCertificate(certId, decisionStatus) {
