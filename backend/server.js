@@ -282,45 +282,26 @@ app.get('/api/metadata', async (req, res) => {
     }
 });
 
-// Official iGOT Karmayogi Curated Course Catalog for MoSPI
+// Official iGOT Karmayogi Curated Course Catalog for MoSPI (Predefined Competency Frameworks)
 const IGOT_MASTER_CATALOG = [
+    // 1. STATISTICAL COMPETENCIES
     {
-        course_code: 'IGOT-DPDP-01',
-        title: 'Digital Personal Data Protection (DPDP) Act 2023 & Respondent Anonymization',
-        domain: 'Digital Governance',
-        difficulty_level: 'Foundation',
-        description: 'Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
-        is_general_mandatory: true,
-        target_departments: ['ALL']
-    },
-    {
-        course_code: 'IGOT-POSH-02',
-        title: 'Workplace Ethics, POSH Compliance & Civil Services Conduct Rules',
-        domain: 'Behavioural & Managerial',
-        difficulty_level: 'Foundation',
-        description: 'Code of conduct, prevention of sexual harassment (POSH), and ethics in official public administration.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
-        is_general_mandatory: true,
-        target_departments: ['ALL']
-    },
-    {
-        course_code: 'IGOT-CAPI-101',
-        title: 'CAPI Tablet Data Collection, Field Auditing & Mobile Encryption',
-        domain: 'Technical Competencies',
-        difficulty_level: 'Intermediate',
-        description: 'Operational training on mobile data collection tablets, GPS validation, field transmission protocols, and error audits.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
+        course_code: 'IGOT-STAT-101',
+        title: 'Survey Sampling Frame Design, Multi-Stage Weighting & Non-Sampling Error Audit',
+        domain: 'Statistical Competencies',
+        difficulty_level: 'Advanced',
+        description: 'Stratified multi-stage cluster sampling, multiplier calculation, post-stratification weighting, and non-sampling error minimization in large-scale socio-economic surveys.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
         is_general_mandatory: false,
-        target_departments: ['FOD', 'SDRD']
+        target_departments: ['SDRD', 'FOD', 'NSSO']
     },
     {
         course_code: 'IGOT-NAD-201',
         title: 'National Accounts Compilation & Gross Domestic Product (GDP) Estimation (SNA 2008)',
         domain: 'Statistical Competencies',
         difficulty_level: 'Intermediate',
-        description: 'Macroeconomic aggregates, Gross Value Added (GVA), base-year revision methodologies, and supply-use tables.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
+        description: 'Compiling Gross Value Added (GVA), Supply and Use Tables (SUT), institutional sector accounts, and base year revisions following UN SNA 2008 standards.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
         is_general_mandatory: false,
         target_departments: ['NAD', 'ESD']
     },
@@ -329,80 +310,256 @@ const IGOT_MASTER_CATALOG = [
         title: 'Consumer Price Index (CPI) & Inflation Deflator Analytics',
         domain: 'Statistical Competencies',
         difficulty_level: 'Intermediate',
-        description: 'Price index construction, geometric mean weighting, item replacement protocols, and inflation trend forecasting.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
+        description: 'Design of market price baskets, Laspeyres and Jevons price index construction, geometric mean weighting, item substitution rules, and inflation forecasting.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
         is_general_mandatory: false,
         target_departments: ['PSD']
     },
     {
-        course_code: 'IGOT-SSD-203',
-        title: 'SDG National Indicator Framework (NIF) Tracking & Social Statistics',
+        course_code: 'IGOT-STAT-104',
+        title: 'Periodic Labour Force Survey (PLFS) Microdata Analysis & Employment Metrics',
         domain: 'Statistical Competencies',
         difficulty_level: 'Intermediate',
-        description: 'Monitoring NIF indicators, disaggregated social metrics, metadata harmonization, and SDG progress dashboards.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
+        description: 'Concepts of Usual Principal Status (UPS), Current Weekly Status (CWS), Worker Population Ratio (WPR), LFPR, and weight application on NSSO unit-level data.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
         is_general_mandatory: false,
-        target_departments: ['SSD', 'SDG_LAB']
+        target_departments: ['SSD', 'SDRD', 'FOD']
+    },
+    {
+        course_code: 'IGOT-STAT-105',
+        title: 'Agricultural Statistics, Crop Area Estimation & Land Use Dynamics',
+        domain: 'Statistical Competencies',
+        difficulty_level: 'Intermediate',
+        description: 'Agricultural census frames, General Crop Estimation Surveys (GCES), remote sensing yield forecasting, and integration of administrative land records.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['ESD', 'STATE_DES', 'SSD']
     },
     {
         course_code: 'IGOT-ESD-204',
         title: 'Annual Survey of Industries (ASI) & Index of Industrial Production (IIP)',
         domain: 'Statistical Competencies',
         difficulty_level: 'Intermediate',
-        description: 'Factory sector frame management, item-level industrial output validation, and monthly IIP indices.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
+        description: 'Factory sector sampling frame maintenance, NIC-2008 industrial classification, gross output validation, working capital analysis, and monthly IIP compilation.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
         is_general_mandatory: false,
         target_departments: ['ESD']
     },
     {
-        course_code: 'IGOT-SDRD-205',
-        title: 'Survey Sampling Frame Design, Weighting & Non-Sampling Error Audit',
+        course_code: 'IGOT-SSD-203',
+        title: 'SDG National Indicator Framework (NIF) Tracking & Social Statistics',
+        domain: 'Statistical Competencies',
+        difficulty_level: 'Intermediate',
+        description: 'Monitoring 300+ NIF indicators aligned with UN SDGs, baseline metadata harmonization, disaggregated social statistics, and state indicator dashboards.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['SSD', 'SDG_LAB', 'STATE_DES']
+    },
+    {
+        course_code: 'IGOT-STAT-108',
+        title: 'Metadata Standards (SDMX, DDI) & UN National Quality Assurance Framework (UN-NQAF)',
         domain: 'Statistical Competencies',
         difficulty_level: 'Advanced',
-        description: 'Stratified multi-stage cluster sampling, multiplier estimation, imputation of missing entries, and variance estimation.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
+        description: 'Statistical Data and Metadata eXchange (SDMX) protocols, Data Documentation Initiative (DDI) XML schemas, and quality audits under UN-NQAF principles.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
         is_general_mandatory: false,
-        target_departments: ['SDRD', 'FOD']
+        target_departments: ['DIID', 'DPD', 'SDRD']
     },
-    {
-        course_code: 'IGOT-IPMD-206',
-        title: 'Online Central Project Monitoring (OCMS) & Infrastructure Auditing',
-        domain: 'Technical Competencies',
-        difficulty_level: 'Intermediate',
-        description: 'Cost and time overrun tracking for mega central projects, milestone verification, and risk auditing.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
-        is_general_mandatory: false,
-        target_departments: ['IPMD']
-    },
-    {
-        course_code: 'IGOT-CYBER-301',
-        title: 'Government Cyber Security, ISO 27001 & MoSPI Data Classification',
-        domain: 'Digital Governance',
-        difficulty_level: 'Intermediate',
-        description: 'Securing statistical microdata assets, access control policies, credential management, and incident response.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
-        is_general_mandatory: false,
-        target_departments: ['ALL']
-    },
+
+    // 2. TECHNICAL COMPETENCIES
     {
         course_code: 'IGOT-PYTHON-401',
         title: 'Python & Machine Learning for Official Statistics Automation',
         domain: 'Technical Competencies',
         difficulty_level: 'Advanced',
-        description: 'Data cleaning with Pandas, automated outlier detection, time series modeling, and interactive reporting pipelines.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
+        description: 'Data wrangling with Pandas and NumPy, automated outlier detection, time series decomposition (SARIMA), Scikit-Learn classification, and pipeline scripting.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: true,
+        target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-TECH-102',
+        title: 'R Programming & Econometric Microdata Modeling for Survey Data',
+        domain: 'Technical Competencies',
+        difficulty_level: 'Advanced',
+        description: 'Complex survey design analysis using R survey package, robust regression models, multi-level panel regressions, and automated statistical reporting with R Markdown.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
         is_general_mandatory: false,
         target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-TECH-103',
+        title: 'Relational SQL & Survey Microdata Validation Queries',
+        domain: 'Technical Competencies',
+        difficulty_level: 'Foundation',
+        description: 'Relational database schema design for MoSPI survey tables, complex window functions, cross-tabulation aggregation queries, and automated data integrity triggers.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: true,
+        target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-TECH-104',
+        title: 'Stata & SPSS for Survey Cross-Tabulation & Complex Panel Econometrics',
+        domain: 'Technical Competencies',
+        difficulty_level: 'Intermediate',
+        description: 'Survey weighting commands in Stata (svyset), panel fixed and random effect estimations, multi-dimensional cross-tabulations in SPSS, and output formatting.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['NAD', 'ESD', 'PSD', 'SSD']
     },
     {
         course_code: 'IGOT-GIS-402',
         title: 'Geospatial Information Systems (GIS) & Remote Sensing Sampling',
         domain: 'Technical Competencies',
         difficulty_level: 'Advanced',
-        description: 'Urban and rural frame delineation with satellite imagery, geo-tagging survey units, and spatial thematic mapping.',
-        video_url: 'https://portal.igotkarmayogi.gov.in',
+        description: 'QGIS integration, satellite imagery land classification (NDVI), urban and rural enumeration block (EB) spatial frame delineation, and thematic choropleth cartography.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['FOD', 'SDRD', 'STATE_DES']
+    },
+    {
+        course_code: 'IGOT-TECH-106',
+        title: 'Data Visualization, Dashboards & Interactive Statistical Reporting',
+        domain: 'Technical Competencies',
+        difficulty_level: 'Intermediate',
+        description: 'Building national statistical dashboards using Power BI and Tableau, interactive chart principles, color theory for official reports, and automated PDF report compilation.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-TECH-108',
+        title: 'Cloud Computing, Automated Microdata Exchange & Open Government Data (OGD) APIs',
+        domain: 'Technical Competencies',
+        difficulty_level: 'Advanced',
+        description: 'RESTful API creation for official microdata dissemination, Open Government Data (data.gov.in) interoperability standards, and high-performance cloud processing.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['DIID', 'DPD']
+    },
+    {
+        course_code: 'IGOT-CAPI-101',
+        title: 'CAPI Tablet Data Collection, Field Auditing & Mobile Encryption',
+        domain: 'Technical Competencies',
+        difficulty_level: 'Intermediate',
+        description: 'Field survey tablet configuration, real-time GPS paradata audits, secure mobile sqlite encryption, error flagging routines, and field synchronization protocols.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
         is_general_mandatory: false,
         target_departments: ['FOD', 'SDRD']
+    },
+
+    // 3. DIGITAL GOVERNANCE
+    {
+        course_code: 'IGOT-CYBER-301',
+        title: 'Government Cyber Security, ISO 27001 & MoSPI Data Classification',
+        domain: 'Digital Governance',
+        difficulty_level: 'Intermediate',
+        description: 'Securing statistical microdata assets, CERT-In cybersecurity directives, multi-factor authentication, endpoint hygiene, and security incident response protocols.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-GOV-102',
+        title: 'Digital Personal Data Protection (DPDP) Act 2023 & Respondent Anonymization',
+        domain: 'Digital Governance',
+        difficulty_level: 'Foundation',
+        description: 'Statutory compliance with DPDP Act 2023, informed consent capture, anonymization techniques (k-anonymity, differential privacy), and data fiduciary obligations for MoSPI.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: true,
+        target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-GOV-103',
+        title: 'e-Sign, PKI Infrastructure & Digital Signatures in Government Workflow',
+        domain: 'Digital Governance',
+        difficulty_level: 'Foundation',
+        description: 'Public Key Infrastructure (PKI) standards, DSC token issuance, Aadhaar-based e-Sign integration, and tamper-evident PDF document certification.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-GOV-104',
+        title: 'MeghRaj Government Cloud Architecture & Security Compliance',
+        domain: 'Digital Governance',
+        difficulty_level: 'Intermediate',
+        description: 'National Cloud MeghRaj deployment guidelines, cloud storage tiering for census microdata, disaster recovery architectures, and MeitY empanelment audits.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['DIID', 'DPD']
+    },
+    {
+        course_code: 'IGOT-GOV-105',
+        title: 'Digital Public Infrastructure (DPI), India Stack & National Data Governance',
+        domain: 'Digital Governance',
+        difficulty_level: 'Intermediate',
+        description: 'Leveraging India Stack components (Aadhaar, DigiLocker, UPI, DEPA), National Data Governance Framework Policy (NDGFP), and cross-ministerial data sharing.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['ALL']
+    },
+
+    // 4. BEHAVIOURAL AND MANAGERIAL
+    {
+        course_code: 'IGOT-POSH-101',
+        title: 'Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration',
+        domain: 'Behavioural & Managerial',
+        difficulty_level: 'Foundation',
+        description: 'Central Civil Services (Conduct) Rules, POSH Act 2013 legal mandates, Internal Complaints Committee (ICC) functions, and professional ethics in civil service.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: true,
+        target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-LEAD-101',
+        title: 'Executive Leadership, Strategic Vision & Team Building for Statistical Cadres',
+        domain: 'Behavioural & Managerial',
+        difficulty_level: 'Advanced',
+        description: 'Strategic visioning, high-performance team leadership in survey operations, conflict resolution, emotional intelligence, and transformational leadership in public policy.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-LEAD-102',
+        title: 'Official Communication, Parliamentary Note Drafting & Data Storytelling',
+        domain: 'Behavioural & Managerial',
+        difficulty_level: 'Intermediate',
+        description: 'Principles of drafting Cabinet Notes, replies to Parliamentary Questions, official press releases, and narrative data storytelling for statistical releases.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-IPMD-206',
+        title: 'Online Central Project Monitoring (OCMS) & Infrastructure Auditing',
+        domain: 'Behavioural & Managerial',
+        difficulty_level: 'Intermediate',
+        description: 'Monitoring central sector infrastructure projects costing Rs 150 Crore+, critical path method (CPM/PERT), flash report analysis, and milestone tracking.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['IPMD']
+    },
+    {
+        course_code: 'IGOT-LEAD-104',
+        title: 'Evidence-Based Policy Formulation & Macroeconomic Decision Making',
+        domain: 'Behavioural & Managerial',
+        difficulty_level: 'Advanced',
+        description: 'Translating empirical survey statistics into actionable public policy recommendations, policy impact evaluation, and strategic advisory for central ministries.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['ALL']
+    },
+    {
+        course_code: 'IGOT-LEAD-105',
+        title: 'Change Management & Institutional Transformation in Statistical Systems',
+        domain: 'Behavioural & Managerial',
+        difficulty_level: 'Advanced',
+        description: 'Frameworks for managing digital transformation, overcoming institutional inertia, agile capacity building, and institutionalizing continuous TNA under Mission Karmayogi.',
+        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        is_general_mandatory: false,
+        target_departments: ['ALL']
     }
 ];
 
