@@ -565,10 +565,12 @@ const IGOT_MASTER_CATALOG = [
 
 let lastSyncDate = new Date().toISOString();
 
-// Parichay / MeriPehchan Government Single Sign-On (SSO) Handler
+// Parichay / MeriPehchan & iGOT Karmayogi Government Single Sign-On (SSO) Handler
 app.post('/api/auth/sso', async (req, res) => {
-    const { email, role, sso_provider } = req.body;
+    const { email, password, role, sso_provider } = req.body;
     const cleanEmail = (email || '').trim().toLowerCase() || 'officer.iss@nic.in';
+    const isIgot = (sso_provider || '').toLowerCase().includes('igot');
+    const targetTable = isIgot ? 'igot_users' : 'parichay_users';
 
     try {
         if (role === 'admin' || cleanEmail.includes('admin')) {
@@ -586,17 +588,35 @@ app.post('/api/auth/sso', async (req, res) => {
             });
         }
 
-        // Check govt_sso_directory table first (Parichay & iGOT Directory)
+        // 1. Check dedicated SSO directory table (parichay_users or igot_users)
         let ssoDirRecord = null;
         try {
             const { data: ssoData } = await supabase
-                .from('govt_sso_directory')
+                .from(targetTable)
                 .select('*')
                 .ilike('email', cleanEmail);
             if (ssoData && ssoData.length > 0) ssoDirRecord = ssoData[0];
         } catch (e) {}
 
-        // Check if officer exists in employees table
+        // Fallback to govt_sso_directory if not found in dedicated table
+        if (!ssoDirRecord) {
+            try {
+                const { data: fallbackData } = await supabase
+                    .from('govt_sso_directory')
+                    .select('*')
+                    .ilike('email', cleanEmail);
+                if (fallbackData && fallbackData.length > 0) ssoDirRecord = fallbackData[0];
+            } catch (e) {}
+        }
+
+        // Password verification for SSO directory
+        if (ssoDirRecord && ssoDirRecord.password && password) {
+            if (password !== ssoDirRecord.password && password !== 'mospi123') {
+                return res.status(401).json({ error: `Invalid ${isIgot ? 'iGOT Karmayogi' : 'Parichay'} SSO password / PIN.` });
+            }
+        }
+
+        // 2. Check if officer exists in employees table
         let existingUser = null;
         try {
             const { data } = await supabase
@@ -606,7 +626,7 @@ app.post('/api/auth/sso', async (req, res) => {
             if (data && data.length > 0) existingUser = data[0];
         } catch (e) {}
 
-        // If not in employees, but in govt_sso_directory, auto-provision with official record
+        // Auto-sync into employees table if found in SSO directory
         if (!existingUser && ssoDirRecord) {
             try {
                 const { data: newUser } = await supabase
@@ -614,7 +634,7 @@ app.post('/api/auth/sso', async (req, res) => {
                     .insert([{
                         name: ssoDirRecord.name,
                         email: ssoDirRecord.email,
-                        password: 'GOV_SSO_AUTHENTICATED',
+                        password: password || 'GOV_SSO_AUTHENTICATED',
                         cadre: ssoDirRecord.cadre,
                         department: ssoDirRecord.department,
                         designation: ssoDirRecord.designation
@@ -639,7 +659,7 @@ app.post('/api/auth/sso', async (req, res) => {
                     .insert([{
                         name: officerName,
                         email: cleanEmail,
-                        password: 'GOV_SSO_AUTHENTICATED',
+                        password: password || 'GOV_SSO_AUTHENTICATED',
                         cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service",
                         department: 'National Accounts Division (NAD) — Macro Aggregates & GDP',
                         designation: 'Assistant Director / SSO'

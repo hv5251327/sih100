@@ -212,10 +212,17 @@ function closeSSOModal() {
 
 async function submitParichaySSO(event) {
     if (event) event.preventDefault();
-    const input = document.getElementById('ssoGovEmailInput');
-    const email = input ? input.value.trim() : '';
+    const emailInput = document.getElementById('ssoGovEmailInput');
+    const pwInput = document.getElementById('ssoGovPasswordInput');
+    const email = emailInput ? emailInput.value.trim() : '';
+    const password = pwInput ? pwInput.value : '';
+
     if (!email) {
         alert('Please enter your official Government Email ID (@gov.in / @nic.in / @mospi.gov.in).');
+        return;
+    }
+    if (!password) {
+        alert('Please enter your Civil Service SSO Password / PIN (e.g. mospi123).');
         return;
     }
 
@@ -229,7 +236,7 @@ async function submitParichaySSO(event) {
         const res = await fetch(`${API_BASE_URL}/api/auth/sso`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email, role: 'employee', sso_provider: currentSSOProvider })
+            body: JSON.stringify({ email, password, role: 'employee', sso_provider: currentSSOProvider })
         });
         const data = await res.json();
 
