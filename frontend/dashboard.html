@@ -235,10 +235,11 @@
               <th>Completion Date</th>
               <th style="text-align:center;">Assessment Score</th>
               <th style="text-align:center;">Certificate / Audit Status</th>
+              <th style="text-align:center;">Official PDF Certificate</th>
             </tr>
           </thead>
           <tbody id="completed-courses-table-body">
-            <tr><td colspan="4" style="text-align:center;">Loading course completion history...</td></tr>
+            <tr><td colspan="5" style="text-align:center;">Loading course completion history...</td></tr>
           </tbody>
         </table>
       </div>
@@ -473,7 +474,7 @@
         const tbody = document.getElementById("completed-courses-table-body");
 
         if (progressList.length === 0 && certsList.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No courses completed yet. Start with Foundation modules above!</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No courses completed yet. Start with Foundation modules above!</td></tr>`;
         } else {
           let rowsHtml = '';
           progressList.forEach(p => {
@@ -484,21 +485,33 @@
                 <td>${dateStr}</td>
                 <td style="text-align:center; font-weight:bold; color:var(--success);">${p.score || 100}% (Passed)</td>
                 <td style="text-align:center;"><span class="stage-badge" style="background:#dcfce7; color:#15803d;"><i class="fa-solid fa-certificate"></i> Verified Credential</span></td>
+                <td style="text-align:center;">
+                  <button onclick="downloadCourseCertificate('${encodeURIComponent(p.course_title)}', '${p.score || 100}', '${encodeURIComponent(dateStr)}')" class="btn-action" style="background:#1e3a8a; padding:5px 12px; font-size:0.78rem; white-space:nowrap; margin:0 auto;">
+                    <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+                  </button>
+                </td>
               </tr>
             `;
           });
           certsList.forEach(c => {
             if (!progressList.some(p => p.course_title === c.course_title)) {
-              const statusBadge = c.status === 'approved' 
+              const isApproved = c.status === 'approved';
+              const statusBadge = isApproved
                 ? '<span class="stage-badge" style="background:#dcfce7; color:#15803d;"><i class="fa-solid fa-circle-check"></i> Approved (+25 Pts)</span>'
                 : (c.status === 'rejected' ? '<span class="stage-badge" style="background:#fee2e2; color:#b91c1c;">Rejected</span>' : '<span class="stage-badge" style="background:#fef3c7; color:#b45309;">In Audit Queue</span>');
               const dateStr = c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', year:'numeric' }) : 'Recently';
+              
+              const certBtn = isApproved 
+                ? `<button onclick="downloadCourseCertificate('${encodeURIComponent(c.course_title)}', '95', '${encodeURIComponent(dateStr)}')" class="btn-action" style="background:#1e3a8a; padding:5px 12px; font-size:0.78rem; white-space:nowrap; margin:0 auto;"><i class="fa-solid fa-file-arrow-down"></i> Download PDF</button>`
+                : `<span style="font-size:0.75rem; color:var(--text-muted);">Available on Approval</span>`;
+
               rowsHtml += `
                 <tr>
                   <td><strong>${c.course_title}</strong></td>
                   <td>${dateStr}</td>
                   <td style="text-align:center; color:var(--text-muted);">Uploaded Cert</td>
                   <td style="text-align:center;">${statusBadge}</td>
+                  <td style="text-align:center;">${certBtn}</td>
                 </tr>
               `;
             }
@@ -508,6 +521,98 @@
       } catch (e) {
         console.warn("Failed to load progress history:", e);
       }
+    }
+
+    function downloadCourseCertificate(courseTitle, score, completionDate) {
+      const decodedTitle = decodeURIComponent(courseTitle);
+      const decodedDate = completionDate ? decodeURIComponent(completionDate) : new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+      const numericScore = score || 100;
+      const hash = Math.abs((currentUser.email + decodedTitle).split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0));
+      const certCode = 'MoSPI-CERT-' + hash.toString(36).toUpperCase().padStart(8, '0');
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>MoSPI NSSTA Certificate of Completion - ${decodedTitle}</title>
+          <style>
+            @page { size: landscape; margin: 10mm; }
+            body { font-family: 'Georgia', 'Times New Roman', serif; padding: 25px; color: #0f172a; text-align: center; background: #ffffff; }
+            .cert-border { border: 8px double #1e3a8a; padding: 35px 45px; border-radius: 12px; background: #fffdfa; position: relative; box-shadow: 0 6px 24px rgba(0,0,0,0.06); }
+            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.035; font-size: 11rem; font-weight: bold; pointer-events: none; color: #1e3a8a; z-index: 0; font-family: sans-serif; }
+            .content { position: relative; z-index: 1; }
+            .gov-emblem { font-size: 0.85rem; font-weight: 800; letter-spacing: 2px; color: #1e3a8a; }
+            .academy-title { font-size: 0.95rem; font-weight: 700; color: #475569; margin-top: 4px; }
+            h1 { font-size: 2.2rem; color: #1e3a8a; margin: 18px 0 4px 0; font-weight: 900; letter-spacing: 1px; font-family: Georgia, serif; text-transform: uppercase; }
+            .cert-sub { font-size: 1rem; color: #64748b; font-style: italic; margin-bottom: 14px; }
+            .completion-text { font-size: 1.05rem; color: #334155; max-width: 820px; margin: 0 auto 6px auto; line-height: 1.5; }
+            .officer-name { font-size: 2.1rem; font-weight: 800; color: #0f172a; margin: 12px 0; text-decoration: underline; text-underline-offset: 6px; }
+            .officer-meta { font-size: 0.95rem; color: #475569; margin-bottom: 14px; }
+            .course-title { font-size: 1.45rem; font-weight: 800; color: #1e3a8a; margin: 10px 0 16px 0; }
+            .score-badge { display: inline-block; background: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 4px 18px; border-radius: 20px; font-weight: 800; font-size: 0.95rem; margin-bottom: 20px; }
+            .cert-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 25px; border-top: 2px solid #cbd5e1; padding-top: 18px; }
+            .sig-box { text-align: center; }
+            .sig-line { width: 190px; border-bottom: 1px dashed #475569; margin-bottom: 6px; }
+            .sig-name { font-size: 0.85rem; font-weight: 800; color: #0f172a; }
+            .sig-title { font-size: 0.75rem; color: #64748b; }
+            .audit-info { text-align: left; font-size: 0.78rem; color: #64748b; }
+            .audit-code { font-family: monospace; font-weight: bold; color: #0284c7; }
+            @media print {
+              body { padding: 0; background: none; }
+              .cert-border { border-color: #1e3a8a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="cert-border">
+            <div class="watermark">MoSPI</div>
+            <div class="content">
+              <div class="gov-emblem">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
+              <div class="academy-title">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA GREATER NOIDA)</div>
+              
+              <h1>Certificate of Completion</h1>
+              <div class="cert-sub">Accredited Competency Framework • iGOT Karmayogi Bharat</div>
+              
+              <div class="completion-text">This is to officially certify that</div>
+              <div class="officer-name">${currentUser.name || 'Officer Trainee'}</div>
+              <div class="officer-meta"><strong>Cadre:</strong> ${currentUser.cadre || 'Indian Statistical Service'} &nbsp;|&nbsp; <strong>Division:</strong> ${currentUser.department || 'National Accounts Division'}</div>
+              
+              <div class="completion-text">has successfully fulfilled all curriculum learning modules and assessment requirements for</div>
+              <div class="course-title">"${decodedTitle}"</div>
+              
+              <div>
+                <span class="score-badge">Assessment Score: ${numericScore}% • Accredited Pass (>= 80%)</span>
+              </div>
+
+              <div class="cert-footer">
+                <div class="audit-info">
+                  <div><strong>Certificate Reference:</strong> <span class="audit-code">${certCode}</span></div>
+                  <div><strong>Accrediting Authority:</strong> iGOT Karmayogi / NSSTA MoSPI</div>
+                  <div><strong>Attainment Date:</strong> ${decodedDate}</div>
+                  <div style="color:#15803d; font-weight:bold; margin-top:2px;">✔ Authenticated Digital Credential</div>
+                </div>
+
+                <div class="sig-box">
+                  <div class="sig-line"></div>
+                  <div class="sig-name">Joint Director / Head of Training</div>
+                  <div class="sig-title">NSSTA Greater Noida, MoSPI</div>
+                </div>
+
+                <div class="sig-box">
+                  <div class="sig-line"></div>
+                  <div class="sig-name">Director General (Coordination)</div>
+                  <div class="sig-title">Ministry of Statistics & PI, Govt of India</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 500);
     }
 
     function downloadCompetencyPassport() {
@@ -779,9 +884,12 @@
         const data = await res.json();
 
         if (isPassed) {
-          alert(`🎉 Assessment Passed!\nScore: ${finalPercentage}% (Passed with >= 80% mark).\n\nCongratulations! "${currentActiveCourse}" is marked COMPLETED and your competency profile has been updated.`);
           closeModal('quiz-modal');
           await Promise.all([loadCompetencies(), loadOfficerRecommendations(), loadOfficerHistory()]);
+          const wantCert = confirm(`🎉 Assessment Passed!\nScore: ${finalPercentage}% (Passed with >= 80% mark).\n\nCongratulations! "${currentActiveCourse}" is marked COMPLETED and your competency profile has been updated.\n\nWould you like to generate and download your official Certificate of Completion (PDF) now?`);
+          if (wantCert) {
+            downloadCourseCertificate(currentActiveCourse, finalPercentage, new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }));
+          }
         } else {
           alert(`⚠️ Assessment Incomplete!\nScore: ${finalPercentage}% (${scoreCount}/${activeQuizData.length} correct).\n\nThe passing requirement is 80% (at least 4 out of 5 questions).\n\nPlease review the training materials and re-attempt the quiz to complete this module and earn competency credits.`);
           closeModal('quiz-modal');
