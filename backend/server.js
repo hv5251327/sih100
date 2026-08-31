@@ -21,8 +21,10 @@ const GROK_API_KEY = process.env.GROK_API_KEY;
 const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY || 'b74c652d554f43c7a84fbc4b4eefc351.0qPsbvIqO1c7xzy3KL4E9ALv';
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'https://api.ollama.com/v1';
 
-const IGOT_BASE_URL = process.env.IGOT_BASE_URL || 'http://localhost:5000/api/mock/igot';
-const IGOT_API_KEY = process.env.IGOT_API_KEY || 'sandbox_test_token_12345';
+// Flexible iGOT Karmayogi Bharat / Sunbird API Bindings
+const IGOT_BASE_URL = (process.env.IGOT_BASE_URL || process.env.IGOT_API_ENDPOINT || process.env.IGOT_PORTAL_URL || 'http://localhost:5000/api/mock/igot').replace(/\/+$/, '');
+const IGOT_API_KEY = process.env.IGOT_API_KEY || process.env.IGOT_AUTH_TOKEN || process.env.IGOT_API_TOKEN || process.env.IGOT_BEARER_TOKEN || 'sandbox_test_token_12345';
+const IGOT_CHANNEL_ID = process.env.IGOT_CHANNEL_ID || process.env.IGOT_CLIENT_ID || 'mospi';
 
 let rawUrl = process.env.SUPABASE_URL || 'https://ccdrahlnsfrncsqaiumt.supabase.co';
 let cleanUrl = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
@@ -1111,37 +1113,135 @@ app.get('/api/mock/igot/officers', (req, res) => {
     });
 });
 
+// --- UNIVERSAL iGOT KARMAYOGI BHARAT / SUNBIRD API ADAPTER ---
+function normalizeIgotCourseItem(item, idx) {
+    const rawCode = item.identifier || item.code || item.course_code || item.id || `IGOT-MOD-${500 + idx}`;
+    const rawTitle = item.name || item.title || 'Official Statistics & Data Governance Module';
+    const rawDesc = item.description || item.summary || 'Accredited civil service competency module imported from iGOT Karmayogi Bharat.';
+    const rawDomain = item.competencyArea || item.domain || item.category || 'Official Statistics';
+    const rawSubdomain = item.competency_subdomain || item.subdomain || item.competencies || 'Methodology';
+    const rawStage = item.learning_stage || item.stage || (item.difficultyLevel === 'Advanced' ? 'Advanced Strategic' : (item.difficultyLevel === 'Beginner' ? 'Foundation' : 'Functional Core'));
+    const rawDiff = item.difficulty_level || item.difficultyLevel || 'Intermediate';
+    const rawDuration = item.duration_hours || (item.duration ? Math.max(1, Math.round(item.duration / 3600)) : 4);
+    const rawVideo = item.video_url || item.artifactUrl || item.streamingUrl || 'https://www.youtube.com/embed/1Il5UUPrSNk';
+
+    return {
+        course_code: String(rawCode).trim(),
+        title: String(rawTitle).trim(),
+        description: String(rawDesc).trim(),
+        domain: String(rawDomain).trim(),
+        competency_subdomain: String(rawSubdomain).trim(),
+        learning_stage: rawStage,
+        difficulty_level: rawDiff,
+        duration_hours: rawDuration,
+        target_departments: Array.isArray(item.target_departments) ? item.target_departments : ['ALL'],
+        video_url: rawVideo,
+        recommendation_reason: item.recommendation_reason || 'Live synchronized from Karmayogi Bharat National Catalog'
+    };
+}
+
+async function fetchLiveIgotCatalog() {
+    let fetchedCatalog = null;
+    let sourceUsed = 'iGOT Internal Static Fallback';
+
+    if (!IGOT_BASE_URL) {
+        return { catalog: IGOT_MASTER_CATALOG, source: sourceUsed };
+    }
+
+    const headers = {
+        'Authorization': `Bearer ${IGOT_API_KEY}`,
+        'x-api-key': IGOT_API_KEY,
+        'x-authenticated-user-token': IGOT_API_KEY,
+        'x-channel-id': IGOT_CHANNEL_ID,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    };
+
+    // Probe Sequence 1: Sunbird Course Search API (POST /api/course/v1/search)
+    try {
+        const searchUrl = `${IGOT_BASE_URL}/api/course/v1/search`;
+        const res = await fetch(searchUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                request: {
+                    filters: { primaryCategory: ['Course', 'Program', 'Curriculum'] },
+                    limit: 100
+                }
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const rawList = data?.result?.courses || data?.result?.content || data?.result?.response?.content;
+            if (Array.isArray(rawList) && rawList.length > 0) {
+                fetchedCatalog = rawList.map(normalizeIgotCourseItem);
+                sourceUsed = `Live iGOT Sunbird API (${searchUrl})`;
+                return { catalog: fetchedCatalog, source: sourceUsed };
+            }
+        }
+    } catch (e) {}
+
+    // Probe Sequence 2: Content Search API (POST /api/content/v1/search)
+    try {
+        const contentUrl = `${IGOT_BASE_URL}/api/content/v1/search`;
+        const res = await fetch(contentUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                request: {
+                    filters: { contentType: ['Course'] },
+                    limit: 100
+                }
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const rawList = data?.result?.content || data?.result?.courses;
+            if (Array.isArray(rawList) && rawList.length > 0) {
+                fetchedCatalog = rawList.map(normalizeIgotCourseItem);
+                sourceUsed = `Live iGOT Content API (${contentUrl})`;
+                return { catalog: fetchedCatalog, source: sourceUsed };
+            }
+        }
+    } catch (e) {}
+
+    // Probe Sequence 3: REST Catalog Endpoint (GET /catalog or GET /api/v1/catalog)
+    const catalogEndpoints = [
+        IGOT_BASE_URL.endsWith('/catalog') ? IGOT_BASE_URL : `${IGOT_BASE_URL}/catalog`,
+        `${IGOT_BASE_URL}/api/v1/catalog`,
+        `${IGOT_BASE_URL}/api/mock/igot/catalog`
+    ];
+
+    for (const ep of catalogEndpoints) {
+        try {
+            const res = await fetch(ep, { headers });
+            if (res.ok) {
+                const data = await res.json();
+                let rawList = null;
+                if (Array.isArray(data)) rawList = data;
+                else if (Array.isArray(data.courses)) rawList = data.courses;
+                else if (Array.isArray(data.content)) rawList = data.content;
+                else if (Array.isArray(data?.result?.courses)) rawList = data.result.courses;
+
+                if (Array.isArray(rawList) && rawList.length > 0) {
+                    fetchedCatalog = rawList.map(normalizeIgotCourseItem);
+                    sourceUsed = `Live iGOT Gateway (${ep})`;
+                    return { catalog: fetchedCatalog, source: sourceUsed };
+                }
+            }
+        } catch (e) {}
+    }
+
+    return { catalog: fetchedCatalog || IGOT_MASTER_CATALOG, source: sourceUsed };
+}
+
 // iGOT Karmayogi Catalog Sync Execution
 app.post('/api/admin/sync-igot', async (req, res) => {
     try {
-        let fetchedCatalog = IGOT_MASTER_CATALOG;
-        let sourceUsed = 'iGOT Internal Static Fallback';
+        // 1. Fetch live or fallback catalog using universal adapter
+        const { catalog: fetchedCatalog, source: sourceUsed } = await fetchLiveIgotCatalog();
 
-        // 1. Attempt Live API Fetch from configured IGOT_BASE_URL
-        if (IGOT_BASE_URL) {
-            try {
-                const catalogUrl = IGOT_BASE_URL.endsWith('/catalog') ? IGOT_BASE_URL : `${IGOT_BASE_URL.replace(/\/+$/, '')}/catalog`;
-                const apiRes = await fetch(catalogUrl, {
-                    headers: {
-                        'Authorization': `Bearer ${IGOT_API_KEY}`,
-                        'Accept': 'application/json'
-                    }
-                });
-                if (apiRes.ok) {
-                    const json = await apiRes.json();
-                    if (json && Array.isArray(json.courses)) {
-                        fetchedCatalog = json.courses;
-                        sourceUsed = `Live iGOT Gateway (${catalogUrl})`;
-                    } else if (Array.isArray(json)) {
-                        fetchedCatalog = json;
-                        sourceUsed = `Live iGOT Gateway (${catalogUrl})`;
-                    }
-                }
-            } catch (netErr) {
-                console.warn('Live iGOT fetch attempt note:', netErr.message);
-            }
-        }
-
+        // 2. Reconcile with Supabase master_courses table
         const { data: currentCourses, error: fetchErr } = await supabase.from('master_courses').select('course_code, title');
         if (fetchErr) return res.status(500).json({ error: fetchErr.message });
 
