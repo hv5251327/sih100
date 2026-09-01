@@ -2365,16 +2365,146 @@ function assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp) {
     return { subdomain, reason, deficitPct, matchScore };
 }
 
+// Curate topic-specific authentic YouTube video URLs
+function getRelevantVideoUrl(title, domain) {
+    const t = (title || '').toLowerCase();
+    if (t.includes('national accounts') || t.includes('sna') || t.includes('sut') || t.includes('gdp')) {
+        return 'https://www.youtube.com/embed/nK32aCq3mNk'; // National Accounts & SNA
+    } else if (t.includes('plfs') || t.includes('multiplier') || t.includes('sampling') || t.includes('hces')) {
+        return 'https://www.youtube.com/embed/1Il5UUPrSNk'; // Sampling & Microdata Weighting
+    } else if (t.includes('capi') || t.includes('gps') || t.includes('fod') || t.includes('field survey')) {
+        return 'https://www.youtube.com/embed/k9zTr2MAo4s'; // Field Operations & CAPI
+    } else if (t.includes('dpdp') || t.includes('protection') || t.includes('privacy') || t.includes('anonymity') || t.includes('governance')) {
+        return 'https://www.youtube.com/embed/fW_c3-p9Vrk'; // Digital Data Protection Act
+    } else if (t.includes('industrial') || t.includes('asi') || t.includes('iip') || t.includes('factory')) {
+        return 'https://www.youtube.com/embed/s2skans2dP4'; // Annual Survey of Industries
+    } else if (t.includes('cpi') || t.includes('price') || t.includes('inflation')) {
+        return 'https://www.youtube.com/embed/rPZ3_XFmgm4'; // Price Statistics & CPI
+    } else if (domain === 'Behavioural & Managerial' || t.includes('leadership') || t.includes('decision')) {
+        return 'https://www.youtube.com/embed/wX78iKhInsc'; // Leadership & Governance
+    }
+    return 'https://www.youtube.com/embed/1Il5UUPrSNk';
+}
+
+async function evaluateRecommendationsAI(candidateCourses, profile) {
+    if (!candidateCourses || candidateCourses.length === 0) return [];
+
+    const { department, designation, cadre, comp } = profile;
+    const deptCode = parseDeptCode(department);
+    const desigUpper = (designation || '').toUpperCase();
+    const cadreUpper = (cadre || '').toUpperCase();
+
+    // 1. AI Relevance Ranking & Verification (Grok -> Gemini -> Ollama)
+    try {
+        const candidateSummary = candidateCourses.slice(0, 30).map(c => ({
+            id: c.id,
+            title: c.title,
+            domain: c.domain,
+            diff: c.difficulty_level,
+            depts: c.target_departments || ['ALL']
+        }));
+
+        const prompt = `You are the Chief Academic Evaluator & Psychometric Director at NSSTA, MoSPI.
+Evaluate these candidate courses for an officer:
+- Officer Cadre: ${cadre || 'Official Statistical Service'}
+- Officer Division / Department: ${department} (Code: ${deptCode})
+- Officer Designation: ${designation}
+- Current Diagnostic Competency Scores: Statistical ${comp?.statistical_score || 0}%, Technical ${comp?.technical_score || 0}%, Governance ${comp?.governance_score || 0}%, Leadership ${comp?.leadership_score || 0}%
+
+Candidate Courses:
+${JSON.stringify(candidateSummary)}
+
+STRICT CURRICULUM SELECTION RULES:
+1. Ground every recommendation strictly in this officer's actual cadre (${cadre}), division (${department}), and designation level (${designation}).
+2. Do NOT recommend modules belonging to unrelated divisions (e.g. do not assign National Accounts to SDRD/FOD; do not assign Field CAPI surveys to NAD).
+3. Select ONLY:
+   - 2 high-priority Foundation modules (Stage: "Foundation")
+   - 2 to 3 high-priority Functional Core modules (Stage: "Functional Core")
+   - 2 high-priority Advanced Strategic modules (Stage: "Advanced Strategic")
+4. Provide a crisp 1-sentence description for each course.
+
+Return STRICT JSON array without markdown formatting:
+[
+  { "id": 1, "learning_stage": "Foundation", "relevance_score": 95, "short_description": "Essential standard..." }
+]`;
+
+        const raw = await generateMoSPIAIResponse(prompt, 'You are an AI curriculum evaluator for MoSPI NSSTA. Return strict JSON only.', true);
+        if (raw) {
+            const match = raw.match(/\[[\s\S]*\]/);
+            if (match) {
+                const parsed = JSON.parse(match[0]);
+                if (Array.isArray(parsed) && parsed.length >= 3) {
+                    const idMap = new Map(candidateCourses.map(c => [c.id, c]));
+                    const evaluatedCourses = [];
+
+                    for (const item of parsed) {
+                        const original = idMap.get(item.id);
+                        if (original) {
+                            evaluatedCourses.push({
+                                ...original,
+                                learning_stage: item.learning_stage || 'Functional Core',
+                                match_score: item.relevance_score || 85,
+                                description: item.short_description || original.description,
+                                video_url: original.video_url && original.video_url.includes('youtube') && !original.video_url.includes('1Il5UUPrSNk') ? original.video_url : getRelevantVideoUrl(original.title, original.domain)
+                            });
+                        }
+                    }
+
+                    if (evaluatedCourses.length >= 3) {
+                        return evaluatedCourses;
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("AI Relevance Filter fallback:", e.message);
+    }
+
+    // 2. Intelligent Deterministic Fallback
+    const isSenior = desigUpper.includes('DIRECTOR') || desigUpper.includes('DDG') || desigUpper.includes('ADG');
+    
+    const foundation = candidateCourses
+        .filter(c => c.is_general_mandatory || c.domain === 'Digital Governance' || c.difficulty_level === 'Foundation')
+        .slice(0, 2)
+        .map(c => ({
+            ...c,
+            learning_stage: 'Foundation',
+            video_url: getRelevantVideoUrl(c.title, c.domain),
+            match_score: 95
+        }));
+
+    const functional = candidateCourses
+        .filter(c => {
+            const depts = (c.target_departments || ['ALL']).map(d => String(d).toUpperCase());
+            return (depts.includes(deptCode) || depts.includes('ALL')) && !foundation.some(f => f.id === c.id);
+        })
+        .slice(0, 3)
+        .map(c => ({
+            ...c,
+            learning_stage: 'Functional Core',
+            video_url: getRelevantVideoUrl(c.title, c.domain),
+            match_score: 90
+        }));
+
+    const strategic = candidateCourses
+        .filter(c => !foundation.some(f => f.id === c.id) && !functional.some(fn => fn.id === c.id) && (c.difficulty_level === 'Advanced' || c.domain === 'Behavioural & Managerial' || isSenior))
+        .slice(0, 2)
+        .map(c => ({
+            ...c,
+            learning_stage: 'Advanced Strategic',
+            video_url: getRelevantVideoUrl(c.title, c.domain),
+            match_score: 85
+        }));
+
+    return [...foundation, ...functional, ...strategic];
+}
+
 app.post('/api/recommendations', async (req, res) => {
     const { department, designation, cadre, email } = req.body;
     const cleanEmail = (email || '').trim().toLowerCase();
     const deptCode = parseDeptCode(department);
     const desigUpper = (designation || '').toUpperCase();
     const cadreUpper = (cadre || '').toUpperCase();
-
-    const isSenior = desigUpper.includes('DIRECTOR') || desigUpper.includes('DDG') || desigUpper.includes('ADG') || desigUpper.includes('JOINT') || desigUpper.includes('DEPUTY DIRECTOR');
-    const isJSO = desigUpper.includes('JUNIOR') || desigUpper.includes('JSO') || desigUpper.includes('ENUMERATOR') || desigUpper.includes('INVESTIGATOR');
-    const isSSO = desigUpper.includes('SENIOR') || desigUpper.includes('SSO') || desigUpper.includes('ASSISTANT DIRECTOR');
 
     try {
         let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
@@ -2385,66 +2515,13 @@ app.post('/api/recommendations', async (req, res) => {
 
         const uncompletedCourses = allCourses.filter(c => !completedNormTitles.has(normalizeTitle(c.title)));
 
-        // 1. Stage 1: Mandatory Foundation Pathways
-        const mandatoryFoundation = uncompletedCourses
-            .filter(c => c.is_general_mandatory === true)
-            .map(c => {
-                const meta = assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp);
-                return { ...c, learning_stage: 'Foundation', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason, match_score: meta.matchScore };
-            })
-            .sort((a, b) => b.match_score - a.match_score);
-
-        const domainPool = uncompletedCourses.filter(c => c.is_general_mandatory !== true);
-
-        // 2. Stage 2: Functional Core Pathways (Prioritized by Diagnostic Deficits)
-        let functionalMatches = domainPool.filter(c => {
-            const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
-            const deptMatch = targets.includes(deptCode) || targets.includes('ALL');
-            
-            if (isJSO) return deptMatch && (c.difficulty_level === 'Foundation' || c.difficulty_level === 'Intermediate');
-            if (isSSO) return deptMatch && (c.difficulty_level === 'Intermediate' || c.difficulty_level === 'Advanced');
-            if (isSenior) return deptMatch && (c.difficulty_level === 'Advanced' || c.domain === 'Behavioural & Managerial');
-            return deptMatch;
-        }).map(c => {
-            const meta = assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp);
-            return { ...c, learning_stage: 'Functional Core', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason, match_score: meta.matchScore };
-        }).sort((a, b) => b.match_score - a.match_score);
-
-        // 3. Stage 3: Advanced Strategic Pathways (Executive & Emerging Frontier)
-        let strategicMatches = domainPool.filter(c => {
-            const targets = Array.isArray(c.target_departments) ? c.target_departments.map(t => t.toUpperCase()) : ['ALL'];
-            const isNotFunctional = !functionalMatches.some(f => f.id === c.id);
-            
-            if (isSenior) return isNotFunctional && (c.difficulty_level === 'Advanced' || c.domain === 'Behavioural & Managerial' || c.domain === 'Digital Governance');
-            if (isSSO) return isNotFunctional && (c.difficulty_level === 'Advanced' || c.domain === 'Technical Competencies');
-            return isNotFunctional && (targets.includes('ALL') || c.difficulty_level === 'Intermediate' || c.difficulty_level === 'Advanced');
-        }).map(c => {
-            const meta = assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp);
-            return { ...c, learning_stage: 'Advanced Strategic', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason, match_score: meta.matchScore };
-        }).sort((a, b) => b.match_score - a.match_score);
-
-        if (functionalMatches.length === 0) {
-            functionalMatches = domainPool.slice(0, 6).map(c => {
-                const meta = assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp);
-                return { ...c, learning_stage: 'Functional Core', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason, match_score: meta.matchScore };
-            });
-        }
-        if (strategicMatches.length === 0) {
-            strategicMatches = domainPool.slice(6, 12).map(c => {
-                const meta = assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp);
-                return { ...c, learning_stage: 'Advanced Strategic', competency_subdomain: meta.subdomain, recommendation_reason: meta.reason, match_score: meta.matchScore };
-            });
-        }
-
-        // Deduplicate and return clean uncompleted list ordered by learning stage and match score
-        const seenIds = new Set();
-        const finalRecommendations = [];
-        for (const c of [...mandatoryFoundation, ...functionalMatches, ...strategicMatches]) {
-            if (!seenIds.has(c.id)) {
-                seenIds.add(c.id);
-                finalRecommendations.push(c);
-            }
-        }
+        // Run AI-powered relevance evaluation & stage grouping (Grok / Gemini / Ollama)
+        const finalRecommendations = await evaluateRecommendationsAI(uncompletedCourses, {
+            department,
+            designation,
+            cadre,
+            comp
+        });
 
         // Retrieve and match NSSTA TPAC Training Programmes
         let tpacMatches = [];
@@ -2479,7 +2556,7 @@ app.post('/api/recommendations', async (req, res) => {
             tpac_programmes: tpacMatches
         });
     } catch (err) {
-        return res.status(500).json({ error: 'Failed to recommend courses.' });
+        return res.status(500).json({ error: 'Failed to recommend courses: ' + err.message });
     }
 });
 

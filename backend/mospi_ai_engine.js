@@ -185,7 +185,62 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
     const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'https://api.ollama.com/v1';
     const GROK_API_KEY = process.env.GROK_API_KEY;
 
-    // 1. Ollama Cloud Engine (Primary - gpt-oss:20b / deepseek-v4-flash:0731)
+    // 1. xAI Grok Cloud Engine (If GROK_API_KEY is configured)
+    if (GROK_API_KEY) {
+        const grokModels = ['grok-3', 'grok-3-mini', 'grok-2-latest', 'grok-beta'];
+        for (const model of grokModels) {
+            try {
+                const res = await fetch('https://api.x.ai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROK_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [
+                            { role: 'system', content: sysPrompt },
+                            { role: 'user', content: prompt }
+                        ],
+                        temperature: isJson ? 0.1 : 0.3
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const text = data?.choices?.[0]?.message?.content;
+                    if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+                }
+            } catch (e) {}
+        }
+    }
+
+    // 2. Google Gemini API Engine (Gemini 1.5 Flash / 2.0 Flash)
+    if (GEMINI_API_KEY) {
+        const geminiModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+        for (const model of geminiModels) {
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: `${sysPrompt}\n\nTask:\n${prompt}` }]
+                        }],
+                        generationConfig: {
+                            temperature: isJson ? 0.1 : 0.3
+                        }
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+                }
+            } catch (e) {}
+        }
+    }
+
+    // 3. Ollama Cloud Engine (gpt-oss:20b / deepseek-v4-flash:0731)
     if (OLLAMA_API_KEY) {
         const ollamaModels = ['gpt-oss:20b', 'deepseek-v4-flash:0731', 'nemotron-3-nano:30b', 'gemma4:31b'];
         for (const model of ollamaModels) {
