@@ -178,10 +178,92 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
         ? `${systemInstruction}\n\nAUTHORITATIVE KNOWLEDGE BASE:\n${MOSPI_MASTER_KNOWLEDGE_BASE.substring(0, 12000)}`
         : `You are the Principal Director & Chief Statistical Scientist of the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India.\n\nAUTHORITATIVE KNOWLEDGE BASE:\n${MOSPI_MASTER_KNOWLEDGE_BASE.substring(0, 12000)}`;
 
+    const GROQ_API_KEY = process.env.GROQ_API_KEY;
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY || 'b74c652d554f43c7a84fbc4b4eefc351.0qPsbvIqO1c7xzy3KL4E9ALv';
     const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'https://api.ollama.com/v1';
     const GROK_API_KEY = process.env.GROK_API_KEY;
 
+    // 1. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
+    if (GROQ_API_KEY) {
+        const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
+        for (const model of groqModels) {
+            try {
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${GROQ_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [
+                            { role: 'system', content: sysPrompt },
+                            { role: 'user', content: prompt }
+                        ],
+                        temperature: isJson ? 0.1 : 0.3
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const text = data?.choices?.[0]?.message?.content;
+                    if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+                }
+            } catch (e) {}
+        }
+    }
+
+    // 2. Google Gemini API Engine (Gemini 1.5 Flash)
+    if (GEMINI_API_KEY) {
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: `${sysPrompt}\n\nTask:\n${prompt}` }]
+                    }],
+                    generationConfig: {
+                        temperature: isJson ? 0.1 : 0.3
+                    }
+                })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+            }
+        } catch (e) {}
+    }
+
+    // 3. OpenAI Engine (GPT-4o-mini)
+    if (OPENAI_API_KEY) {
+        try {
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        { role: 'system', content: sysPrompt },
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: isJson ? 0.1 : 0.3
+                })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const text = data?.choices?.[0]?.message?.content;
+                if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+            }
+        } catch (e) {}
+    }
+
+    // 4. Ollama AI Engine
     if (OLLAMA_API_KEY) {
         const endpoints = [
             `${OLLAMA_BASE_URL}/chat/completions`,
@@ -214,6 +296,7 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
         }
     }
 
+    // 5. xAI Grok Engine
     if (GROK_API_KEY) {
         try {
             const res = await fetch('https://api.x.ai/v1/chat/completions', {
