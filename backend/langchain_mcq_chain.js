@@ -9,29 +9,27 @@ const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'https://api.ollama.com/v
 
 // 1. LangChain Prompt Template for MCQ Generation
 const mcqGenerationPromptTemplate = new PromptTemplate({
-    template: `You are an expert psychometric assessment director and chief statistician at the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI).
-Your task is to analyze the provided official training material or prompt and synthesize exactly {num_questions} high-quality, practical multiple-choice questions (MCQs) for the course "{course_title}" at difficulty level "{difficulty}".
+    template: `You are an expert psychometric assessment director at NSSTA, MoSPI.
+Analyze the following official source document / presentation slides and formulate exactly {num_questions} Multiple Choice Questions (MCQs) for "{course_title}" (Difficulty: {difficulty}).
 
-SOURCE MATERIAL / TRAINING TOPIC:
+SOURCE DOCUMENT / SLIDES TEXT:
 """
 {document_text}
 """
 
-CRITICAL QUESTION GENERATION RULES:
-1. Formulate complete, natural questions (e.g. "What is the primary formula for...", "Which statistical standard governs...", "How should an officer handle...").
-2. DO NOT prefix or format questions with raw headings or truncated text like 'what protocol applies to: "[heading]"'. Formulate genuine conceptual questions based on the content.
-3. For each question, create exactly 4 distinct, plausible options (A, B, C, D). Strictly avoid trivial or lazy distractors like "All of the above" or "None of the above".
-4. "correct_index" must be an integer (0 for Option 1, 1 for Option 2, 2 for Option 3, 3 for Option 4).
-5. Attach a concise 1-sentence "explanation" referencing the exact statistical concept or clause.
+STRICT GENERATION INSTRUCTIONS:
+1. Every question MUST test a specific concept, formula, standard, legal section, definition, or workflow directly mentioned in the SOURCE DOCUMENT above.
+2. Formulate clear, well-phrased questions (e.g. "According to the provided material, what is...", "Under which standard...", "What is the primary role of...").
+3. Provide exactly 4 distinct, plausible options (A, B, C, D) for each question. Exactly one option must be strictly correct according to the text.
+4. "correct_index" must be the 0-based integer index of the correct option (0, 1, 2, or 3).
+5. "explanation" must cite the fact or concept from the document that validates the correct answer.
+6. Return ONLY the JSON array without any commentary or markdown blocks.
 
-{format_instructions}
-
-Return ONLY the raw JSON array without any markdown fences.`,
+{format_instructions}`,
     inputVariables: ["course_title", "document_text", "num_questions", "difficulty"],
     partialVariables: {
-        format_instructions: `Output format must be a valid JSON array of objects:
-[
-  {{
+        format_instructions: `[
+  {
     "question": "What is the primary method used to calculate GVA under SNA 2008 basic prices?",
     "options": [
       "Gross Output at basic prices minus Intermediate Consumption at purchasers prices",
@@ -41,7 +39,7 @@ Return ONLY the raw JSON array without any markdown fences.`,
     ],
     "correct_index": 0,
     "explanation": "SNA 2008 defines GVA at basic prices as Gross Output minus Intermediate Consumption."
-  }}
+  }
 ]`
     }
 });
