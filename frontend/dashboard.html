@@ -59,7 +59,30 @@
     .progress-bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s ease; }
     .gap-text { font-size: 0.75rem; color: var(--warning); font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
 
-    .stage-section-title { font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 20px 0 12px 0; display: flex; align-items: center; gap: 8px; }
+    .stage-section-title {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      margin: 22px 0 12px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+    .stage-title-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stage-count-badge {
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
     .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
     .module-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.04); }
     .igot-banner { background: linear-gradient(135deg, #1e3a8a, #0284c7); padding: 14px 16px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; }
@@ -820,7 +843,11 @@
         return;
       }
 
-      const displayCourses = showAllModules ? allRecommendedCourses : allRecommendedCourses.slice(0, 6);
+      const stages = [
+        { id: 'Foundation', title: 'Stage 1: Foundational Competencies', icon: '<i class="fa-solid fa-compass" style="color:#2563eb;"></i>' },
+        { id: 'Functional Core', title: 'Stage 2: Functional Core Competencies', icon: '<i class="fa-solid fa-chart-line" style="color:#0f766e;"></i>' },
+        { id: 'Advanced Strategic', title: 'Stage 3: Advanced Strategic & Leadership', icon: '<i class="fa-solid fa-award" style="color:#b45309;"></i>' }
+      ];
 
       const thumbnails = [
         'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&auto=format&fit=crop&q=80',
@@ -831,55 +858,56 @@
         'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=600&auto=format&fit=crop&q=80'
       ];
 
-      container.innerHTML = `
-        <div class="simple-modules-grid">
-          ${displayCourses.map((course, idx) => {
-            const thumbUrl = thumbnails[idx % thumbnails.length];
-            const cleanDesc = (course.description || 'Comprehensive accredited training module under NSSTA MoSPI curriculum.')
-              .replace(/\[Target:[^\]]*\]/gi, '')
-              .trim();
-            const safeTitle = course.title || 'NSSTA Accredited Course';
-            const safeDomain = course.domain || 'Statistical Competencies';
-            const videoUrl = course.video_url || 'https://www.youtube.com/embed/1Il5UUPrSNk';
+      let html = '';
+      let globalThumbIdx = 0;
 
-            return `
-              <div class="simple-course-card">
-                <div class="simple-video-thumb" style="background-image: url('${thumbUrl}');" onclick="openVideoModal('${encodeURIComponent(safeTitle)}', '${videoUrl}')" title="Click to watch lecture video">
-                  <div class="simple-play-btn"><i class="fa-solid fa-play"></i></div>
-                  <span class="simple-video-tag"><i class="fa-solid fa-circle-play"></i> Watch Video</span>
-                </div>
-                <div class="simple-card-body">
-                  <div>
-                    <div class="simple-course-title">${safeTitle}</div>
-                    <div class="simple-course-desc">${cleanDesc}</div>
+      stages.forEach(stg => {
+        const stageCourses = allRecommendedCourses.filter(c => (c.learning_stage || 'Functional Core') === stg.id);
+        if (stageCourses.length > 0) {
+          html += `
+            <div class="stage-section-title">
+              <div class="stage-title-left">${stg.icon} <span>${stg.title}</span></div>
+              <span class="stage-count-badge">${stageCourses.length} Modules</span>
+            </div>
+            <div class="simple-modules-grid">
+              ${stageCourses.map((course) => {
+                const thumbUrl = thumbnails[globalThumbIdx++ % thumbnails.length];
+                const cleanDesc = (course.description || 'Accredited training module under NSSTA MoSPI curriculum.')
+                  .replace(/\[Target:[^\]]*\]/gi, '')
+                  .trim();
+                const safeTitle = course.title || 'NSSTA Accredited Course';
+                const safeDomain = course.domain || 'Statistical Competencies';
+                const videoUrl = course.video_url || 'https://www.youtube.com/embed/1Il5UUPrSNk';
+
+                return `
+                  <div class="simple-course-card">
+                    <div class="simple-video-thumb" style="background-image: url('${thumbUrl}');" onclick="openVideoModal('${encodeURIComponent(safeTitle)}', '${videoUrl}')" title="Click to watch lecture video">
+                      <div class="simple-play-btn"><i class="fa-solid fa-play"></i></div>
+                      <span class="simple-video-tag"><i class="fa-solid fa-circle-play"></i> Watch Video</span>
+                    </div>
+                    <div class="simple-card-body">
+                      <div>
+                        <div class="simple-course-title">${safeTitle}</div>
+                        <div class="simple-course-desc">${cleanDesc}</div>
+                      </div>
+                      <div class="simple-card-actions">
+                        <button class="btn-simple-quiz" onclick="launchAssessment('${encodeURIComponent(safeTitle)}', '${encodeURIComponent(safeDomain)}')">
+                          <i class="fa-solid fa-list-check"></i> Take AI Quiz
+                        </button>
+                        <button class="btn-simple-cert" onclick="openCertModal('${encodeURIComponent(safeTitle)}')">
+                          <i class="fa-solid fa-file-arrow-up"></i> Certificate
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div class="simple-card-actions">
-                    <button class="btn-simple-quiz" onclick="launchAssessment('${encodeURIComponent(safeTitle)}', '${encodeURIComponent(safeDomain)}')">
-                      <i class="fa-solid fa-list-check"></i> Take AI Quiz
-                    </button>
-                    <button class="btn-simple-cert" onclick="openCertModal('${encodeURIComponent(safeTitle)}')">
-                      <i class="fa-solid fa-file-arrow-up"></i> Certificate
-                    </button>
-                  </div>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+        }
+      });
 
-        ${allRecommendedCourses.length > 6 ? `
-          <div style="text-align:center; margin-top:20px;">
-            <button onclick="toggleAllModules()" class="btn-action" style="display:inline-flex; background:#f1f5f9; color:#1e3a8a; border:1px solid #cbd5e1; padding:10px 24px; border-radius:30px; font-weight:700; font-size:0.85rem; cursor:pointer;">
-              ${showAllModules ? '<i class="fa-solid fa-chevron-up"></i> Show Less (Top 6 Modules)' : `<i class="fa-solid fa-chevron-down"></i> View All ${allRecommendedCourses.length} Recommended Modules`}
-            </button>
-          </div>
-        ` : ''}
-      `;
-    }
-
-    function toggleAllModules() {
-      showAllModules = !showAllModules;
-      renderSimplifiedModules();
+      container.innerHTML = html || '<p style="color:#64748b; font-size:0.9rem; padding:12px;">No recommended courses found for your profile at this time.</p>';
     }
 
     // --- MICRODATA SIMULATION LAB HANDLERS ---
