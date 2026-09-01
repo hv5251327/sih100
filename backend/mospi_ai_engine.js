@@ -190,6 +190,7 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
         const grokModels = ['grok-3', 'grok-3-mini', 'grok-2-latest', 'grok-beta'];
         for (const model of grokModels) {
             try {
+                console.log(`[GROK AI ENGINE] Evaluating recommendations via xAI ${model}...`);
                 const res = await fetch('https://api.x.ai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -205,12 +206,17 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
                         temperature: isJson ? 0.1 : 0.3
                     })
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    const text = data?.choices?.[0]?.message?.content;
-                    if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+                const data = await res.json();
+                if (res.ok && data?.choices?.[0]?.message?.content) {
+                    console.log(`[GROK AI ENGINE] Successfully generated recommendations using ${model}!`);
+                    const text = data.choices[0].message.content;
+                    return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+                } else {
+                    console.warn(`[GROK AI ENGINE] ${model} status ${res.status}:`, data.error?.message || res.statusText);
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn(`[GROK AI ENGINE] ${model} fetch error:`, e.message);
+            }
         }
     }
 
