@@ -812,6 +812,19 @@
       const container = document.getElementById("dynamic-modules-container");
       const statusLabel = document.getElementById("recommendation-status");
 
+      // 1. Instant zero-latency render from saved database cache in localStorage
+      const cachedStr = localStorage.getItem('mospi_recommendations_' + (currentUser.email || '').toLowerCase());
+      if (cachedStr) {
+        try {
+          const parsed = JSON.parse(cachedStr);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            allRecommendedCourses = parsed;
+            statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended (Loaded from DB)`;
+            renderSimplifiedModules();
+          }
+        } catch(e) {}
+      }
+
       try {
         const res = await fetch(`${API_URL}/api/recommendations`, {
           method: 'POST',
@@ -825,14 +838,17 @@
         });
 
         const data = await res.json();
-        allRecommendedCourses = data.courses || [];
-
-        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
-
-        renderSimplifiedModules();
+        if (data.courses && Array.isArray(data.courses) && data.courses.length > 0) {
+          allRecommendedCourses = data.courses;
+          localStorage.setItem('mospi_recommendations_' + (currentUser.email || '').toLowerCase(), JSON.stringify(allRecommendedCourses));
+          statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
+          renderSimplifiedModules();
+        }
       } catch (err) {
         console.error("Failed to load recommendations:", err);
-        statusLabel.innerText = "Error loading courses.";
+        if (!allRecommendedCourses || allRecommendedCourses.length === 0) {
+          statusLabel.innerText = "Error loading courses.";
+        }
       }
     }
 

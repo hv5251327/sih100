@@ -87,6 +87,9 @@ async function submitAuth(role) {
         if (response.ok) {
             const data = await response.json();
             if (data && data.user) authUser = data.user;
+            if (data && data.recommendations && Array.isArray(data.recommendations) && data.recommendations.length > 0) {
+                localStorage.setItem('mospi_recommendations_' + (authUser.email || email).toLowerCase(), JSON.stringify(data.recommendations));
+            }
         }
     } catch (err) {
         console.warn("Fast login client fallback active:", err.message);

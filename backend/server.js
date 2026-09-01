@@ -3543,6 +3543,8 @@ app.post('/api/auth/login', async (req, res) => {
         const sessionExpiry = new Date(Date.now() + 3600000 * 8).toISOString();
 
         const { password: _, ...userProfile } = userRecord;
+        const savedRecommendations = getSavedOfficerRecommendations(cleanEmail) || [];
+
         return res.json({ 
             message: 'Authentication successful', 
             user: { 
@@ -3551,7 +3553,8 @@ app.post('/api/auth/login', async (req, res) => {
                 session_token: sessionToken,
                 session_expiry: sessionExpiry,
                 login_timestamp: new Date().toISOString()
-            } 
+            },
+            recommendations: savedRecommendations
         });
     } catch (err) {
         console.error('Login Error:', err);
