@@ -389,14 +389,6 @@
               </select>
             </div>
           </div>
-          <div class="form-group" style="margin-top:6px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:8px 10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <label style="font-size:0.78rem; font-weight:700; color:#166534; margin:0;"><i class="fa-solid fa-key"></i> Groq Cloud API Key (Fast Llama-3.3-70B Pipeline)</label>
-              <span style="font-size:0.7rem; color:#15803d; font-weight:700;"><i class="fa-solid fa-bolt"></i> Live LLM Inference</span>
-            </div>
-            <input type="password" id="groqApiKeyInput" placeholder="Enter Groq API Key (gsk_...) or leave blank if configured on server" onchange="localStorage.setItem('mospi_groq_api_key', this.value.trim())" style="width:100%; padding:6px 10px; border:1px solid #86efac; border-radius:4px; font-size:0.82rem; background:#ffffff; box-sizing:border-box;">
-            <small style="font-size:0.7rem; color:#166534; margin-top:2px; display:block;">Your Groq key enables high-precision Llama-3.3-70B synthesis directly on uploaded documents.</small>
-          </div>
           <div class="form-group" style="margin-top:6px;">
             <label>Upload Training PDF File</label>
             <input type="file" id="quizPdfFile" accept=".pdf" onchange="extractPdfText(event)" style="padding:8px; border:1px dashed var(--border); border-radius:6px; cursor:pointer;">
@@ -491,11 +483,6 @@
           cadre: 'Indian Statistical Service (ISS)'
         };
         localStorage.setItem('mospi_user', JSON.stringify(defaultAdmin));
-      }
-
-      const groqInput = document.getElementById("groqApiKeyInput");
-      if (groqInput && localStorage.getItem('mospi_groq_api_key')) {
-        groqInput.value = localStorage.getItem('mospi_groq_api_key');
       }
 
       await Promise.allSettled([
@@ -1017,13 +1004,11 @@
       submitBtn.disabled = true;
       statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing PDF text with LangChain & Fast LLM engine, synthesizing MCQs...`;
 
-      const groqApiKey = (document.getElementById("groqApiKeyInput") ? document.getElementById("groqApiKeyInput").value.trim() : '') || localStorage.getItem('mospi_groq_api_key') || '';
-
       try {
         const res = await fetch(`${API_URL}/api/admin/generate-quiz-from-doc`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ courseTitle, documentText, numQuestions, difficulty, groqApiKey })
+          body: JSON.stringify({ courseTitle, documentText, numQuestions, difficulty })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to generate quiz');
