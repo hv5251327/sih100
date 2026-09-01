@@ -10,6 +10,7 @@ const {
     generateCourseCurriculumAI,
     generateOfficerDossierData,
     evaluateOfficerArtifactAI
+} = require('./mospi_ai_engine');
 const { runLangChainMCQPipeline, runLangChainSyllabusPipeline } = require('./langchain_mcq_chain');
 
 const app = express();
