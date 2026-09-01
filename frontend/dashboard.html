@@ -79,6 +79,154 @@
     .btn-quiz { background: var(--primary); color: #fff; }
     .btn-quiz:hover { background: var(--primary-hover); }
 
+    /* ===================================================
+       🎬 CLEAN VIDEO-FIRST RECOMMENDED COURSES
+       =================================================== */
+    .simple-modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 20px;
+    }
+    .simple-course-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .simple-course-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+      border-color: #cbd5e1;
+    }
+    .simple-video-thumb {
+      height: 165px;
+      position: relative;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      background-color: #0f172a;
+    }
+    .simple-video-thumb::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 100%);
+      transition: background 0.2s;
+    }
+    .simple-course-card:hover .simple-video-thumb::after {
+      background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.65) 100%);
+    }
+    .simple-play-btn {
+      width: 48px;
+      height: 48px;
+      background: rgba(220, 38, 38, 0.92);
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      z-index: 2;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .simple-course-card:hover .simple-play-btn {
+      transform: scale(1.15);
+      background: #dc2626;
+    }
+    .simple-video-tag {
+      position: absolute;
+      bottom: 10px;
+      left: 12px;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.85);
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .simple-card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .simple-course-title {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.35;
+      margin-bottom: 4px;
+    }
+    .simple-course-desc {
+      font-size: 0.8rem;
+      color: #64748b;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .simple-card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+    .btn-simple-quiz {
+      background: #1e3a8a;
+      color: #ffffff;
+      padding: 9px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn-simple-quiz:hover {
+      background: #1e40af;
+    }
+    .btn-simple-cert {
+      background: #f8fafc;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      padding: 9px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-simple-cert:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
     .bhashini-widget { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
     .bhashini-panel { background: #fff; border: 1px solid var(--border); border-radius: 12px; width: 380px; max-width: calc(100vw - 40px); box-shadow: 0 10px 30px rgba(0,0,0,0.18); display: none; flex-direction: column; overflow: hidden; }
     .bhashini-header { background: var(--primary); color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; }
@@ -351,7 +499,7 @@
       <div class="panel-header">
         <div class="panel-header-left">
           <i class="fa-solid fa-graduation-cap"></i>
-          <h2>AI-Curated NSSTA & iGOT Competency Roadmap (Foundation → Functional Core → Advanced Strategic)</h2>
+          <h2>Recommended Training Modules</h2>
         </div>
         <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Fetching recommended courses...</span>
       </div>
@@ -634,6 +782,9 @@
       }
     }
 
+    let allRecommendedCourses = [];
+    let showAllModules = false;
+
     async function loadOfficerRecommendations() {
       const container = document.getElementById("dynamic-modules-container");
       const statusLabel = document.getElementById("recommendation-status");
@@ -651,58 +802,84 @@
         });
 
         const data = await res.json();
-        const courses = data.courses || [];
+        allRecommendedCourses = data.courses || [];
 
-        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${courses.length} Modules Recommended (Database Grounded)`;
+        statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
 
-        const stages = ['Foundation', 'Functional Core', 'Advanced Strategic'];
-        let htmlContent = '';
-
-        stages.forEach(stageName => {
-          const stageCourses = courses.filter(c => (c.learning_stage || 'Functional Core') === stageName);
-          if (stageCourses.length > 0) {
-            htmlContent += `
-              <div class="stage-section-title"><i class="fa-solid fa-layer-group"></i> Stage: ${stageName} (${stageCourses.length} Modules)</div>
-              <div class="modules-grid">
-                ${stageCourses.map((course) => {
-                  const fracUUID = `FRAC-COMP-${(course.course_code || 'NSSTA').replace(/[^A-Za-z0-9]/g, '')}-${Math.abs((course.id || 1) * 31 % 9000 + 1000)}`;
-                  return `
-                  <div class="module-card">
-                    <div class="igot-banner">
-                      <span style="font-weight:800; font-size:0.88rem;"><i class="fa-solid fa-graduation-cap"></i> ${course.course_code || 'NSSTA-MOD'}</span>
-                      <span class="igot-tag" title="Deep-linked to Karmayogi Bharat Platform"><i class="fa-solid fa-link"></i> ${fracUUID}</span>
-                    </div>
-                    <div class="module-body">
-                      <div class="badge-row" style="flex-wrap:wrap; gap:6px;">
-                        <span class="module-badge">${course.domain || 'Core Methodology'}</span>
-                        <span class="stage-badge">${course.difficulty_level || stageName}</span>
-                        <span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-weight:700; font-size:0.72rem;"><i class="fa-solid fa-tag"></i> ${course.competency_subdomain || 'Competency Standard'}</span>
-                        <span style="background:#f0fdf4; color:#166534; padding:2px 8px; border-radius:4px; font-weight:700; font-size:0.72rem;"><i class="fa-solid fa-calendar-check"></i> TPAC 2026</span>
-                      </div>
-                      <div class="module-title">${course.title}</div>
-                      <div class="module-desc">${course.description}</div>
-                      <div style="background:#f8fafc; border-left:3px solid var(--accent); padding:6px 10px; border-radius:0 4px 4px 0; font-size:0.75rem; color:#334155; margin:8px 0; line-height:1.4;">
-                        <strong style="color:var(--primary);"><i class="fa-solid fa-lightbulb" style="color:#f59e0b;"></i> Deficit-Targeted Rationale:</strong> ${course.recommendation_reason || 'Identified competency gap for ' + currentUser.department}
-                      </div>
-                      <div class="module-actions" style="flex-wrap:wrap; gap:6px;">
-                        <button class="btn-action btn-open" onclick="openVideoModal('${encodeURIComponent(course.title)}', '${course.video_url || 'https://www.youtube.com/embed/1Il5UUPrSNk'}')"><i class="fa-solid fa-circle-play"></i> Watch Video</button>
-                        <button class="btn-action btn-cert" onclick="openCertModal('${encodeURIComponent(course.title)}')"><i class="fa-solid fa-file-arrow-up"></i> Certificate</button>
-                        <button class="btn-action btn-quiz" onclick="launchAssessment('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.domain)}')"><i class="fa-solid fa-list-check"></i> Take AI Quiz</button>
-                        <button class="btn-action" style="background:#0f172a; color:#38bdf8; border:1px solid #334155; padding:6px 10px; font-size:0.75rem;" onclick="openCodeLabModal('${encodeURIComponent(course.title)}', '${encodeURIComponent(course.domain || '')}')"><i class="fa-solid fa-flask"></i> Microdata Lab</button>
-                      </div>
-                    </div>
-                  </div>
-                `;}).join("")}
-              </div>
-            `;
-          }
-        });
-
-        container.innerHTML = htmlContent || '<p>No courses mapped for this profile.</p>';
+        renderSimplifiedModules();
       } catch (err) {
         console.error("Failed to load recommendations:", err);
         statusLabel.innerText = "Error loading courses.";
       }
+    }
+
+    function renderSimplifiedModules() {
+      const container = document.getElementById("dynamic-modules-container");
+      if (!allRecommendedCourses || allRecommendedCourses.length === 0) {
+        container.innerHTML = '<p style="color:#64748b; font-size:0.9rem; padding:12px;">No recommended courses found for your profile at this time.</p>';
+        return;
+      }
+
+      const displayCourses = showAllModules ? allRecommendedCourses : allRecommendedCourses.slice(0, 6);
+
+      const thumbnails = [
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=600&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=600&auto=format&fit=crop&q=80'
+      ];
+
+      container.innerHTML = `
+        <div class="simple-modules-grid">
+          ${displayCourses.map((course, idx) => {
+            const thumbUrl = thumbnails[idx % thumbnails.length];
+            const cleanDesc = (course.description || 'Comprehensive accredited training module under NSSTA MoSPI curriculum.')
+              .replace(/\[Target:[^\]]*\]/gi, '')
+              .trim();
+            const safeTitle = course.title || 'NSSTA Accredited Course';
+            const safeDomain = course.domain || 'Statistical Competencies';
+            const videoUrl = course.video_url || 'https://www.youtube.com/embed/1Il5UUPrSNk';
+
+            return `
+              <div class="simple-course-card">
+                <div class="simple-video-thumb" style="background-image: url('${thumbUrl}');" onclick="openVideoModal('${encodeURIComponent(safeTitle)}', '${videoUrl}')" title="Click to watch lecture video">
+                  <div class="simple-play-btn"><i class="fa-solid fa-play"></i></div>
+                  <span class="simple-video-tag"><i class="fa-solid fa-circle-play"></i> Watch Video</span>
+                </div>
+                <div class="simple-card-body">
+                  <div>
+                    <div class="simple-course-title">${safeTitle}</div>
+                    <div class="simple-course-desc">${cleanDesc}</div>
+                  </div>
+                  <div class="simple-card-actions">
+                    <button class="btn-simple-quiz" onclick="launchAssessment('${encodeURIComponent(safeTitle)}', '${encodeURIComponent(safeDomain)}')">
+                      <i class="fa-solid fa-list-check"></i> Take AI Quiz
+                    </button>
+                    <button class="btn-simple-cert" onclick="openCertModal('${encodeURIComponent(safeTitle)}')">
+                      <i class="fa-solid fa-file-arrow-up"></i> Certificate
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        ${allRecommendedCourses.length > 6 ? `
+          <div style="text-align:center; margin-top:20px;">
+            <button onclick="toggleAllModules()" class="btn-action" style="display:inline-flex; background:#f1f5f9; color:#1e3a8a; border:1px solid #cbd5e1; padding:10px 24px; border-radius:30px; font-weight:700; font-size:0.85rem; cursor:pointer;">
+              ${showAllModules ? '<i class="fa-solid fa-chevron-up"></i> Show Less (Top 6 Modules)' : `<i class="fa-solid fa-chevron-down"></i> View All ${allRecommendedCourses.length} Recommended Modules`}
+            </button>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function toggleAllModules() {
+      showAllModules = !showAllModules;
+      renderSimplifiedModules();
     }
 
     // --- MICRODATA SIMULATION LAB HANDLERS ---
