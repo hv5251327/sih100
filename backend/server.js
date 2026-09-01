@@ -1983,17 +1983,23 @@ app.post('/api/admin/parse-syllabus', async (req, res) => {
                 ? m.target_designations
                 : [targetDesignation || 'ALL'];
 
+            const cleanDesc = m.description || `Practical competency training for ${defaultDivision || 'ALL'} officers.`;
+            const fullDesc = cleanDesc.includes('[Target:') 
+                ? cleanDesc 
+                : `${cleanDesc} [Target: ${cadres.join(', ')} | ${desigs.join(', ')}]`;
+
+            const baseCode = String(m.course_code || `NSSTA-${defaultDivision !== 'ALL' ? defaultDivision : 'MOSPI'}-${100 + idx}`).replace(/[^A-Za-z0-9\-_]/g, '');
+            const uniqueCode = `${baseCode}-${Date.now().toString(36).slice(-3).toUpperCase()}${Math.floor(10 + Math.random() * 90)}`;
+
             return {
-                course_code: m.course_code || `NSSTA-${(defaultDivision !== 'ALL' ? defaultDivision : 'MOSPI')}-${Date.now().toString().slice(-4)}-${idx + 1}`,
+                course_code: uniqueCode,
                 title: cleanTitle,
                 domain: domain,
                 difficulty_level: diff,
-                description: m.description || `Practical competency training for ${defaultDivision || 'ALL'} officers.`,
+                description: fullDesc,
                 video_url: 'https://portal.igotkarmayogi.gov.in',
                 is_general_mandatory: typeof m.is_general_mandatory === 'boolean' ? m.is_general_mandatory : (domain === 'Digital Governance' && diff === 'Foundation'),
-                target_departments: depts,
-                target_cadres: cadres,
-                target_designations: desigs
+                target_departments: depts
             };
         });
 
@@ -2016,9 +2022,16 @@ app.post('/api/admin/parse-syllabus', async (req, res) => {
             inserted = dbInserted;
         }
 
+        // Return rich modules with cadre & designation info to the UI
+        const returnModules = (inserted || rowsToInsert).map((row, idx) => ({
+            ...row,
+            target_cadres: extractedModules[idx]?.target_cadres || [targetCadre || 'ALL'],
+            target_designations: extractedModules[idx]?.target_designations || [targetDesignation || 'ALL']
+        }));
+
         return res.json({ 
             message: `Successfully analyzed syllabus with LangChain & Ollama and saved ${rowsToInsert.length} accredited courses into master_courses table!`, 
-            modules: inserted || rowsToInsert 
+            modules: returnModules 
         });
     } catch (err) {
         return res.status(500).json({ error: 'Failed to extract syllabus courses: ' + err.message });
