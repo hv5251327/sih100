@@ -1893,9 +1893,25 @@ Return ONLY JSON:
             target_departments: [department || 'ALL']
         };
 
-        const { data: saved, error: dbErr } = await supabase.from('master_courses').insert([newRow]).select().single();
-        if (dbErr) return res.status(500).json({ error: dbErr.message });
-        return res.json({ message: `Course "${saved.title}" successfully added to master_courses!`, course: saved });
+        let nextId = 500;
+        try {
+            const { data: maxRow } = await supabase.from('master_courses').select('id').order('id', { ascending: false }).limit(1);
+            if (maxRow && maxRow.length > 0 && maxRow[0].id) nextId = maxRow[0].id + 1;
+        } catch (e) {}
+
+        const newRowWithId = { id: nextId, ...newRow };
+        let saved = null;
+        const { data: dbSaved, error: dbErr } = await supabase.from('master_courses').insert([newRowWithId]).select().single();
+        if (dbErr) {
+            console.warn("Retrying draft course insert without explicit id:", dbErr.message);
+            const { data: retrySaved, error: retryErr } = await supabase.from('master_courses').insert([newRow]).select().single();
+            if (retryErr) return res.status(500).json({ error: retryErr.message });
+            saved = retrySaved;
+        } else {
+            saved = dbSaved;
+        }
+
+        return res.json({ message: `Course "${(saved || newRow).title}" successfully added to master_courses!`, course: saved || newRow });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
@@ -1967,15 +1983,31 @@ Return ONLY a valid JSON array:
             };
         });
 
-        const { data: inserted, error: insErr } = await supabase.from('master_courses').insert(rowsToInsert).select();
-        if (insErr) return res.status(500).json({ error: insErr.message });
+        let nextStartId = 500;
+        try {
+            const { data: maxRow } = await supabase.from('master_courses').select('id').order('id', { ascending: false }).limit(1);
+            if (maxRow && maxRow.length > 0 && maxRow[0].id) nextStartId = maxRow[0].id + 1;
+        } catch (e) {}
+
+        const rowsWithId = rowsToInsert.map((r, idx) => ({ id: nextStartId + idx, ...r }));
+        let inserted = null;
+        const { data: dbInserted, error: insErr } = await supabase.from('master_courses').insert(rowsWithId).select();
+        
+        if (insErr) {
+            console.warn("Retrying syllabus insert without explicit IDs:", insErr.message);
+            const { data: retryInserted, error: retryErr } = await supabase.from('master_courses').insert(rowsToInsert).select();
+            if (retryErr) return res.status(500).json({ error: retryErr.message });
+            inserted = retryInserted;
+        } else {
+            inserted = dbInserted;
+        }
 
         return res.json({ 
             message: `Successfully analyzed syllabus and saved ${rowsToInsert.length} accredited courses into master_courses table!`, 
             modules: inserted || rowsToInsert 
         });
     } catch (err) {
-        return res.status(500).json({ error: 'Failed to extract syllabus courses.' });
+        return res.status(500).json({ error: 'Failed to extract syllabus courses: ' + err.message });
     }
 });
 
