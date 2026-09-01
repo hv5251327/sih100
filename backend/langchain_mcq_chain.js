@@ -46,12 +46,39 @@ Return ONLY the raw JSON array without any markdown fences.`,
     }
 });
 
-// 2. Multi-Provider Fast LLM Runner (Groq, Gemini, OpenAI, Ollama, Grok)
+// 2. Multi-Provider Fast LLM Runner (Ollama, Groq, Gemini, OpenAI, Grok)
 async function callFastLLM(promptText, customGroqKey = null) {
     const sysPrompt = "You are the Senior Psychometric Assessment Specialist at NSSTA, MoSPI. Return strictly a valid JSON array of questions without markdown formatting.";
     const activeGroqKey = customGroqKey || GROQ_API_KEY || process.env.GROQ_API_KEY;
 
-    // 1. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
+    // 1. Ollama Cloud Engine (Primary - gpt-oss:20b / deepseek-v4-flash:0731)
+    if (OLLAMA_API_KEY) {
+        const ollamaModels = ['gpt-oss:20b', 'deepseek-v4-flash:0731', 'nemotron-3-nano:30b', 'gemma4:31b'];
+        for (const model of ollamaModels) {
+            try {
+                const res = await fetch('https://api.ollama.com/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${OLLAMA_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        prompt: `${sysPrompt}\n\n${promptText}`,
+                        stream: false
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.response) {
+                        return data.response.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    }
+                }
+            } catch (e) {}
+        }
+    }
+
+    // 2. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
     if (activeGroqKey) {
         const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
         for (const model of groqModels) {
@@ -80,7 +107,7 @@ async function callFastLLM(promptText, customGroqKey = null) {
         }
     }
 
-    // 2. Google Gemini API Engine (Gemini 1.5 Flash)
+    // 3. Google Gemini API Engine (Gemini 1.5 Flash)
     if (GEMINI_API_KEY) {
         try {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
@@ -103,7 +130,7 @@ async function callFastLLM(promptText, customGroqKey = null) {
         } catch (e) {}
     }
 
-    // 3. OpenAI Engine (GPT-4o-mini)
+    // 4. OpenAI Engine (GPT-4o-mini)
     if (OPENAI_API_KEY) {
         try {
             const res = await fetch('https://api.openai.com/v1/chat/completions', {

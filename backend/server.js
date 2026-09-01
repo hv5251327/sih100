@@ -38,7 +38,34 @@ const supabase = createClient(cleanUrl, supabaseKey);
 async function generateAIResponse(prompt, systemInstruction, isJson = false) {
     const sysPrompt = systemInstruction || 'You are the Principal Curriculum Director & Chief Psychometrician at the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India.';
 
-    // 1. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
+    // 1. Ollama Cloud Engine (Primary - gpt-oss:20b / deepseek-v4-flash:0731)
+    if (OLLAMA_API_KEY) {
+        const ollamaModels = ['gpt-oss:20b', 'deepseek-v4-flash:0731', 'nemotron-3-nano:30b', 'gemma4:31b'];
+        for (const model of ollamaModels) {
+            try {
+                const res = await fetch('https://api.ollama.com/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${OLLAMA_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        prompt: `${sysPrompt}\n\n${prompt}`,
+                        stream: false
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.response) {
+                        return isJson ? data.response.replace(/```json/gi, '').replace(/```/g, '').trim() : data.response.trim();
+                    }
+                }
+            } catch (e) {}
+        }
+    }
+
+    // 2. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
     if (GROQ_API_KEY) {
         const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
         for (const model of groqModels) {
