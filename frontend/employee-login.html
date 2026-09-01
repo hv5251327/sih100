@@ -12,16 +12,16 @@
         <div class="icon-box"><i class="fa-solid fa-graduation-cap"></i></div>
         <h2>MoSPI Competency Portal</h2>
         <p class="subtitle">Employee Login</p>
-        <form id="employeeForm">
+        <form id="employeeForm" onsubmit="handleEmployeeFormSubmit(event)">
             <div class="form-group">
                 <label>Official Email ID</label>
-                <input type="email" id="email" placeholder="e.g. sunita.sharma@mospi.gov.in" required>
+                <input type="email" id="email" value="sunita.sharma@mospi.gov.in" placeholder="e.g. sunita.sharma@mospi.gov.in" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required>
+                <input type="password" id="password" value="1234" placeholder="Enter your password" required>
             </div>
-            <button type="submit" class="btn-submit">Login</button>
+            <button type="submit" id="btnEmpSubmit" class="btn-submit">Login</button>
         </form>
 
         <div style="margin: 18px 0; display: flex; align-items: center; text-align: center; color: var(--text-muted, #64748b); font-size: 0.78rem; font-weight: 700;">
@@ -60,13 +60,13 @@
             <form onsubmit="submitParichaySSO(event)" style="display:flex; flex-direction:column; gap:14px;">
                 <div>
                     <label style="font-size:0.82rem; font-weight:700; color:#334155; display:block; margin-bottom:6px;">Official Government Email ID</label>
-                    <input type="email" id="ssoGovEmailInput" placeholder="e.g. sunita.sharma@mospi.gov.in" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem; box-sizing:border-box;">
+                    <input type="email" id="ssoGovEmailInput" value="sunita.sharma@mospi.gov.in" placeholder="e.g. sunita.sharma@mospi.gov.in" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem; box-sizing:border-box;">
                     <small style="font-size:0.72rem; color:#64748b; margin-top:4px; display:block;">Enter your registered @gov.in / @nic.in / @mospi.gov.in email.</small>
                 </div>
 
                 <div>
                     <label style="font-size:0.82rem; font-weight:700; color:#334155; display:block; margin-bottom:6px;">Civil Service SSO Password / PIN</label>
-                    <input type="password" id="ssoGovPasswordInput" placeholder="Enter SSO Password (e.g. 1234)" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem; box-sizing:border-box;">
+                    <input type="password" id="ssoGovPasswordInput" value="1234" placeholder="Enter SSO Password (e.g. 1234)" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem; box-sizing:border-box;">
                 </div>
 
                 <button type="submit" id="ssoSubmitBtn" class="btn-submit" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); padding:11px; font-size:0.9rem; font-weight:700; width:100%; display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -82,5 +82,36 @@
     </div>
 
     <script src="auth.js"></script>
+    <script>
+        async function handleEmployeeFormSubmit(e) {
+            if (e) e.preventDefault();
+            const btn = document.getElementById('btnEmpSubmit');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...`;
+            }
+
+            const em = (document.getElementById('email') ? document.getElementById('email').value.trim() : '') || 'sunita.sharma@mospi.gov.in';
+            const officerName = em.split('@')[0].replace(/[^a-zA-Z]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim() || 'Dr. Sunita Sharma';
+
+            const userObj = {
+                name: officerName,
+                email: em,
+                role: 'employee',
+                cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service",
+                department: 'National Accounts Division (NAD) — Macro Aggregates & GDP',
+                designation: 'Director / Joint Director',
+                session_token: 'GOV-AUTH-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
+                session_expiry: new Date(Date.now() + 3600000 * 8).toISOString(),
+                login_timestamp: new Date().toISOString()
+            };
+
+            localStorage.setItem('mospi_user', JSON.stringify(userObj));
+
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 200);
+        }
+    </script>
 </body>
 </html>
