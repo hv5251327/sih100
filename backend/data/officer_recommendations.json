@@ -1,0 +1,81 @@
+{
+  "officer.test.1788283938944@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Fundamental understanding of DPDP 2023, key for legal compliance in data collection and respondent confidentiality.",
+      "video_url": "https://www.youtube.com/embed/gL6d2U0Wc_M",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 6,
+      "course_code": "GEN-06",
+      "title": "Python & Pandas for Official Statistical Analysis & Data Wrangling",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Foundation",
+      "description": "Core programming skills for cleaning, merging, and summarising large survey datasets efficiently.",
+      "video_url": "https://www.youtube.com/embed/eWRfhZ9WAWQ",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 88
+    },
+    {
+      "id": 51,
+      "course_code": "IGOT-CAPI-101",
+      "title": "CAPI Tablet Data Collection, Field Auditing & Mobile Encryption",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Hands‑on training on secure CAPI field operations, audit procedures, and data encryption techniques.",
+      "video_url": "https://www.youtube.com/embed/k9zTr2MAo4s",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "SDRD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 85
+    },
+    {
+      "id": 13,
+      "course_code": "SPEC-SDRD-01",
+      "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "In‑depth technical guidance on designing, weighting, and estimating sample structures for NSS surveys.",
+      "video_url": "https://www.youtube.com/embed/w7WjG5D0w2s",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "DPD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 87
+    },
+    {
+      "id": 18,
+      "course_code": "SPEC-STAT-01",
+      "title": "Time Series Econometrics & Seasonal Adjustments (X-13ARIMA-SEATS)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Advanced econometric tools for trend extraction and seasonal adjustment of macroeconomic time series.",
+      "video_url": "https://www.youtube.com/embed/PrhW8y2gP10",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 84
+    }
+  ]
+}

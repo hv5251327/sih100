@@ -11,16 +11,51 @@ const {
     generateOfficerDossierData,
     evaluateOfficerArtifactAI
 } = require('./mospi_ai_engine');
+const fs = require('fs');
+const path = require('path');
 const { runLangChainMCQPipeline, runLangChainSyllabusPipeline } = require('./langchain_mcq_chain');
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+// Persistent Database Cache for Officer Personalized Recommendations
+const RECOMMENDATIONS_FILE = path.join(__dirname, 'data', 'officer_recommendations.json');
+let memoryOfficerRecommendations = {};
+
+try {
+    if (fs.existsSync(RECOMMENDATIONS_FILE)) {
+        const raw = fs.readFileSync(RECOMMENDATIONS_FILE, 'utf-8');
+        memoryOfficerRecommendations = JSON.parse(raw);
+    }
+} catch (e) {
+    console.warn("Could not load recommendations file:", e.message);
+}
+
+function persistOfficerRecommendations(email, courses) {
+    if (!email || !Array.isArray(courses)) return;
+    const cleanEmail = email.trim().toLowerCase();
+    memoryOfficerRecommendations[cleanEmail] = courses;
+    try {
+        if (!fs.existsSync(path.join(__dirname, 'data'))) {
+            fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true });
+        }
+        fs.writeFileSync(RECOMMENDATIONS_FILE, JSON.stringify(memoryOfficerRecommendations, null, 2), 'utf-8');
+    } catch (e) {
+        console.warn("Could not persist recommendations to disk:", e.message);
+    }
+}
+
+function getSavedOfficerRecommendations(email) {
+    if (!email) return null;
+    const cleanEmail = email.trim().toLowerCase();
+    const saved = memoryOfficerRecommendations[cleanEmail];
+    return (Array.isArray(saved) && saved.length > 0) ? saved : null;
+}
+
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const GROK_API_KEY = process.env.GROK_API_KEY;
 const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY || 'b74c652d554f43c7a84fbc4b4eefc351.0qPsbvIqO1c7xzy3KL4E9ALv';
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'https://api.ollama.com/v1';
 
@@ -904,7 +939,7 @@ app.post('/api/auth/sso', async (req, res) => {
 
 // AI-Powered Diagnostic Assessment & Skill-Gap Calibration API
 app.post('/api/initial-assessment', async (req, res) => {
-    const { email, statistical_score, technical_score, governance_score, leadership_score } = req.body;
+    const { email, statistical_score, technical_score, governance_score, leadership_score, department, designation, cadre } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required.' });
 
     const cleanEmail = email.trim().toLowerCase();
@@ -936,10 +971,41 @@ app.post('/api/initial-assessment', async (req, res) => {
             if (maxIdRow && maxIdRow[0] && maxIdRow[0].id) nextId = maxIdRow[0].id + 1;
             await supabase.from('officer_competencies').insert([{ id: nextId, ...scores }]);
         }
+
+        // Get officer profile metadata
+        let officerDept = department;
+        let officerDesig = designation;
+        let officerCadre = cadre;
+        if (!officerDept || !officerDesig || !officerCadre) {
+            try {
+                const { data: emp } = await supabase.from('employees').select('department, designation, cadre').eq('email', cleanEmail).single();
+                if (emp) {
+                    officerDept = officerDept || emp.department;
+                    officerDesig = officerDesig || emp.designation;
+                    officerCadre = officerCadre || emp.cadre;
+                }
+            } catch (e) {}
+        }
+
+        // PRE-FETCH & ARCHITECT RELEVANT COURSES AND PERSIST TO DB/CACHE
+        let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
+        if (!allCourses || allCourses.length === 0) allCourses = memoryCourses;
+
+        const evaluatedCourses = await evaluateRecommendationsAI(allCourses, {
+            department: officerDept || 'NAD',
+            designation: officerDesig || 'Senior Statistical Officer',
+            cadre: officerCadre || 'Indian Statistical Service (ISS)',
+            comp: scores
+        });
+
+        // Persist so there's no need of fetching or re-calculating on every login!
+        persistOfficerRecommendations(cleanEmail, evaluatedCourses);
+
         return res.json({
             success: true,
-            message: 'Baseline competency calibration successful!',
-            competencies: scores
+            message: 'Baseline competency calibration successful & personalized roadmap saved to database!',
+            competencies: scores,
+            saved_recommendations_count: evaluatedCourses.length
         });
     } catch (e) {
         return res.json({
@@ -2500,19 +2566,35 @@ Return STRICT JSON array without markdown formatting:
 }
 
 app.post('/api/recommendations', async (req, res) => {
-    const { department, designation, cadre, email } = req.body;
+    const { department, designation, cadre, email, force_refresh } = req.body;
     const cleanEmail = (email || '').trim().toLowerCase();
     const deptCode = parseDeptCode(department);
     const desigUpper = (designation || '').toUpperCase();
     const cadreUpper = (cadre || '').toUpperCase();
 
     try {
+        const completedNormTitles = cleanEmail ? await getOfficerCompletedCourses(cleanEmail) : new Set();
+        
+        // 1. FAST PERSISTENT DB CACHE CHECK: If already saved in DB, return instantly without re-fetching!
+        const savedRecs = getSavedOfficerRecommendations(cleanEmail);
+        if (savedRecs && savedRecs.length > 0 && !force_refresh) {
+            const activeRecs = savedRecs.filter(c => !completedNormTitles.has(normalizeTitle(c.title)));
+            if (activeRecs.length > 0) {
+                return res.json({
+                    total_remaining: activeRecs.length,
+                    completed_count: completedNormTitles.size,
+                    courses: activeRecs,
+                    cached: true,
+                    message: "Loaded personalized curriculum from persistent database."
+                });
+            }
+        }
+
+        // 2. Otherwise generate from master_courses with AI and save permanently
         let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
         if (!allCourses || allCourses.length === 0) allCourses = memoryCourses;
 
-        const completedNormTitles = cleanEmail ? await getOfficerCompletedCourses(cleanEmail) : new Set();
         const comp = cleanEmail ? await recalculateCompetencies(cleanEmail) : { statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0 };
-
         const uncompletedCourses = allCourses.filter(c => !completedNormTitles.has(normalizeTitle(c.title)));
 
         // Run AI-powered relevance evaluation & stage grouping (Grok / Gemini / Ollama)
@@ -2522,6 +2604,11 @@ app.post('/api/recommendations', async (req, res) => {
             cadre,
             comp
         });
+
+        // Persist to DB cache permanently so subsequent logins are instant
+        if (cleanEmail) {
+            persistOfficerRecommendations(cleanEmail, finalRecommendations);
+        }
 
         // Retrieve and match NSSTA TPAC Training Programmes
         let tpacMatches = [];
@@ -2553,7 +2640,8 @@ app.post('/api/recommendations', async (req, res) => {
             total_remaining: finalRecommendations.length,
             completed_count: completedNormTitles.size,
             courses: finalRecommendations,
-            tpac_programmes: tpacMatches
+            tpac_programmes: tpacMatches,
+            cached: false
         });
     } catch (err) {
         return res.status(500).json({ error: 'Failed to recommend courses: ' + err.message });
@@ -3380,7 +3468,20 @@ app.post('/api/auth/register', async (req, res) => {
         const { data, error } = await supabase.from('employees').insert([{ name: name.trim(), email: cleanEmail, password: password, cadre: cadre.trim(), department: department.trim(), designation: designation.trim() }]).select();
         if (error) return res.status(400).json({ error: error.message });
         await supabase.from('officer_competencies').insert([{ user_email: cleanEmail, statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0 }]);
-        return res.status(201).json({ message: 'Registered successfully', user: data[0] });
+        
+        // Immediately architect and persist tailored courses for new officer in persistent database
+        let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
+        if (!allCourses || allCourses.length === 0) allCourses = memoryCourses;
+
+        const initialRecs = await evaluateRecommendationsAI(allCourses, {
+            department: department.trim(),
+            designation: designation.trim(),
+            cadre: cadre.trim(),
+            comp: { statistical_score: 50, technical_score: 50, governance_score: 50, leadership_score: 50 }
+        });
+        persistOfficerRecommendations(cleanEmail, initialRecs);
+
+        return res.status(201).json({ message: 'Registered successfully and courses saved in DB!', user: data[0] });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }

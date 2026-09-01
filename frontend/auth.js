@@ -198,9 +198,13 @@ async function submitDiagnosticAssessment(event) {
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Calibrating 4-Pillar Baseline...`;
     }
 
+    const cadre = user ? user.cadre : (document.getElementById('regCadre') ? document.getElementById('regCadre').value : '');
+    const department = user ? user.department : (document.getElementById('regDept') ? document.getElementById('regDept').value : '');
+    const designation = user ? user.designation : (document.getElementById('regDesignation') ? document.getElementById('regDesignation').value : '');
+
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
 
         await fetch(`${API_BASE_URL}/api/initial-assessment`, {
             method: 'POST',
@@ -208,6 +212,9 @@ async function submitDiagnosticAssessment(event) {
             signal: controller.signal,
             body: JSON.stringify({
                 email,
+                cadre,
+                department,
+                designation,
                 statistical_score: statScore,
                 technical_score: techScore,
                 governance_score: govScore,
