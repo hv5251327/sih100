@@ -1748,7 +1748,7 @@ app.get('/api/admin/officers-analytics', async (req, res) => {
 
 // Auto MCQ Question Generator from PDF & Text (LangChain & Groq/LLM Engine)
 app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], async (req, res) => {
-    const { courseTitle, documentText, numQuestions, difficulty } = req.body;
+    const { courseTitle, documentText, numQuestions, difficulty, groqApiKey } = req.body;
     if (!courseTitle || !documentText) {
         return res.status(400).json({ error: 'Course Title and Document Text are required.' });
     }
@@ -1758,8 +1758,8 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
     const diff = difficulty || 'Intermediate';
 
     try {
-        // 1. Generate Psychometric MCQs via LangChain PromptTemplate Pipeline
-        const generatedQuestions = await runLangChainMCQPipeline(cleanTitle, documentText, count, diff);
+        // 1. Generate Psychometric MCQs via LangChain PromptTemplate Pipeline (with Groq API key)
+        const generatedQuestions = await runLangChainMCQPipeline(cleanTitle, documentText, count, diff, groqApiKey);
 
         if (!generatedQuestions || generatedQuestions.length === 0) {
             throw new Error('Could not synthesize questions from provided document.');
@@ -1768,7 +1768,7 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
         // 2. Format rows for Supabase Database `course_quizzes` table
         const rowsToInsert = generatedQuestions.map(q => {
             let safeOptions = Array.isArray(q.options) && q.options.length >= 2 
-                ? q.options.map(o => String(o).replace(/^[\s\(\[]*[A-Da-d1-4][\.\)\]\:\-\s]*/, '').trim()).filter(Boolean)
+                ? q.options.map(o => String(o).replace(/^[\(\[]?[A-Da-d1-4][\.\)\]\:\-]\s*/, '').trim()).filter(Boolean)
                 : ["Option A", "Option B", "Option C", "Option D"];
             
             while (safeOptions.length < 4) safeOptions.push('Standard official verification protocol');

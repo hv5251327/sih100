@@ -47,11 +47,12 @@ Return ONLY the raw JSON array without any markdown fences.`,
 });
 
 // 2. Multi-Provider Fast LLM Runner (Groq, Gemini, OpenAI, Ollama, Grok)
-async function callFastLLM(promptText) {
+async function callFastLLM(promptText, customGroqKey = null) {
     const sysPrompt = "You are the Senior Psychometric Assessment Specialist at NSSTA, MoSPI. Return strictly a valid JSON array of questions without markdown formatting.";
+    const activeGroqKey = customGroqKey || GROQ_API_KEY || process.env.GROQ_API_KEY;
 
     // 1. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
-    if (GROQ_API_KEY) {
+    if (activeGroqKey) {
         const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
         for (const model of groqModels) {
             try {
@@ -59,7 +60,7 @@ async function callFastLLM(promptText) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${GROQ_API_KEY}`
+                        'Authorization': `Bearer ${activeGroqKey}`
                     },
                     body: JSON.stringify({
                         model: model,
@@ -193,7 +194,7 @@ async function callFastLLM(promptText) {
 // 3. Option Shuffler & Jumbling Engine (Fisher-Yates)
 function jumbleMCQ(q) {
     let opts = Array.isArray(q.options) && q.options.length >= 2
-        ? q.options.map(o => String(o).replace(/^[\s\(\[]*[A-Da-d1-4][\.\)\]\:\-\s]*/, '').trim()).filter(Boolean)
+        ? q.options.map(o => String(o).replace(/^[\(\[]?[A-Da-d1-4][\.\)\]\:\-]\s*/, '').trim()).filter(Boolean)
         : ["Option A", "Option B", "Option C", "Option D"];
     while (opts.length < 4) opts.push("Standard official verification protocol");
     if (opts.length > 4) opts = opts.slice(0, 4);
@@ -223,7 +224,7 @@ function jumbleMCQ(q) {
 }
 
 // 4. LangChain Execution Pipeline
-async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions = 6, difficulty = 'Intermediate') {
+async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions = 6, difficulty = 'Intermediate', customGroqKey = null) {
     const cleanDoc = (documentText || '').slice(0, 28000).trim();
     const count = parseInt(numQuestions) || 6;
 
@@ -235,7 +236,7 @@ async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions =
             difficulty: difficulty
         });
 
-        const rawOutput = await callFastLLM(formattedPrompt);
+        const rawOutput = await callFastLLM(formattedPrompt, customGroqKey);
 
         if (rawOutput) {
             const match = rawOutput.match(/\[[\s\S]*\]/);
