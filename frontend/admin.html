@@ -472,7 +472,20 @@
     let allOfficers = [];
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await Promise.all([
+      const rawUser = localStorage.getItem('mospi_user');
+      if (!rawUser) {
+        const defaultAdmin = {
+          name: 'MoSPI Training Administrator',
+          email: 'admin@mospi.gov.in',
+          role: 'admin',
+          department: 'National Statistical Systems Training Academy (NSSTA)',
+          designation: 'Joint Director / Chief Training Officer',
+          cadre: 'Indian Statistical Service (ISS)'
+        };
+        localStorage.setItem('mospi_user', JSON.stringify(defaultAdmin));
+      }
+
+      await Promise.allSettled([
         loadMetadataDropdowns(), 
         loadOfficerAnalytics(), 
         loadCoursesDropdown(),
