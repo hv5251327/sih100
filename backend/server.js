@@ -10,8 +10,7 @@ const {
     generateCourseCurriculumAI,
     generateOfficerDossierData,
     evaluateOfficerArtifactAI
-} = require('./mospi_ai_engine');
-const { runLangChainMCQPipeline } = require('./langchain_mcq_chain');
+const { runLangChainMCQPipeline, runLangChainSyllabusPipeline } = require('./langchain_mcq_chain');
 
 const app = express();
 app.use(cors());
@@ -1944,48 +1943,21 @@ Return ONLY JSON:
     }
 });
 
-// PDF Syllabus Parser & Intelligent Course Ingestion
+// PDF Syllabus Parser & Intelligent Course Ingestion (LangChain & Ollama gpt-oss:20b Pipeline)
 app.post('/api/admin/parse-syllabus', async (req, res) => {
-    const { syllabusText, defaultDivision } = req.body;
+    const { syllabusText, defaultDivision, targetCadre, targetDesignation } = req.body;
     if (!syllabusText) return res.status(400).json({ error: 'Syllabus text is required.' });
 
     try {
-        let extractedModules = [];
-        const systemPrompt = "You are the Director of Curriculum at NSSTA, MoSPI. Extract distinct accredited training courses mapped to MoSPI competency pillars: Statistical Competencies, Technical Competencies, Digital Governance, Behavioural & Managerial.";
-
-        const prompt = `Analyze this NSSTA / MoSPI training syllabus and break it down into 4 to 8 standalone competency courses for division: "${defaultDivision || 'ALL'}".
-
-SYLLABUS CONTENT:
-${syllabusText.slice(0, 25000)}
-
-Requirements:
-1. Provide a professional, descriptive course title.
-2. Categorize into one of: 'Statistical Competencies', 'Technical Competencies', 'Digital Governance', 'Behavioural & Managerial'.
-3. Assign difficulty: 'Foundation', 'Intermediate', or 'Advanced'.
-4. Provide a concise 2-sentence practical operational objective.
-
-Return ONLY a valid JSON array:
-[
-  {
-    "title": "Clear Professional Course Title",
-    "domain": "Statistical Competencies",
-    "difficulty_level": "Intermediate",
-    "description": "2-sentence practical operational description"
-  }
-]`;
-
-        const rawJson = await generateAIResponse(prompt, systemPrompt);
-        if (rawJson) {
-            try {
-                const match = rawJson.match(/\[[\s\S]*\]/);
-                if (match) extractedModules = JSON.parse(match[0]);
-            } catch (e) {
-                console.warn('AI Syllabus JSON parsing note:', e.message);
-            }
-        }
+        const extractedModules = await runLangChainSyllabusPipeline(
+            syllabusText,
+            defaultDivision || 'ALL',
+            targetCadre || 'ALL',
+            targetDesignation || 'ALL'
+        );
 
         if (!extractedModules || extractedModules.length === 0) {
-            extractedModules = parseSyllabusFromText(syllabusText, defaultDivision);
+            throw new Error('Could not parse courses from provided syllabus.');
         }
 
         const rowsToInsert = extractedModules.map((m, idx) => {
@@ -1998,15 +1970,29 @@ Return ONLY a valid JSON array:
             const validDiffs = ['Foundation', 'Intermediate', 'Advanced'];
             if (!validDiffs.includes(diff)) diff = 'Intermediate';
 
+            const depts = Array.isArray(m.target_departments) && m.target_departments.length > 0
+                ? m.target_departments
+                : [defaultDivision || 'ALL'];
+
+            const cadres = Array.isArray(m.target_cadres) && m.target_cadres.length > 0
+                ? m.target_cadres
+                : [targetCadre || 'ALL'];
+
+            const desigs = Array.isArray(m.target_designations) && m.target_designations.length > 0
+                ? m.target_designations
+                : [targetDesignation || 'ALL'];
+
             return {
-                course_code: `NSSTA-${Date.now().toString().slice(-4)}-${idx + 1}`,
+                course_code: m.course_code || `NSSTA-${(defaultDivision !== 'ALL' ? defaultDivision : 'MOSPI')}-${Date.now().toString().slice(-4)}-${idx + 1}`,
                 title: cleanTitle,
                 domain: domain,
                 difficulty_level: diff,
                 description: m.description || `Practical competency training for ${defaultDivision || 'ALL'} officers.`,
                 video_url: 'https://portal.igotkarmayogi.gov.in',
-                is_general_mandatory: domain === 'Digital Governance' && diff === 'Foundation',
-                target_departments: [defaultDivision || 'ALL']
+                is_general_mandatory: typeof m.is_general_mandatory === 'boolean' ? m.is_general_mandatory : (domain === 'Digital Governance' && diff === 'Foundation'),
+                target_departments: depts,
+                target_cadres: cadres,
+                target_designations: desigs
             };
         });
 
@@ -2030,7 +2016,7 @@ Return ONLY a valid JSON array:
         }
 
         return res.json({ 
-            message: `Successfully analyzed syllabus and saved ${rowsToInsert.length} accredited courses into master_courses table!`, 
+            message: `Successfully analyzed syllabus with LangChain & Ollama and saved ${rowsToInsert.length} accredited courses into master_courses table!`, 
             modules: inserted || rowsToInsert 
         });
     } catch (err) {

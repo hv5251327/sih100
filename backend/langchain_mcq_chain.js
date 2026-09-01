@@ -354,8 +354,152 @@ async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions =
     }));
 }
 
+// 5. LangChain Prompt Template for Syllabus Parsing & Intelligent Course Architecture
+const syllabusIngestionPromptTemplate = new PromptTemplate({
+    template: `You are the Chief Curriculum Architect and Principal Director of Training at the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India.
+
+Deeply analyze the following official NSSTA Training Syllabus / Circular / Presentation.
+Extract and architect 4 to 8 accredited standalone training courses mapped to official MoSPI competency pillars, targeted cadres, and designations.
+
+SYLLABUS / TRAINING CONTENT:
+"""
+{syllabus_text}
+"""
+
+TARGETING METADATA:
+- Default Division: "{division}"
+- Target Cadre: "{cadre}"
+- Target Designation: "{designation}"
+
+STRICT CURRICULUM ARCHITECTURE RULES:
+1. Ground every course strictly in the actual topics, statistical methodologies, and governance mandates present in the document.
+2. Structure each course with:
+   - "course_code": Official course code (e.g. "NSSTA-SDRD-101", "NSSTA-FOD-202", "NSSTA-NAD-301", "NSSTA-DG-105").
+   - "title": Clear, professional, accredited course title.
+   - "domain": Must be exactly one of: "Statistical Competencies", "Technical Competencies", "Digital Governance", "Behavioural & Managerial".
+   - "difficulty_level": Must be exactly one of: "Foundation", "Intermediate", "Advanced".
+   - "description": 2-sentence summary detailing practical operational competencies acquired.
+   - "target_departments": Array of department codes (e.g. ["SDRD"], ["NAD", "ESD"], ["FOD"], ["Data Governance"], or ["ALL"]).
+   - "target_cadres": Array of targeted officer cadres (e.g. ["Indian Statistical Service (ISS)"], ["Subordinate Statistical Service (SSS)"], or ["ALL"]).
+   - "target_designations": Array of targeted designations (e.g. ["Senior Statistical Officer", "Junior Statistical Officer", "Assistant Director", "Deputy Director"], or ["ALL"]).
+   - "is_general_mandatory": Boolean (true if mandatory for all officers in the division).
+
+{format_instructions}`,
+    inputVariables: ["syllabus_text", "division", "cadre", "designation"],
+    partialVariables: {
+        format_instructions: `Return ONLY a valid JSON array of objects without markdown:
+[
+  {
+    "course_code": "NSSTA-SDRD-201",
+    "title": "Multistage Sampling Multiplier Estimation & Inverse Probability Weighting",
+    "domain": "Statistical Competencies",
+    "difficulty_level": "Intermediate",
+    "description": "Comprehensive practical training on computing stratum inverse probabilities and non-response calibration for PLFS and HCES.",
+    "target_departments": ["SDRD"],
+    "target_cadres": ["Indian Statistical Service (ISS)", "Subordinate Statistical Service (SSS)"],
+    "target_designations": ["Senior Statistical Officer", "Assistant Director"],
+    "is_general_mandatory": false
+  }
+]`
+    }
+});
+
+function parseSyllabusStructuredFallback(syllabusText, defaultDivision = 'ALL', targetCadre = 'ALL', targetDesignation = 'ALL') {
+    const rawLines = (syllabusText || '')
+        .split(/[\r\n]+/)
+        .map(l => l.trim().replace(/^[\*\-\#\d\.\)\s]+/, '').trim())
+        .filter(l => l.length > 10 && l.length < 150 && !/^(page|unit|module|chapter|table|figure|\d+$)/i.test(l));
+
+    const uniqueLines = [...new Set(rawLines)];
+    const courses = [];
+
+    const domains = ['Statistical Competencies', 'Technical Competencies', 'Digital Governance', 'Behavioural & Managerial'];
+    const diffs = ['Foundation', 'Intermediate', 'Advanced'];
+
+    for (let i = 0; i < Math.min(uniqueLines.length, 6); i++) {
+        const topic = uniqueLines[i];
+        const domain = domains[i % domains.length];
+        const diff = diffs[i % diffs.length];
+
+        courses.push({
+            course_code: `NSSTA-${(defaultDivision !== 'ALL' ? defaultDivision : 'MOSPI')}-${100 + i}`,
+            title: topic.length < 50 ? `${topic} — Masterclass` : topic,
+            domain: domain,
+            difficulty_level: diff,
+            description: `Accredited practical competency course covering ${topic} for ${defaultDivision} officers.`,
+            target_departments: [defaultDivision || 'ALL'],
+            target_cadres: [targetCadre || 'ALL'],
+            target_designations: [targetDesignation || 'ALL'],
+            is_general_mandatory: domain === 'Digital Governance' && diff === 'Foundation',
+            video_url: 'https://portal.igotkarmayogi.gov.in',
+            chain_type: 'LangChain_Structured_Syllabus_Fallback'
+        });
+    }
+
+    if (courses.length === 0) {
+        courses.push({
+            course_code: `NSSTA-${(defaultDivision !== 'ALL' ? defaultDivision : 'MOSPI')}-101`,
+            title: `Operational Competencies in ${defaultDivision !== 'ALL' ? defaultDivision : 'MoSPI Official Statistics'}`,
+            domain: 'Statistical Competencies',
+            difficulty_level: 'Intermediate',
+            description: `Comprehensive operational training module designed for ${targetCadre !== 'ALL' ? targetCadre : 'MoSPI officers'}.`,
+            target_departments: [defaultDivision || 'ALL'],
+            target_cadres: [targetCadre || 'ALL'],
+            target_designations: [targetDesignation || 'ALL'],
+            is_general_mandatory: false,
+            video_url: 'https://portal.igotkarmayogi.gov.in',
+            chain_type: 'LangChain_Structured_Syllabus_Fallback'
+        });
+    }
+
+    return courses;
+}
+
+async function runLangChainSyllabusPipeline(syllabusText, defaultDivision = 'ALL', targetCadre = 'ALL', targetDesignation = 'ALL') {
+    const cleanDoc = (syllabusText || '').slice(0, 30000).trim();
+
+    try {
+        const formattedPrompt = await syllabusIngestionPromptTemplate.format({
+            syllabus_text: cleanDoc,
+            division: defaultDivision || 'ALL',
+            cadre: targetCadre || 'ALL',
+            designation: targetDesignation || 'ALL'
+        });
+
+        const rawOutput = await callFastLLM(formattedPrompt);
+
+        if (rawOutput) {
+            const match = rawOutput.match(/\[[\s\S]*\]/);
+            if (match) {
+                const parsed = JSON.parse(match[0]);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    return parsed.map((m, idx) => ({
+                        course_code: m.course_code || `NSSTA-${(defaultDivision !== 'ALL' ? defaultDivision : 'MOSPI')}-${Date.now().toString().slice(-4)}-${idx + 1}`,
+                        title: String(m.title || `NSSTA Module ${idx + 1}`).trim(),
+                        domain: ['Statistical Competencies', 'Technical Competencies', 'Digital Governance', 'Behavioural & Managerial'].includes(m.domain) ? m.domain : 'Statistical Competencies',
+                        difficulty_level: ['Foundation', 'Intermediate', 'Advanced'].includes(m.difficulty_level) ? m.difficulty_level : 'Intermediate',
+                        description: m.description || `Accredited operational competency training for ${defaultDivision} officers.`,
+                        target_departments: Array.isArray(m.target_departments) && m.target_departments.length > 0 ? m.target_departments : [defaultDivision || 'ALL'],
+                        target_cadres: Array.isArray(m.target_cadres) && m.target_cadres.length > 0 ? m.target_cadres : [targetCadre || 'ALL'],
+                        target_designations: Array.isArray(m.target_designations) && m.target_designations.length > 0 ? m.target_designations : [targetDesignation || 'ALL'],
+                        is_general_mandatory: typeof m.is_general_mandatory === 'boolean' ? m.is_general_mandatory : false,
+                        video_url: m.video_url || 'https://portal.igotkarmayogi.gov.in',
+                        chain_type: 'LangChain_Syllabus_Architect_Chain'
+                    }));
+                }
+            }
+        }
+    } catch (err) {
+        console.warn('LangChain syllabus pipeline note:', err.message);
+    }
+
+    return parseSyllabusStructuredFallback(cleanDoc, defaultDivision, targetCadre, targetDesignation);
+}
+
 module.exports = {
     mcqGenerationPromptTemplate,
     jumbleMCQ,
-    runLangChainMCQPipeline
+    runLangChainMCQPipeline,
+    syllabusIngestionPromptTemplate,
+    runLangChainSyllabusPipeline
 };
