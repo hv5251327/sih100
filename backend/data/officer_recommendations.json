@@ -77,5 +77,193 @@
       "learning_stage": "Advanced Strategic",
       "match_score": 84
     }
+  ],
+  "grok.officer.1788284411732@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "An in-depth overview of the DPDP Act 2023, covering legal obligations, respondent consent, k‑anonymity, and secure data handling for official statisticians.",
+      "video_url": "https://www.youtube.com/embed/gL6d2U0Wc_M",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 5,
+      "course_code": "GEN-05",
+      "title": "Cybersecurity Best Practices & Government Cloud Security Standards",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Comprehensive guide to cybersecurity fundamentals covering threat assessment, government cloud security standards, and best practices for statistical data protection.",
+      "video_url": "https://www.youtube.com/embed/inWWhr5tnEA",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 9,
+      "course_code": "SPEC-NAD-01",
+      "title": "National Accounts Statistics (NAS): UN-SNA 2008 & GSDP Estimation",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Detailed curriculum on implementing SNA 2008 protocols for national accounts, covering GVA/GDP calculations, supply/use tables, and GSDP estimation for NAD.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 98
+    },
+    {
+      "id": 49,
+      "course_code": "IGOT-DPDP-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 & Respondent Anonymization",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Focuses on DPDP Act 2023 with practical respondent anonymization techniques ensuring microdata confidentiality while maintaining analytical integrity.",
+      "video_url": "https://www.youtube.com/embed/gL6d2U0Wc_M",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 88
+    },
+    {
+      "id": 18,
+      "course_code": "SPEC-STAT-01",
+      "title": "Time Series Econometrics & Seasonal Adjustments (X-13ARIMA-SEATS)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Advanced training on time series econometrics and seasonal adjustment using X‑13ARIMA‑SEATS, enabling accurate trend extraction and policy‑relevant forecasts.",
+      "video_url": "https://www.youtube.com/embed/PrhW8y2gP10",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 97
+    },
+    {
+      "id": 17,
+      "course_code": "SPEC-TECH-02",
+      "title": "Machine Learning & Big Data Analytics for Official Statistics",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Hands‑on machine learning and big data analytics for official statistics, covering supervised learning, clustering, and scalable data pipelines.",
+      "video_url": "https://www.youtube.com/embed/7eh4d6sabA0",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "DIID",
+        "SDG_LAB"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 93
+    }
+  ],
+  "persisted.officer.1788285360596@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Essential training on the Digital Personal Data Protection Act 2023, covering lawful data handling, consent management, and k‑anonymity essential for official statisticians.",
+      "video_url": "https://www.youtube.com/embed/gL6d2U0Wc_M",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 5,
+      "course_code": "GEN-05",
+      "title": "Cybersecurity Best Practices & Government Cloud Security Standards",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Comprehensive guide to cybersecurity best practices and government cloud security standards, ensuring secure data collection and storage for NAD officers.",
+      "video_url": "https://www.youtube.com/embed/inWWhr5tnEA",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 9,
+      "course_code": "SPEC-NAD-01",
+      "title": "National Accounts Statistics (NAS): UN-SNA 2008 & GSDP Estimation",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "In‑depth coverage of UN‑SNA 2008 methodology for GVA, GDP and GSDP estimation, including chain volume measures and sectoral classification.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 95
+    },
+    {
+      "id": 11,
+      "course_code": "SPEC-PSD-01",
+      "title": "Consumer Price Index (CPI) Basket & Rural-Urban Inflation Metrics",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Detailed methodology for CPI basket construction and rural‑urban inflation metrics, critical for adjusting national accounts and macro‑economic indicators.",
+      "video_url": "https://www.youtube.com/embed/s23oeCYGg_w",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "PSD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 95
+    },
+    {
+      "id": 17,
+      "course_code": "SPEC-TECH-02",
+      "title": "Machine Learning & Big Data Analytics for Official Statistics",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Advanced machine‑learning techniques for big‑data analytics in official statistics, covering supervised models, clustering and scalable data pipelines.",
+      "video_url": "https://www.youtube.com/embed/7eh4d6sabA0",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "DIID",
+        "SDG_LAB"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 18,
+      "course_code": "SPEC-STAT-01",
+      "title": "Time Series Econometrics & Seasonal Adjustments (X-13ARIMA-SEATS)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Seasonal adjustment using X‑13ARIMA‑SEATS for time‑series data, essential for producing accurate quarterly and annual national accounts.",
+      "video_url": "https://www.youtube.com/embed/PrhW8y2gP10",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    }
   ]
 }
