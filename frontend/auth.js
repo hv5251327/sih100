@@ -1,23 +1,13 @@
 /**
- * MoSPI Competency Portal - Authentication & Navigation Gateway (auth.js)
- * Clean, zero-delay authentication and instant page redirection.
+ * MoSPI Competency Portal - Bulletproof Authentication & Instant Navigation (auth.js)
+ * Guarantees zero-delay, cross-browser navigation without async blocking or form cancellation.
  */
 
 const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:5000'
     : 'https://sih100-backend.onrender.com';
 
-const SYSTEM_PLACEHOLDERS = {
-    employeeEmail: 'e.g. sunita.sharma@mospi.gov.in',
-    employeePassword: 'Enter your password',
-    adminEmail: 'e.g. admin@mospi.gov.in',
-    adminPassword: 'Enter password',
-    regName: 'e.g. Dr. Sunita Sharma',
-    regEmail: 'e.g. sunita.sharma@mospi.gov.in',
-    regPassword: 'Create a secure password (e.g. mospi123)'
-};
-
-// Safe Cross-Browser Navigation Helper
+// Bulletproof instant redirection helper
 function safeRedirect(targetUrl) {
     if (!targetUrl) targetUrl = 'dashboard.html';
     try {
@@ -25,34 +15,50 @@ function safeRedirect(targetUrl) {
     } catch (e) {
         window.location.assign(targetUrl);
     }
+    // Secondary fallback in case browser delayed window.location.href
+    setTimeout(() => {
+        if (!window.location.href.includes(targetUrl)) {
+            window.location.replace(targetUrl);
+        }
+    }, 40);
 }
 
+// Synchronously persist officer/admin session to localStorage and sessionStorage
 function saveActiveSession(userObj) {
     if (!userObj || !userObj.email) return;
     if (!userObj.session_expiry) {
         userObj.session_expiry = new Date(Date.now() + 86400000 * 7).toISOString();
     }
     const serialized = JSON.stringify(userObj);
-    localStorage.setItem('mospi_user', serialized);
-    sessionStorage.setItem('mospi_user', serialized);
+    try {
+        localStorage.setItem('mospi_user', serialized);
+        sessionStorage.setItem('mospi_user', serialized);
+    } catch (e) {
+        console.warn('Storage error:', e);
+    }
 }
 
 // 1. Employee Login Handler
-async function submitAuth(role) {
+function submitAuth(role, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
     if (role === 'admin') {
-        return submitAdminAuth();
+        return submitAdminAuth(event);
     }
 
     const emailInput = document.getElementById('email') || document.getElementById('employeeEmail') || document.querySelector('input[type="email"]');
     const passwordInput = document.getElementById('password') || document.getElementById('employeePassword') || document.querySelector('input[type="password"]');
     const submitBtn = document.getElementById('btnEmpSubmit') || document.querySelector('button[type="submit"]');
 
-    const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : 'sunita.sharma@mospi.gov.in';
+    const email = (emailInput && emailInput.value && emailInput.value.trim()) ? emailInput.value.trim() : 'sunita.sharma@mospi.gov.in';
     const password = (passwordInput && passwordInput.value) ? passwordInput.value : '1234';
 
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating & Opening...';
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Opening Dashboard...';
     }
 
     const officerName = email.split('@')[0].replace(/[^a-zA-Z]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim() || 'Dr. Sunita Sharma';
@@ -71,32 +77,34 @@ async function submitAuth(role) {
 
     saveActiveSession(authUser);
 
-    // Background asynchronous login notification
+    // Non-blocking detached background fetch
     try {
         fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password, role: 'employee' })
-        }).then(r => r.json()).then(data => {
-            if (data && data.recommendations && Array.isArray(data.recommendations)) {
-                localStorage.setItem('mospi_recommendations_' + email.toLowerCase(), JSON.stringify(data.recommendations));
-            }
         }).catch(() => {});
     } catch (e) {}
 
+    // Instant redirect
     safeRedirect('dashboard.html');
 }
 
 // 2. Admin Login Handler
-async function submitAdminAuth() {
+function submitAdminAuth(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
     const emailInput = document.getElementById('email') || document.getElementById('adminEmail') || document.querySelector('input[type="email"]');
     const submitBtn = document.getElementById('btnAdminSubmit') || document.querySelector('button[type="submit"]');
 
-    const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : 'admin@mospi.gov.in';
+    const email = (emailInput && emailInput.value && emailInput.value.trim()) ? emailInput.value.trim() : 'admin@mospi.gov.in';
 
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authorizing Admin...';
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authorizing Portal...';
     }
 
     const adminUser = {
@@ -124,8 +132,13 @@ async function submitAdminAuth() {
     safeRedirect('admin.html');
 }
 
-// 3. Registration Handler - Opens Diagnostic Modal to capture competency levels
-async function submitRegistration() {
+// 3. Registration Handler - Displays 4-Pillar Competency Self-Assessment
+function submitRegistration(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
     const nameInput = document.getElementById('regName');
     const emailInput = document.getElementById('regEmail');
     const passwordInput = document.getElementById('regPassword');
@@ -134,17 +147,12 @@ async function submitRegistration() {
     const desigSelect = document.getElementById('regDesignation');
     const diagModal = document.getElementById('diagnosticModal');
 
-    const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : '';
-    const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : '';
-    const password = (passwordInput && passwordInput.value) ? passwordInput.value : '';
-    const cadre = (cadreSelect && cadreSelect.value) ? cadreSelect.value : '';
-    const department = (deptSelect && deptSelect.selectedIndex > 0) ? deptSelect.options[deptSelect.selectedIndex].text : '';
-    const designation = (desigSelect && desigSelect.value) ? desigSelect.value : '';
-
-    if (!name || !email || !password || !cadre || !department || !designation) {
-        alert('Please fill out all registration fields (Full Name, Official Email, Password, Cadre, Division, and Designation).');
-        return;
-    }
+    const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Officer Trainee';
+    const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : 'officer.iss@nic.in';
+    const password = (passwordInput && passwordInput.value) ? passwordInput.value : '1234';
+    const cadre = (cadreSelect && cadreSelect.value) ? cadreSelect.value : "Indian Statistical Service (ISS) — Group 'A' Central Service";
+    const department = (deptSelect && deptSelect.selectedIndex > 0) ? deptSelect.options[deptSelect.selectedIndex].text : 'National Accounts Division (NAD)';
+    const designation = (desigSelect && desigSelect.value) ? desigSelect.value : 'Assistant Director / SSO';
 
     // Store pending registration data
     window._pendingRegUser = {
@@ -156,15 +164,15 @@ async function submitRegistration() {
         designation
     };
 
-    // Open Diagnostic Baseline Assessment Modal if present
+    // If Diagnostic Modal exists, open it immediately
     if (diagModal) {
         diagModal.style.display = 'flex';
     } else {
-        submitDiagnosticAssessment();
+        submitDiagnosticAssessment(event);
     }
 }
 
-// Handler for submitting the 4-pillar Diagnostic Self-Assessment
+// 4. Diagnostic Self-Assessment Submission & Instant Redirect
 function submitDiagnosticAssessment(event) {
     if (event) {
         event.preventDefault();
@@ -188,7 +196,7 @@ function submitDiagnosticAssessment(event) {
     const diagSubmitBtn = document.getElementById('diagSubmitBtn');
     if (diagSubmitBtn) {
         diagSubmitBtn.disabled = true;
-        diagSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Calibrating Curriculum & Opening Dashboard...';
+        diagSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Calibrating Roadmap & Opening Dashboard...';
     }
 
     const regUser = {
@@ -236,7 +244,7 @@ function submitDiagnosticAssessment(event) {
     safeRedirect('dashboard.html');
 }
 
-// 4. Parichay / iGOT SSO Handler
+// 5. Parichay / iGOT SSO Handlers
 let currentSSOProvider = 'Parichay (MeriPehchan)';
 
 function triggerGovSSO(provider) {
@@ -267,7 +275,7 @@ function submitParichaySSO(event) {
         event.stopPropagation();
     }
     const emailInput = document.getElementById('ssoGovEmailInput');
-    const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : 'sunita.sharma@mospi.gov.in';
+    const email = (emailInput && emailInput.value && emailInput.value.trim()) ? emailInput.value.trim() : 'sunita.sharma@mospi.gov.in';
     const officerName = email.split('@')[0].replace(/[^a-zA-Z]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim() || 'Dr. Sunita Sharma';
 
     const ssoUser = {
@@ -284,22 +292,24 @@ function submitParichaySSO(event) {
     };
 
     saveActiveSession(ssoUser);
+
+    try {
+        fetch(`${API_BASE_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: '1234', role: 'employee', sso: true })
+        }).catch(() => {});
+    } catch (e) {}
+
     safeRedirect('dashboard.html');
 }
 
-// Global window mappings
-window.submitAuth = submitAuth;
-window.submitAdminAuth = submitAdminAuth;
-window.submitRegistration = submitRegistration;
-window.triggerGovSSO = triggerGovSSO;
-window.closeSSOModal = closeSSOModal;
-window.submitParichaySSO = submitParichaySSO;
-window.safeRedirect = safeRedirect;
-window.handleEmployeeLogin = submitAuth;
-window.handleAdminLogin = submitAdminAuth;
-window.handleRegistrationSubmit = submitRegistration;
-window.authenticateAdmin = submitAdminAuth;
-window.authenticateAdminSSO = function() {
+// 6. Admin Direct SSO
+function authenticateAdminSSO(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
     const adminUser = {
         name: 'MoSPI Training Administrator',
         email: 'admin@mospi.gov.in',
@@ -314,4 +324,39 @@ window.authenticateAdminSSO = function() {
     };
     saveActiveSession(adminUser);
     safeRedirect('admin.html');
-};
+}
+
+// Attach event listeners when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const empForm = document.getElementById('employeeForm');
+    if (empForm) {
+        empForm.onsubmit = function(e) {
+            submitAuth('employee', e);
+            return false;
+        };
+    }
+
+    const adminForm = document.getElementById('adminForm');
+    if (adminForm) {
+        adminForm.onsubmit = function(e) {
+            submitAdminAuth(e);
+            return false;
+        };
+    }
+
+    const regForm = document.getElementById('registerForm');
+    if (regForm) {
+        regForm.onsubmit = function(e) {
+            submitRegistration(e);
+            return false;
+        };
+    }
+
+    const diagForm = document.getElementById('diagnosticForm');
+    if (diagForm) {
+        diagForm.onsubmit = function(e) {
+            submitDiagnosticAssessment(e);
+            return false;
+        };
+    }
+});
