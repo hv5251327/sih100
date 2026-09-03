@@ -60,21 +60,20 @@ async function submitAuth(role) {
     const emailInput = document.getElementById('email') || document.querySelector('input[type="email"]');
     const passwordInput = document.getElementById('password') || document.querySelector('input[type="password"]');
     
-    if (!emailInput || !passwordInput) return;
-    const email = emailInput.value.trim() || (role === 'admin' ? 'admin@mospi.gov.in' : 'sunita.sharma@mospi.gov.in');
-    const password = passwordInput.value || '1234';
-    const submitBtn = document.querySelector('button[type="submit"]');
+    const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : (role === 'admin' ? 'admin@mospi.gov.in' : 'sunita.sharma@mospi.gov.in');
+    const password = (passwordInput && passwordInput.value) ? passwordInput.value : '1234';
+    const submitBtn = document.querySelector('button[type="submit"]') || document.getElementById('btnEmpSubmit') || document.getElementById('btnAdminSubmit');
 
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerText = 'Verifying & Redirecting...';
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Authenticating & Redirecting...`;
     }
 
     let authUser = null;
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
 
         const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
@@ -108,18 +107,20 @@ async function submitAuth(role) {
             department: isAdmin ? 'National Statistical Systems Training Academy (NSSTA)' : 'National Accounts Division (NAD) — Macro Aggregates & GDP',
             designation: isAdmin ? 'Joint Director / Chief Training Officer' : 'Director / Joint Director',
             session_token: 'GOV-AUTH-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
-            session_expiry: new Date(Date.now() + 3600000 * 8).toISOString(),
+            session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
             login_timestamp: new Date().toISOString()
         };
     }
 
+    // Always ensure valid session expiration timestamp (7 days)
+    if (!authUser.session_expiry || new Date().getTime() > new Date(authUser.session_expiry).getTime()) {
+        authUser.session_expiry = new Date(Date.now() + 86400000 * 7).toISOString();
+    }
+
     localStorage.setItem('mospi_user', JSON.stringify(authUser));
     
-    if (role === 'admin' || authUser.role === 'admin' || email.toLowerCase().includes('admin')) {
-        window.location.href = 'admin.html';
-    } else {
-        window.location.href = 'dashboard.html';
-    }
+    const targetUrl = (role === 'admin' || authUser.role === 'admin' || email.toLowerCase().includes('admin')) ? 'admin.html' : 'dashboard.html';
+    window.location.replace(targetUrl);
 }
 
 async function submitRegistration() {
@@ -151,7 +152,7 @@ async function submitRegistration() {
         designation,
         role: 'employee',
         session_token: 'GOV-AUTH-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
-        session_expiry: new Date(Date.now() + 3600000 * 8).toISOString(),
+        session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
         login_timestamp: new Date().toISOString()
     };
 
@@ -175,12 +176,16 @@ async function submitRegistration() {
         console.warn("Registration network fallback active:", err.message);
     }
 
+    if (!regUser.session_expiry || new Date().getTime() > new Date(regUser.session_expiry).getTime()) {
+        regUser.session_expiry = new Date(Date.now() + 86400000 * 7).toISOString();
+    }
+
     localStorage.setItem('mospi_user', JSON.stringify(regUser));
     const diagModal = document.getElementById('diagnosticModal');
     if (diagModal) {
         diagModal.style.display = 'flex';
     } else {
-        window.location.href = 'dashboard.html';
+        window.location.replace('dashboard.html');
     }
 }
 
@@ -229,7 +234,7 @@ async function submitDiagnosticAssessment(event) {
         console.warn("Offline calibration fallback:", e);
     }
 
-    window.location.href = 'dashboard.html';
+    window.location.replace('dashboard.html');
 }
 
 let currentSSOProvider = 'Parichay (MeriPehchan)';
@@ -302,14 +307,18 @@ async function submitParichaySSO(event) {
             designation: 'Director / Joint Director',
             sso_verified: true,
             session_token: 'GOV-SSO-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
-            session_expiry: new Date(Date.now() + 3600000 * 8).toISOString(),
+            session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
             login_timestamp: new Date().toISOString()
         };
     }
 
+    if (!ssoUser.session_expiry || new Date().getTime() > new Date(ssoUser.session_expiry).getTime()) {
+        ssoUser.session_expiry = new Date(Date.now() + 86400000 * 7).toISOString();
+    }
+
     localStorage.setItem('mospi_user', JSON.stringify(ssoUser));
     closeSSOModal();
-    window.location.href = 'dashboard.html';
+    window.location.replace('dashboard.html');
 }
 
 async function selectSSOOfficer(email) {
@@ -320,7 +329,7 @@ async function selectSSOOfficer(email) {
     let ssoUser = null;
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
 
         const res = await fetch(`${API_BASE_URL}/api/auth/sso`, {
             method: 'POST',
@@ -347,13 +356,17 @@ async function selectSSOOfficer(email) {
             designation: 'Assistant Director / SSO',
             sso_verified: true,
             session_token: 'GOV-SSO-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
-            session_expiry: new Date(Date.now() + 3600000 * 8).toISOString(),
+            session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
             login_timestamp: new Date().toISOString()
         };
     }
 
+    if (!ssoUser.session_expiry || new Date().getTime() > new Date(ssoUser.session_expiry).getTime()) {
+        ssoUser.session_expiry = new Date(Date.now() + 86400000 * 7).toISOString();
+    }
+
     localStorage.setItem('mospi_user', JSON.stringify(ssoUser));
-    window.location.href = 'dashboard.html';
+    window.location.replace('dashboard.html');
 }
 
 async function triggerGovAdminSSO() {
@@ -362,7 +375,7 @@ async function triggerGovAdminSSO() {
     let adminUser = null;
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
 
         const res = await fetch(`${API_BASE_URL}/api/auth/sso`, {
             method: 'POST',
@@ -387,11 +400,15 @@ async function triggerGovAdminSSO() {
             designation: 'Joint Director / Chief Training Officer',
             cadre: 'Indian Statistical Service (ISS)',
             session_token: 'GOV-ADMIN-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
-            session_expiry: new Date(Date.now() + 3600000 * 8).toISOString(),
+            session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
             login_timestamp: new Date().toISOString()
         };
     }
 
+    if (!adminUser.session_expiry || new Date().getTime() > new Date(adminUser.session_expiry).getTime()) {
+        adminUser.session_expiry = new Date(Date.now() + 86400000 * 7).toISOString();
+    }
+
     localStorage.setItem('mospi_user', JSON.stringify(adminUser));
-    window.location.href = 'admin.html';
+    window.location.replace('admin.html');
 }

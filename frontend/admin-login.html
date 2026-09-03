@@ -61,7 +61,7 @@
                 designation: 'Joint Director / Chief Training Officer',
                 cadre: 'Indian Statistical Service (ISS)',
                 session_token: 'GOV-ADMIN-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
-                session_expiry: new Date(Date.now() + 3600000 * 8).toISOString(),
+                session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
                 login_timestamp: new Date().toISOString()
             };
 
@@ -91,7 +91,7 @@
                 cadre: 'Indian Statistical Service (ISS)',
                 sso_verified: true,
                 session_token: 'GOV-SSO-ADMIN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
-                session_expiry: new Date(Date.now() + 3600000 * 8).toISOString(),
+                session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
                 login_timestamp: new Date().toISOString()
             };
             localStorage.setItem('mospi_user', JSON.stringify(adminUser));

@@ -731,17 +731,17 @@
     document.addEventListener("DOMContentLoaded", async () => {
       const stored = localStorage.getItem('mospi_user');
       if (!stored) {
-        window.location.href = 'employee-login.html';
+        window.location.replace('employee-login.html');
         return;
       }
       try {
         currentUser = JSON.parse(stored);
 
-        // Enforce 8-hour CERT-In civil service session expiration
+        // Enforce civil service session expiration (7 days)
         if (currentUser.session_expiry && new Date().getTime() > new Date(currentUser.session_expiry).getTime()) {
-          alert('⚠️ Security Session Expired: Your 8-hour official civil service session token has expired in compliance with CERT-In security directives. Please re-authenticate.');
+          console.warn('Session expired, refreshing authentication...');
           localStorage.removeItem('mospi_user');
-          window.location.href = 'employee-login.html';
+          window.location.replace('employee-login.html');
           return;
         }
 

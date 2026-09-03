@@ -12,7 +12,7 @@
         <div class="icon-box"><i class="fa-solid fa-graduation-cap"></i></div>
         <h2>MoSPI Competency Portal</h2>
         <p class="subtitle">Employee Login</p>
-        <form id="employeeForm" onsubmit="handleEmployeeFormSubmit(event)">
+        <form id="employeeForm" action="javascript:void(0);" onsubmit="submitAuth('employee'); return false;">
             <div class="form-group">
                 <label>Official Email ID</label>
                 <input type="email" id="email" value="sunita.sharma@mospi.gov.in" placeholder="e.g. sunita.sharma@mospi.gov.in" required>
@@ -21,7 +21,9 @@
                 <label>Password</label>
                 <input type="password" id="password" value="1234" placeholder="Enter your password" required>
             </div>
-            <button type="submit" id="btnEmpSubmit" class="btn-submit">Login</button>
+            <button type="submit" id="btnEmpSubmit" class="btn-submit">
+                <i class="fa-solid fa-right-to-bracket"></i> Login to Portal
+            </button>
         </form>
 
         <div style="margin: 18px 0; display: flex; align-items: center; text-align: center; color: var(--text-muted, #64748b); font-size: 0.78rem; font-weight: 700;">
@@ -82,36 +84,5 @@
     </div>
 
     <script src="auth.js"></script>
-    <script>
-        async function handleEmployeeFormSubmit(e) {
-            if (e) e.preventDefault();
-            const btn = document.getElementById('btnEmpSubmit');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...`;
-            }
-
-            const em = (document.getElementById('email') ? document.getElementById('email').value.trim() : '') || 'sunita.sharma@mospi.gov.in';
-            const officerName = em.split('@')[0].replace(/[^a-zA-Z]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim() || 'Dr. Sunita Sharma';
-
-            const userObj = {
-                name: officerName,
-                email: em,
-                role: 'employee',
-                cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service",
-                department: 'National Accounts Division (NAD) — Macro Aggregates & GDP',
-                designation: 'Director / Joint Director',
-                session_token: 'GOV-AUTH-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
-                session_expiry: new Date(Date.now() + 3600000 * 8).toISOString(),
-                login_timestamp: new Date().toISOString()
-            };
-
-            localStorage.setItem('mospi_user', JSON.stringify(userObj));
-
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 200);
-        }
-    </script>
 </body>
 </html>
