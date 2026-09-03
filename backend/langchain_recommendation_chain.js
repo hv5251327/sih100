@@ -1,11 +1,12 @@
 /**
  * ========================================================================================
  *   MINISTRY OF STATISTICS AND PROGRAMME IMPLEMENTATION (MoSPI) & NSSTA
- *   LANGCHAIN-POWERED AUTONOMOUS CURRICULUM RECOMMENDATION ENGINE
+ *   LANGCHAIN-POWERED SKILL-ADAPTIVE CURRICULUM RECOMMENDATION ENGINE
  * ========================================================================================
- *   This module uses LangChain prompt templates, multi-stage LLM chains, and 
- *   role-grounded few-shot exemplars to evaluate and recommend courses strictly 
- *   relevant to an officer's Cadre, Designation, Division, and Competency Deficits.
+ *   Dynamically scales recommendations based on officer's actual skill levels:
+ *   - High proficiency (80%+ score)  -> 2 to 4 selective advanced/refresher courses
+ *   - Moderate proficiency (55-79%)  -> 8 to 14 targeted gap-bridging courses
+ *   - High deficit (<55% score)      -> 20 to 35+ comprehensive courses across 3 stages
  * ========================================================================================
  */
 
@@ -62,7 +63,7 @@ function parseDeptCode(deptStr) {
     return deptStr.trim().toUpperCase();
 }
 
-// 2. LangChain Prompt Template for Intelligent Curriculum Recommendation
+// 2. LangChain Dynamic Skill-Adaptive Prompt Template
 const recommendationPromptTemplate = new PromptTemplate({
     template: `You are the Principal Curriculum Director & Chief Psychometrician at National Statistical Systems Training Academy (NSSTA), MoSPI, Government of India.
 
@@ -71,23 +72,27 @@ OFFICER PROFILE FOR CURRICULUM CALIBRATION:
 - Official Cadre: {cadre}
 - Assigned Division / Department: {department} (Code: {dept_code})
 - Designation Level: {designation}
-- Baseline Diagnostic Scores:
+- Baseline Diagnostic Competency Scores:
   * Statistical Methods: {stat_score}% (Deficit: {stat_deficit}%)
   * Technical Tools: {tech_score}% (Deficit: {tech_deficit}%)
   * Digital Governance: {gov_score}% (Deficit: {gov_deficit}%)
   * Behavioural & Leadership: {lead_score}% (Deficit: {lead_deficit}%)
+  * Average Proficiency Score: {avg_score}% (Average Deficit: {avg_deficit}%)
 
 AVAILABLE MASTER COURSES CATALOG (CANDIDATES):
 {candidate_courses_json}
 
-STRICT SELECTION AND PARTITIONING RULES:
-1. Ground every recommendation STRICTLY in this officer's actual Cadre ({cadre}), Division ({department}), and Designation ({designation}).
-2. Do NOT recommend modules belonging to unrelated subject divisions (e.g., do NOT give CPI modules to National Accounts, or CAPI field manuals to National Accounts).
-3. Select exactly 10 to 12 courses partitioned across the 3 stages:
-   - STAGE 1: FOUNDATION (3 to 4 courses): DPDP Act 2023, Workplace Safety, POSH Ethics, GFR 2017 & GeM. (learning_stage: "Foundation")
-   - STAGE 2: FUNCTIONAL CORE (4 to 5 courses): Division-specific core modules mapped directly to {dept_code}. (learning_stage: "Functional Core")
-   - STAGE 3: ADVANCED STRATEGIC (3 to 4 courses): Advanced analytics (Python, R, QGIS) and executive policy formulation. (learning_stage: "Advanced Strategic")
-4. Return ONLY valid JSON array with selected course objects without any commentary or markdown blocks.
+DYNAMIC SKILL-DEFICIT CALIBRATION RULES:
+1. The number of recommended courses MUST BE STRICTLY PROPORTIONAL to the officer's competency deficits:
+   - IF HIGH PROFICIENCY (Average Score >= 80% / Low Deficit): Recommend ONLY 2 to 4 selective advanced/refresher courses targeting their small residual deficits. Do not recommend basic courses they already know.
+   - IF MODERATE PROFICIENCY (Average Score 55% - 79% / Moderate Deficit): Recommend 8 to 14 targeted courses directly addressing their deficient domains.
+   - IF HIGH DEFICIT / NOVICE (Average Score < 55% / High Deficit): Recommend a comprehensive curriculum of 20 to 35+ courses across Foundation, Functional Core, and Technical Skills to bridge all competency gaps.
+2. Ground every recommendation STRICTLY in this officer's actual Cadre ({cadre}), Division ({department}), and Designation ({designation}).
+3. Partition recommended courses across the 3 stages:
+   - Stage 1: Foundation (learning_stage: "Foundation")
+   - Stage 2: Functional Core (learning_stage: "Functional Core")
+   - Stage 3: Advanced Strategic (learning_stage: "Advanced Strategic")
+4. Return ONLY a valid JSON array of selected courses without any markdown formatting or commentary.
 
 {format_instructions}`,
     inputVariables: [
@@ -104,6 +109,8 @@ STRICT SELECTION AND PARTITIONING RULES:
         "gov_deficit",
         "lead_score",
         "lead_deficit",
+        "avg_score",
+        "avg_deficit",
         "candidate_courses_json"
     ],
     partialVariables: {
@@ -121,7 +128,7 @@ STRICT SELECTION AND PARTITIONING RULES:
 
 // 3. Multi-Provider LLM Caller
 async function executeLLM(promptText) {
-    const sysPrompt = "You are the Principal Curriculum Director at NSSTA MoSPI. Return strictly a valid JSON array of selected courses without any surrounding markdown blocks.";
+    const sysPrompt = "You are the Principal Curriculum Director at NSSTA MoSPI. Return strictly a valid JSON array of selected courses without markdown formatting.";
 
     // 1. Ollama Cloud Engine
     if (OLLAMA_API_KEY) {
@@ -201,7 +208,7 @@ async function executeLLM(promptText) {
     return null;
 }
 
-// 4. Role-Grounded Deterministic Curriculum Synthesizer
+// 4. Dynamic Skill-Adaptive Curriculum Synthesizer (Expert Deterministic Engine)
 function buildDeterministicCurriculum(allCourses, officer) {
     const deptStr = officer.department || 'NAD';
     const deptCode = parseDeptCode(deptStr);
@@ -211,19 +218,49 @@ function buildDeterministicCurriculum(allCourses, officer) {
     const isField = deptCode === 'FOD' || deptCode === 'NSSO' || cadreUpper.includes('SSS') || desigUpper.includes('FIELD') || desigUpper.includes('INVESTIGATOR');
     const isState = deptCode === 'STATE_DES' || deptCode === 'DSO' || deptCode === 'TALUK' || cadreUpper.includes('STATE');
 
-    // Stage 1: Foundation (3-4 courses)
+    const comp = officer.competency_scores || officer.comp || { statistical_score: 65, technical_score: 60, governance_score: 70, leadership_score: 65 };
+    const statScore = comp.statistical_score || 65;
+    const techScore = comp.technical_score || 60;
+    const govScore = comp.governance_score || 70;
+    const leadScore = comp.leadership_score || 65;
+    const avgScore = (statScore + techScore + govScore + leadScore) / 4;
+
+    const govDeficit = 100 - govScore;
+    const statDeficit = 100 - statScore;
+    const techDeficit = 100 - techScore;
+    const leadDeficit = 100 - leadScore;
+
+    // Define adaptive course quotas based on diagnostic score
+    let foundationLimit = 4;
+    let functionalLimit = 5;
+    let strategicLimit = 3;
+
+    if (avgScore >= 80) {
+        // High proficiency officer: Only 2 to 4 advanced / refresher modules needed
+        foundationLimit = govDeficit > 25 ? 1 : 0;
+        functionalLimit = (statDeficit > 25 || techDeficit > 25) ? 2 : 1;
+        strategicLimit = 2;
+    } else if (avgScore < 55) {
+        // High deficit / novice officer: Comprehensive curriculum (20 to 35+ modules)
+        foundationLimit = 6;
+        functionalLimit = 16;
+        strategicLimit = 8;
+    } else {
+        // Moderate proficiency (55% - 79%): 8 to 14 targeted modules
+        foundationLimit = govDeficit > 30 ? 4 : 2;
+        functionalLimit = statDeficit > 30 ? 6 : 4;
+        strategicLimit = (techDeficit > 30 || leadDeficit > 30) ? 4 : 2;
+    }
+
+    // STAGE 1: FOUNDATION
     const foundation = allCourses
         .filter(c => {
             const t = c.title.toLowerCase();
-            return (
-                t.includes('dpdp act') || 
-                t.includes('posh') || 
-                t.includes('fire safety') || 
-                t.includes('civil defence') || 
-                t.includes('gfr 2017')
-            );
+            const isGov = c.domain === 'Digital Governance';
+            const isMandatory = c.is_general_mandatory || t.includes('dpdp') || t.includes('posh') || t.includes('safety') || t.includes('gfr');
+            return isMandatory || (govDeficit > 40 && isGov);
         })
-        .slice(0, 4)
+        .slice(0, foundationLimit)
         .map(c => ({
             ...c,
             learning_stage: 'Foundation',
@@ -233,12 +270,12 @@ function buildDeterministicCurriculum(allCourses, officer) {
 
     const foundationIds = new Set(foundation.map(c => c.id));
 
-    // Stage 2: Functional Core (4-5 courses)
+    // STAGE 2: FUNCTIONAL CORE
     let functionalCandidates = [];
     if (deptCode === 'NAD') {
         functionalCandidates = allCourses.filter(c => {
             const t = c.title.toLowerCase();
-            return t.includes('national accounts') || t.includes('supply and use') || t.includes('gross fixed capital') || t.includes('fisim') || t.includes('gdp') || t.includes('macro');
+            return t.includes('national accounts') || t.includes('supply and use') || t.includes('gross fixed capital') || t.includes('fisim') || t.includes('gdp') || t.includes('macro') || t.includes('sut') || t.includes('sna');
         });
     } else if (deptCode === 'FOD' || deptCode === 'NSSO') {
         functionalCandidates = allCourses.filter(c => {
@@ -292,9 +329,15 @@ function buildDeterministicCurriculum(allCourses, officer) {
         });
     }
 
-    let functional = functionalCandidates
+    // Add general statistical courses if officer has high statistical deficit
+    if (statDeficit > 40 || functionalCandidates.length < functionalLimit) {
+        const generalStat = allCourses.filter(c => c.domain === 'Statistical Competencies' && !foundationIds.has(c.id));
+        functionalCandidates.push(...generalStat);
+    }
+
+    const functional = functionalCandidates
         .filter(c => !foundationIds.has(c.id))
-        .slice(0, 5)
+        .slice(0, functionalLimit)
         .map(c => ({
             ...c,
             learning_stage: 'Functional Core',
@@ -302,22 +345,9 @@ function buildDeterministicCurriculum(allCourses, officer) {
             match_score: 92
         }));
 
-    if (functional.length < 4) {
-        const backfill = allCourses
-            .filter(c => !foundationIds.has(c.id) && !functional.some(fn => fn.id === c.id) && c.domain === 'Statistical Competencies')
-            .slice(0, 4 - functional.length)
-            .map(c => ({
-                ...c,
-                learning_stage: 'Functional Core',
-                video_url: getRelevantVideoUrl(c.title, c.domain),
-                match_score: 88
-            }));
-        functional.push(...backfill);
-    }
-
     const assignedIds = new Set([...foundation.map(c => c.id), ...functional.map(c => c.id)]);
 
-    // Stage 3: Advanced Strategic & Leadership (3-4 courses)
+    // STAGE 3: ADVANCED STRATEGIC & TECHNICAL
     let strategicCandidates = [];
     if (isSenior) {
         strategicCandidates = allCourses.filter(c => {
@@ -336,8 +366,14 @@ function buildDeterministicCurriculum(allCourses, officer) {
         });
     }
 
+    // Add extra technical / leadership courses if deficit is high
+    if (strategicCandidates.length < strategicLimit) {
+        const extraAdvanced = allCourses.filter(c => !assignedIds.has(c.id) && (c.difficulty_level === 'Advanced' || c.domain === 'Technical Competencies' || c.domain === 'Behavioural & Managerial'));
+        strategicCandidates.push(...extraAdvanced);
+    }
+
     const strategic = strategicCandidates
-        .slice(0, 3)
+        .slice(0, strategicLimit)
         .map(c => ({
             ...c,
             learning_stage: 'Advanced Strategic',
@@ -358,6 +394,7 @@ async function evaluateLangChainRecommendations(candidateCourses, profile) {
     const techScore = comp.technical_score || 60;
     const govScore = comp.governance_score || 70;
     const leadScore = comp.leadership_score || 65;
+    const avgScore = Math.round((statScore + techScore + govScore + leadScore) / 4);
 
     // 1. Attempt LangChain LLM Evaluation
     try {
@@ -383,6 +420,8 @@ async function evaluateLangChainRecommendations(candidateCourses, profile) {
             gov_deficit: Math.max(5, 100 - govScore),
             lead_score: leadScore,
             lead_deficit: Math.max(5, 100 - leadScore),
+            avg_score: avgScore,
+            avg_deficit: Math.max(5, 100 - avgScore),
             candidate_courses_json: JSON.stringify(candidateSummary)
         });
 
@@ -391,7 +430,7 @@ async function evaluateLangChainRecommendations(candidateCourses, profile) {
             const match = rawLLMResponse.match(/\[[\s\S]*\]/);
             if (match) {
                 const parsed = JSON.parse(match[0]);
-                if (Array.isArray(parsed) && parsed.length >= 8) {
+                if (Array.isArray(parsed) && parsed.length >= 2) {
                     const idMap = new Map(candidateCourses.map(c => [c.id, c]));
                     const evaluated = [];
 
@@ -408,8 +447,8 @@ async function evaluateLangChainRecommendations(candidateCourses, profile) {
                         }
                     }
 
-                    if (evaluated.length >= 8) {
-                        return evaluated.slice(0, 12);
+                    if (evaluated.length >= 2) {
+                        return evaluated;
                     }
                 }
             }
@@ -418,7 +457,7 @@ async function evaluateLangChainRecommendations(candidateCourses, profile) {
         console.warn('LangChain LLM Engine fallback:', llmErr.message);
     }
 
-    // 2. Deterministic Expert Rule Engine Fallback
+    // 2. Deterministic Expert Rule Engine Fallback (Dynamically scales from 2-4 up to 30+)
     return buildDeterministicCurriculum(candidateCourses, profile);
 }
 
