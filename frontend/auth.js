@@ -124,7 +124,7 @@ async function submitAdminAuth() {
     safeRedirect('admin.html');
 }
 
-// 3. Registration Handler - Directly creates officer profile and redirects to dashboard
+// 3. Registration Handler - Opens Diagnostic Modal to capture competency levels
 async function submitRegistration() {
     const nameInput = document.getElementById('regName');
     const emailInput = document.getElementById('regEmail');
@@ -132,42 +132,107 @@ async function submitRegistration() {
     const cadreSelect = document.getElementById('regCadre');
     const deptSelect = document.getElementById('regDept');
     const desigSelect = document.getElementById('regDesignation');
-    const submitBtn = document.querySelector('#registerForm button[type="submit"]') || document.querySelector('button.btn-submit');
+    const diagModal = document.getElementById('diagnosticModal');
 
-    const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Officer Trainee';
-    const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : 'officer.iss@nic.in';
-    const password = (passwordInput && passwordInput.value) ? passwordInput.value : '1234';
-    const cadre = (cadreSelect && cadreSelect.value) ? cadreSelect.value : "Indian Statistical Service (ISS) — Group 'A' Central Service";
-    const department = (deptSelect && deptSelect.selectedIndex >= 0) ? deptSelect.options[deptSelect.selectedIndex].text : 'National Accounts Division (NAD)';
-    const designation = (desigSelect && desigSelect.value) ? desigSelect.value : 'Assistant Director / SSO';
+    const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : '';
+    const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : '';
+    const password = (passwordInput && passwordInput.value) ? passwordInput.value : '';
+    const cadre = (cadreSelect && cadreSelect.value) ? cadreSelect.value : '';
+    const department = (deptSelect && deptSelect.selectedIndex > 0) ? deptSelect.options[deptSelect.selectedIndex].text : '';
+    const designation = (desigSelect && desigSelect.value) ? desigSelect.value : '';
 
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registering & Opening Dashboard...';
+    if (!name || !email || !password || !cadre || !department || !designation) {
+        alert('Please fill out all registration fields (Full Name, Official Email, Password, Cadre, Division, and Designation).');
+        return;
+    }
+
+    // Store pending registration data
+    window._pendingRegUser = {
+        name,
+        email,
+        password,
+        cadre,
+        department,
+        designation
+    };
+
+    // Open Diagnostic Baseline Assessment Modal if present
+    if (diagModal) {
+        diagModal.style.display = 'flex';
+    } else {
+        submitDiagnosticAssessment();
+    }
+}
+
+// Handler for submitting the 4-pillar Diagnostic Self-Assessment
+function submitDiagnosticAssessment(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const pending = window._pendingRegUser || {
+        name: document.getElementById('regName')?.value || 'Officer Trainee',
+        email: document.getElementById('regEmail')?.value || 'officer.iss@nic.in',
+        password: document.getElementById('regPassword')?.value || '1234',
+        cadre: document.getElementById('regCadre')?.value || "Indian Statistical Service (ISS) — Group 'A' Central Service",
+        department: document.getElementById('regDept')?.options[document.getElementById('regDept')?.selectedIndex || 0]?.text || "National Accounts Division (NAD)",
+        designation: document.getElementById('regDesignation')?.value || "Assistant Director / SSO"
+    };
+
+    const statScore = parseInt(document.getElementById('diag_stat')?.value) || 65;
+    const techScore = parseInt(document.getElementById('diag_tech')?.value) || 60;
+    const govScore = parseInt(document.getElementById('diag_gov')?.value) || 65;
+    const leadScore = parseInt(document.getElementById('diag_lead')?.value) || 60;
+
+    const diagSubmitBtn = document.getElementById('diagSubmitBtn');
+    if (diagSubmitBtn) {
+        diagSubmitBtn.disabled = true;
+        diagSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Calibrating Curriculum & Opening Dashboard...';
     }
 
     const regUser = {
-        name,
-        email,
-        cadre,
-        department,
-        designation,
+        name: pending.name,
+        email: pending.email,
+        cadre: pending.cadre,
+        department: pending.department,
+        designation: pending.designation,
         role: 'employee',
+        competency_scores: {
+            statistical_score: statScore,
+            technical_score: techScore,
+            governance_score: govScore,
+            leadership_score: leadScore
+        },
         session_token: 'GOV-AUTH-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
         session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
         login_timestamp: new Date().toISOString()
     };
 
+    // Save session & baseline scores synchronously
     saveActiveSession(regUser);
+    try {
+        localStorage.setItem('mospi_competency_scores_' + regUser.email.toLowerCase(), JSON.stringify(regUser.competency_scores));
+    } catch (e) {}
 
+    // Non-blocking background registration notification
     try {
         fetch(`${API_BASE_URL}/api/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, cadre, department, designation })
+            body: JSON.stringify({
+                name: regUser.name,
+                email: regUser.email,
+                password: pending.password || '1234',
+                cadre: regUser.cadre,
+                department: regUser.department,
+                designation: regUser.designation,
+                competency_scores: regUser.competency_scores
+            })
         }).catch(() => {});
     } catch (e) {}
 
+    // Immediate redirect to Dashboard
     safeRedirect('dashboard.html');
 }
 
