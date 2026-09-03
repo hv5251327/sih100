@@ -47,18 +47,39 @@ async function persistOfficerRecommendations(email, courses, profile = {}) {
         console.warn("Could not persist recommendations to disk:", e.message);
     }
 
-    // 2. Dual-persist to Supabase PostgreSQL table if exists
+    // 2. Partition into 3 stage columns
+    const stage1 = courses.filter(c => (c.learning_stage || 'Functional Core') === 'Foundation');
+    const stage2 = courses.filter(c => (c.learning_stage || 'Functional Core') === 'Functional Core');
+    const stage3 = courses.filter(c => (c.learning_stage || 'Functional Core') === 'Advanced Strategic');
+
+    // 3. Dual-persist to Supabase PostgreSQL table
     try {
-        await supabase.from('officer_recommendations').upsert({
+        const payload = {
             officer_email: cleanEmail,
             cadre: profile.cadre || 'Official Statistical Service',
             designation: profile.designation || 'Officer',
             department: profile.department || 'MoSPI',
             recommended_courses: courses,
+            stage1_foundation: stage1,
+            stage2_functional_core: stage2,
+            stage3_advanced_strategic: stage3,
             updated_at: new Date().toISOString()
-        }, { onConflict: 'officer_email' });
+        };
+
+        const { error } = await supabase.from('officer_recommendations').upsert(payload, { onConflict: 'officer_email' });
+        if (error && error.message.includes('column')) {
+            // Fallback if 3 stage columns are not added to schema yet
+            await supabase.from('officer_recommendations').upsert({
+                officer_email: cleanEmail,
+                cadre: profile.cadre || 'Official Statistical Service',
+                designation: profile.designation || 'Officer',
+                department: profile.department || 'MoSPI',
+                recommended_courses: courses,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'officer_email' });
+        }
     } catch (dbErr) {
-        // Table may not be created in schema yet; local disk cache guarantees persistence
+        // Local disk cache guarantees persistence
     }
 }
 
@@ -68,10 +89,23 @@ async function getSavedOfficerRecommendations(email) {
 
     // 1. Check Supabase table first
     try {
-        const { data, error } = await supabase.from('officer_recommendations').select('recommended_courses').eq('officer_email', cleanEmail).single();
-        if (!error && data && Array.isArray(data.recommended_courses) && data.recommended_courses.length > 0) {
-            memoryOfficerRecommendations[cleanEmail] = data.recommended_courses;
-            return data.recommended_courses;
+        const { data, error } = await supabase.from('officer_recommendations').select('recommended_courses, stage1_foundation, stage2_functional_core, stage3_advanced_strategic').eq('officer_email', cleanEmail).single();
+        if (!error && data) {
+            let combined = [];
+            if (Array.isArray(data.stage1_foundation) && data.stage1_foundation.length > 0) {
+                combined = [
+                    ...(data.stage1_foundation || []),
+                    ...(data.stage2_functional_core || []),
+                    ...(data.stage3_advanced_strategic || [])
+                ];
+            } else if (Array.isArray(data.recommended_courses) && data.recommended_courses.length > 0) {
+                combined = data.recommended_courses;
+            }
+
+            if (combined.length > 0) {
+                memoryOfficerRecommendations[cleanEmail] = combined;
+                return combined;
+            }
         }
     } catch (e) {}
 
