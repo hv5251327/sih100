@@ -622,74 +622,50 @@
     </div>
   </div>
 
-  <!-- Interactive Jupyter / Colab Virtual Code Lab Modal -->
+  <!-- Interactive Virtual Box Modal -->
   <div class="modal-backdrop" id="codelab-modal">
     <div class="modal-box" style="max-width:860px; width:95%; background:#0f172a; color:#f8fafc; border:1px solid #334155; padding:22px;">
       <div class="modal-header" style="border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:12px;">
         <div style="display:flex; align-items:center; gap:10px;">
-          <div style="background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
-            <i class="fa-solid fa-code"></i>
+          <div style="background:linear-gradient(135deg, #0284c7, #1e3a8a); color:#fff; width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
+            <i class="fa-solid fa-cube"></i>
           </div>
           <div>
-            <h3 id="codelab-modal-title" style="color:#f8fafc; font-size:1.05rem; margin:0; font-weight:800;">Virtual Statistical Computing Lab</h3>
-            <span style="font-size:0.75rem; color:#94a3b8;"><i class="fa-solid fa-microchip"></i> Zero-Setup Microdata Processing • Embedded Python / R / SQL / GIS / X-13ARIMA Sandbox</span>
+            <h3 id="codelab-modal-title" style="color:#f8fafc; font-size:1.05rem; margin:0; font-weight:800;">Virtual Box</h3>
+            <span style="font-size:0.75rem; color:#94a3b8;"><i class="fa-solid fa-terminal"></i> Zero-Setup Programming Environment • Python / R / SQL Execution Engine</span>
           </div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <a href="https://colab.research.google.com/" target="_blank" class="btn-action" style="background:#f59e0b; color:#fff; font-size:0.75rem; padding:6px 12px; text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:700; border-radius:6px;">
-            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open in Google Colab
-          </a>
-          <button class="modal-close" style="color:#94a3b8;" onclick="closeModal('codelab-modal')">&times;</button>
+          <button class="modal-close" style="color:#94a3b8; font-size:1.4rem; background:none; border:none; cursor:pointer;" onclick="closeModal('codelab-modal')">&times;</button>
         </div>
       </div>
 
-      <!-- Pre-Configured Libraries & Government Adapters Bar -->
+      <!-- Pre-Configured Libraries Bar -->
       <div style="background:#1e293b; border:1px solid #334155; border-radius:6px; padding:6px 10px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; font-size:0.72rem;">
         <div style="color:#cbd5e1; display:flex; align-items:center; gap:6px;">
-          <span style="font-weight:800; color:#38bdf8;"><i class="fa-solid fa-cubes"></i> Pre-Loaded Suites:</span>
-          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">Python 3.11.8</span>
-          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">Pandas 2.2.1</span>
-          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">Scipy 1.12</span>
-          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">GeoPandas / GDAL</span>
-          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">X-13ARIMA-SEATS</span>
-          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">R 4.3 Survey</span>
-          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">PostgreSQL 15</span>
+          <span style="font-weight:800; color:#38bdf8;"><i class="fa-solid fa-cubes"></i> Supported Engines:</span>
+          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">Python 3.11</span>
+          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">Pandas / NumPy</span>
+          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">R 4.3</span>
+          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">PostgreSQL SQL</span>
+          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">GeoPandas GIS</span>
+          <span style="background:#0f172a; padding:2px 6px; border-radius:4px; color:#a5f3fc;">CAPI JSON</span>
         </div>
         <div style="color:#4ade80; font-weight:700;">
-          <i class="fa-solid fa-circle-check"></i> Zero-Setup Ready
+          <i class="fa-solid fa-circle-check"></i> Ready to Run
         </div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
         <div style="display:flex; align-items:center; gap:8px;">
-          <label style="font-size:0.8rem; font-weight:700; color:#94a3b8;"><i class="fa-solid fa-database"></i> Microdata Pipeline:</label>
-          <select id="codelab-preset-select" onchange="loadCodePreset(this.value)" style="background:#1e293b; color:#38bdf8; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:0.8rem; font-weight:700; outline:none; cursor:pointer; max-width:440px;">
-            <optgroup label="📊 1. Statistical Competencies">
-              <option value="plfs">1. NSS PLFS Labour Force & Household Microdata (Pandas)</option>
-              <option value="sampling">2. Survey Design & Multi-Stage Sampling (Scipy / Neyman)</option>
-              <option value="sna">3. National Accounts (SNA 2008 & Supply-Use Tables SUT)</option>
-              <option value="cpi">4. Price Statistics: Modified Laspeyres CPI & WPI Deflators</option>
-              <option value="agri">5. Agricultural & Environmental Statistics (SEEA Framework)</option>
-              <option value="asi">6. Industrial Statistics: ASI Microdata & IIP Indices</option>
-              <option value="sdg">7. SDG Indicators & National Indicator Framework (NIF)</option>
-              <option value="metadata">8. Metadata Standards (SDMX) & UN-NQAF Quality Audits</option>
-            </optgroup>
-            <optgroup label="💻 2. Technical Competencies">
-              <option value="python">9. Python & Pandas Official Microdata Automation</option>
-              <option value="r_econ">10. R Econometrics & Survey Package Complex Weighting</option>
-              <option value="sql">11. SQL & PostgreSQL Relational Microdata Queries</option>
-              <option value="stata">12. Stata Panel Data Econometrics & Fixed Effects</option>
-              <option value="spss_sas">13. SPSS / SAS Multivariate Factor & Variance Analysis</option>
-              <option value="gis">14. Geospatial GIS & Remote Sensing Satellite Data</option>
-              <option value="dataviz">15. Interactive Data Visualization (Plotly / Choropleth)</option>
-              <option value="aiml">16. AI/ML Time Series & Anomaly Detection (X-13ARIMA)</option>
-              <option value="cloud">17. Cloud High-Performance Compute (Dask / PySpark)</option>
-              <option value="apis">18. Open Government Data (OGD) & SDMX REST APIs</option>
-            </optgroup>
-            <optgroup label="🛡️ 3. Digital Governance & Compliance">
-              <option value="dpdp">19. DPDP Act 2023 Consent & Microdata k-Anonymity</option>
-              <option value="pki">20. PKI, Digital Signatures & CERT-In Encryption</option>
-            </optgroup>
+          <label style="font-size:0.8rem; font-weight:700; color:#94a3b8;"><i class="fa-solid fa-code"></i> Select Language:</label>
+          <select id="codelab-preset-select" onchange="loadCodePreset(this.value)" style="background:#1e293b; color:#38bdf8; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:0.82rem; font-weight:700; outline:none; cursor:pointer; min-width:280px;">
+            <option value="python">🐍 Python (Pandas, NumPy, Microdata Automation)</option>
+            <option value="r_econ">📈 R (Survey Package & Statistical Modeling)</option>
+            <option value="sql">🗄️ SQL (PostgreSQL Microdata Queries & Joins)</option>
+            <option value="gis">🗺️ GeoPandas / QGIS (Spatial Mapping & Frames)</option>
+            <option value="capi">📋 CAPI / JSON (Survey Paradata & Schema Validation)</option>
+            <option value="bash">💻 Shell / Bash (Automation & Data Ingestion)</option>
           </select>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -697,7 +673,7 @@
             <i class="fa-solid fa-play"></i> Run Code
           </button>
           <button type="button" onclick="evaluateCodeLabBenchmarks()" class="btn-action" style="background:#0284c7; color:#fff; font-size:0.78rem; padding:6px 12px; font-weight:800; border-radius:6px; display:inline-flex; align-items:center; gap:6px; border:none; cursor:pointer;">
-            <i class="fa-solid fa-square-check"></i> Validate Benchmarks
+            <i class="fa-solid fa-square-check"></i> Validate Output
           </button>
           <button type="button" onclick="resetCodeLab()" class="btn-action" style="background:#334155; color:#cbd5e1; font-size:0.78rem; padding:6px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; border:none; cursor:pointer;">
             <i class="fa-solid fa-rotate-left"></i> Reset
@@ -1864,37 +1840,98 @@ print("\n[SUCCESS] Digital Signature Verified with Government Root CA.")`,
 >> Tamper-Evident Digital Seal: MoSPI-PKI-8F7C92A14D2E5B03
 
 [SUCCESS] Digital Signature Verified with Government Root CA.`
+      },
+      capi: {
+        title: "CAPI / JSON Survey Paradata & Validation Engine",
+        kernel: "validate_survey.json (JSON Schema & CAPI Field Validator)",
+        code: `// MoSPI Field Operations Division (FOD): CAPI Household Survey Paradata
+{
+  "survey_round": "NSS-80",
+  "schedule": "Schedule 10.2 (Employment & Consumption)",
+  "enumerator_id": "FOD-DEL-8402",
+  "household_sample": {
+    "fsu_number": "100248",
+    "hamlet_group": 1,
+    "second_stage_stratum": 2,
+    "gps_coordinates": {
+      "latitude": 28.6139,
+      "longitude": 77.2090,
+      "geo_accuracy_meters": 3.2
+    },
+    "paradata": {
+      "interview_duration_minutes": 42.5,
+      "audio_audit_sample_verified": true,
+      "timestamp_start": "2026-09-03T10:15:00Z",
+      "timestamp_end": "2026-09-03T10:57:30Z",
+      "validation_rules_triggered": 0
+    },
+    "survey_status": "COMPLETED_AND_DIGITALLY_SIGNED"
+  }
+}`,
+        output: `[INFO] Initializing MoSPI CAPI Ingestion & Paradata Audit Validator...
+========================================================================
+   CAPI FIELD VALIDATION & REAL-TIME PARADATA STREAMING REPORT
+========================================================================
+>> Schedule: NSS-80 Schedule 10.2 (Employment & Consumption)
+>> Enumerator: FOD-DEL-8402 (Geo-Fencing Confirmed within 3.2m tolerance)
+>> Interview Duration: 42.5 mins (Standard Benchmark: 35-50 mins)
+>> Range & Consistency Logic Checks: 48/48 Rules Passed (0 Anomalies)
+>> DPDP Act Compliance: PII tokenized and pseudonymized before cloud sync.
+
+[SUCCESS] CAPI Survey Record Passed Validation & Synced to Master DB.`
+      },
+      bash: {
+        title: "Shell / Bash Official Microdata Automation Pipeline",
+        kernel: "ingest_pipeline.sh (Linux Bash 5.2 • MoSPI NDW Stream)",
+        code: `#!/usr/bin/env bash
+# MoSPI National Data Warehouse (NDW) Automated Ingestion Script
+echo "=========================================================="
+echo "   MoSPI NDW AUTOMATED INGESTION & QUALITY AUDIT PIPELINE"
+echo "=========================================================="
+
+DATASET_NAME="PLFS_ANNUAL_MICRODATA_2024"
+RAW_FILE="/data/raw/\${DATASET_NAME}.csv"
+CLEAN_DIR="/data/curated/\${DATASET_NAME}"
+
+echo ">> [STEP 1/3] Verifying SHA-256 Checksum on Incoming Survey Chunks..."
+echo "   Status: Checksum Verified (Hash: 4A89BF20...)"
+
+echo ">> [STEP 2/3] Triggering PySpark Partitioning & Slicing..."
+echo "   Partitions Created: 36 States & UTs (100% Load Balance)"
+
+echo ">> [STEP 3/3] Enforcing DPDP Act k-Anonymity Guardrails (k >= 5)..."
+echo "   Suppression Rate: 0.04% | Re-Identification Risk: < 0.0001%"
+
+echo "\n[SUCCESS] Ingestion Complete. Data Warehouse Synced."`,
+        output: `[INFO] Initializing Bash 5.2 Ingestion Container...
+==========================================================
+   MoSPI NDW AUTOMATED INGESTION & QUALITY AUDIT PIPELINE
+==========================================================
+>> [STEP 1/3] Verifying SHA-256 Checksum on Incoming Survey Chunks...
+   Status: Checksum Verified (Hash: 4A89BF20...)
+>> [STEP 2/3] Triggering PySpark Partitioning & Slicing...
+   Partitions Created: 36 States & UTs (100% Load Balance)
+>> [STEP 3/3] Enforcing DPDP Act k-Anonymity Guardrails (k >= 5)...
+   Suppression Rate: 0.04% | Re-Identification Risk: < 0.0001%
+
+[SUCCESS] Ingestion Complete. Data Warehouse Synced.`
       }
     };
 
     function openCodeLabModal(titleEnc, domainEnc) {
-      const title = decodeURIComponent(titleEnc);
-      const domain = decodeURIComponent(domainEnc || '');
-      document.getElementById("codelab-modal-title").innerHTML = `<i class="fa-solid fa-code" style="color:#38bdf8;"></i> Virtual Lab: ${title}`;
+      const title = decodeURIComponent(titleEnc || 'Workspace');
+      document.getElementById("codelab-modal-title").innerHTML = `<i class="fa-solid fa-cube" style="color:#38bdf8;"></i> Virtual Box: ${title}`;
       
       const select = document.getElementById("codelab-preset-select");
-      let targetKey = "plfs";
+      let targetKey = "python";
       const tLower = title.toLowerCase();
       
-      if (tLower.includes("price") || tLower.includes("cpi") || tLower.includes("inflation")) targetKey = "cpi";
-      else if (tLower.includes("sampling") || tLower.includes("survey design")) targetKey = "sampling";
-      else if (tLower.includes("national account") || tLower.includes("sna") || tLower.includes("gdp") || tLower.includes("gva") || tLower.includes("sut")) targetKey = "sna";
-      else if (tLower.includes("agri") || tLower.includes("environment") || tLower.includes("seea")) targetKey = "agri";
-      else if (tLower.includes("industrial") || tLower.includes("asi") || tLower.includes("iip")) targetKey = "asi";
-      else if (tLower.includes("sdg") || tLower.includes("indicator")) targetKey = "sdg";
-      else if (tLower.includes("metadata") || tLower.includes("sdmx") || tLower.includes("quality")) targetKey = "metadata";
-      else if (tLower.includes(" r ") || tLower.includes("econometric") || tLower.includes("time series")) targetKey = "r_econ";
+      if (tLower.includes(" r ") || tLower.includes("econometric") || tLower.includes("survey package")) targetKey = "r_econ";
       else if (tLower.includes("sql") || tLower.includes("database") || tLower.includes("relational")) targetKey = "sql";
-      else if (tLower.includes("stata")) targetKey = "stata";
-      else if (tLower.includes("spss") || tLower.includes("sas")) targetKey = "spss_sas";
       else if (tLower.includes("gis") || tLower.includes("remote sensing") || tLower.includes("geospatial")) targetKey = "gis";
-      else if (tLower.includes("visualization") || tLower.includes("tableau") || tLower.includes("power bi") || tLower.includes("plotly")) targetKey = "dataviz";
-      else if (tLower.includes("ai") || tLower.includes("machine learning") || tLower.includes("anomaly")) targetKey = "aiml";
-      else if (tLower.includes("cloud") || tLower.includes("dask") || tLower.includes("spark")) targetKey = "cloud";
-      else if (tLower.includes("api") || tLower.includes("open data")) targetKey = "apis";
-      else if (tLower.includes("dpdp") || tLower.includes("privacy") || tLower.includes("anonymity")) targetKey = "dpdp";
-      else if (tLower.includes("pki") || tLower.includes("signature") || tLower.includes("cybersecurity") || tLower.includes("cert-in")) targetKey = "pki";
-      else if (tLower.includes("python") || tLower.includes("pandas")) targetKey = "python";
+      else if (tLower.includes("capi") || tLower.includes("field") || tLower.includes("json")) targetKey = "capi";
+      else if (tLower.includes("bash") || tLower.includes("shell") || tLower.includes("linux")) targetKey = "bash";
+      else targetKey = "python";
       
       if (select) select.value = targetKey;
       loadCodePreset(targetKey);
