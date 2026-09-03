@@ -179,7 +179,7 @@
           <h2><i class="fa-solid fa-cloud-arrow-down"></i> iGOT Karmayogi API Sync & SSO Governance</h2>
         </div>
         <div style="background:#f0f9ff; border:1px solid #bae6fd; border-left:4px solid #0284c7; padding:10px 14px; border-radius:6px; font-size:0.84rem; color:#0369a1; margin-bottom:12px;">
-          <strong><i class="fa-solid fa-circle-info"></i> Why iGOT Sync?</strong> Synchronizes MoSPI's internal LMS database with the national <strong>iGOT Karmayogi Bharat</strong> catalog (DoPT / Parichay). Ingests new accredited circulars, updates curriculum taxonomies, and aligns officer competency roadmaps with national governance standards.
+          <strong><i class="fa-solid fa-circle-info"></i> NSSTA Directory Sync:</strong> Synchronizes MoSPI's internal LMS database with the central <strong>NSSTA MoSPI Training Catalog</strong>. Ingests new accredited circulars, updates curriculum taxonomies, and aligns officer competency roadmaps with national statistical standards.
         </div>
         <div style="display:flex; flex-direction:column; gap:10px; font-size:0.88rem;">
           <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);">
@@ -195,11 +195,11 @@
             <strong style="color:var(--text-main);"><i class="fa-solid fa-user-lock"></i> MoSPI / NSSTA Admin Role Verified</strong>
           </div>
         </div>
-        <button class="btn-action" id="btn-sync-igot" onclick="triggerIgotSync()" style="margin-top:6px; background:#0284c7;"><i class="fa-solid fa-arrows-rotate"></i> Sync with iGOT Karmayogi Now</button>
+        <button class="btn-action" id="btn-sync-igot" onclick="triggerIgotSync()" style="margin-top:6px; background:#0284c7;"><i class="fa-solid fa-arrows-rotate"></i> Sync with Central NSSTA Repository</button>
         <div id="igot-sync-result" style="font-size:0.82rem; font-weight:700; color:var(--success); margin-top:6px;"></div>
 
-        <!-- iGOT Karmayogi Sync Audit Logs Table -->
-        <h3 style="font-size:0.92rem; font-weight:800; margin-top:16px; margin-bottom:8px; color:var(--primary);"><i class="fa-solid fa-clock-rotate-left"></i> iGOT Synchronization Audit Logs</h3>
+        <!-- NSSTA Sync Audit Logs Table -->
+        <h3 style="font-size:0.92rem; font-weight:800; margin-top:16px; margin-bottom:8px; color:var(--primary);"><i class="fa-solid fa-clock-rotate-left"></i> Central Directory Sync Audit Logs</h3>
         <div style="overflow-x:auto; max-height:160px; overflow-y:auto; border:1px solid var(--border); border-radius:6px;">
           <table style="margin:0; font-size:0.8rem;">
             <thead>
@@ -1304,7 +1304,7 @@
           <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:24px; font-size:0.78rem; color:#475569; border-top:1px solid #e2e8f0; padding-top:12px;">
             <div style="text-align:left;">
               <div><strong>Audit Reference:</strong> <span style="font-family:monospace; color:#0284c7;">${c.audit_code || ('MoSPI-AUDIT-' + (c.id || Date.now()).toString().slice(-6))}</span></div>
-              <div><strong>Issuing Authority:</strong> iGOT Karmayogi Bharat / NSSTA Accredited</div>
+              <div><strong>Issuing Authority:</strong> NSSTA / MoSPI Central Training Board</div>
             </div>
             <div style="text-align:right;">
               <div style="color:#15803d; font-weight:800;"><i class="fa-solid fa-shield-halved"></i> NSSTA SECURE SEAL VERIFIED</div>
@@ -1384,11 +1384,11 @@
             <div class="officer-name">${c.officer_name || 'Officer Trainee'}</div>
             <p class="cert-text">for successfully completing accredited capacity building & evaluation in</p>
             <div class="course-title">"${c.course_title}"</div>
-            <p class="cert-text">under the iGOT Karmayogi Bharat Competency Framework.</p>
+            <p class="cert-text">under the MoSPI NSSTA National Statistical Competency Framework.</p>
             <div class="footer-row">
               <div style="text-align:left;">
                 <p><strong>Audit Verification Code:</strong> ${auditCode}</p>
-                <p><strong>Issuing Authority:</strong> iGOT Karmayogi / NSSTA Accredited</p>
+                <p><strong>Issuing Authority:</strong> NSSTA / MoSPI Central Training Board</p>
               </div>
               <div style="text-align:right;">
                 <p><strong>Status:</strong> VERIFIED & ACCREDITED</p>

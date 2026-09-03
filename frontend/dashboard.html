@@ -421,22 +421,22 @@
       </div>
     </section>
 
-    <!-- iGOT Karmayogi External Profile Sync Gateway -->
+    <!-- NSSTA Official Profile Sync Gateway -->
     <section class="dashboard-panel" style="background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border-left: 4px solid #0284c7; padding: 18px 24px;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
         <div>
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <span style="background:#0284c7; color:#fff; font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px;"><i class="fa-solid fa-link"></i> iGOT KARMAYOGI GATEWAY</span>
+            <span style="background:#0284c7; color:#fff; font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px;"><i class="fa-solid fa-link"></i> NSSTA LEARNING GATEWAY</span>
             <span id="igot-live-status" style="font-size:0.8rem; color:#15803d; font-weight:700;"><i class="fa-solid fa-circle" style="font-size:0.6rem;"></i> Connected (v2.4 Live)</span>
           </div>
           <div style="font-size:0.95rem; color:#0f172a; font-weight:700;">
-            Karmayogi ID: <span id="igot-karmayogi-id" style="font-family:monospace; color:#1e3a8a; background:#fff; padding:2px 8px; border-radius:4px; border:1px solid #cbd5e1;">Loading...</span>
-            <span id="igot-learning-hours" style="margin-left:10px; font-size:0.82rem; color:#475569;"><i class="fa-solid fa-clock"></i> 42 Learning Hours on iGOT</span>
+            Officer Training ID: <span id="igot-karmayogi-id" style="font-family:monospace; color:#1e3a8a; background:#fff; padding:2px 8px; border-radius:4px; border:1px solid #cbd5e1;">Loading...</span>
+            <span id="igot-learning-hours" style="margin-left:10px; font-size:0.82rem; color:#475569;"><i class="fa-solid fa-clock"></i> 42 Learning Hours Recorded</span>
           </div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
           <button onclick="syncWithIgotKarmayogi()" id="btn-igot-sync" class="btn-action" style="background:#0284c7; color:#ffffff; font-weight:700; padding:10px 18px; font-size:0.88rem; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);">
-            <i class="fa-solid fa-rotate"></i> Sync Existing iGOT Learning History
+            <i class="fa-solid fa-rotate"></i> Sync Official Training History
           </button>
         </div>
       </div>
@@ -655,7 +655,7 @@
         <h3 id="cert-modal-title"><i class="fa-solid fa-stamp"></i> AI Certificate Verification</h3>
         <button class="modal-close" onclick="closeModal('cert-modal')">&times;</button>
       </div>
-      <p style="font-size:0.85rem; color:var(--text-muted);">Attach your completed iGOT Karmayogi / NSSTA course certificate (.PDF / .PNG / .JPG). The AI Credential Auditor will verify your name, course alignment, and issuing authority in real time.</p>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Attach your completed NSSTA / MoSPI course certificate (.PDF / .PNG / .JPG). The AI Credential Auditor will verify your name, course alignment, and issuing authority in real time.</p>
       <input type="file" id="cert-file-input" accept=".pdf,.png,.jpg,.jpeg" onchange="previewCertFile(event)" style="padding:10px; border:1px dashed var(--border); border-radius:6px; cursor:pointer;">
       
       <div id="cert-status-msg" style="font-size:0.85rem; font-weight:700; color:var(--primary);"></div>
@@ -2214,7 +2214,7 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
               <div class="academy-title">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA GREATER NOIDA)</div>
               
               <h1>Certificate of Completion</h1>
-              <div class="cert-sub">Accredited Competency Framework • iGOT Karmayogi Bharat</div>
+              <div class="cert-sub">Accredited Competency Framework • National Statistical Systems Training Academy (NSSTA)</div>
               
               <div class="completion-text">This is to officially certify that</div>
               <div class="officer-name">${currentUser.name || 'Officer Trainee'}</div>
@@ -2230,7 +2230,7 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
               <div class="cert-footer">
                 <div class="audit-info">
                   <div><strong>Certificate Reference:</strong> <span class="audit-code">${certCode}</span></div>
-                  <div><strong>Accrediting Authority:</strong> iGOT Karmayogi / NSSTA MoSPI</div>
+                  <div><strong>Accrediting Authority:</strong> NSSTA / MoSPI Central Training Board</div>
                   <div><strong>Attainment Date:</strong> ${decodedDate}</div>
                   <div style="color:#15803d; font-weight:bold; margin-top:2px;">✔ Authenticated Digital Credential</div>
                 </div>
