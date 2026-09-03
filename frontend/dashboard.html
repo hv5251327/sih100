@@ -103,8 +103,65 @@
     .btn-quiz:hover { background: var(--primary-hover); }
 
     /* ===================================================
-       🎬 CLEAN VIDEO-FIRST RECOMMENDED COURSES
+       🎬 CLEAN 3-COLUMN 3-STAGE RECOMMENDED ROADMAP
        =================================================== */
+    .stages-3col-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+      align-items: start;
+      width: 100%;
+    }
+    @media (max-width: 1024px) {
+      .stages-3col-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+    }
+    .stage-column {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-width: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+    .stage-column-header {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .stage-col-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stage-col-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #e0f2fe;
+      color: #0369a1;
+      white-space: nowrap;
+    }
+    .stage-courses-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
     .simple-modules-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
@@ -854,9 +911,9 @@
       }
 
       const stages = [
-        { id: 'Foundation', title: 'Stage 1: Foundational Competencies', icon: '<i class="fa-solid fa-compass" style="color:#2563eb;"></i>' },
-        { id: 'Functional Core', title: 'Stage 2: Functional Core Competencies', icon: '<i class="fa-solid fa-chart-line" style="color:#0f766e;"></i>' },
-        { id: 'Advanced Strategic', title: 'Stage 3: Advanced Strategic & Leadership', icon: '<i class="fa-solid fa-award" style="color:#b45309;"></i>' }
+        { id: 'Foundation', title: 'Stage 1: Foundational Competencies', icon: '<i class="fa-solid fa-compass" style="color:#2563eb;"></i>', color: '#2563eb' },
+        { id: 'Functional Core', title: 'Stage 2: Functional Core Competencies', icon: '<i class="fa-solid fa-chart-line" style="color:#0f766e;"></i>', color: '#0f766e' },
+        { id: 'Advanced Strategic', title: 'Stage 3: Advanced Strategic & Leadership', icon: '<i class="fa-solid fa-award" style="color:#b45309;"></i>', color: '#b45309' }
       ];
 
       const thumbnails = [
@@ -868,19 +925,19 @@
         'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=600&auto=format&fit=crop&q=80'
       ];
 
-      let html = '';
       let globalThumbIdx = 0;
+      let html = '<div class="stages-3col-grid">';
 
       stages.forEach(stg => {
         const stageCourses = allRecommendedCourses.filter(c => (c.learning_stage || 'Functional Core') === stg.id);
-        if (stageCourses.length > 0) {
-          html += `
-            <div class="stage-section-title">
-              <div class="stage-title-left">${stg.icon} <span>${stg.title}</span></div>
-              <span class="stage-count-badge">${stageCourses.length} Modules</span>
+        html += `
+          <div class="stage-column" style="border-top: 4px solid ${stg.color};">
+            <div class="stage-column-header">
+              <div class="stage-col-title">${stg.icon} <span>${stg.title}</span></div>
+              <span class="stage-col-badge">${stageCourses.length} Modules</span>
             </div>
-            <div class="simple-modules-grid">
-              ${stageCourses.map((course) => {
+            <div class="stage-courses-list">
+              ${stageCourses.length === 0 ? '<p style="font-size:0.82rem; color:#94a3b8; text-align:center; padding:24px 10px;">No pending modules in this stage.</p>' : stageCourses.map((course) => {
                 const thumbUrl = thumbnails[globalThumbIdx++ % thumbnails.length];
                 const cleanDesc = (course.description || 'Accredited training module under NSSTA MoSPI curriculum.')
                   .replace(/\[Target:[^\]]*\]/gi, '')
@@ -913,11 +970,12 @@
                 `;
               }).join('')}
             </div>
-          `;
-        }
+          </div>
+        `;
       });
 
-      container.innerHTML = html || '<p style="color:#64748b; font-size:0.9rem; padding:12px;">No recommended courses found for your profile at this time.</p>';
+      html += '</div>';
+      container.innerHTML = html;
     }
 
     // --- MICRODATA SIMULATION LAB HANDLERS ---
