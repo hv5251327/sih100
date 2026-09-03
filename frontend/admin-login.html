@@ -42,43 +42,12 @@
         </div>
     </div>
 
+    <script src="redirect.js"></script>
     <script>
         const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
 
         function authenticateAdmin() {
-            const btn = document.getElementById('btnAdminSubmit');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Authorizing & Opening Portal...`;
-            }
-
-            const em = (document.getElementById('email') ? document.getElementById('email').value.trim() : '') || 'admin@mospi.gov.in';
-            const adminUser = {
-                name: 'MoSPI Training Administrator',
-                email: em,
-                role: 'admin',
-                department: 'National Statistical Systems Training Academy (NSSTA)',
-                designation: 'Joint Director / Chief Training Officer',
-                cadre: 'Indian Statistical Service (ISS)',
-                session_token: 'GOV-ADMIN-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
-                session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
-                login_timestamp: new Date().toISOString()
-            };
-
-            // 1. Immediately store admin user in localStorage
-            localStorage.setItem('mospi_user', JSON.stringify(adminUser));
-
-            // 2. Non-blocking background sync with backend
-            try {
-                fetch(`${API_URL}/api/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: em, password: '1234', role: 'admin' })
-                }).catch(() => {});
-            } catch (e) {}
-
-            // 3. Guaranteed immediate redirect
-            window.location.replace('admin.html');
+            handleAdminLogin();
         }
 
         function authenticateAdminSSO() {
@@ -94,8 +63,8 @@
                 session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
                 login_timestamp: new Date().toISOString()
             };
-            localStorage.setItem('mospi_user', JSON.stringify(adminUser));
-            window.location.replace('admin.html');
+            saveActiveSession(adminProfile);
+            safeRedirect('admin.html');
         }
     </script>
 </body>

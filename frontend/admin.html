@@ -1521,8 +1521,10 @@
 
     function logout() {
       localStorage.removeItem('mospi_user');
+      sessionStorage.removeItem('mospi_user');
       window.location.href = "admin-login.html";
     }
   </script>
+  <script src="redirect.js"></script>
 </body>
 </html>
