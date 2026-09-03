@@ -63,7 +63,7 @@
                 session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
                 login_timestamp: new Date().toISOString()
             };
-            saveActiveSession(adminProfile);
+            saveActiveSession(adminUser);
             safeRedirect('admin.html');
         }
     </script>

@@ -76,10 +76,10 @@ async function handleEmployeeLogin(event) {
 
     saveActiveSession(fallbackOfficer);
 
-    // Fast asynchronous background API sync with 2s timeout
+    // Fast asynchronous background API sync with 1.5s timeout
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
 
         const res = await fetch(`${REDIRECT_CONFIG.API_URL}/api/auth/login`, {
             method: 'POST',
@@ -138,7 +138,7 @@ async function handleAdminLogin(event) {
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
 
         await fetch(`${REDIRECT_CONFIG.API_URL}/api/auth/login`, {
             method: 'POST',
@@ -165,11 +165,11 @@ async function handleRegistrationSubmit(event) {
     const cadreSelect = document.getElementById('regCadre');
     const deptSelect = document.getElementById('regDept');
     const desigSelect = document.getElementById('regDesignation');
-    const submitBtn = document.querySelector('#registerForm button[type="submit"]');
+    const submitBtn = document.querySelector('#registerForm button[type="submit"]') || document.querySelector('button.btn-submit');
 
-    const name = nameInput ? nameInput.value.trim() : 'Officer Trainee';
-    const email = emailInput ? emailInput.value.trim() : 'officer.iss@nic.in';
-    const password = passwordInput ? passwordInput.value : '1234';
+    const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Officer Trainee';
+    const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : 'officer.iss@nic.in';
+    const password = (passwordInput && passwordInput.value) ? passwordInput.value : '1234';
     const cadre = (cadreSelect && cadreSelect.value) ? cadreSelect.value : "Indian Statistical Service (ISS) — Group 'A' Central Service";
     const department = (deptSelect && deptSelect.selectedIndex >= 0) ? deptSelect.options[deptSelect.selectedIndex].text : 'National Accounts Division (NAD)';
     const designation = (desigSelect && desigSelect.value) ? desigSelect.value : 'Assistant Director / SSO';
@@ -195,7 +195,7 @@ async function handleRegistrationSubmit(event) {
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
 
         await fetch(`${REDIRECT_CONFIG.API_URL}/api/auth/register`, {
             method: 'POST',
@@ -206,18 +206,66 @@ async function handleRegistrationSubmit(event) {
         clearTimeout(timeoutId);
     } catch (e) {}
 
-    const diagModal = document.getElementById('diagnosticModal');
-    if (diagModal) {
-        diagModal.style.display = 'flex';
-    } else {
-        safeRedirect('dashboard.html');
+    // Direct guaranteed redirection to dashboard
+    safeRedirect('dashboard.html');
+}
+
+// --- 4. DIAGNOSTIC BASELINE SUBMISSION ---
+async function submitDiagnosticAssessment(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
+
+    const user = getActiveSession() || {
+        email: 'officer.iss@nic.in',
+        name: 'Officer Trainee',
+        cadre: 'ISS',
+        department: 'NAD',
+        designation: 'Assistant Director'
+    };
+
+    const statScore = document.getElementById('diag_stat') ? parseInt(document.getElementById('diag_stat').value, 10) : 65;
+    const techScore = document.getElementById('diag_tech') ? parseInt(document.getElementById('diag_tech').value, 10) : 60;
+    const govScore = document.getElementById('diag_gov') ? parseInt(document.getElementById('diag_gov').value, 10) : 65;
+    const leadScore = document.getElementById('diag_lead') ? parseInt(document.getElementById('diag_lead').value, 10) : 60;
+
+    const btn = document.getElementById('diagSubmitBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Opening Dashboard...';
+    }
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+        await fetch(`${REDIRECT_CONFIG.API_URL}/api/initial-assessment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+                email: user.email,
+                cadre: user.cadre,
+                department: user.department,
+                designation: user.designation,
+                statistical_score: statScore,
+                technical_score: techScore,
+                governance_score: govScore,
+                leadership_score: leadScore
+            })
+        });
+        clearTimeout(timeoutId);
+    } catch (e) {}
+
+    safeRedirect('dashboard.html');
 }
 
 // Global window mappings for direct inline access
 window.handleEmployeeLogin = handleEmployeeLogin;
 window.handleAdminLogin = handleAdminLogin;
 window.handleRegistrationSubmit = handleRegistrationSubmit;
+window.submitDiagnosticAssessment = submitDiagnosticAssessment;
 window.submitAuth = function(role) {
     if (role === 'admin') handleAdminLogin();
     else handleEmployeeLogin();
@@ -225,3 +273,5 @@ window.submitAuth = function(role) {
 window.submitRegistration = handleRegistrationSubmit;
 window.authenticateAdmin = handleAdminLogin;
 window.safeRedirect = safeRedirect;
+window.saveActiveSession = saveActiveSession;
+window.getActiveSession = getActiveSession;
