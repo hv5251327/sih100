@@ -158,7 +158,7 @@
             <option value="FY 2026-27">Horizon: FY 2026-27 (Medium-Term)</option>
             <option value="FY 2027-28">Horizon: FY 2027-28 (Strategic Vision)</option>
           </select>
-          <button onclick="runSkillForecast()" id="btn-run-forecast" class="btn-action" style="padding:6px 14px; font-size:0.82rem; background:#0f766e; font-weight:800;"><i class="fa-solid fa-bolt"></i> Generate Forecast</button>
+          <button onclick="runSkillForecast(), loadTrainingEffectiveness()" id="btn-run-forecast" class="btn-action" style="padding:6px 14px; font-size:0.82rem; background:#0f766e; font-weight:800;"><i class="fa-solid fa-bolt"></i> Generate Forecast</button>
         </div>
 
         <!-- Predictive Summary KPI Strip -->
@@ -511,6 +511,59 @@
         runSkillForecast()
       ]);
     });
+
+    
+    let activePillarGainChart = null;
+
+    async function loadTrainingEffectiveness() {
+      try {
+        const res = await fetch(API_URL + '/api/admin/training-effectiveness');
+        const data = await res.json();
+        
+        if (data && data.kirkpatrick_metrics) {
+          document.getElementById("k-l1-score").innerText = data.kirkpatrick_metrics.level1_reaction.score;
+          document.getElementById("k-l2-score").innerText = data.kirkpatrick_metrics.level2_learning.skill_delta;
+          document.getElementById("k-l3-score").innerText = data.kirkpatrick_metrics.level3_behavior.simulation_pass_rate;
+          document.getElementById("k-l4-score").innerText = data.kirkpatrick_metrics.level4_results.field_paradata_error_reduction;
+        }
+
+        const ctx = document.getElementById("pillarGainChart").getContext("2d");
+        if (activePillarGainChart) activePillarGainChart.destroy();
+
+        activePillarGainChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Statistical', 'Technical', 'Governance', 'Leadership'],
+            datasets: [
+              {
+                label: 'Pre-Training Baseline (%)',
+                data: [54, 46, 62, 58],
+                backgroundColor: 'rgba(148, 163, 184, 0.7)',
+                borderRadius: 4
+              },
+              {
+                label: 'Post-Training Attainment (%)',
+                data: [89, 84, 94, 88],
+                backgroundColor: 'rgba(2, 132, 199, 0.85)',
+                borderRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } }
+            },
+            scales: {
+              y: { beginAtZero: true, max: 100 }
+            }
+          }
+        });
+      } catch (e) {
+        console.warn("Training effectiveness chart fallback:", e);
+      }
+    }
 
     async function loadMetadataDropdowns() {
       try {
