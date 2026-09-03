@@ -12,7 +12,7 @@
         <div class="icon-box"><i class="fa-solid fa-graduation-cap"></i></div>
         <h2>MoSPI Competency Portal</h2>
         <p class="subtitle">Employee Login</p>
-        <form id="employeeForm" action="javascript:void(0);" onsubmit="submitAuth('employee'); return false;">
+        <form id="employeeForm" onsubmit="event.preventDefault(); submitAuth('employee');">
             <div class="form-group">
                 <label>Official Email ID</label>
                 <input type="email" id="email" value="sunita.sharma@mospi.gov.in" placeholder="e.g. sunita.sharma@mospi.gov.in" required>
@@ -21,7 +21,7 @@
                 <label>Password</label>
                 <input type="password" id="password" value="1234" placeholder="Enter your password" required>
             </div>
-            <button type="submit" id="btnEmpSubmit" class="btn-submit">
+            <button type="button" id="btnEmpSubmit" onclick="submitAuth('employee')" class="btn-submit">
                 <i class="fa-solid fa-right-to-bracket"></i> Login to Portal
             </button>
         </form>
@@ -59,7 +59,7 @@
                 <button type="button" onclick="closeSSOModal()" style="background:none; border:none; font-size:1.3rem; color:#94a3b8; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <form onsubmit="submitParichaySSO(event)" style="display:flex; flex-direction:column; gap:14px;">
+            <form onsubmit="event.preventDefault(); submitParichaySSO(event);" style="display:flex; flex-direction:column; gap:14px;">
                 <div>
                     <label style="font-size:0.82rem; font-weight:700; color:#334155; display:block; margin-bottom:6px;">Official Government Email ID</label>
                     <input type="email" id="ssoGovEmailInput" value="sunita.sharma@mospi.gov.in" placeholder="e.g. sunita.sharma@mospi.gov.in" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem; box-sizing:border-box;">
@@ -71,7 +71,7 @@
                     <input type="password" id="ssoGovPasswordInput" value="1234" placeholder="Enter SSO Password (e.g. 1234)" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem; box-sizing:border-box;">
                 </div>
 
-                <button type="submit" id="ssoSubmitBtn" class="btn-submit" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); padding:11px; font-size:0.9rem; font-weight:700; width:100%; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <button type="button" id="ssoSubmitBtn" onclick="submitParichaySSO(event)" class="btn-submit" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); padding:11px; font-size:0.9rem; font-weight:700; width:100%; display:flex; align-items:center; justify-content:center; gap:8px;">
                     <i class="fa-solid fa-lock"></i> Authenticate & Retrieve Profile
                 </button>
             </form>
@@ -83,7 +83,6 @@
         </div>
     </div>
 
-    <script src="redirect.js"></script>
     <script src="auth.js"></script>
 </body>
 </html>

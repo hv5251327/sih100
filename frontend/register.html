@@ -46,7 +46,7 @@
         <h2>MoSPI Competency Portal</h2>
         <p class="subtitle">Employee Registration</p>
         
-        <form id="registerForm" action="javascript:void(0);" onsubmit="submitRegistration(); return false;">
+        <form id="registerForm" onsubmit="event.preventDefault(); submitRegistration();">
             <div class="form-group">
                 <label>Officer Full Name</label>
                 <input type="text" id="regName" placeholder="e.g. Dr. Sunita Sharma" required>
@@ -142,7 +142,9 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn-submit" style="margin-top: 15px;">Register & Create Profile</button>
+            <button type="button" onclick="submitRegistration()" id="btnRegSubmit" class="btn-submit" style="margin-top: 15px;">
+                <i class="fa-solid fa-user-plus"></i> Register & Create Profile
+            </button>
         </form>
 
             <p class="footer-text">Already registered? <a href="employee-login.html">Login here</a></p>
@@ -324,7 +326,6 @@
             } catch (e) {}
         });
     </script>
-    <script src="redirect.js"></script>
     <script src="auth.js"></script>
 </body>
 </html>
