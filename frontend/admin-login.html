@@ -3,45 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Authentication | MoSPI Command Center</title>
+    <title>Admin Login | MoSPI Command Center</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body class="center-body dark-bg">
-    <div class="login-card" style="max-width: 460px; width: 100%;">
-        <div class="icon-box admin-icon"><i class="fa-solid fa-user-shield"></i></div>
-        <h2>Admin Authentication</h2>
-        <p class="subtitle">MoSPI Command Center Access</p>
+<body class="center-body">
+    <div class="login-card">
+        <div class="icon-box"><i class="fa-solid fa-user-shield"></i></div>
+        <h2>MoSPI Command Center</h2>
+        <p class="subtitle">Administrator Authentication</p>
         
-        <form id="adminForm" onsubmit="event.preventDefault(); submitAdminAuth();">
+        <form id="adminForm" onsubmit="event.preventDefault(); submitAdminAuth(event);">
             <div class="form-group">
-                <label>Admin Email ID</label>
+                <label>Admin Official Email ID</label>
                 <input type="email" id="email" value="admin@mospi.gov.in" placeholder="admin@mospi.gov.in" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
                 <input type="password" id="password" value="1234" placeholder="Enter password" required>
             </div>
-            <button type="button" id="btnAdminSubmit" onclick="submitAdminAuth()" class="btn-submit admin-btn" style="margin-bottom: 12px; cursor: pointer;">
+            <button type="button" id="btnAdminSubmit" onclick="submitAdminAuth(event)" class="btn-submit">
                 <i class="fa-solid fa-lock"></i> Authorize & Access Portal
             </button>
         </form>
 
-        <div style="margin: 14px 0; display: flex; align-items: center; text-align: center; color: #94a3b8; font-size: 0.78rem; font-weight: 700;">
-            <hr style="flex: 1; border: none; border-top: 1px solid #334155;">
-            <span style="padding: 0 10px; text-transform: uppercase;">Or Direct Government SSO</span>
-            <hr style="flex: 1; border: none; border-top: 1px solid #334155;">
-        </div>
-
-        <button type="button" onclick="authenticateAdminSSO()" class="btn-submit" style="background: linear-gradient(135deg, #1e3a8a, #0284c7); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.88rem; padding: 10px 14px; margin-bottom: 14px; cursor: pointer;">
-            <i class="fa-solid fa-flag" style="color: #f59e0b;"></i> Log in with Parichay (Admin SSO)
-        </button>
-
-        <div>
-            <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
-        </div>
+        <p class="footer-text">Official Employee? <a href="employee-login.html">Login here</a></p>
+        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
     </div>
 
-    <script src="auth.js?v=2.7"></script>
+    <script src="auth.js?v=2.8"></script>
 </body>
 </html>
