@@ -1,49 +1,160 @@
 {
-  "officer.test.1788283938944@mospi.gov.in": [
+  "sunita.sharma@mospi.gov.in": [
     {
       "id": 1,
       "course_code": "GEN-01",
       "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
       "domain": "Digital Governance",
       "difficulty_level": "Foundation",
-      "description": "Fundamental understanding of DPDP 2023, key for legal compliance in data collection and respondent confidentiality.",
-      "video_url": "https://www.youtube.com/embed/gL6d2U0Wc_M",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
       "is_general_mandatory": true,
       "target_departments": [
         "ALL"
       ],
       "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 2,
+      "course_code": "GEN-02",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 3,
+      "course_code": "GEN-03",
+      "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 4,
+      "course_code": "GEN-04",
+      "title": "Swachhata Hi Seva & e-Office Records Lifecycle Management",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Standards for e-Office digital archiving, file movement, and administrative office hygiene governance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 9,
+      "course_code": "SPEC-NAD-01",
+      "title": "National Accounts Statistics (NAS): UN-SNA 2008 & GSDP Estimation",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Compiling Gross Value Added (GVA), Supply-Use Tables, and State Domestic Product.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
       "match_score": 90
     },
     {
-      "id": 6,
-      "course_code": "GEN-06",
-      "title": "Python & Pandas for Official Statistical Analysis & Data Wrangling",
-      "domain": "Technical Competencies",
+      "id": 52,
+      "course_code": "IGOT-NAD-201",
+      "title": "National Accounts Compilation & Gross Domestic Product (GDP) Estimation (SNA 2008)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Methodologies for compiling Gross Value Added (GVA), Supply and Use Tables (SUT), institutional sector accounts, sequence of accounts, and base year revisions following UN System of National Accounts (SNA 2008).",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 62,
+      "course_code": "SPEC-ASUSE-01",
+      "title": "Annual Survey of Unincorporated Sector Enterprises (ASUSE) Methodology",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Enterprise frame listing, gross value added estimation of unincorporated non-agricultural enterprises, and informal sector accounting.",
+      "video_url": "https://www.youtube.com/embed/k9zTr2MAo4s",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ESD",
+        "NAD",
+        "SDRD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 63,
+      "course_code": "SPEC-HCES-01",
+      "title": "Household Consumption Expenditure Survey (HCES) & Poverty Line Estimation",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Imputation of social welfare transfers in-kind, Monthly Per Capita Consumption Expenditure (MPCE) fractile classes, and Gini inequality metrics.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "PSD",
+        "NAD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 64,
+      "course_code": "SPEC-SUT-01",
+      "title": "Supply and Use Tables (SUT) & Input-Output Matrices for NAS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Balancing supply at basic prices with uses at purchasers prices, trade/transport margins, and inter-industry Leontief multiplier analysis.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 8,
+      "course_code": "GEN-08",
+      "title": "General Financial Rules (GFR 2017) & Public Procurement via GeM",
+      "domain": "Behavioural & Managerial",
       "difficulty_level": "Foundation",
-      "description": "Core programming skills for cleaning, merging, and summarising large survey datasets efficiently.",
-      "video_url": "https://www.youtube.com/embed/eWRfhZ9WAWQ",
+      "description": "GFR procurement thresholds, bid creation on GeM, and public audit compliance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
       "is_general_mandatory": true,
       "target_departments": [
         "ALL"
       ],
-      "learning_stage": "Foundation",
-      "match_score": 88
-    },
-    {
-      "id": 51,
-      "course_code": "IGOT-CAPI-101",
-      "title": "CAPI Tablet Data Collection, Field Auditing & Mobile Encryption",
-      "domain": "Technical Competencies",
-      "difficulty_level": "Intermediate",
-      "description": "Hands‑on training on secure CAPI field operations, audit procedures, and data encryption techniques.",
-      "video_url": "https://www.youtube.com/embed/k9zTr2MAo4s",
-      "is_general_mandatory": false,
-      "target_departments": [
-        "FOD",
-        "SDRD"
-      ],
-      "learning_stage": "Functional Core",
+      "learning_stage": "Advanced Strategic",
       "match_score": 85
     },
     {
@@ -52,41 +163,41 @@
       "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
       "domain": "Statistical Competencies",
       "difficulty_level": "Advanced",
-      "description": "In‑depth technical guidance on designing, weighting, and estimating sample structures for NSS surveys.",
-      "video_url": "https://www.youtube.com/embed/w7WjG5D0w2s",
+      "description": "Survey sampling designs, primary sampling units (PSUs), and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
       "is_general_mandatory": false,
       "target_departments": [
         "SDRD",
         "DPD"
       ],
       "learning_stage": "Advanced Strategic",
-      "match_score": 87
+      "match_score": 85
     },
     {
-      "id": 18,
-      "course_code": "SPEC-STAT-01",
-      "title": "Time Series Econometrics & Seasonal Adjustments (X-13ARIMA-SEATS)",
-      "domain": "Statistical Competencies",
-      "difficulty_level": "Advanced",
-      "description": "Advanced econometric tools for trend extraction and seasonal adjustment of macroeconomic time series.",
-      "video_url": "https://www.youtube.com/embed/PrhW8y2gP10",
+      "id": 14,
+      "course_code": "SPEC-IPMD-01",
+      "title": "Online Computerised Monitoring System (OCMS) & Mega Project Auditing",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Intermediate",
+      "description": "Milestone monitoring, time/cost overrun auditing for central infrastructure projects ₹150Cr+.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
       "is_general_mandatory": false,
       "target_departments": [
-        "ALL"
+        "IPMD"
       ],
       "learning_stage": "Advanced Strategic",
-      "match_score": 84
+      "match_score": 85
     }
   ],
-  "grok.officer.1788284411732@mospi.gov.in": [
+  "rajesh.verma@mospi.gov.in": [
     {
       "id": 1,
       "course_code": "GEN-01",
       "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
       "domain": "Digital Governance",
       "difficulty_level": "Foundation",
-      "description": "An in-depth overview of the DPDP Act 2023, covering legal obligations, respondent consent, k‑anonymity, and secure data handling for official statisticians.",
-      "video_url": "https://www.youtube.com/embed/gL6d2U0Wc_M",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
       "is_general_mandatory": true,
       "target_departments": [
         "ALL"
@@ -95,65 +206,348 @@
       "match_score": 95
     },
     {
-      "id": 5,
-      "course_code": "GEN-05",
-      "title": "Cybersecurity Best Practices & Government Cloud Security Standards",
+      "id": 2,
+      "course_code": "GEN-02",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
       "domain": "Digital Governance",
       "difficulty_level": "Foundation",
-      "description": "Comprehensive guide to cybersecurity fundamentals covering threat assessment, government cloud security standards, and best practices for statistical data protection.",
-      "video_url": "https://www.youtube.com/embed/inWWhr5tnEA",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
       "is_general_mandatory": true,
       "target_departments": [
         "ALL"
       ],
       "learning_stage": "Foundation",
-      "match_score": 90
+      "match_score": 95
     },
     {
-      "id": 9,
-      "course_code": "SPEC-NAD-01",
-      "title": "National Accounts Statistics (NAS): UN-SNA 2008 & GSDP Estimation",
-      "domain": "Statistical Competencies",
-      "difficulty_level": "Intermediate",
-      "description": "Detailed curriculum on implementing SNA 2008 protocols for national accounts, covering GVA/GDP calculations, supply/use tables, and GSDP estimation for NAD.",
-      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
-      "is_general_mandatory": false,
-      "target_departments": [
-        "NAD",
-        "STATE_DES"
-      ],
-      "learning_stage": "Functional Core",
-      "match_score": 98
-    },
-    {
-      "id": 49,
-      "course_code": "IGOT-DPDP-01",
-      "title": "Digital Personal Data Protection (DPDP) Act 2023 & Respondent Anonymization",
-      "domain": "Digital Governance",
+      "id": 3,
+      "course_code": "GEN-03",
+      "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
+      "domain": "Behavioural & Managerial",
       "difficulty_level": "Foundation",
-      "description": "Focuses on DPDP Act 2023 with practical respondent anonymization techniques ensuring microdata confidentiality while maintaining analytical integrity.",
-      "video_url": "https://www.youtube.com/embed/gL6d2U0Wc_M",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
       "is_general_mandatory": true,
       "target_departments": [
         "ALL"
       ],
-      "learning_stage": "Functional Core",
-      "match_score": 88
+      "learning_stage": "Foundation",
+      "match_score": 95
     },
     {
-      "id": 18,
-      "course_code": "SPEC-STAT-01",
-      "title": "Time Series Econometrics & Seasonal Adjustments (X-13ARIMA-SEATS)",
+      "id": 4,
+      "course_code": "GEN-04",
+      "title": "Swachhata Hi Seva & e-Office Records Lifecycle Management",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Standards for e-Office digital archiving, file movement, and administrative office hygiene governance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 10,
+      "course_code": "SPEC-ESD-01",
+      "title": "Annual Survey of Industries (ASI) & Index of Industrial Production (IIP)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Industrial survey methodology, frame maintenance, and monthly index compilation.",
+      "video_url": "https://www.youtube.com/embed/s2skans2dP4",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ESD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 52,
+      "course_code": "IGOT-NAD-201",
+      "title": "National Accounts Compilation & Gross Domestic Product (GDP) Estimation (SNA 2008)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Methodologies for compiling Gross Value Added (GVA), Supply and Use Tables (SUT), institutional sector accounts, sequence of accounts, and base year revisions following UN System of National Accounts (SNA 2008).",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 55,
+      "course_code": "IGOT-ESD-204",
+      "title": "Annual Survey of Industries (ASI) & Index of Industrial Production (IIP)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Factory sector sampling frame maintenance, NIC-2008 industrial classification, gross output validation, working capital analysis, and monthly IIP compilation.",
+      "video_url": "https://www.youtube.com/embed/s2skans2dP4",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ESD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 62,
+      "course_code": "SPEC-ASUSE-01",
+      "title": "Annual Survey of Unincorporated Sector Enterprises (ASUSE) Methodology",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Enterprise frame listing, gross value added estimation of unincorporated non-agricultural enterprises, and informal sector accounting.",
+      "video_url": "https://www.youtube.com/embed/k9zTr2MAo4s",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ESD",
+        "NAD",
+        "SDRD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 64,
+      "course_code": "SPEC-SUT-01",
+      "title": "Supply and Use Tables (SUT) & Input-Output Matrices for NAS",
       "domain": "Statistical Competencies",
       "difficulty_level": "Advanced",
-      "description": "Advanced training on time series econometrics and seasonal adjustment using X‑13ARIMA‑SEATS, enabling accurate trend extraction and policy‑relevant forecasts.",
-      "video_url": "https://www.youtube.com/embed/PrhW8y2gP10",
+      "description": "Balancing supply at basic prices with uses at purchasers prices, trade/transport margins, and inter-industry Leontief multiplier analysis.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
       "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 8,
+      "course_code": "GEN-08",
+      "title": "General Financial Rules (GFR 2017) & Public Procurement via GeM",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "GFR procurement thresholds, bid creation on GeM, and public audit compliance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
       "target_departments": [
         "ALL"
       ],
       "learning_stage": "Advanced Strategic",
-      "match_score": 97
+      "match_score": 85
+    },
+    {
+      "id": 13,
+      "course_code": "SPEC-SDRD-01",
+      "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Survey sampling designs, primary sampling units (PSUs), and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "DPD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 14,
+      "course_code": "SPEC-IPMD-01",
+      "title": "Online Computerised Monitoring System (OCMS) & Mega Project Auditing",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Intermediate",
+      "description": "Milestone monitoring, time/cost overrun auditing for central infrastructure projects ₹150Cr+.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "IPMD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    }
+  ],
+  "amit.patel@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 2,
+      "course_code": "GEN-02",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 3,
+      "course_code": "GEN-03",
+      "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 4,
+      "course_code": "GEN-04",
+      "title": "Swachhata Hi Seva & e-Office Records Lifecycle Management",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Standards for e-Office digital archiving, file movement, and administrative office hygiene governance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 13,
+      "course_code": "SPEC-SDRD-01",
+      "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Survey sampling designs, primary sampling units (PSUs), and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "DPD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 51,
+      "course_code": "IGOT-CAPI-101",
+      "title": "CAPI Tablet Data Collection, Field Auditing & Mobile Encryption",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Field survey tablet configuration, real-time GPS paradata audits, secure mobile sqlite encryption, error flagging routines, and field synchronization protocols.",
+      "video_url": "https://www.youtube.com/embed/k9zTr2MAo4s",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "SDRD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 56,
+      "course_code": "IGOT-SDRD-205",
+      "title": "Survey Sampling Frame Design, Weighting & Non-Sampling Error Audit",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Stratified multi-stage cluster sampling, multiplier estimation, imputation of missing entries, and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "FOD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 60,
+      "course_code": "IGOT-GIS-402",
+      "title": "Geospatial Information Systems (GIS) & Remote Sensing Sampling",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "QGIS integration, satellite imagery land classification (NDVI), urban and rural enumeration block (EB) spatial frame delineation, and thematic choropleth cartography.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "SDRD",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 61,
+      "course_code": "SPEC-PLFS-01",
+      "title": "Periodic Labour Force Survey (PLFS) & Activity Status Classification",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Methodology of Usual Principal and Subsidiary Status (UPSS), Current Weekly Status (CWS), sampling multipliers, and labour market indicator compilation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "SSD",
+        "SDRD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 8,
+      "course_code": "GEN-08",
+      "title": "General Financial Rules (GFR 2017) & Public Procurement via GeM",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "GFR procurement thresholds, bid creation on GeM, and public audit compliance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 14,
+      "course_code": "SPEC-IPMD-01",
+      "title": "Online Computerised Monitoring System (OCMS) & Mega Project Auditing",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Intermediate",
+      "description": "Milestone monitoring, time/cost overrun auditing for central infrastructure projects ₹150Cr+.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "IPMD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
     },
     {
       "id": 17,
@@ -161,78 +555,176 @@
       "title": "Machine Learning & Big Data Analytics for Official Statistics",
       "domain": "Technical Competencies",
       "difficulty_level": "Advanced",
-      "description": "Hands‑on machine learning and big data analytics for official statistics, covering supervised learning, clustering, and scalable data pipelines.",
-      "video_url": "https://www.youtube.com/embed/7eh4d6sabA0",
+      "description": "Leveraging high-frequency alternative datasets and ML models for statistical forecasting.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
       "is_general_mandatory": false,
       "target_departments": [
         "DIID",
         "SDG_LAB"
       ],
       "learning_stage": "Advanced Strategic",
-      "match_score": 93
+      "match_score": 85
     }
   ],
-  "persisted.officer.1788285360596@mospi.gov.in": [
+  "priya.nair@mospi.gov.in": [
     {
       "id": 1,
       "course_code": "GEN-01",
       "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
       "domain": "Digital Governance",
       "difficulty_level": "Foundation",
-      "description": "Essential training on the Digital Personal Data Protection Act 2023, covering lawful data handling, consent management, and k‑anonymity essential for official statisticians.",
-      "video_url": "https://www.youtube.com/embed/gL6d2U0Wc_M",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
       "is_general_mandatory": true,
       "target_departments": [
         "ALL"
       ],
       "learning_stage": "Foundation",
-      "match_score": 90
+      "match_score": 95
     },
     {
-      "id": 5,
-      "course_code": "GEN-05",
-      "title": "Cybersecurity Best Practices & Government Cloud Security Standards",
+      "id": 2,
+      "course_code": "GEN-02",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
       "domain": "Digital Governance",
       "difficulty_level": "Foundation",
-      "description": "Comprehensive guide to cybersecurity best practices and government cloud security standards, ensuring secure data collection and storage for NAD officers.",
-      "video_url": "https://www.youtube.com/embed/inWWhr5tnEA",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
       "is_general_mandatory": true,
       "target_departments": [
         "ALL"
       ],
       "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 3,
+      "course_code": "GEN-03",
+      "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 4,
+      "course_code": "GEN-04",
+      "title": "Swachhata Hi Seva & e-Office Records Lifecycle Management",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Standards for e-Office digital archiving, file movement, and administrative office hygiene governance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 12,
+      "course_code": "SPEC-FOD-01",
+      "title": "Computer-Assisted Personal Interviewing (CAPI) & Field Survey Operations",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Tablet-based field data capture, supervisor spot-checks, and quality assurance.",
+      "video_url": "https://www.youtube.com/embed/k9zTr2MAo4s",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "DSO",
+        "TALUK"
+      ],
+      "learning_stage": "Functional Core",
       "match_score": 90
     },
     {
-      "id": 9,
-      "course_code": "SPEC-NAD-01",
-      "title": "National Accounts Statistics (NAS): UN-SNA 2008 & GSDP Estimation",
-      "domain": "Statistical Competencies",
+      "id": 51,
+      "course_code": "IGOT-CAPI-101",
+      "title": "CAPI Tablet Data Collection, Field Auditing & Mobile Encryption",
+      "domain": "Technical Competencies",
       "difficulty_level": "Intermediate",
-      "description": "In‑depth coverage of UN‑SNA 2008 methodology for GVA, GDP and GSDP estimation, including chain volume measures and sectoral classification.",
-      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "description": "Field survey tablet configuration, real-time GPS paradata audits, secure mobile sqlite encryption, error flagging routines, and field synchronization protocols.",
+      "video_url": "https://www.youtube.com/embed/k9zTr2MAo4s",
       "is_general_mandatory": false,
       "target_departments": [
-        "NAD",
+        "FOD",
+        "SDRD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 56,
+      "course_code": "IGOT-SDRD-205",
+      "title": "Survey Sampling Frame Design, Weighting & Non-Sampling Error Audit",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Stratified multi-stage cluster sampling, multiplier estimation, imputation of missing entries, and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "FOD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 60,
+      "course_code": "IGOT-GIS-402",
+      "title": "Geospatial Information Systems (GIS) & Remote Sensing Sampling",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "QGIS integration, satellite imagery land classification (NDVI), urban and rural enumeration block (EB) spatial frame delineation, and thematic choropleth cartography.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "SDRD",
         "STATE_DES"
       ],
       "learning_stage": "Functional Core",
-      "match_score": 95
+      "match_score": 90
     },
     {
-      "id": 11,
-      "course_code": "SPEC-PSD-01",
-      "title": "Consumer Price Index (CPI) Basket & Rural-Urban Inflation Metrics",
+      "id": 61,
+      "course_code": "SPEC-PLFS-01",
+      "title": "Periodic Labour Force Survey (PLFS) & Activity Status Classification",
       "domain": "Statistical Competencies",
       "difficulty_level": "Intermediate",
-      "description": "Detailed methodology for CPI basket construction and rural‑urban inflation metrics, critical for adjusting national accounts and macro‑economic indicators.",
-      "video_url": "https://www.youtube.com/embed/s23oeCYGg_w",
+      "description": "Methodology of Usual Principal and Subsidiary Status (UPSS), Current Weekly Status (CWS), sampling multipliers, and labour market indicator compilation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
       "is_general_mandatory": false,
       "target_departments": [
-        "PSD"
+        "FOD",
+        "SSD",
+        "SDRD"
       ],
       "learning_stage": "Functional Core",
-      "match_score": 95
+      "match_score": 90
+    },
+    {
+      "id": 13,
+      "course_code": "SPEC-SDRD-01",
+      "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Survey sampling designs, primary sampling units (PSUs), and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "DPD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
     },
     {
       "id": 17,
@@ -240,8 +732,8 @@
       "title": "Machine Learning & Big Data Analytics for Official Statistics",
       "domain": "Technical Competencies",
       "difficulty_level": "Advanced",
-      "description": "Advanced machine‑learning techniques for big‑data analytics in official statistics, covering supervised models, clustering and scalable data pipelines.",
-      "video_url": "https://www.youtube.com/embed/7eh4d6sabA0",
+      "description": "Leveraging high-frequency alternative datasets and ML models for statistical forecasting.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
       "is_general_mandatory": false,
       "target_departments": [
         "DIID",
@@ -256,11 +748,1139 @@
       "title": "Time Series Econometrics & Seasonal Adjustments (X-13ARIMA-SEATS)",
       "domain": "Statistical Competencies",
       "difficulty_level": "Advanced",
-      "description": "Seasonal adjustment using X‑13ARIMA‑SEATS for time‑series data, essential for producing accurate quarterly and annual national accounts.",
-      "video_url": "https://www.youtube.com/embed/PrhW8y2gP10",
+      "description": "Decomposing statistical seasonalities in monthly production, export, and price series.",
+      "video_url": "https://www.youtube.com/embed/_V8eKsto3Ug",
       "is_general_mandatory": false,
       "target_departments": [
         "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    }
+  ],
+  "vikram.singh@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 2,
+      "course_code": "GEN-02",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 3,
+      "course_code": "GEN-03",
+      "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 4,
+      "course_code": "GEN-04",
+      "title": "Swachhata Hi Seva & e-Office Records Lifecycle Management",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Standards for e-Office digital archiving, file movement, and administrative office hygiene governance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 12,
+      "course_code": "SPEC-FOD-01",
+      "title": "Computer-Assisted Personal Interviewing (CAPI) & Field Survey Operations",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Tablet-based field data capture, supervisor spot-checks, and quality assurance.",
+      "video_url": "https://www.youtube.com/embed/k9zTr2MAo4s",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "DSO",
+        "TALUK"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 51,
+      "course_code": "IGOT-CAPI-101",
+      "title": "CAPI Tablet Data Collection, Field Auditing & Mobile Encryption",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Field survey tablet configuration, real-time GPS paradata audits, secure mobile sqlite encryption, error flagging routines, and field synchronization protocols.",
+      "video_url": "https://www.youtube.com/embed/k9zTr2MAo4s",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "SDRD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 56,
+      "course_code": "IGOT-SDRD-205",
+      "title": "Survey Sampling Frame Design, Weighting & Non-Sampling Error Audit",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Stratified multi-stage cluster sampling, multiplier estimation, imputation of missing entries, and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "FOD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 60,
+      "course_code": "IGOT-GIS-402",
+      "title": "Geospatial Information Systems (GIS) & Remote Sensing Sampling",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "QGIS integration, satellite imagery land classification (NDVI), urban and rural enumeration block (EB) spatial frame delineation, and thematic choropleth cartography.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "SDRD",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 61,
+      "course_code": "SPEC-PLFS-01",
+      "title": "Periodic Labour Force Survey (PLFS) & Activity Status Classification",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Methodology of Usual Principal and Subsidiary Status (UPSS), Current Weekly Status (CWS), sampling multipliers, and labour market indicator compilation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "SSD",
+        "SDRD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 13,
+      "course_code": "SPEC-SDRD-01",
+      "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Survey sampling designs, primary sampling units (PSUs), and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "DPD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 17,
+      "course_code": "SPEC-TECH-02",
+      "title": "Machine Learning & Big Data Analytics for Official Statistics",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Leveraging high-frequency alternative datasets and ML models for statistical forecasting.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "DIID",
+        "SDG_LAB"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 18,
+      "course_code": "SPEC-STAT-01",
+      "title": "Time Series Econometrics & Seasonal Adjustments (X-13ARIMA-SEATS)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Decomposing statistical seasonalities in monthly production, export, and price series.",
+      "video_url": "https://www.youtube.com/embed/_V8eKsto3Ug",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    }
+  ],
+  "ananya.deshmukh@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 2,
+      "course_code": "GEN-02",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 3,
+      "course_code": "GEN-03",
+      "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 4,
+      "course_code": "GEN-04",
+      "title": "Swachhata Hi Seva & e-Office Records Lifecycle Management",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Standards for e-Office digital archiving, file movement, and administrative office hygiene governance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 9,
+      "course_code": "SPEC-NAD-01",
+      "title": "National Accounts Statistics (NAS): UN-SNA 2008 & GSDP Estimation",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Compiling Gross Value Added (GVA), Supply-Use Tables, and State Domestic Product.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 15,
+      "course_code": "SPEC-SSD-01",
+      "title": "Sustainable Development Goals (SDG) National Indicator Framework",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Tracking 300+ SDG indicators, data localization, and state sustainability indices.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SSD",
+        "SDG_LAB",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 16,
+      "course_code": "SPEC-TECH-01",
+      "title": "Geospatial Analytics & QGIS Integration for District Statistics",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Spatial disaggregation, district shapefile mapping, and GIS thematic analysis.",
+      "video_url": "https://www.youtube.com/embed/2_2G3j7-f5E",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDG_LAB",
+        "STATE_DES",
+        "DSO",
+        "DIID"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 54,
+      "course_code": "IGOT-SSD-203",
+      "title": "SDG National Indicator Framework (NIF) Tracking & Social Statistics",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Monitoring 300+ NIF indicators aligned with UN Sustainable Development Goals, baseline metadata harmonization, disaggregated social statistics, and state indicator dashboards.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SSD",
+        "SDG_LAB",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 60,
+      "course_code": "IGOT-GIS-402",
+      "title": "Geospatial Information Systems (GIS) & Remote Sensing Sampling",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "QGIS integration, satellite imagery land classification (NDVI), urban and rural enumeration block (EB) spatial frame delineation, and thematic choropleth cartography.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "SDRD",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 8,
+      "course_code": "GEN-08",
+      "title": "General Financial Rules (GFR 2017) & Public Procurement via GeM",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "GFR procurement thresholds, bid creation on GeM, and public audit compliance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 13,
+      "course_code": "SPEC-SDRD-01",
+      "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Survey sampling designs, primary sampling units (PSUs), and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "DPD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 14,
+      "course_code": "SPEC-IPMD-01",
+      "title": "Online Computerised Monitoring System (OCMS) & Mega Project Auditing",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Intermediate",
+      "description": "Milestone monitoring, time/cost overrun auditing for central infrastructure projects ₹150Cr+.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "IPMD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    }
+  ],
+  "arun.kumar@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 2,
+      "course_code": "GEN-02",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 3,
+      "course_code": "GEN-03",
+      "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 4,
+      "course_code": "GEN-04",
+      "title": "Swachhata Hi Seva & e-Office Records Lifecycle Management",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Standards for e-Office digital archiving, file movement, and administrative office hygiene governance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 6,
+      "course_code": "GEN-06",
+      "title": "Python & Pandas for Official Statistical Analysis & Data Wrangling",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Foundation",
+      "description": "Hands-on large microdata transformation, missing data treatment, and automated summaries in Python.",
+      "video_url": "https://www.youtube.com/embed/rfscVS0vtbw",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 88
+    },
+    {
+      "id": 7,
+      "course_code": "GEN-07",
+      "title": "Relational SQL & Survey Microdata Validation Queries",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Foundation",
+      "description": "Data modeling, schema validation, and running complex analytical queries on PostgreSQL datasets.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 88
+    },
+    {
+      "id": 9,
+      "course_code": "SPEC-NAD-01",
+      "title": "National Accounts Statistics (NAS): UN-SNA 2008 & GSDP Estimation",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Compiling Gross Value Added (GVA), Supply-Use Tables, and State Domestic Product.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 88
+    },
+    {
+      "id": 10,
+      "course_code": "SPEC-ESD-01",
+      "title": "Annual Survey of Industries (ASI) & Index of Industrial Production (IIP)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Industrial survey methodology, frame maintenance, and monthly index compilation.",
+      "video_url": "https://www.youtube.com/embed/s2skans2dP4",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ESD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 88
+    },
+    {
+      "id": 8,
+      "course_code": "GEN-08",
+      "title": "General Financial Rules (GFR 2017) & Public Procurement via GeM",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "GFR procurement thresholds, bid creation on GeM, and public audit compliance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 13,
+      "course_code": "SPEC-SDRD-01",
+      "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Survey sampling designs, primary sampling units (PSUs), and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "DPD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 14,
+      "course_code": "SPEC-IPMD-01",
+      "title": "Online Computerised Monitoring System (OCMS) & Mega Project Auditing",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Intermediate",
+      "description": "Milestone monitoring, time/cost overrun auditing for central infrastructure projects ₹150Cr+.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "IPMD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    }
+  ],
+  "deepak.joshi@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 2,
+      "course_code": "GEN-02",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 3,
+      "course_code": "GEN-03",
+      "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 4,
+      "course_code": "GEN-04",
+      "title": "Swachhata Hi Seva & e-Office Records Lifecycle Management",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Standards for e-Office digital archiving, file movement, and administrative office hygiene governance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 16,
+      "course_code": "SPEC-TECH-01",
+      "title": "Geospatial Analytics & QGIS Integration for District Statistics",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Spatial disaggregation, district shapefile mapping, and GIS thematic analysis.",
+      "video_url": "https://www.youtube.com/embed/2_2G3j7-f5E",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDG_LAB",
+        "STATE_DES",
+        "DSO",
+        "DIID"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 17,
+      "course_code": "SPEC-TECH-02",
+      "title": "Machine Learning & Big Data Analytics for Official Statistics",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Leveraging high-frequency alternative datasets and ML models for statistical forecasting.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "DIID",
+        "SDG_LAB"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 70,
+      "course_code": "IGOT-STAT-108",
+      "title": "Metadata Standards (SDMX, DDI) & UN National Quality Assurance Framework (UN-NQAF)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Statistical Data and Metadata eXchange (SDMX) protocols, Data Documentation Initiative (DDI) XML schemas, and quality audits under UN-NQAF principles.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "DIID",
+        "DPD",
+        "SDRD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 75,
+      "course_code": "IGOT-TECH-108",
+      "title": "Cloud Computing, Automated Microdata Exchange & Open Government Data (OGD) APIs",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "RESTful API creation for official microdata dissemination, Open Government Data (data.gov.in) interoperability standards, and high-performance cloud processing.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "DIID",
+        "DPD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 78,
+      "course_code": "IGOT-GOV-104",
+      "title": "MeghRaj Government Cloud Architecture & Security Compliance",
+      "domain": "Digital Governance",
+      "difficulty_level": "Intermediate",
+      "description": "National Cloud MeghRaj deployment guidelines, cloud storage tiering for census microdata, disaster recovery architectures, and MeitY empanelment audits.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "DIID",
+        "DPD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 13,
+      "course_code": "SPEC-SDRD-01",
+      "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Survey sampling designs, primary sampling units (PSUs), and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "DPD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 18,
+      "course_code": "SPEC-STAT-01",
+      "title": "Time Series Econometrics & Seasonal Adjustments (X-13ARIMA-SEATS)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Decomposing statistical seasonalities in monthly production, export, and price series.",
+      "video_url": "https://www.youtube.com/embed/_V8eKsto3Ug",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 56,
+      "course_code": "IGOT-SDRD-205",
+      "title": "Survey Sampling Frame Design, Weighting & Non-Sampling Error Audit",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Stratified multi-stage cluster sampling, multiplier estimation, imputation of missing entries, and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "FOD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    }
+  ],
+  "pooja.sharma@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 2,
+      "course_code": "GEN-02",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 3,
+      "course_code": "GEN-03",
+      "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 4,
+      "course_code": "GEN-04",
+      "title": "Swachhata Hi Seva & e-Office Records Lifecycle Management",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Standards for e-Office digital archiving, file movement, and administrative office hygiene governance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 11,
+      "course_code": "SPEC-PSD-01",
+      "title": "Consumer Price Index (CPI) Basket & Rural-Urban Inflation Metrics",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Validation of price quotations, base year weighting diagrams, and core inflation calculation.",
+      "video_url": "https://www.youtube.com/embed/rPZ3_XFmgm4",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "PSD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 53,
+      "course_code": "IGOT-PSD-202",
+      "title": "Consumer Price Index (CPI) & Inflation Deflator Analytics",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Design of market price baskets, Laspeyres and Jevons price index construction, geometric mean weighting, item substitution rules, and GDP deflator calculations.",
+      "video_url": "https://www.youtube.com/embed/rPZ3_XFmgm4",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "PSD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 63,
+      "course_code": "SPEC-HCES-01",
+      "title": "Household Consumption Expenditure Survey (HCES) & Poverty Line Estimation",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Imputation of social welfare transfers in-kind, Monthly Per Capita Consumption Expenditure (MPCE) fractile classes, and Gini inequality metrics.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "PSD",
+        "NAD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 73,
+      "course_code": "IGOT-TECH-104",
+      "title": "Stata & SPSS for Survey Cross-Tabulation & Complex Panel Econometrics",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Survey weighting commands in Stata (svyset), panel fixed and random effect estimations, multi-dimensional cross-tabulations in SPSS, and output formatting.",
+      "video_url": "https://www.youtube.com/embed/_V8eKsto3Ug",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD",
+        "PSD",
+        "SSD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 94,
+      "course_code": "NSSTA-PSD-301",
+      "title": "Modified Laspeyres CPI (Combined) Geometric Mean Price Aggregation & Quotation Auditing",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Primary price data compilation: market center price quotation auditing, elementary price relatives (Jevons geometric mean), and compiling Rural, Urban, and All-India Combined CPI.",
+      "video_url": "https://www.youtube.com/embed/rPZ3_XFmgm4",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "PSD",
+        "FOD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 8,
+      "course_code": "GEN-08",
+      "title": "General Financial Rules (GFR 2017) & Public Procurement via GeM",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "GFR procurement thresholds, bid creation on GeM, and public audit compliance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 13,
+      "course_code": "SPEC-SDRD-01",
+      "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Survey sampling designs, primary sampling units (PSUs), and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "DPD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 14,
+      "course_code": "SPEC-IPMD-01",
+      "title": "Online Computerised Monitoring System (OCMS) & Mega Project Auditing",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Intermediate",
+      "description": "Milestone monitoring, time/cost overrun auditing for central infrastructure projects ₹150Cr+.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "IPMD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    }
+  ],
+  "sneha.reddy@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 2,
+      "course_code": "GEN-02",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 3,
+      "course_code": "GEN-03",
+      "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 4,
+      "course_code": "GEN-04",
+      "title": "Swachhata Hi Seva & e-Office Records Lifecycle Management",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Standards for e-Office digital archiving, file movement, and administrative office hygiene governance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 95
+    },
+    {
+      "id": 15,
+      "course_code": "SPEC-SSD-01",
+      "title": "Sustainable Development Goals (SDG) National Indicator Framework",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Tracking 300+ SDG indicators, data localization, and state sustainability indices.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SSD",
+        "SDG_LAB",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 54,
+      "course_code": "IGOT-SSD-203",
+      "title": "SDG National Indicator Framework (NIF) Tracking & Social Statistics",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Monitoring 300+ NIF indicators aligned with UN Sustainable Development Goals, baseline metadata harmonization, disaggregated social statistics, and state indicator dashboards.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SSD",
+        "SDG_LAB",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 61,
+      "course_code": "SPEC-PLFS-01",
+      "title": "Periodic Labour Force Survey (PLFS) & Activity Status Classification",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Methodology of Usual Principal and Subsidiary Status (UPSS), Current Weekly Status (CWS), sampling multipliers, and labour market indicator compilation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "FOD",
+        "SSD",
+        "SDRD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 65,
+      "course_code": "SPEC-SDG-02",
+      "title": "Local Indicator Framework (LIF) & District/Panchayat SDG Localization",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Disaggregating national NIF indicators to district (DIF) and gram panchayat (PIF) administrative units for localized development tracking.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SSD",
+        "STATE_DES",
+        "DSO"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 68,
+      "course_code": "IGOT-STAT-104",
+      "title": "Periodic Labour Force Survey (PLFS) Microdata Analysis & Employment Metrics",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Concepts of Usual Principal Status (UPS), Current Weekly Status (CWS), Worker Population Ratio (WPR), Labour Force Participation Rate (LFPR), and sampling weight application on NSSO unit-level data.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SSD",
+        "SDRD",
+        "FOD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 8,
+      "course_code": "GEN-08",
+      "title": "General Financial Rules (GFR 2017) & Public Procurement via GeM",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "GFR procurement thresholds, bid creation on GeM, and public audit compliance.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 13,
+      "course_code": "SPEC-SDRD-01",
+      "title": "Multi-Stage Stratified Sampling Design & Multiplier Estimation in NSS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Survey sampling designs, primary sampling units (PSUs), and variance estimation.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "SDRD",
+        "DPD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 85
+    },
+    {
+      "id": 14,
+      "course_code": "SPEC-IPMD-01",
+      "title": "Online Computerised Monitoring System (OCMS) & Mega Project Auditing",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Intermediate",
+      "description": "Milestone monitoring, time/cost overrun auditing for central infrastructure projects ₹150Cr+.",
+      "video_url": "https://www.youtube.com/embed/wX78iKhInsc",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "IPMD"
       ],
       "learning_stage": "Advanced Strategic",
       "match_score": 85

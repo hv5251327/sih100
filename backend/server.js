@@ -2434,20 +2434,28 @@ function assignSubdomainAndReason(c, deptCode, cadreUpper, desigUpper, comp) {
 // Curate topic-specific authentic YouTube video URLs
 function getRelevantVideoUrl(title, domain) {
     const t = (title || '').toLowerCase();
-    if (t.includes('national accounts') || t.includes('sna') || t.includes('sut') || t.includes('gdp')) {
-        return 'https://www.youtube.com/embed/nK32aCq3mNk'; // National Accounts & SNA
-    } else if (t.includes('plfs') || t.includes('multiplier') || t.includes('sampling') || t.includes('hces')) {
-        return 'https://www.youtube.com/embed/1Il5UUPrSNk'; // Sampling & Microdata Weighting
-    } else if (t.includes('capi') || t.includes('gps') || t.includes('fod') || t.includes('field survey')) {
-        return 'https://www.youtube.com/embed/k9zTr2MAo4s'; // Field Operations & CAPI
-    } else if (t.includes('dpdp') || t.includes('protection') || t.includes('privacy') || t.includes('anonymity') || t.includes('governance')) {
-        return 'https://www.youtube.com/embed/fW_c3-p9Vrk'; // Digital Data Protection Act
-    } else if (t.includes('industrial') || t.includes('asi') || t.includes('iip') || t.includes('factory')) {
-        return 'https://www.youtube.com/embed/s2skans2dP4'; // Annual Survey of Industries
-    } else if (t.includes('cpi') || t.includes('price') || t.includes('inflation')) {
-        return 'https://www.youtube.com/embed/rPZ3_XFmgm4'; // Price Statistics & CPI
-    } else if (domain === 'Behavioural & Managerial' || t.includes('leadership') || t.includes('decision')) {
-        return 'https://www.youtube.com/embed/wX78iKhInsc'; // Leadership & Governance
+    if (t.includes('national accounts') || t.includes('sna') || t.includes('sut') || t.includes('gdp') || t.includes('gva') || t.includes('capital stock') || t.includes('fisim')) {
+        return 'https://www.youtube.com/embed/nK32aCq3mNk';
+    } else if (t.includes('plfs') || t.includes('sampling') || t.includes('hces') || t.includes('strata') || t.includes('multiplier') || t.includes('neyman')) {
+        return 'https://www.youtube.com/embed/1Il5UUPrSNk';
+    } else if (t.includes('capi') || t.includes('gps') || t.includes('fod') || t.includes('field') || t.includes('asuse') || t.includes('listing')) {
+        return 'https://www.youtube.com/embed/k9zTr2MAo4s';
+    } else if (t.includes('dpdp') || t.includes('privacy') || t.includes('confidentiality') || t.includes('statistics act') || t.includes('governance')) {
+        return 'https://www.youtube.com/embed/fW_c3-p9Vrk';
+    } else if (t.includes('asi') || t.includes('iip') || t.includes('industrial') || t.includes('service production') || t.includes('factory')) {
+        return 'https://www.youtube.com/embed/s2skans2dP4';
+    } else if (t.includes('cpi') || t.includes('wpi') || t.includes('price') || t.includes('inflation')) {
+        return 'https://www.youtube.com/embed/rPZ3_XFmgm4';
+    } else if (t.includes('python') || t.includes('pandas') || t.includes('numpy') || t.includes('data wrangling')) {
+        return 'https://www.youtube.com/embed/rfscVS0vtbw';
+    } else if (t.includes(' r ') || t.includes('econometric') || t.includes('survey package') || t.includes('x-13arima')) {
+        return 'https://www.youtube.com/embed/_V8eKsto3Ug';
+    } else if (t.includes('gis') || t.includes('qgis') || t.includes('geopandas') || t.includes('spatial') || t.includes('remote sensing') || t.includes('urban frame')) {
+        return 'https://www.youtube.com/embed/2_2G3j7-f5E';
+    } else if (t.includes('gfr') || t.includes('gem') || t.includes('procurement') || t.includes('posh') || t.includes('ethics') || t.includes('conduct')) {
+        return 'https://www.youtube.com/embed/gP9NfXGzN2U';
+    } else if (domain === 'Behavioural & Managerial' || t.includes('leadership') || t.includes('policy') || t.includes('management') || t.includes('change')) {
+        return 'https://www.youtube.com/embed/wX78iKhInsc';
     }
     return 'https://www.youtube.com/embed/1Il5UUPrSNk';
 }
@@ -2459,10 +2467,11 @@ async function evaluateRecommendationsAI(candidateCourses, profile) {
     const deptCode = parseDeptCode(department);
     const desigUpper = (designation || '').toUpperCase();
     const cadreUpper = (cadre || '').toUpperCase();
+    const isSenior = desigUpper.includes('DIRECTOR') || desigUpper.includes('DDG') || desigUpper.includes('ADG') || desigUpper.includes('CHIEF') || desigUpper.includes('SAG');
 
     // 1. AI Relevance Ranking & Verification (Grok -> Gemini -> Ollama)
     try {
-        const candidateSummary = candidateCourses.slice(0, 30).map(c => ({
+        const candidateSummary = candidateCourses.slice(0, 45).map(c => ({
             id: c.id,
             title: c.title,
             domain: c.domain,
@@ -2470,7 +2479,7 @@ async function evaluateRecommendationsAI(candidateCourses, profile) {
             depts: c.target_departments || ['ALL']
         }));
 
-        const prompt = `You are the Chief Academic Evaluator & Psychometric Director at NSSTA, MoSPI.
+        const prompt = `You are the Principal Curriculum Director & Chief Psychometrician at NSSTA, MoSPI.
 Evaluate these candidate courses for an officer:
 - Officer Cadre: ${cadre || 'Official Statistical Service'}
 - Officer Division / Department: ${department} (Code: ${deptCode})
@@ -2482,11 +2491,11 @@ ${JSON.stringify(candidateSummary)}
 
 STRICT CURRICULUM SELECTION RULES:
 1. Ground every recommendation strictly in this officer's actual cadre (${cadre}), division (${department}), and designation level (${designation}).
-2. Do NOT recommend modules belonging to unrelated divisions (e.g. do not assign National Accounts to SDRD/FOD; do not assign Field CAPI surveys to NAD).
-3. Select ONLY:
-   - 2 high-priority Foundation modules (Stage: "Foundation")
-   - 2 to 3 high-priority Functional Core modules (Stage: "Functional Core")
-   - 2 high-priority Advanced Strategic modules (Stage: "Advanced Strategic")
+2. Do NOT recommend modules belonging to unrelated divisions.
+3. Select exactly 10 to 12 courses partitioned as follows:
+   - 3 to 4 Foundational modules (Stage: "Foundation")
+   - 4 to 5 Functional Core modules (Stage: "Functional Core")
+   - 3 to 4 Advanced Strategic / Technical modules (Stage: "Advanced Strategic")
 4. Provide a crisp 1-sentence description for each course.
 
 Return STRICT JSON array without markdown formatting:
@@ -2499,7 +2508,7 @@ Return STRICT JSON array without markdown formatting:
             const match = raw.match(/\[[\s\S]*\]/);
             if (match) {
                 const parsed = JSON.parse(match[0]);
-                if (Array.isArray(parsed) && parsed.length >= 3) {
+                if (Array.isArray(parsed) && parsed.length >= 8) {
                     const idMap = new Map(candidateCourses.map(c => [c.id, c]));
                     const evaluatedCourses = [];
 
@@ -2516,8 +2525,8 @@ Return STRICT JSON array without markdown formatting:
                         }
                     }
 
-                    if (evaluatedCourses.length >= 3) {
-                        return evaluatedCourses;
+                    if (evaluatedCourses.length >= 8) {
+                        return evaluatedCourses.slice(0, 12);
                     }
                 }
             }
@@ -2526,12 +2535,14 @@ Return STRICT JSON array without markdown formatting:
         console.warn("AI Relevance Filter fallback:", e.message);
     }
 
-    // 2. Intelligent Deterministic Fallback
-    const isSenior = desigUpper.includes('DIRECTOR') || desigUpper.includes('DDG') || desigUpper.includes('ADG');
-    
+    // 2. Intelligent Deterministic Fallback - Guarantees 10 to 12 Tailored Courses
+    // Stage 1: Foundation (3-4 courses)
     const foundation = candidateCourses
-        .filter(c => c.is_general_mandatory || c.domain === 'Digital Governance' || c.difficulty_level === 'Foundation')
-        .slice(0, 2)
+        .filter(c => {
+            const depts = (c.target_departments || ['ALL']).map(d => String(d).toUpperCase());
+            return c.is_general_mandatory || c.difficulty_level === 'Foundation' || (c.domain === 'Digital Governance' && (depts.includes(deptCode) || depts.includes('ALL')));
+        })
+        .slice(0, 4)
         .map(c => ({
             ...c,
             learning_stage: 'Foundation',
@@ -2539,12 +2550,16 @@ Return STRICT JSON array without markdown formatting:
             match_score: 95
         }));
 
+    const foundationIds = new Set(foundation.map(c => c.id));
+
+    // Stage 2: Functional Core (4-5 courses) - Strict Division & Cadre alignment
     const functional = candidateCourses
         .filter(c => {
+            if (foundationIds.has(c.id)) return false;
             const depts = (c.target_departments || ['ALL']).map(d => String(d).toUpperCase());
-            return (depts.includes(deptCode) || depts.includes('ALL')) && !foundation.some(f => f.id === c.id);
+            return depts.includes(deptCode);
         })
-        .slice(0, 3)
+        .slice(0, 5)
         .map(c => ({
             ...c,
             learning_stage: 'Functional Core',
@@ -2552,9 +2567,32 @@ Return STRICT JSON array without markdown formatting:
             match_score: 90
         }));
 
+    // If less than 4 division specific, backfill with general statistical core
+    if (functional.length < 4) {
+        const backfill = candidateCourses
+            .filter(c => !foundationIds.has(c.id) && !functional.some(fn => fn.id === c.id) && (c.domain === 'Statistical Competencies' || c.domain === 'Technical Competencies'))
+            .slice(0, 4 - functional.length)
+            .map(c => ({
+                ...c,
+                learning_stage: 'Functional Core',
+                video_url: getRelevantVideoUrl(c.title, c.domain),
+                match_score: 88
+            }));
+        functional.push(...backfill);
+    }
+
+    const assignedIds = new Set([...foundation.map(c => c.id), ...functional.map(c => c.id)]);
+
+    // Stage 3: Advanced Strategic & Leadership (3-4 courses)
     const strategic = candidateCourses
-        .filter(c => !foundation.some(f => f.id === c.id) && !functional.some(fn => fn.id === c.id) && (c.difficulty_level === 'Advanced' || c.domain === 'Behavioural & Managerial' || isSenior))
-        .slice(0, 2)
+        .filter(c => {
+            if (assignedIds.has(c.id)) return false;
+            if (isSenior) {
+                return c.difficulty_level === 'Advanced' || c.domain === 'Behavioural & Managerial';
+            }
+            return (c.domain === 'Technical Competencies' || c.domain === 'Statistical Competencies') && c.difficulty_level === 'Advanced';
+        })
+        .slice(0, 3)
         .map(c => ({
             ...c,
             learning_stage: 'Advanced Strategic',
@@ -2562,7 +2600,8 @@ Return STRICT JSON array without markdown formatting:
             match_score: 85
         }));
 
-    return [...foundation, ...functional, ...strategic];
+    const finalRecommendations = [...foundation, ...functional, ...strategic];
+    return finalRecommendations.slice(0, 12);
 }
 
 app.post('/api/recommendations', async (req, res) => {

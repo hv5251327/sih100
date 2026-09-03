@@ -787,14 +787,27 @@
       const container = document.getElementById("dynamic-modules-container");
       const statusLabel = document.getElementById("recommendation-status");
 
-      // 1. Instant zero-latency render from saved database cache in localStorage
+      // 1. Fetch completed courses set first to guarantee exclusion
+      let completedSet = new Set();
+      try {
+        const progRes = await fetch(`${API_URL}/api/progress/${currentUser.email}`);
+        if (progRes.ok) {
+          const progData = await progRes.json();
+          const list = [...(progData.progress || []), ...(progData.certificates || [])];
+          list.forEach(p => {
+            if (p.course_title) completedSet.add(p.course_title.toLowerCase().trim());
+          });
+        }
+      } catch (e) {}
+
+      // 2. Instant zero-latency render from saved database cache in localStorage
       const cachedStr = localStorage.getItem('mospi_recommendations_' + (currentUser.email || '').toLowerCase());
       if (cachedStr) {
         try {
           const parsed = JSON.parse(cachedStr);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            allRecommendedCourses = parsed;
-            statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended (Loaded from DB)`;
+            allRecommendedCourses = parsed.filter(c => !completedSet.has((c.title || '').toLowerCase().trim()));
+            statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
             renderSimplifiedModules();
           }
         } catch(e) {}
@@ -814,7 +827,7 @@
 
         const data = await res.json();
         if (data.courses && Array.isArray(data.courses) && data.courses.length > 0) {
-          allRecommendedCourses = data.courses;
+          allRecommendedCourses = data.courses.filter(c => !completedSet.has((c.title || '').toLowerCase().trim()));
           localStorage.setItem('mospi_recommendations_' + (currentUser.email || '').toLowerCase(), JSON.stringify(allRecommendedCourses));
           statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
           renderSimplifiedModules();
@@ -830,7 +843,7 @@
     function renderSimplifiedModules() {
       const container = document.getElementById("dynamic-modules-container");
       if (!allRecommendedCourses || allRecommendedCourses.length === 0) {
-        container.innerHTML = '<p style="color:#64748b; font-size:0.9rem; padding:12px;">No recommended courses found for your profile at this time.</p>';
+        container.innerHTML = '<div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:16px; text-align:center;"><i class="fa-solid fa-circle-check" style="color:#16a34a; font-size:1.5rem;"></i><p style="color:#166534; font-weight:700; margin-top:6px;">All assigned curriculum modules completed! Excellent work.</p></div>';
         return;
       }
 
