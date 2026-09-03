@@ -269,9 +269,9 @@
         <h2><i class="fa-solid fa-users-viewfinder"></i> Officer Registry (Grouped by Cadre, Department & Designation)</h2>
         <input type="text" id="officerSearch" placeholder="Filter by Name, Cadre or Division..." onkeyup="filterOfficers()" style="padding:6px 12px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem;">
       </div>
-      <div style="overflow-x:auto;">
-        <table>
-          <thead>
+      <div style="overflow-x:auto; max-height:280px; overflow-y:auto; border:1px solid var(--border); border-radius:8px;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead style="position:sticky; top:0; background:#f8fafc; z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
             <tr>
               <th>Officer Name</th>
               <th>Official Email</th>
@@ -430,9 +430,9 @@
         </div>
         <button class="btn-action" onclick="loadCertificatesQueue()" style="background:#0284c7; padding:6px 12px; font-size:0.85rem;"><i class="fa-solid fa-arrows-rotate"></i> Refresh Queue</button>
       </div>
-      <div style="overflow-x:auto;">
-        <table>
-          <thead>
+      <div style="overflow-x:auto; max-height:280px; overflow-y:auto; border:1px solid var(--border); border-radius:8px;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead style="position:sticky; top:0; background:#f8fafc; z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
             <tr>
               <th>Officer Name & Email</th>
               <th>Course Title</th>
