@@ -32,10 +32,12 @@ try {
     console.warn("Could not load recommendations file:", e.message);
 }
 
-function persistOfficerRecommendations(email, courses) {
+async function persistOfficerRecommendations(email, courses, profile = {}) {
     if (!email || !Array.isArray(courses)) return;
     const cleanEmail = email.trim().toLowerCase();
     memoryOfficerRecommendations[cleanEmail] = courses;
+    
+    // 1. Dual-persist to disk cache
     try {
         if (!fs.existsSync(path.join(__dirname, 'data'))) {
             fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true });
@@ -44,11 +46,36 @@ function persistOfficerRecommendations(email, courses) {
     } catch (e) {
         console.warn("Could not persist recommendations to disk:", e.message);
     }
+
+    // 2. Dual-persist to Supabase PostgreSQL table if exists
+    try {
+        await supabase.from('officer_recommendations').upsert({
+            officer_email: cleanEmail,
+            cadre: profile.cadre || 'Official Statistical Service',
+            designation: profile.designation || 'Officer',
+            department: profile.department || 'MoSPI',
+            recommended_courses: courses,
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'officer_email' });
+    } catch (dbErr) {
+        // Table may not be created in schema yet; local disk cache guarantees persistence
+    }
 }
 
-function getSavedOfficerRecommendations(email) {
+async function getSavedOfficerRecommendations(email) {
     if (!email) return null;
     const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Check Supabase table first
+    try {
+        const { data, error } = await supabase.from('officer_recommendations').select('recommended_courses').eq('officer_email', cleanEmail).single();
+        if (!error && data && Array.isArray(data.recommended_courses) && data.recommended_courses.length > 0) {
+            memoryOfficerRecommendations[cleanEmail] = data.recommended_courses;
+            return data.recommended_courses;
+        }
+    } catch (e) {}
+
+    // 2. Fallback to in-memory / disk cache
     const saved = memoryOfficerRecommendations[cleanEmail];
     return (Array.isArray(saved) && saved.length > 0) ? saved : null;
 }
@@ -2615,7 +2642,7 @@ app.post('/api/recommendations', async (req, res) => {
         const completedNormTitles = cleanEmail ? await getOfficerCompletedCourses(cleanEmail) : new Set();
         
         // 1. FAST PERSISTENT DB CACHE CHECK: If already saved in DB, return instantly without re-fetching!
-        const savedRecs = getSavedOfficerRecommendations(cleanEmail);
+        const savedRecs = await getSavedOfficerRecommendations(cleanEmail);
         if (savedRecs && savedRecs.length > 0 && !force_refresh) {
             const activeRecs = savedRecs.filter(c => !completedNormTitles.has(normalizeTitle(c.title)));
             if (activeRecs.length > 0) {
@@ -2646,7 +2673,7 @@ app.post('/api/recommendations', async (req, res) => {
 
         // Persist to DB cache permanently so subsequent logins are instant
         if (cleanEmail) {
-            persistOfficerRecommendations(cleanEmail, finalRecommendations);
+            await persistOfficerRecommendations(cleanEmail, finalRecommendations, { cadre, designation, department });
         }
 
         // Retrieve and match NSSTA TPAC Training Programmes
@@ -3518,7 +3545,7 @@ app.post('/api/auth/register', async (req, res) => {
             cadre: cadre.trim(),
             comp: { statistical_score: 50, technical_score: 50, governance_score: 50, leadership_score: 50 }
         });
-        persistOfficerRecommendations(cleanEmail, initialRecs);
+        await persistOfficerRecommendations(cleanEmail, initialRecs, { cadre, designation, department });
 
         return res.status(201).json({ message: 'Registered successfully and courses saved in DB!', user: data[0] });
     } catch (err) {
@@ -3582,7 +3609,7 @@ app.post('/api/auth/login', async (req, res) => {
         const sessionExpiry = new Date(Date.now() + 3600000 * 8).toISOString();
 
         const { password: _, ...userProfile } = userRecord;
-        const savedRecommendations = getSavedOfficerRecommendations(cleanEmail) || [];
+        const savedRecommendations = (await getSavedOfficerRecommendations(cleanEmail)) || [];
 
         return res.json({ 
             message: 'Authentication successful', 
