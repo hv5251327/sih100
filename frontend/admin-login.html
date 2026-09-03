@@ -12,6 +12,11 @@
         <div class="icon-box"><i class="fa-solid fa-user-shield"></i></div>
         <h2>MoSPI Command Center</h2>
         <p class="subtitle">Administrator Authentication</p>
+
+        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:6px; padding:10px 12px; margin-bottom:16px; font-size:0.8rem; color:#0369a1; display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-key" style="color:#0284c7; font-size:0.95rem;"></i>
+            <span><strong>Pre-filled Admin Access:</strong> <code style="background:#fff; padding:2px 6px; border-radius:4px; border:1px solid #cbd5e1; color:#1e3a8a; font-weight:700;">admin@mospi.gov.in</code> / <code style="background:#fff; padding:2px 6px; border-radius:4px; border:1px solid #cbd5e1; color:#1e3a8a; font-weight:700;">1234</code></span>
+        </div>
         
         <form id="adminForm" onsubmit="event.preventDefault(); submitAdminAuth(event);">
             <div class="form-group">
@@ -31,6 +36,14 @@
         <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
     </div>
 
-    <script src="auth.js?v=2.8"></script>
+    <script src="auth.js?v=2.9"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const emailInput = document.getElementById('email');
+            const passInput = document.getElementById('password');
+            if (emailInput && !emailInput.value) emailInput.value = 'admin@mospi.gov.in';
+            if (passInput && !passInput.value) passInput.value = '1234';
+        });
+    </script>
 </body>
 </html>
