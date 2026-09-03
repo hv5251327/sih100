@@ -704,42 +704,43 @@
     let currentActiveCourse = "";
 
     document.addEventListener("DOMContentLoaded", async () => {
-      let stored = localStorage.getItem('mospi_user') || sessionStorage.getItem('mospi_user');
-      if (!stored) {
-        currentUser = {
-          name: 'Dr. Sunita Sharma',
-          email: 'sunita.sharma@mospi.gov.in',
-          role: 'employee',
-          cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service",
-          department: 'National Accounts Division (NAD) — Macro Aggregates & GDP',
-          designation: 'Senior Administrative Grade (SAG) / DDG',
-          session_token: 'GOV-AUTH-TOKEN-DEFAULT',
-          session_expiry: new Date(Date.now() + 86400000 * 7).toISOString()
-        };
-        localStorage.setItem('mospi_user', JSON.stringify(currentUser));
-      } else {
-        try {
-          currentUser = JSON.parse(stored);
-        } catch(e) {
-          currentUser = { email: 'sunita.sharma@mospi.gov.in', name: 'Dr. Sunita Sharma' };
+      try {
+        let stored = localStorage.getItem('mospi_user') || sessionStorage.getItem('mospi_user');
+        if (!stored) {
+          currentUser = {
+            name: 'Dr. Sunita Sharma',
+            email: 'sunita.sharma@mospi.gov.in',
+            role: 'employee',
+            cadre: "Indian Statistical Service (ISS) — Group 'A' Central Service",
+            department: 'National Accounts Division (NAD) — Macro Aggregates & GDP',
+            designation: 'Senior Administrative Grade (SAG) / DDG',
+            session_token: 'GOV-AUTH-TOKEN-DEFAULT',
+            session_expiry: new Date(Date.now() + 86400000 * 7).toISOString()
+          };
+          localStorage.setItem('mospi_user', JSON.stringify(currentUser));
+        } else {
+          try {
+            currentUser = JSON.parse(stored);
+          } catch(e) {
+            currentUser = { email: 'sunita.sharma@mospi.gov.in', name: 'Dr. Sunita Sharma' };
+          }
         }
-      }
 
-        document.getElementById("officer-name-display").innerText = currentUser.name || 'Officer Trainee';
-        document.getElementById("disp-officer-name").innerText = currentUser.name || 'N/A';
-        document.getElementById("disp-officer-email").innerText = currentUser.email || 'N/A';
-        document.getElementById("disp-officer-cadre").innerText = currentUser.cadre || 'N/A';
-        document.getElementById("disp-officer-dept").innerText = currentUser.department || 'N/A';
-        document.getElementById("disp-officer-desig").innerText = currentUser.designation || 'N/A';
+        if (document.getElementById("officer-name-display")) document.getElementById("officer-name-display").innerText = currentUser.name || 'Officer Trainee';
+        if (document.getElementById("disp-officer-name")) document.getElementById("disp-officer-name").innerText = currentUser.name || 'N/A';
+        if (document.getElementById("disp-officer-email")) document.getElementById("disp-officer-email").innerText = currentUser.email || 'N/A';
+        if (document.getElementById("disp-officer-cadre")) document.getElementById("disp-officer-cadre").innerText = currentUser.cadre || 'N/A';
+        if (document.getElementById("disp-officer-dept")) document.getElementById("disp-officer-dept").innerText = currentUser.department || 'N/A';
+        if (document.getElementById("disp-officer-desig")) document.getElementById("disp-officer-desig").innerText = currentUser.designation || 'N/A';
 
-        await Promise.all([
+        await Promise.allSettled([
           loadIgotProfile(),
           loadCompetencies(), 
           loadOfficerRecommendations(),
           loadOfficerHistory()
         ]);
       } catch (e) {
-        console.error("Session load error:", e);
+        console.error("Session initialization error:", e);
       }
     });
 
