@@ -396,7 +396,6 @@
         </select>
       </div>
 
-      <button onclick="openDocAssessmentModal()" class="btn-action" style="background: linear-gradient(135deg, #1e3a8a, #0284c7); color:#fff; font-size:0.82rem; font-weight:700; padding:7px 14px; border-radius:6px; display:flex; align-items:center; gap:6px; border:none; cursor:pointer; box-shadow:0 2px 6px rgba(2,132,199,0.3);"><i class="fa-solid fa-file-circle-question"></i> <span>AI Doc to Quiz Engine</span></button>
       <div class="user-pill">
         <span><i class="fa-solid fa-user-tie"></i> <strong id="officer-name-display">Officer Trainee</strong></span>
         <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></button>
@@ -544,11 +543,11 @@
           <h2>Emerging Technologies Virtual Laboratories</h2>
         </div>
         <span style="font-size:0.78rem; font-weight:700; background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd; padding:3px 8px; border-radius:4px;">
-          <i class="fa-solid fa-microchip"></i> Hands-on Sandboxes: AI • Data Science • GIS • Cloud • DPDP
+          <i class="fa-solid fa-microchip"></i> Hands-on Sandboxes: AI • Data Science • GIS • Cloud Automation
         </span>
       </div>
       <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:14px;">
-        Interactive, zero-setup browser laboratories for hands-on capacity building across Artificial Intelligence, Microdata Science, Geospatial Mapping, Cloud Pipelines, and Cybersecurity.
+        Interactive, zero-setup browser laboratories for hands-on capacity building across Artificial Intelligence, Microdata Science, Geospatial Mapping, and Cloud Pipelines.
       </p>
 
       <!-- Lab Navigation Tabs -->
@@ -564,9 +563,6 @@
         </button>
         <button type="button" onclick="switchVirtualLab('cloud')" id="tab-lab-cloud" class="lab-tab-btn" style="padding:8px 14px; border-radius:6px; font-size:0.82rem; font-weight:700; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; cursor:pointer; display:flex; align-items:center; gap:6px;">
           <i class="fa-solid fa-cloud-arrow-up"></i> 4. Cloud ETL & Automation Lab
-        </button>
-        <button type="button" onclick="switchVirtualLab('dpdp')" id="tab-lab-dpdp" class="lab-tab-btn" style="padding:8px 14px; border-radius:6px; font-size:0.82rem; font-weight:700; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; cursor:pointer; display:flex; align-items:center; gap:6px;">
-          <i class="fa-solid fa-user-shield"></i> 5. DPDP Act 2023 & Security Lab
         </button>
       </div>
 
@@ -698,39 +694,6 @@
           <div id="etl-pipeline-visual" style="background:#0f172a; border-radius:8px; padding:14px; font-family:monospace; font-size:0.78rem; color:#38bdf8; min-height:140px; max-height:180px; overflow-y:auto; border:1px solid #334155;">
             <div style="color:#94a3b8;">[READY] Cloud ETL Cluster standby. Click 'Trigger Pipeline' to simulate end-to-end ingestion.</div>
           </div>
-        </div>
-      </div>
-
-      <!-- LAB 5: Cybersecurity & DPDP Act 2023 Lab -->
-      <div id="lab-container-dpdp" class="virtual-lab-box" style="display:none;">
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
-          <h3 style="font-size:0.95rem; font-weight:800; color:#1e3a8a; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
-            <i class="fa-solid fa-shield-halved" style="color:#15803d;"></i> Digital Personal Data Protection (DPDP) Act 2023 Compliance Auditor
-          </h3>
-          <p style="font-size:0.82rem; color:#475569; margin-bottom:12px;">
-            Interactive data privacy and cryptographic masking sandbox. Test respondent microdata against statutory anonymization, SHA-256 pseudonymization, and purpose limitation rules.
-          </p>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-            <div>
-              <label style="font-size:0.78rem; font-weight:700; color:#334155; display:block; margin-bottom:4px;">Raw Field Survey Record (Contains PII):</label>
-              <textarea id="dpdpRawRecord" rows="4" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-family:monospace; font-size:0.75rem; box-sizing:border-box;">{
-  "respondent_name": "Ramesh Kumar Verma",
-  "aadhaar_last4": "8841",
-  "mobile_no": "9818012345",
-  "gps_lat_long": "28.6139, 77.2090",
-  "monthly_income_inr": 48500
-}</textarea>
-            </div>
-            <div>
-              <label style="font-size:0.78rem; font-weight:700; color:#334155; display:block; margin-bottom:4px;">DPDP 2023 Compliant Anonymized Microdata:</label>
-              <textarea id="dpdpMaskedRecord" rows="4" readonly style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-family:monospace; font-size:0.75rem; background:#f1f5f9; color:#15803d; box-sizing:border-box;">Click 'Run DPDP Audit & Masking' to generate verified pseudonymized record...</textarea>
-            </div>
-          </div>
-
-          <button type="button" onclick="executeDPDPAudit()" class="btn-action" style="background:#15803d; color:#fff; font-size:0.85rem; padding:10px 18px;">
-            <i class="fa-solid fa-lock"></i> Run DPDP 2023 Compliance Audit & Cryptographic Masking
-          </button>
         </div>
       </div>
     </section>
