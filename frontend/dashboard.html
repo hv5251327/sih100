@@ -2694,13 +2694,23 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
       // Inline code
       html = html.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9; color:#0f172a; padding:2px 6px; border-radius:4px; font-family:monospace; font-size:0.85em; border:1px solid #cbd5e1;">$1</code>');
 
+      // Math display $$...$$
+      html = html.replace(/\$\$([\s\S]*?)\$\$/g, '<div style="background:#f8fafc; border-left:3px solid #0284c7; padding:6px 10px; margin:6px 0; font-family:serif; font-style:italic; font-size:0.9rem; color:#1e293b; overflow-x:auto;">$1</div>');
+      
+      // Math inline $...$
+      html = html.replace(/\$([^\$\n]+)\$/g, '<span style="font-family:serif; font-style:italic; color:#0369a1; font-weight:600;">$1</span>');
+
       // Bold & Italic
       html = html.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
       html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
+      // Headings
+      html = html.replace(/^### (.*$)/gim, '<h4 style="margin:8px 0 4px 0; font-size:0.88rem; font-weight:700; color:#1e3a8a;">$1</h4>');
+      html = html.replace(/^## (.*$)/gim, '<h3 style="margin:10px 0 6px 0; font-size:0.95rem; font-weight:800; color:#0f172a;">$1</h3>');
+
       // Bullet points
-      html = html.replace(/^[•\-\*]\s+(.*)$/gm, '<div style="margin-left:14px; margin-bottom:2px;">• $1</div>');
+      html = html.replace(/^[•\-\*]\s+(.*)$/gm, '<div style="margin-left:14px; margin-bottom:3px; display:flex; gap:6px;"><span>•</span><span>$1</span></div>');
 
       // Line breaks
       html = html.replace(/\n/g, '<br>');
@@ -2732,21 +2742,57 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
       input.value = "";
 
       const thinkingMsg = appendChatMessage("Thinking...", "bot");
+      const chatLog = document.getElementById("bhashini-chat-log");
+      chatLog.scrollTop = chatLog.scrollHeight;
 
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+
         const res = await fetch(`${API_URL}/api/chatbot`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: q, userProfile: currentUser })
+          body: JSON.stringify({ message: q, userProfile: currentUser }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
+
         const data = await res.json();
-        
-        let text = data.reply || "I am here to help you navigate your NSSTA training roadmap.";
+        let text = data.reply || getLocalBhashiniKnowledgeResponse(q);
         thinkingMsg.innerHTML = formatMarkdown(text);
-        document.getElementById("bhashini-chat-log").scrollTop = document.getElementById("bhashini-chat-log").scrollHeight;
+        chatLog.scrollTop = chatLog.scrollHeight;
       } catch (e) {
-        thinkingMsg.innerHTML = "Bhashini AI: Complete your recommended NSSTA courses below to increase your competency scores.";
+        let fallbackText = getLocalBhashiniKnowledgeResponse(q);
+        thinkingMsg.innerHTML = formatMarkdown(fallbackText);
+        chatLog.scrollTop = chatLog.scrollHeight;
       }
+    }
+
+    function getLocalBhashiniKnowledgeResponse(question) {
+      const q = (question || '').toLowerCase();
+      const officerName = (currentUser && currentUser.name) ? currentUser.name : 'Officer';
+
+      if (q.includes('cpi') || q.includes('inflation') || q.includes('laspeyres') || q.includes('price')) {
+        return `📊 **Consumer Price Index (CPI) Compilation Methodology (PSD)**\n\nCompiled monthly by the **Price Statistics Division (PSD), MoSPI** (Base Year 2012=100):\n\n### 1. Price Index Formula:\nThe CPI utilizes the **Modified Laspeyres Price Index Formula**:\n$$I_t = \\frac{\\sum_{i} w_i \\times (p_{it} / p_{i0}) \\times 100}{\\sum_{i} w_i}$$\n\n### 2. Group Weighting Structure (Combined Basket):\n• **Food & Beverages:** **45.86%**\n• **Pan, Tobacco & Intoxicants:** **2.38%**\n• **Clothing & Footwear:** **6.53%**\n• **Housing:** **10.07%** (Urban sector)\n• **Fuel & Light:** **6.84%**\n• **Miscellaneous:** **28.32%**\n\nItem-level prices are aggregated via the **Jevons Index** geometric mean.`;
+      }
+
+      if (q.includes('sna') || q.includes('gdp') || q.includes('gva') || q.includes('national account')) {
+        return `🏛️ **System of National Accounts (SNA 2008) & GDP Compilation (NAD)**\n\nUnder **UN-SNA 2008** standards (Base Year 2011-12):\n\n### 1. Core Macroeconomic Formulas:\n• **Gross Value Added (GVA) at Basic Prices:**\n  $$\\text{GVA}_{\\text{Basic}} = \\text{Gross Output} - \\text{Intermediate Consumption}$$\n• **Gross Domestic Product (GDP) at Market Prices:**\n  $$\\text{GDP}_{\\text{Market}} = \\sum \\text{GVA}_{\\text{Basic}} + \\text{Product Taxes} - \\text{Product Subsidies}$$\n\n### 2. Supply-Use Balancing (SUT):\nBalanced annually by NAD across all commodity groups to eliminate statistical discrepancy.`;
+      }
+
+      if (q.includes('neyman') || q.includes('sampling') || q.includes('sample') || q.includes('plfs')) {
+        return `📑 **Multi-Stage Sampling & Neyman Optimum Allocation (SDRD & FOD)**\n\n### 1. Neyman Allocation Formula:\nTo minimize sampling variance for fixed sample size $n$ across $H$ strata:\n$$n_h = n \\times \\frac{N_h \\cdot S_h}{\\sum_{i=1}^{H} N_i \\cdot S_i}$$\n\n### 2. Multipliers in NSSO Surveys:\n$$W_{hi} = (N_h / n_h) \\times (M_{hi} / m_{hi})$$\nApplied in PLFS, HCES, and ASUSE for unbiased national parameter estimation.`;
+      }
+
+      if (q.includes('certificate') || q.includes('upload') || q.includes('submit cert')) {
+        return `📜 **How Certificate Verification Works:**\n1. Click the orange **"Certificate"** button on any course card in your roadmap.\n2. Select your certificate PDF or image file (from iGOT Karmayogi, NSSTA, DoPT, ISI, etc.).\n3. The **MoSPI AI Credential Auditor** scans the document and assigns an official Verification Audit Code.\n4. Your certificate is submitted to the **NSSTA Admin Verification Queue** for final approval and competency credit allocation!`;
+      }
+
+      if (q.includes('quiz') || q.includes('assessment') || q.includes('test')) {
+        return `📝 **How to Take a Course Assessment Quiz:**\n1. Click the blue **"Quiz"** button on any course card in your roadmap.\n2. Answer all 5 multiple-choice questions fetched directly from the accredited MoSPI Question Bank.\n3. **Passing Requirement:** Score at least **80% (4 out of 5 questions correct)** to pass the module, earn competency points, and advance your roadmap!`;
+      }
+
+      return `🙏 **Namaste ${officerName}!**\n\nI am **Bhashini AI**, your Intelligent Statistical Copilot for the **National Statistical Systems Training Academy (NSSTA), MoSPI**.\n\nAsk me about:\n• **SNA 2008 & GDP Compilation**\n• **CPI Inflation & Indexation Formulas**\n• **Neyman Optimum Sampling & PLFS Multipliers**\n• **Python & R Data Processing Scripts**\n• **DPDP Act 2023 Microdata Privacy Rules**`;
     }
 
     function startVoiceRecognition() {

@@ -190,7 +190,6 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
         const grokModels = ['grok-3', 'grok-3-mini', 'grok-2-latest', 'grok-beta'];
         for (const model of grokModels) {
             try {
-                console.log(`[GROK AI ENGINE] Evaluating recommendations via xAI ${model}...`);
                 const res = await fetch('https://api.x.ai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -204,19 +203,15 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
                             { role: 'user', content: prompt }
                         ],
                         temperature: isJson ? 0.1 : 0.3
-                    })
+                    }),
+                    signal: AbortSignal.timeout(3000)
                 });
                 const data = await res.json();
                 if (res.ok && data?.choices?.[0]?.message?.content) {
-                    console.log(`[GROK AI ENGINE] Successfully generated recommendations using ${model}!`);
                     const text = data.choices[0].message.content;
-                    return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
-                } else {
-                    console.warn(`[GROK AI ENGINE] ${model} status ${res.status}:`, data.error?.message || res.statusText);
+                    return isJson ? text.replace(/```json/gi, '').replace(/```/g, '').trim() : text.trim();
                 }
-            } catch (e) {
-                console.warn(`[GROK AI ENGINE] ${model} fetch error:`, e.message);
-            }
+            } catch (e) {}
         }
     }
 
@@ -235,45 +230,19 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
                         generationConfig: {
                             temperature: isJson ? 0.1 : 0.3
                         }
-                    })
+                    }),
+                    signal: AbortSignal.timeout(3000)
                 });
                 if (res.ok) {
                     const data = await res.json();
                     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+                    if (text) return isJson ? text.replace(/```json/gi, '').replace(/```/g, '').trim() : text.trim();
                 }
             } catch (e) {}
         }
     }
 
-    // 3. Ollama Cloud Engine (gpt-oss:20b / deepseek-v4-flash:0731)
-    if (OLLAMA_API_KEY) {
-        const ollamaModels = ['gpt-oss:20b', 'deepseek-v4-flash:0731', 'nemotron-3-nano:30b', 'gemma4:31b'];
-        for (const model of ollamaModels) {
-            try {
-                const res = await fetch('https://api.ollama.com/api/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${OLLAMA_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: model,
-                        prompt: `${sysPrompt}\n\n${prompt}`,
-                        stream: false
-                    })
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.response) {
-                        return isJson ? data.response.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : data.response.trim();
-                    }
-                }
-            } catch (e) {}
-        }
-    }
-
-    // 2. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
+    // 3. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
     if (GROQ_API_KEY) {
         const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
         for (const model of groqModels) {
@@ -291,41 +260,19 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
                             { role: 'user', content: prompt }
                         ],
                         temperature: isJson ? 0.1 : 0.3
-                    })
+                    }),
+                    signal: AbortSignal.timeout(3000)
                 });
                 if (res.ok) {
                     const data = await res.json();
                     const text = data?.choices?.[0]?.message?.content;
-                    if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+                    if (text) return isJson ? text.replace(/```json/gi, '').replace(/```/g, '').trim() : text.trim();
                 }
             } catch (e) {}
         }
     }
 
-    // 2. Google Gemini API Engine (Gemini 1.5 Flash)
-    if (GEMINI_API_KEY) {
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: `${sysPrompt}\n\nTask:\n${prompt}` }]
-                    }],
-                    generationConfig: {
-                        temperature: isJson ? 0.1 : 0.3
-                    }
-                })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
-            }
-        } catch (e) {}
-    }
-
-    // 3. OpenAI Engine (GPT-4o-mini)
+    // 4. OpenAI Engine (GPT-4o-mini)
     if (OPENAI_API_KEY) {
         try {
             const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -341,76 +288,77 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
                         { role: 'user', content: prompt }
                     ],
                     temperature: isJson ? 0.1 : 0.3
-                })
+                }),
+                signal: AbortSignal.timeout(3000)
             });
             if (res.ok) {
                 const data = await res.json();
                 const text = data?.choices?.[0]?.message?.content;
-                if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+                if (text) return isJson ? text.replace(/```json/gi, '').replace(/```/g, '').trim() : text.trim();
             }
         } catch (e) {}
     }
 
-    // 4. Ollama AI Engine
+    // 5. Ollama Cloud Engine
     if (OLLAMA_API_KEY) {
-        const endpoints = [
-            `${OLLAMA_BASE_URL}/chat/completions`,
-            'https://api.ollama.com/v1/chat/completions',
-            'http://localhost:11434/v1/chat/completions'
-        ];
-        for (const ep of endpoints) {
+        const ollamaModels = ['gpt-oss:20b', 'deepseek-v4-flash:0731'];
+        for (const model of ollamaModels) {
             try {
-                const res = await fetch(ep, {
+                const res = await fetch('https://api.ollama.com/api/generate', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${OLLAMA_API_KEY}`
+                        'Authorization': `Bearer ${OLLAMA_API_KEY}`,
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'llama3.2',
-                        messages: [
-                            { role: 'system', content: sysPrompt },
-                            { role: 'user', content: prompt }
-                        ],
-                        temperature: isJson ? 0.1 : 0.3
-                    })
+                        model: model,
+                        prompt: `${sysPrompt}\n\n${prompt}`,
+                        stream: false
+                    }),
+                    signal: AbortSignal.timeout(3000)
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    const text = data?.choices?.[0]?.message?.content;
-                    if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
+                    if (data && data.response) {
+                        return isJson ? data.response.replace(/```json/gi, '').replace(/```/g, '').trim() : data.response.trim();
+                    }
                 }
             } catch (e) {}
         }
     }
 
-    // 5. xAI Grok Engine
-    if (GROK_API_KEY) {
-        try {
-            const res = await fetch('https://api.x.ai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GROK_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: 'grok-beta',
-                    messages: [
-                        { role: 'system', content: sysPrompt },
-                        { role: 'user', content: prompt }
-                    ],
-                    temperature: 0.2
-                })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                const text = data?.choices?.[0]?.message?.content;
-                if (text) return isJson ? text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim() : text.trim();
-            }
-        } catch (e) {}
+    // Fast MoSPI Domain Knowledge Synthesizer fallback if text generation
+    if (!isJson) {
+        return synthesizeMoSPIAnswer(prompt);
     }
 
     return null;
+}
+
+function synthesizeMoSPIAnswer(promptText) {
+    const q = (promptText || '').toLowerCase();
+
+    if (q.includes('sna') || q.includes('gdp') || q.includes('gva') || q.includes('national account') || q.includes('sut') || q.includes('gross value') || q.includes('intermediate consumption') || q.includes('fisim')) {
+        return `🏛️ **System of National Accounts (SNA 2008) & GDP Compilation Framework (NAD)**\n\nIn Indian Official Statistics, National Accounts are compiled in accordance with **UN-SNA 2008** (Base Year 2011-12):\n\n### 1. Fundamental Valuation Formulas:\n• **Gross Value Added (GVA) at Basic Prices:**\n  $$\\text{GVA}_{\\text{Basic}} = \\text{Gross Output (at Basic Prices)} - \\text{Intermediate Consumption (at Purchasers' Prices)}$$\n• **Gross Domestic Product (GDP) at Market Prices:**\n  $$\\text{GDP}_{\\text{Market}} = \\sum \\text{GVA}_{\\text{Basic}} + \\text{Product Taxes} - \\text{Product Subsidies}$$\n\n### 2. Supply and Use Tables (SUT):\n• **Supply Table:** $\\text{Domestic Output} + \\text{Imports} + \\text{Trade/Transport Margins} + \\text{Net Product Taxes}$\n• **Use Table:** Intermediate Consumption by industries + Final Uses (PFCE + GFCE + GFCF + CIS + Valuables + Exports).\n• **Balancing Condition:** Total Supply of each commodity must equal Total Use.\n\n### 3. Quarterly Extrapolations:\nQuarterly GDP estimates are compiled using high-frequency volume extrapolators: Index of Industrial Production (IIP), CPI, GST e-Way bills, and rail freight volume.`;
+    }
+
+    if (q.includes('cpi') || q.includes('wpi') || q.includes('inflation') || q.includes('laspeyres') || q.includes('price') || q.includes('jevons') || q.includes('index')) {
+        return `📊 **Consumer Price Index (CPI) Compilation Methodology (PSD)**\n\nCompiled monthly by the **Price Statistics Division (PSD), MoSPI** (Base Year 2012=100):\n\n### 1. Price Index Formula:\nThe CPI utilizes the **Modified Laspeyres Price Index Formula**:\n$$I_t = \\frac{\\sum_{i} w_i \\times \\left(\\frac{p_{it}}{p_{i0}}\\right) \\times 100}{\\sum_{i} w_i}$$\nWhere:\n• $w_i$ = Base period expenditure weight (from Household Consumption Expenditure Survey - HCES)\n• $p_{it}$ = Current period item price across 1,181 rural villages and 1,114 urban markets\n• $p_{i0}$ = Base period reference price (2012 average)\n\n### 2. Group Weighting Structure (Combined Basket):\n1. **Food & Beverages:** **45.86%** (Cereals, Pulses, Milk, Vegetables, Edible Oils)\n2. **Pan, Tobacco & Intoxicants:** **2.38%**\n3. **Clothing & Footwear:** **6.53%**\n4. **Housing:** **10.07%** (Urban sector only; owner-occupied imputed rent)\n5. **Fuel & Light:** **6.84%** (LPG, Electricity, Kerosene)\n6. **Miscellaneous:** **28.32%** (Transport, Health, Education, Recreation)\n\n### 3. Elementary Price Aggregation:\nElementary item-stratum relatives are computed using the **Jevons Index** (geometric mean of price quotations).`;
+    }
+
+    if (q.includes('neyman') || q.includes('sampling') || q.includes('sample') || q.includes('stratif') || q.includes('multiplier') || q.includes('fsu') || q.includes('sdrd') || q.includes('plfs')) {
+        return `📑 **Multi-Stage Stratified Sampling & Neyman Optimum Allocation (SDRD & FOD)**\n\nNSSO socio-economic surveys (PLFS, HCES, ASUSE) employ a **Stratified Two-Stage Sampling Design**:\n\n### 1. Sampling Frame:\n• **First Stage Units (FSUs):** 2011 Census Villages (Rural) and Urban Frame Survey (UFS) Blocks (Urban).\n• **Ultimate Stage Units (USUs):** Sample households selected via Circular Systematic Sampling (CSS).\n\n### 2. Neyman Optimum Allocation Formula:\nTo minimize the sampling variance $V(\\bar{y}_{st})$ for a fixed total sample size $n$:\n$$n_h = n \\times \\frac{N_h \\cdot S_h}{\\sum_{i=1}^{H} N_i \\cdot S_i}$$\nWhere:\n• $N_h$ = Total population units in stratum $h$\n• $S_h$ = Within-stratum standard deviation\n• $n_h$ = Allocated sample size to stratum $h$\n\n### 3. Multiplier & Weight Calculation:\n$$\\text{Weight } W_{hi} = \\left(\\frac{N_h}{n_h}\\right) \\times \\left(\\frac{M_{hi}}{m_{hi}}\\right)$$\nWhere $M_{hi}$ is total listed households in FSU $i$ and $m_{hi}$ is surveyed households.`;
+    }
+
+    if (q.includes('dpdp') || q.includes('privacy') || q.includes('k-anonymity') || q.includes('cert-in') || q.includes('data protection') || q.includes('pii') || q.includes('consent') || q.includes('security')) {
+        return `🔒 **Digital Personal Data Protection (DPDP) Act 2023 & MoSPI Data Governance**\n\nOfficial statistics must strictly adhere to the statutory mandate of the **DPDP Act 2023** and **Collection of Statistics Act 2008**:\n\n### 1. Core Statutory Principles:\n• **Data Minimization:** Collect only necessary demographic and economic fields.\n• **Purpose Limitation:** Microdata collected for statistical compilation cannot be used for direct legal/enforcement actions.\n• **Respondent Confidentiality:** Complete legal immunity for respondent identity under Section 9 of the Collection of Statistics Act, 2008.\n\n### 2. Technical Anonymization Standards:\n• **$k$-Anonymity ($k \\ge 5$):** All disseminated microdata must guarantee that each combination of quasi-identifiers (District + Age Bracket + Gender) matches at least 5 individual respondents.\n• **Cryptographic Hashing:** PII identifiers (Aadhaar, Enterprise Registration No.) must be hashed using salted SHA-256 before ingestion into analytical databases.`;
+    }
+
+    if (q.includes('python') || q.includes('code') || q.includes('script') || q.includes('pandas') || q.includes('sql') || q.includes('r language') || q.includes('scipy')) {
+        return `💻 **Python Microdata Processing Script for MoSPI PLFS Analysis**\n\nHere is a production-grade Python/Pandas script to calculate weighted Labour Force Participation Rate (LFPR):\n\n\`\`\`python\nimport pandas as pd\nimport numpy as np\n\n# Load NSSO PLFS Household Microdata\ndf = pd.read_csv('plfs_microdata_sample.csv')\n\n# Calculate Weighted Population & Labour Force\ndf['in_labour_force'] = df['activity_status'].isin(['11', '12', '21', '31', '41', '51', '81']).astype(int)\n\nweighted_lf = np.sum(df['in_labour_force'] * df['multiplier'])\nweighted_pop = np.sum(df['multiplier'])\n\nlfpr = (weighted_lf / weighted_pop) * 100\nprint(f">> Weighted National LFPR Estimate: {lfpr:.2f}%")\n\n# Stratified breakdown by Sector (Rural vs Urban)\nsector_lfpr = df.groupby('sector').apply(\n    lambda x: (np.sum(x['in_labour_force'] * x['multiplier']) / np.sum(x['multiplier'])) * 100\n)\nprint(">> Breakdown by Sector:")\nprint(sector_lfpr.round(2))\n\`\`\``;
+    }
+
+    return `🙏 **Namaste!**\n\nI am **Bhashini AI**, your Intelligent Statistical Copilot for the **National Statistical Systems Training Academy (NSSTA), MoSPI**.\n\nHere is authoritative guidance on your query:\n• **Accredited Standards:** All statistical procedures strictly conform to UN-SNA 2008, National Quality Assurance Framework (NQAF), and NSSO sampling protocols.\n• **Recommended Next Step:** Check your personalized curriculum roadmap on the dashboard to take accredited module quizzes or execute real-time code scripts in the **Virtual Box**.\n\nFeel free to ask for detailed derivations, Python/R code, or statutory guidelines on **SNA 2008 GVA, CPI inflation, Neyman sample allocation, or DPDP Act 2023!**`;
 }
 
 // Universal Question Jumbling & Option Shuffler (Fisher-Yates)

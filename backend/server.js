@@ -135,34 +135,64 @@ const supabase = createClient(cleanUrl, supabaseKey);
 async function generateAIResponse(prompt, systemInstruction, isJson = false) {
     const sysPrompt = systemInstruction || 'You are the Principal Curriculum Director & Chief Psychometrician at the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India.';
 
-    // 1. Ollama Cloud Engine (Primary - gpt-oss:20b / deepseek-v4-flash:0731)
-    if (OLLAMA_API_KEY) {
-        const ollamaModels = ['gpt-oss:20b', 'deepseek-v4-flash:0731', 'nemotron-3-nano:30b', 'gemma4:31b'];
-        for (const model of ollamaModels) {
+    // 1. xAI Grok Cloud Engine (If GROK_API_KEY is configured)
+    if (process.env.GROK_API_KEY) {
+        const grokModels = ['grok-3', 'grok-3-mini', 'grok-2-latest', 'grok-beta'];
+        for (const model of grokModels) {
             try {
-                const res = await fetch('https://api.ollama.com/api/generate', {
+                const res = await fetch('https://api.x.ai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${OLLAMA_API_KEY}`,
+                        'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         model: model,
-                        prompt: `${sysPrompt}\n\n${prompt}`,
-                        stream: false
-                    })
+                        messages: [
+                            { role: 'system', content: sysPrompt },
+                            { role: 'user', content: prompt }
+                        ],
+                        temperature: isJson ? 0.1 : 0.3
+                    }),
+                    signal: AbortSignal.timeout(3000)
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.response) {
-                        return isJson ? data.response.replace(/```json/gi, '').replace(/```/g, '').trim() : data.response.trim();
-                    }
+                const data = await res.json();
+                if (res.ok && data?.choices?.[0]?.message?.content) {
+                    const text = data.choices[0].message.content;
+                    return isJson ? text.replace(/```json/gi, '').replace(/```/g, '').trim() : text.trim();
                 }
             } catch (e) {}
         }
     }
 
-    // 2. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
+    // 2. Google Gemini API Engine (Gemini 1.5 Flash / 2.0 Flash)
+    if (GEMINI_API_KEY) {
+        const geminiModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+        for (const model of geminiModels) {
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: `${sysPrompt}\n\nTask:\n${prompt}` }]
+                        }],
+                        generationConfig: {
+                            temperature: isJson ? 0.1 : 0.3
+                        }
+                    }),
+                    signal: AbortSignal.timeout(3000)
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) return isJson ? text.replace(/```json/gi, '').replace(/```/g, '').trim() : text.trim();
+                }
+            } catch (e) {}
+        }
+    }
+
+    // 3. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
     if (GROQ_API_KEY) {
         const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
         for (const model of groqModels) {
@@ -179,8 +209,9 @@ async function generateAIResponse(prompt, systemInstruction, isJson = false) {
                             { role: 'system', content: sysPrompt },
                             { role: 'user', content: prompt }
                         ],
-                        temperature: isJson ? 0.1 : 0.4
-                    })
+                        temperature: isJson ? 0.1 : 0.3
+                    }),
+                    signal: AbortSignal.timeout(3000)
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -191,30 +222,7 @@ async function generateAIResponse(prompt, systemInstruction, isJson = false) {
         }
     }
 
-    // 2. Google Gemini API Engine (Gemini 1.5 Flash)
-    if (GEMINI_API_KEY) {
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: `${sysPrompt}\n\nTask:\n${prompt}` }]
-                    }],
-                    generationConfig: {
-                        temperature: isJson ? 0.1 : 0.4
-                    }
-                })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (text) return isJson ? text.replace(/```json/gi, '').replace(/```/g, '').trim() : text.trim();
-            }
-        } catch (e) {}
-    }
-
-    // 3. OpenAI Engine (GPT-4o-mini)
+    // 4. OpenAI Engine (GPT-4o-mini)
     if (OPENAI_API_KEY) {
         try {
             const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -229,8 +237,9 @@ async function generateAIResponse(prompt, systemInstruction, isJson = false) {
                         { role: 'system', content: sysPrompt },
                         { role: 'user', content: prompt }
                     ],
-                    temperature: isJson ? 0.1 : 0.4
-                })
+                    temperature: isJson ? 0.1 : 0.3
+                }),
+                signal: AbortSignal.timeout(3000)
             });
             if (res.ok) {
                 const data = await res.json();
@@ -240,62 +249,37 @@ async function generateAIResponse(prompt, systemInstruction, isJson = false) {
         } catch (e) {}
     }
 
-    // 4. Ollama AI Engine
+    // 5. Ollama Cloud Engine
     if (OLLAMA_API_KEY) {
-        const endpoints = [
-            `${OLLAMA_BASE_URL}/chat/completions`,
-            'https://api.ollama.com/v1/chat/completions',
-            'http://localhost:11434/v1/chat/completions'
-        ];
-
-        for (const ep of endpoints) {
+        const ollamaModels = ['gpt-oss:20b', 'deepseek-v4-flash:0731'];
+        for (const model of ollamaModels) {
             try {
-                const res = await fetch(ep, {
+                const res = await fetch('https://api.ollama.com/api/generate', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${OLLAMA_API_KEY}`
+                        'Authorization': `Bearer ${OLLAMA_API_KEY}`,
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'llama3.2',
-                        messages: [
-                            { role: 'system', content: sysPrompt },
-                            { role: 'user', content: prompt }
-                        ],
-                        temperature: isJson ? 0.1 : 0.4
-                    })
+                        model: model,
+                        prompt: `${sysPrompt}\n\n${prompt}`,
+                        stream: false
+                    }),
+                    signal: AbortSignal.timeout(3000)
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    const text = data?.choices?.[0]?.message?.content;
-                    if (text) return isJson ? text.replace(/```json/gi, '').replace(/```/g, '').trim() : text.trim();
+                    if (data && data.response) {
+                        return isJson ? data.response.replace(/```json/gi, '').replace(/```/g, '').trim() : data.response.trim();
+                    }
                 }
             } catch (e) {}
         }
     }
 
-    // 5. xAI Grok Engine
-    if (GROK_API_KEY) {
-        try {
-            const res = await fetch('https://api.x.ai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GROK_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: 'grok-beta',
-                    messages: [
-                        { role: 'system', content: sysPrompt },
-                        { role: 'user', content: prompt }
-                    ],
-                    temperature: 0.2
-                })
-            });
-            const data = await res.json();
-            const text = data?.choices?.[0]?.message?.content;
-            if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
-        } catch (e) {}
+    // Fast MoSPI Domain Knowledge Synthesizer fallback if text generation
+    if (!isJson) {
+        return generateMoSPIAIResponse(prompt, sysPrompt, false);
     }
 
     return null;
