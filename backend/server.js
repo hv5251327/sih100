@@ -5,6 +5,7 @@ const { createClient } = require('@supabase/supabase-js');
 const {
     MOSPI_MASTER_KNOWLEDGE_BASE,
     generateMoSPIAIResponse,
+    synthesizeMoSPIAnswer,
     generateQuizQuestionsAI,
     generateMCQsFromDocumentAI,
     generateCourseCurriculumAI,
@@ -2874,13 +2875,19 @@ CORE AGENT CAPABILITIES & BEHAVIOR:
             });
         }
 
+        const expertAnswer = synthesizeMoSPIAnswer(message);
+        if (expertAnswer) {
+            return res.json({ reply: expertAnswer });
+        }
+
         return res.json({
             reply: `Namaste ${officerName}! You currently have ${completedCount} completed course(s) and ${remainingCount} course(s) remaining in your ${dept} roadmap.\n\n• To take an assessment, click the blue **"Quiz"** button on any course card.\n• To upload a completion certificate, click the orange **"Certificate"** button.\n• To download your certified transcript, click **"Download Official Competency Passport (PDF)"** below.`
         });
     } catch (err) {
         console.error('Chatbot error:', err.message);
+        const fallbackAns = synthesizeMoSPIAnswer(message);
         return res.json({
-            reply: `Namaste ${officerName}! You currently have ${completedCount} completed course(s) and ${remainingCount} course(s) remaining in your roadmap. To earn credits, click "Quiz" on any course card or click "Certificate" to upload your accredited certificate.`
+            reply: fallbackAns || `Namaste ${officerName}! You currently have ${completedCount} completed course(s) and ${remainingCount} course(s) remaining in your roadmap. To earn credits, click "Quiz" on any course card or click "Certificate" to upload your accredited certificate.`
         });
     }
 });
