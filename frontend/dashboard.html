@@ -541,10 +541,6 @@
       <a href="#sec-credentials" class="sidebar-nav-item"><i class="fa-solid fa-award"></i><span>My Credentials</span></a>
       
       <div style="margin-top:auto; padding-top:16px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:8px;">
-        <button type="button" onclick="openDocAssessmentModal()" class="sidebar-action-btn" style="background:#eff6ff; color:#1e3a8a; border:1px solid #bfdbfe; width:100%; padding:9px 12px; border-radius:8px; font-weight:700; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; gap:8px; text-align:left;">
-          <i class="fa-solid fa-wand-magic-sparkles" style="color:#0284c7;"></i>
-          <span>AI Doc Assessment</span>
-        </button>
         <button type="button" onclick="toggleBhashini()" class="sidebar-action-btn" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; width:100%; padding:9px 12px; border-radius:8px; font-weight:700; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; gap:8px; text-align:left;">
           <i class="fa-solid fa-headset" style="color:#16a34a;"></i>
           <span>MoSPI AI Mentor</span>
@@ -786,65 +782,7 @@
   </div>
 
   
-  <!-- AI DOCUMENT TO ASSESSMENT GENERATOR MODAL -->
-  <div class="modal-backdrop" id="doc-assessment-modal" style="display:none; align-items:center; justify-content:center; padding:16px;">
-    <div class="modal-box" style="max-width:760px; max-height:90vh; overflow-y:auto; padding:24px;">
-      <div class="modal-header">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div style="background:#1e3a8a; color:#fff; width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.1rem;"><i class="fa-solid fa-file-circle-question"></i></div>
-          <div>
-            <h3 style="margin:0; font-size:1.1rem; color:#1e293b; font-weight:800;">AI Document-to-Assessment Engine</h3>
-            <p style="margin:0; font-size:0.75rem; color:#64748b;">Upload or paste training manuals, circulars, or SOPs to auto-generate psychometric MCQs</p>
-          </div>
-        </div>
-        <button class="modal-close" onclick="closeDocAssessmentModal()">&times;</button>
-      </div>
 
-      <div id="doc-input-section" style="margin-top:14px;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-          <div>
-            <label style="font-size:0.8rem; font-weight:700; color:#334155; display:block; margin-bottom:4px;">Document / Manual Title:</label>
-            <input type="text" id="docAssessmentTitle" placeholder="e.g. CAPI Operations Manual 2024" value="MoSPI Standard Operating Procedure (SOP)" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; box-sizing:border-box;">
-          </div>
-          <div>
-            <label style="font-size:0.8rem; font-weight:700; color:#334155; display:block; margin-bottom:4px;">Assessment Difficulty:</label>
-            <select id="docAssessmentDiff" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; font-weight:600; box-sizing:border-box;">
-              <option value="Foundation">Foundation (Introductory Protocols)</option>
-              <option value="Intermediate" selected>Intermediate (Standard Operations)</option>
-              <option value="Advanced">Advanced (Strategic & Analytical)</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="margin-bottom:14px;">
-          <label style="font-size:0.8rem; font-weight:700; color:#334155; display:block; margin-bottom:4px;">Paste Document Content or Guidelines:</label>
-          <textarea id="docAssessmentText" rows="6" placeholder="Paste circular text, methodology notes, or survey instructions here..." style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem; font-family:inherit; line-height:1.45; box-sizing:border-box;">The National Accounts Division (NAD) compiles annual and quarterly Gross Domestic Product (GDP). Under SNA 2008, GVA at basic prices is defined as Gross Output minus Intermediate Consumption. For quarterly compilation, high-frequency indicators such as the Index of Industrial Production (IIP), Consumer Price Index (CPI), and GST e-way bills are utilized as volume extrapolators. Data scrutiny protocols mandate range checks, consistency audits, and variance control before national dissemination.</textarea>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <button type="button" onclick="generateAssessmentFromDoc()" id="btn-generate-doc-quiz" class="btn-action" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); color:#fff; font-size:0.88rem; font-weight:700; padding:10px 20px; border-radius:6px;">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Assessment (5 MCQs)
-          </button>
-          <span style="font-size:0.75rem; color:#64748b;"><i class="fa-solid fa-brain"></i> Powered by NSSTA Psychometric LLM</span>
-        </div>
-      </div>
-
-      <!-- Generated Quiz Interactive Display -->
-      <div id="doc-quiz-render-section" style="display:none; margin-top:18px;">
-        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:6px; padding:10px 14px; margin-bottom:14px; font-size:0.82rem; color:#0369a1; display:flex; justify-content:space-between; align-items:center;">
-          <span><strong>Assessment Ready:</strong> Answer all 5 questions to test understanding.</span>
-          <button onclick="resetDocAssessment()" style="background:none; border:none; color:#0284c7; font-weight:700; cursor:pointer; text-decoration:underline;">Load New Document</button>
-        </div>
-        <div id="doc-quiz-questions-list"></div>
-        <button type="button" onclick="submitDocAssessment()" id="btn-submit-doc-quiz" class="btn-action" style="background:#15803d; color:#fff; font-size:0.9rem; font-weight:700; padding:12px 24px; border-radius:6px; margin-top:14px; width:100%; justify-content:center;">
-          <i class="fa-solid fa-square-check"></i> Submit Assessment & Evaluate Mastery
-        </button>
-      </div>
-
-      <div id="doc-quiz-score-summary" style="display:none; margin-top:16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:16px; text-align:center;">
-      </div>
-    </div>
-  </div>
   <!-- In-Portal Video Player Modal -->
   <div class="modal-backdrop" id="video-modal">
     <div class="modal-box" style="max-width:720px;">
@@ -3253,117 +3191,7 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
       }
     }
 
-    // =========================================================================
-    //   DOCUMENT TO ASSESSMENT AI ENGINE MODAL LOGIC
-    // =========================================================================
-    let currentDocQuizData = [];
-    let docQuizUserAnswers = {};
 
-    function openDocAssessmentModal() {
-      document.getElementById('doc-assessment-modal').style.display = 'flex';
-    }
-
-    function closeDocAssessmentModal() {
-      document.getElementById('doc-assessment-modal').style.display = 'none';
-    }
-
-    function resetDocAssessment() {
-      document.getElementById('doc-input-section').style.display = 'block';
-      document.getElementById('doc-quiz-render-section').style.display = 'none';
-      document.getElementById('doc-quiz-score-summary').style.display = 'none';
-      currentDocQuizData = [];
-      docQuizUserAnswers = {};
-    }
-
-    async function generateAssessmentFromDoc() {
-      const title = document.getElementById('docAssessmentTitle').value.trim() || 'Custom Training Document';
-      const text = document.getElementById('docAssessmentText').value.trim();
-      const diff = document.getElementById('docAssessmentDiff').value;
-      const btn = document.getElementById('btn-generate-doc-quiz');
-
-      if (!text || text.length < 30) {
-        alert('Please paste at least a paragraph of training text to generate MCQs.');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing Document & Synthesizing MCQs...';
-
-      try {
-        const res = await fetch(API_URL + '/api/ai/generate-assessment-from-doc', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ document_title: title, document_text: text, difficulty: diff })
-        });
-        const data = await res.json();
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Assessment (5 MCQs)';
-
-        if (data && data.quiz && data.quiz.length > 0) {
-          currentDocQuizData = data.quiz;
-          docQuizUserAnswers = {};
-          renderDocQuizQuestions(data.quiz, title);
-        } else {
-          alert('Could not synthesize questions from document. Please try again with more detailed text.');
-        }
-      } catch (err) {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Assessment (5 MCQs)';
-        alert('AI Assessment Generator is temporarily using local psychometric bank.');
-      }
-    }
-
-    function renderDocQuizQuestions(quizList, title) {
-      document.getElementById('doc-input-section').style.display = 'none';
-      const container = document.getElementById('doc-quiz-questions-list');
-      container.innerHTML = '';
-
-      quizList.forEach((q, idx) => {
-        const card = document.createElement('div');
-        card.style.cssText = 'background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:14px; margin-bottom:12px;';
-        
-        let optsHtml = '';
-        q.options.forEach((opt, oIdx) => {
-          optsHtml += '<label style="display:flex; align-items:flex-start; gap:10px; padding:8px 12px; border:1px solid #e2e8f0; border-radius:6px; margin-top:6px; cursor:pointer; font-size:0.84rem;"><input type="radio" name="doc_q_' + idx + '" value="' + oIdx + '" onchange="docQuizUserAnswers[' + idx + '] = ' + oIdx + '" style="margin-top:3px;"><span>' + opt + '</span></label>';
-        });
-
-        card.innerHTML = '<h4 style="font-size:0.88rem; font-weight:700; color:#1e293b; margin-bottom:8px;">Q' + (idx + 1) + ': ' + q.question + '</h4><div>' + optsHtml + '</div><div id="doc-explanation-' + idx + '" style="display:none; margin-top:10px; background:#f8fafc; border-left:3px solid #0284c7; padding:8px 12px; font-size:0.78rem; color:#334155;"><strong>Explanation:</strong> ' + (q.explanation || 'Adheres to standard MoSPI protocols.') + '</div>';
-        container.appendChild(card);
-      });
-
-      document.getElementById('doc-quiz-render-section').style.display = 'block';
-    }
-
-    function submitDocAssessment() {
-      if (Object.keys(docQuizUserAnswers).length < currentDocQuizData.length) {
-        alert('Please answer all ' + currentDocQuizData.length + ' questions before submitting.');
-        return;
-      }
-
-      let correctCount = 0;
-      currentDocQuizData.forEach((q, idx) => {
-        const userAns = docQuizUserAnswers[idx];
-        const isCorrect = userAns === q.correctIndex;
-        if (isCorrect) correctCount++;
-        const expDiv = document.getElementById('doc-explanation-' + idx);
-        if (expDiv) {
-          expDiv.style.display = 'block';
-          expDiv.style.borderLeftColor = isCorrect ? '#15803d' : '#b91c1c';
-          expDiv.innerHTML = '<strong>' + (isCorrect ? '✔ Correct!' : '✖ Incorrect.') + '</strong> ' + q.explanation;
-        }
-      });
-
-      const scorePct = Math.round((correctCount / currentDocQuizData.length) * 100);
-      const summaryDiv = document.getElementById('doc-quiz-score-summary');
-      summaryDiv.style.display = 'block';
-      summaryDiv.innerHTML = '<h3 style="font-size:1.15rem; color:' + (scorePct >= 80 ? '#15803d' : '#b45309') + '; margin-bottom:6px;">Assessment Score: ' + scorePct + '% (' + correctCount + '/' + currentDocQuizData.length + ' Correct)</h3><p style="font-size:0.84rem; color:#334155;">' + (scorePct >= 80 ? '🎉 Congratulations! You have successfully mastered this training document.' : 'Review the explanations above to strengthen conceptual clarity.') + '</p>';
-
-      document.getElementById('btn-submit-doc-quiz').style.display = 'none';
-
-      if (scorePct >= 80) {
-        recalibrateCompetencyOnAction('statistical_score', 4);
-      }
-    }
 
     // Dynamic competency score updater helper
     async function recalibrateCompetencyOnAction(pillar, increment) {
