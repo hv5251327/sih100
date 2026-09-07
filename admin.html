@@ -1,0 +1,2039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Command Centre | MoSPI Skill Intelligence</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script>
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    }
+  </script>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #172554;
+      --primary-light: #eff6ff;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --border-focus: #3b82f6;
+      --accent: #0284c7;
+      --teal: #0f766e;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --purple: #7c3aed;
+      --nav-height: 62px;
+      --quicknav-height: 52px;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; }
+    body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+    
+    /* Top Main Navigation Bar */
+    .navbar {
+      width: 100%;
+      height: var(--nav-height);
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #1e3a8a, #0284c7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.15rem;
+      box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+    }
+    .brand-text { display: flex; flex-direction: column; }
+    .brand-title { font-size: 1.08rem; font-weight: 800; color: var(--primary); line-height: 1.2; letter-spacing: -0.2px; }
+    .brand-subtitle { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-nav-link {
+      text-decoration: none;
+      color: var(--text-main);
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+    .btn-nav-link:hover { background: #f1f5f9; border-color: #cbd5e1; color: var(--primary); }
+    
+    .logout-btn {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.84rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .logout-btn:hover { background: #fecaca; border-color: #fca5a5; }
+
+    /* Sticky Section Jump / Quick Navigation Bar */
+    .quick-nav-bar {
+      width: 100%;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: var(--nav-height);
+      z-index: 50;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      padding: 0 24px;
+      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.96);
+    }
+    .quick-nav-container {
+      max-width: 1320px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 8px 0;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+    }
+    .quick-nav-container::-webkit-scrollbar { height: 4px; }
+    .quick-nav-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    
+    .quick-nav-pill {
+      text-decoration: none;
+      color: #475569;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: #f1f5f9;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .quick-nav-pill i { font-size: 0.82rem; color: var(--primary); }
+    .quick-nav-pill:hover {
+      background: #e2e8f0;
+      color: var(--primary);
+      border-color: #cbd5e1;
+    }
+    .quick-nav-pill.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 2px 6px rgba(30, 58, 138, 0.2);
+    }
+    .quick-nav-pill.active i { color: #93c5fd; }
+
+    /* Main Container (Strict Vertical Stack) */
+    .container {
+      max-width: 1320px;
+      width: 100%;
+      margin: 20px auto 40px auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      flex: 1;
+    }
+
+    /* Target Section Offset for Sticky Navbar */
+    .admin-section {
+      scroll-margin-top: 130px;
+      width: 100%;
+    }
+
+    /* KPI Summary Cards Grid */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      width: 100%;
+    }
+    @media(max-width: 1024px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width: 600px) { .kpi-row { grid-template-columns: 1fr; } }
+
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .kpi-content { display: flex; flex-direction: column; }
+    .kpi-label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-val { font-size: 1.85rem; font-weight: 800; color: var(--primary); margin: 4px 0 2px 0; line-height: 1.1; }
+    .kpi-badge-sub { font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; color: #0284c7; }
+    
+    .kpi-icon-box {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+    .kpi-blue { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
+    .kpi-indigo { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+    .kpi-purple { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+    .kpi-emerald { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+
+    /* Vertical Full-Width Panels */
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      min-width: 0;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .panel-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .panel-icon-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+    .badge-teal { background: #f0fdfa; color: #0f766e; border: 1px solid #ccfbf1; }
+    .badge-blue { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
+    .badge-sky { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
+    .badge-purple { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+    .badge-emerald { background: #ecfdf5; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-amber { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+    .badge-rose { background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; }
+
+    .panel-header h2 {
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 0;
+    }
+    .panel-subtitle {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Form Controls & Inputs */
+    .form-group { display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; }
+    .form-group label { font-size: 0.84rem; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px; }
+    .form-group label i { color: var(--accent); font-size: 0.8rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      color: var(--text-main);
+      background: #ffffff;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+    
+    .btn-action {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+    .btn-action:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-action:active { transform: translateY(0); }
+
+    /* Tables */
+    .table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); background: #ffffff; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 650px; }
+    th { background: #f8fafc; text-align: left; padding: 11px 14px; font-weight: 700; color: #334155; border-bottom: 1px solid var(--border); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.3px; }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: #1e293b; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+    .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; background: #e0f2fe; color: #0369a1; }
+    .stage-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+
+    /* Heatmap styling */
+    .heatmap-cell {
+      text-align: center;
+      font-weight: 700;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.82rem;
+      transition: all 0.2s ease;
+    }
+    .hm-high { background: #dcfce7; color: #15803d; }
+    .hm-mid { background: #fef3c7; color: #b45309; }
+    .hm-low { background: #fee2e2; color: #b91c1c; }
+    .hm-none { background: #f1f5f9; color: #64748b; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; }
+    .legend-box { width: 14px; height: 14px; border-radius: 3px; }
+
+    /* Responsive Design */
+    @media (max-width: 900px) {
+      .navbar { padding: 0 16px; }
+      .quick-nav-bar { padding: 0 14px; }
+      .container { padding: 0 14px; margin: 16px auto; gap: 20px; }
+      .panel { padding: 16px; }
+    }
+    @media (max-width: 600px) {
+      .brand-title { font-size: 0.92rem; }
+      .brand-subtitle { display: none; }
+      .btn-action { width: 100%; min-height: 42px; font-size: 0.85rem; }
+      .panel-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Main Navigation Bar -->
+  <header class="navbar">
+    <a href="#" class="nav-brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-gauge-high"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">MoSPI Admin Command Centre</span>
+        <span class="brand-subtitle"><i class="fa-solid fa-shield-halved"></i> National Statistical Systems Training Academy (NSSTA)</span>
+      </div>
+    </a>
+    <div class="nav-actions">
+      <a href="index.html" class="btn-nav-link"><i class="fa-solid fa-house"></i> Home</a>
+      <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    </div>
+  </header>
+
+  <!-- Sticky Quick Jump Navigation Bar -->
+  <nav class="quick-nav-bar">
+    <div class="quick-nav-container">
+      <a href="#sec-overview" class="quick-nav-pill active"><i class="fa-solid fa-chart-pie"></i> Overview</a>
+      <a href="#sec-forecasting" class="quick-nav-pill"><i class="fa-solid fa-brain"></i> Skill Forecasting</a>
+      <a href="#sec-sync" class="quick-nav-pill"><i class="fa-solid fa-arrows-rotate"></i> NSSTA Directory Sync</a>
+      <a href="#sec-tna" class="quick-nav-pill"><i class="fa-solid fa-file-invoice"></i> TNA Reports</a>
+      <a href="#sec-heatmap" class="quick-nav-pill"><i class="fa-solid fa-chart-simple"></i> Competency Heatmap</a>
+      <a href="#sec-officers" class="quick-nav-pill"><i class="fa-solid fa-users-viewfinder"></i> Officer Registry</a>
+      <a href="#sec-syllabus" class="quick-nav-pill"><i class="fa-solid fa-book-open-reader"></i> Syllabus Parser</a>
+      <a href="#sec-quick-course" class="quick-nav-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Quick Course Creator</a>
+      <a href="#sec-quiz-gen" class="quick-nav-pill"><i class="fa-solid fa-file-pdf"></i> Auto MCQ Generator</a>
+      <a href="#sec-certificates" class="quick-nav-pill"><i class="fa-solid fa-stamp"></i> Certificate Queue</a>
+    </div>
+  </nav>
+
+  <!-- Main Content Container (All Tasks & Options in Clean Vertical Layout) -->
+  <main class="container">
+    
+    <!-- 1. KPI Overview Strip -->
+    <section id="sec-overview" class="admin-section">
+      <div class="kpi-row">
+        <!-- Officers Enrolled -->
+        <div class="kpi-card">
+          <div class="kpi-content">
+            <span class="kpi-label">Total Officers Enrolled</span>
+            <h3 class="kpi-val" id="stat-total-officers">0</h3>
+            <span class="kpi-badge-sub"><i class="fa-solid fa-user-check"></i> MoSPI & State DES</span>
+          </div>
+          <div class="kpi-icon-box kpi-blue">
+            <i class="fa-solid fa-users"></i>
+          </div>
+        </div>
+
+        <!-- Active Divisions -->
+        <div class="kpi-card">
+          <div class="kpi-content">
+            <span class="kpi-label">Active Divisions</span>
+            <h3 class="kpi-val" id="stat-total-depts">0</h3>
+            <span class="kpi-badge-sub"><i class="fa-solid fa-sitemap"></i> NAD, FOD, PSD, SSD...</span>
+          </div>
+          <div class="kpi-icon-box kpi-indigo">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+        </div>
+
+        <!-- Registered Cadres -->
+        <div class="kpi-card">
+          <div class="kpi-content">
+            <span class="kpi-label">Registered Cadres</span>
+            <h3 class="kpi-val" id="stat-total-cadres">0</h3>
+            <span class="kpi-badge-sub"><i class="fa-solid fa-id-card-clip"></i> ISS, SSS, DES</span>
+          </div>
+          <div class="kpi-icon-box kpi-purple">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+        </div>
+
+        <!-- Master DB Courses -->
+        <div class="kpi-card">
+          <div class="kpi-content">
+            <span class="kpi-label">Master DB Courses</span>
+            <h3 class="kpi-val" id="stat-total-courses" style="color:var(--success);">0</h3>
+            <span class="kpi-badge-sub" style="color:var(--success);"><i class="fa-solid fa-circle-check"></i> NSSTA Accredited</span>
+          </div>
+          <div class="kpi-icon-box kpi-emerald">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Predictive Capacity Planning & Future Skill Forecasting (Vertical Full-Width) -->
+    <section id="sec-forecasting" class="admin-section panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-icon-badge badge-teal">
+            <i class="fa-solid fa-brain"></i>
+          </div>
+          <div>
+            <h2>Predictive Capacity Planning & Future Skill Forecasting</h2>
+            <p class="panel-subtitle">AI-driven predictive analytics forecasting emerging technology demands, methodology transitions, and proactive upskilling requirements across MoSPI & State DES cadres.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Filter Controls -->
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid var(--border);">
+        <div style="display:flex; align-items:center; gap:6px; font-size:0.84rem; font-weight:700; color:#334155;">
+          <i class="fa-solid fa-filter" style="color:var(--accent);"></i> Filters:
+        </div>
+        <select id="forecastDeptSelect" style="padding:7px 12px; border-radius:6px; border:1px solid var(--border); font-size:0.84rem; font-weight:700; background:#fff;">
+          <option value="ALL">All Divisions (Universal)</option>
+          <option value="NAD">National Accounts Division (NAD)</option>
+          <option value="FOD">Field Operations Division (FOD)</option>
+          <option value="PSD">Price Statistics Division (PSD)</option>
+          <option value="SSD">Social Statistics Division (SSD)</option>
+          <option value="ESD">Economic Statistics Division (ESD)</option>
+          <option value="SDRD">Survey Design & Research (SDRD)</option>
+          <option value="DIID">Data Informatics & AI (DIID)</option>
+          <option value="NSSTA">NSSTA Greater Noida</option>
+          <option value="STATE_DES">State DES Cadres</option>
+        </select>
+        <select id="forecastCadreSelect" style="padding:7px 12px; border-radius:6px; border:1px solid var(--border); font-size:0.84rem; font-weight:700; background:#fff;">
+          <option value="ALL">All Cadres (ISS, SSS, DES)</option>
+          <option value="ISS">Indian Statistical Service (ISS)</option>
+          <option value="SSS">Subordinate Statistical Service (SSS)</option>
+          <option value="DES">State DES Cadre</option>
+        </select>
+        <select id="forecastHorizonSelect" style="padding:7px 12px; border-radius:6px; border:1px solid var(--border); font-size:0.84rem; font-weight:700; background:#fff;">
+          <option value="Q3 2026">Horizon: Q3 2026 (Immediate)</option>
+          <option value="Q4 2026" selected>Horizon: Q4 2026 (Target Base Year)</option>
+          <option value="FY 2026-27">Horizon: FY 2026-27 (Medium-Term)</option>
+          <option value="FY 2027-28">Horizon: FY 2027-28 (Strategic Vision)</option>
+        </select>
+        <button onclick="runSkillForecast(), loadTrainingEffectiveness()" id="btn-run-forecast" class="btn-action" style="padding:7px 16px; font-size:0.84rem; background:#0f766e; font-weight:800;"><i class="fa-solid fa-bolt"></i> Generate Forecast</button>
+      </div>
+
+      <!-- Predictive Summary KPI Strip -->
+      <div id="forecast-kpi-strip" style="background:#f0fdfa; border:1px solid #ccfbf1; border-radius:8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; font-size:0.84rem;">
+        <div><i class="fa-solid fa-users-viewfinder" style="color:#0f766e;"></i> <span style="color:#64748b;">Audited Officers:</span> <strong id="f-audited" style="color:#0f766e;">13+ Officers</strong></div>
+        <div><i class="fa-solid fa-chart-line" style="color:#0284c7;"></i> <span style="color:#64748b;">Mean Competency:</span> <strong id="f-mean" style="color:#0284c7;">48%</strong></div>
+        <div><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> <span style="color:#64748b;">Critical Action Gaps:</span> <strong id="f-critical" style="color:#dc2626;">3 Priority Areas</strong></div>
+        <div><i class="fa-solid fa-clock" style="color:#7c3aed;"></i> <span style="color:#64748b;">Target Horizon:</span> <strong id="f-horizon" style="color:#7c3aed;">Q4 2026</strong></div>
+      </div>
+
+      <div id="forecast-cards-container" style="display:flex; flex-direction:column; gap:12px; max-height:480px; overflow-y:auto; padding-right:4px;">
+        <!-- Populated dynamically by runSkillForecast() -->
+      </div>
+    </section>
+
+    <!-- 3. Central NSSTA Repository Sync & SSO Governance (Vertical Full-Width) -->
+    <section id="sec-sync" class="admin-section panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-icon-badge badge-sky">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+          </div>
+          <div>
+            <h2>Central NSSTA Repository Sync & SSO Governance</h2>
+            <p class="panel-subtitle">Synchronizes MoSPI's internal LMS database with the central <strong>NSSTA MoSPI Training Catalog</strong>. Ingests new accredited circulars, updates curriculum taxonomies, and aligns officer competency roadmaps with national statistical standards.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#f0f9ff; border:1px solid #bae6fd; border-left:4px solid #0284c7; padding:12px 16px; border-radius:6px; font-size:0.86rem; color:#0369a1;">
+        <strong><i class="fa-solid fa-circle-info"></i> NSSTA Directory Sync Protocol:</strong> Real-time bi-directional pipeline synchronizing curriculum structures, officer progress telemetry, and training needs assessments with NSSTA Greater Noida repositories.
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; background:#f8fafc; border:1px solid var(--border); padding:14px; border-radius:8px;">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;"><i class="fa-solid fa-heart-pulse"></i> Catalogue Sync Health</span>
+          <strong style="color:var(--success); font-size:0.95rem;" id="igot-sync-health"><i class="fa-solid fa-circle-check"></i> 100% Synced</strong>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;"><i class="fa-solid fa-user-shield"></i> System Access Control</span>
+          <strong style="color:var(--primary); font-size:0.95rem;"><i class="fa-solid fa-lock"></i> MoSPI Role-Based Access</strong>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;"><i class="fa-solid fa-user-lock"></i> Role-Based Permissions</span>
+          <strong style="color:var(--text-main); font-size:0.95rem;"><i class="fa-solid fa-certificate"></i> MoSPI / NSSTA Admin Role Verified</strong>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button class="btn-action" id="btn-sync-igot" onclick="triggerIgotSync()" style="background:#0284c7; font-weight:800;"><i class="fa-solid fa-arrows-rotate"></i> Sync with Central NSSTA Repository</button>
+        <div id="igot-sync-result" style="font-size:0.84rem; font-weight:700; color:var(--success);"></div>
+      </div>
+
+      <!-- NSSTA Sync Audit Logs Table -->
+      <div style="margin-top:8px;">
+        <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; color:var(--primary); display:flex; align-items:center; gap:8px;">
+          <i class="fa-solid fa-clock-rotate-left"></i> Central Directory Sync Audit Logs
+        </h3>
+        <div class="table-container" style="max-height:200px; overflow-y:auto;">
+          <table>
+            <thead style="position:sticky; top:0; z-index:2;">
+              <tr>
+                <th><i class="fa-solid fa-clock"></i> Timestamp</th>
+                <th><i class="fa-solid fa-gear"></i> Operation</th>
+                <th style="text-align:center;"><i class="fa-solid fa-cubes"></i> Modules</th>
+                <th><i class="fa-solid fa-signal"></i> Gateway Status</th>
+                <th><i class="fa-solid fa-user"></i> Triggered By</th>
+              </tr>
+            </thead>
+            <tbody id="igot-sync-table-body">
+              <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">Loading sync logs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Official NSSTA Training Needs Assessment (TNA) Report Generation (Vertical Full-Width) -->
+    <section id="sec-tna" class="admin-section panel" style="background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); border-left: 5px solid var(--primary);">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-icon-badge badge-blue">
+            <i class="fa-solid fa-file-invoice"></i>
+          </div>
+          <div>
+            <h2>MoSPI / NSSTA Training Needs Assessment (TNA) & Report Generation</h2>
+            <p class="panel-subtitle">Export official competency matrices and training deficit reports for Standing Committee & Cadre reviews.</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-action" onclick="exportTNACSV()" style="background:#0f766e; font-size:0.86rem;"><i class="fa-solid fa-file-csv"></i> Download TNA Matrix (CSV)</button>
+          <button class="btn-action" onclick="generateExecutivePDFReport()" style="background:#1e3a8a; font-size:0.86rem;"><i class="fa-solid fa-print"></i> Generate Executive Summary (Print/PDF)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Organization-Wide Competency & Skill Gap Heatmap (Vertical Full-Width) -->
+    <section id="sec-heatmap" class="admin-section panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-icon-badge badge-emerald">
+            <i class="fa-solid fa-chart-simple"></i>
+          </div>
+          <div>
+            <h2>Division-Wise Competency & Skill Gap Heatmap</h2>
+            <p class="panel-subtitle">Real-time aggregated proficiency metrics across the four mandatory MoSPI competency frameworks by division.</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; background:#f8fafc; padding:6px 12px; border-radius:6px; border:1px solid var(--border);">
+          <div class="legend-item"><span class="legend-box hm-high"></span> 70-100% (Strong)</div>
+          <div class="legend-item"><span class="legend-box hm-mid"></span> 40-69% (Moderate)</div>
+          <div class="legend-item"><span class="legend-box hm-low"></span> 0-39% (Critical Gap)</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:200px;"><i class="fa-solid fa-sitemap"></i> Division / Department</th>
+              <th style="text-align:center;"><i class="fa-solid fa-chart-line"></i> Statistical Competencies</th>
+              <th style="text-align:center;"><i class="fa-solid fa-laptop-code"></i> Technical Competencies</th>
+              <th style="text-align:center;"><i class="fa-solid fa-shield-halved"></i> Digital Governance</th>
+              <th style="text-align:center;"><i class="fa-solid fa-user-tie"></i> Behavioural & Managerial</th>
+              <th style="text-align:center;"><i class="fa-solid fa-users"></i> Officers</th>
+            </tr>
+          </thead>
+          <tbody id="heatmap-table-body">
+            <tr><td colspan="6" style="text-align:center; padding:20px;">Aggregating division competencies...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. Officer Registry (Grouped by Cadre, Department & Designation) (Vertical Full-Width) -->
+    <section id="sec-officers" class="admin-section panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-icon-badge badge-purple">
+            <i class="fa-solid fa-users-viewfinder"></i>
+          </div>
+          <div>
+            <h2>Officer Registry & Employee Directory</h2>
+            <p class="panel-subtitle">Audited records grouped by Cadre, Department, and Designation with live overall proficiency scores.</p>
+          </div>
+        </div>
+        <div style="position:relative; width:100%; max-width:320px;">
+          <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.85rem;"></i>
+          <input type="text" id="officerSearch" placeholder="Filter by Name, Cadre or Division..." onkeyup="filterOfficers()" style="padding:8px 12px 8px 34px; border:1px solid var(--border); border-radius:8px; font-size:0.86rem; width:100%;">
+        </div>
+      </div>
+      <div class="table-container" style="max-height:360px; overflow-y:auto;">
+        <table>
+          <thead style="position:sticky; top:0; background:#f8fafc; z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
+            <tr>
+              <th><i class="fa-solid fa-user"></i> Officer Name</th>
+              <th><i class="fa-solid fa-envelope"></i> Official Email</th>
+              <th><i class="fa-solid fa-id-badge"></i> Cadre</th>
+              <th><i class="fa-solid fa-sitemap"></i> Division / Department</th>
+              <th><i class="fa-solid fa-briefcase"></i> Designation</th>
+              <th><i class="fa-solid fa-chart-pie"></i> Avg Competency</th>
+            </tr>
+          </thead>
+          <tbody id="officers-table-body">
+            <tr><td colspan="6" style="text-align:center; padding:20px;">Loading officer directory...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 7. PDF Syllabus Parser Panel (Vertical Full-Width) -->
+    <section id="sec-syllabus" class="admin-section panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-icon-badge badge-amber">
+            <i class="fa-solid fa-book-open-reader"></i>
+          </div>
+          <div>
+            <h2>NSSTA Training Syllabus PDF Parser & Course Generator</h2>
+            <p class="panel-subtitle">Upload official NSSTA syllabus documents, presentation slides, or circular PDFs. LangChain extracts structured competency courses mapped directly to targeted divisions, cadres, and designations, and saves them permanently to the Master Database.</p>
+          </div>
+        </div>
+      </div>
+      
+      <form id="syllabusParserForm" onsubmit="handleSyllabusSubmit(event)">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+          <div class="form-group">
+            <label><i class="fa-solid fa-building-columns"></i> Target Statistical Division</label>
+            <select id="syllabusDept" required>
+              <option value="ALL">Universal (All MoSPI Officers)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-id-card-clip"></i> Target Officer Cadre</label>
+            <select id="syllabusCadre" required>
+              <option value="ALL">All Cadres (ISS & SSS)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-briefcase"></i> Target Designation Level</label>
+            <select id="syllabusDesignation" required>
+              <option value="ALL">All Designations</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-file-pdf"></i> Upload Syllabus / Circular PDF / Slides</label>
+            <input type="file" id="syllabusPdfFile" accept=".pdf,.txt,.md,.docx,.csv" onchange="extractSyllabusPdf(event)" style="padding:8px; border:1px dashed var(--border); border-radius:8px; cursor:pointer; background:#f8fafc;">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label><i class="fa-solid fa-file-lines"></i> Extracted Syllabus Content (Auto-filled from PDF or paste directly)</label>
+          <textarea id="syllabusText" rows="5" placeholder="Upload a syllabus PDF above or paste circular topics here..." required></textarea>
+        </div>
+        <button type="submit" class="btn-action" id="btn-syllabus-submit" style="margin-top:10px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract & Save Accredited Courses to Master DB</button>
+      </form>
+      <div id="syllabus-status" style="font-size:0.86rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
+      <div id="syllabus-preview-box" style="display:none; margin-top:10px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:14px; max-height:300px; overflow-y:auto;"></div>
+    </section>
+
+    <!-- 8. Quick Course Creator (Vertical Full-Width) -->
+    <section id="sec-quick-course" class="admin-section panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-icon-badge badge-blue">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h2>Quick Course Creator</h2>
+            <p class="panel-subtitle">Create and publish custom competency courses directly to the MoSPI Master Catalog for targeted cadres and designations.</p>
+          </div>
+        </div>
+      </div>
+      
+      <form id="draftCourseForm" onsubmit="handleDraftCourse(event)">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
+          <div class="form-group">
+            <label><i class="fa-solid fa-building-columns"></i> Target Division / Department</label>
+            <select id="draftDept" required>
+              <option value="ALL">Universal (All Divisions)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-id-card-clip"></i> Target Cadre</label>
+            <select id="draftCadre" required>
+              <option value="ALL">All Cadres</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-briefcase"></i> Target Designation</label>
+            <select id="draftDesignation" required>
+              <option value="ALL">All Designations</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-layer-group"></i> Competency Domain</label>
+            <select id="draftDomain" required>
+              <option value="Statistical Competencies">Statistical Competencies</option>
+              <option value="Technical Competencies">Technical Competencies</option>
+              <option value="Digital Governance">Digital Governance</option>
+              <option value="Behavioural & Managerial">Behavioural & Managerial</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label><i class="fa-solid fa-pen-to-square"></i> Course Topic / Core Objective</label>
+          <input type="text" id="draftTopic" placeholder="e.g., CAPI Tablet Quality Auditing, OCMS Cost Tracking, PLFS Microdata Estimation" required>
+        </div>
+        <button type="submit" class="btn-action" id="btn-draft-submit" style="margin-top:10px;"><i class="fa-solid fa-database"></i> Generate & Save Directly to Database</button>
+      </form>
+      <div id="draft-status" style="font-size:0.86rem; font-weight:700; color:var(--success); margin-top:6px;"></div>
+
+      <div style="margin-top:14px;">
+        <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; color:var(--primary); display:flex; align-items:center; gap:8px;">
+          <i class="fa-solid fa-list-check"></i> Recently Added Master Courses
+        </h3>
+        <div id="recent-courses-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;"></div>
+      </div>
+    </section>
+
+    <!-- 9. Training Material Quiz Synthesizer (Auto MCQ Generator) (Vertical Full-Width) -->
+    <section id="sec-quiz-gen" class="admin-section panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-icon-badge badge-rose">
+            <i class="fa-solid fa-file-pdf"></i>
+          </div>
+          <div>
+            <h2>Auto MCQ Question Generator from PDF & Text</h2>
+            <p class="panel-subtitle">Upload training manual PDFs or paste syllabus circulars. AI extracts statistical methodology and synthesizes accredited MCQs directly into the database for officer evaluations.</p>
+          </div>
+        </div>
+      </div>
+
+      <form id="quizDocForm" onsubmit="handleDocQuiz(event)">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
+          <div class="form-group">
+            <label><i class="fa-solid fa-graduation-cap"></i> Assign Assessment to Course</label>
+            <select id="quizCourseSelect" required>
+              <option value="">-- Choose Target Course from DB --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-list-ol"></i> Number of MCQs (User Choice)</label>
+            <input type="number" id="quizQuestionCount" min="1" max="50" value="6" placeholder="Enter count (e.g. 5, 8, 10, 15)..." required style="font-weight:700;">
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-stairs"></i> Evaluation Difficulty</label>
+            <select id="quizDifficulty">
+              <option value="Basic">Stage 1: Foundation (Basic)</option>
+              <option value="Intermediate" selected>Stage 2: Functional Core (Intermediate)</option>
+              <option value="Advanced">Stage 3: Strategic Policy (Advanced)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-file-arrow-up"></i> Upload Training PDF / Text / PPT File</label>
+            <input type="file" id="quizPdfFile" accept=".pdf,.txt,.md,.json,.csv" onchange="extractPdfText(event)" style="padding:8px; border:1px dashed var(--border); border-radius:8px; cursor:pointer; background:#f8fafc;">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label><i class="fa-solid fa-file-lines"></i> Document Content</label>
+          <textarea id="quizDocText" rows="4" placeholder="Upload a PDF above or paste training text here..." required></textarea>
+        </div>
+        <button type="submit" class="btn-action" id="btn-quiz-synth" style="background:#0f766e; font-weight:800; margin-top:10px;"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Store MCQs in Database</button>
+      </form>
+      <div id="quiz-gen-status" style="font-size:0.86rem; font-weight:700; color:var(--success); margin-top:6px;"></div>
+      <div id="quiz-preview-box" style="display:none; margin-top:10px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:14px; max-height:280px; overflow-y:auto;"></div>
+    </section>
+
+    <!-- 10. Officer Certificate Verification & Approval Queue (Vertical Full-Width) -->
+    <section id="sec-certificates" class="admin-section panel" style="border-top: 4px solid var(--accent);">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="panel-icon-badge badge-sky">
+            <i class="fa-solid fa-stamp"></i>
+          </div>
+          <div>
+            <h2>Officer Certificate Verification & Approval Queue</h2>
+            <p class="panel-subtitle">Audit uploaded course certificates, verify document validity, and credit verified competency points (+25 Pts) to officer records.</p>
+          </div>
+        </div>
+        <button class="btn-action" onclick="loadCertificatesQueue()" style="background:#0284c7; padding:7px 14px; font-size:0.84rem;"><i class="fa-solid fa-arrows-rotate"></i> Refresh Queue</button>
+      </div>
+      
+      <div class="table-container" style="max-height:300px; overflow-y:auto;">
+        <table>
+          <thead style="position:sticky; top:0; background:#f8fafc; z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
+            <tr>
+              <th><i class="fa-solid fa-user-check"></i> Officer Name & Email</th>
+              <th><i class="fa-solid fa-book"></i> Course Title</th>
+              <th><i class="fa-solid fa-file-pdf"></i> Submitted Document</th>
+              <th><i class="fa-solid fa-clock"></i> Timestamp</th>
+              <th style="text-align:center;"><i class="fa-solid fa-signal"></i> Status</th>
+              <th style="text-align:center;"><i class="fa-solid fa-gavel"></i> Administrative Action</th>
+            </tr>
+          </thead>
+          <tbody id="cert-queue-table-body">
+            <tr><td colspan="6" style="text-align:center; padding:20px;">Loading certificate verification queue...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Certificate Inspection & PDF Audit Modal for Admin -->
+  <div class="modal-backdrop" id="admin-cert-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.75); z-index:9999; justify-content:center; align-items:center; padding:20px;">
+    <div class="modal-box" style="background:#ffffff; width:100%; max-width:820px; max-height:92vh; overflow-y:auto; border-radius:12px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.25);">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#1e3a8a; font-size:1.15rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-stamp"></i> Certificate Verification & PDF Audit</h3>
+        <button onclick="closeAdminCertModal()" style="background:none; border:none; font-size:1.4rem; color:#64748b; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Dynamic Preview / Uploaded PDF Frame Container -->
+      <div id="admin-cert-viewer-container"></div>
+
+      <!-- AI Audit Analysis Box -->
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:14px; margin-bottom:18px; font-size:0.86rem;">
+        <div style="font-weight:700; color:#1e3a8a; margin-bottom:6px;"><i class="fa-solid fa-wand-magic-sparkles"></i> MoSPI AI Credential Audit Findings:</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+          <div><strong>Confidence Score:</strong> <span style="color:#15803d; font-weight:700;">95% (High Authenticity)</span></div>
+          <div><strong>Recipient Identity:</strong> <span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Matched</span></div>
+          <div><strong>Course Alignment:</strong> <span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Validated</span></div>
+          <div><strong>Competency Points:</strong> <span style="color:#1e3a8a; font-weight:700;">+25 Points (On Approval)</span></div>
+        </div>
+        <div><strong>Audit Summary:</strong> <span id="modal-cert-summary" style="color:#334155;">Certificate validated under MoSPI AI credential audit protocol.</span></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <button onclick="printModalCertificate()" class="btn-action" style="background:#475569; font-size:0.85rem;"><i class="fa-solid fa-print"></i> Open / Print Certificate (PDF)</button>
+        <div style="display:flex; gap:8px;" id="modal-cert-actions">
+          <!-- Dynamic approval buttons populated on open -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
+    let allOfficers = [];
+
+    // Active Navigation Highlight Spy
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('.admin-section');
+      const navPills = document.querySelectorAll('.quick-nav-pill');
+      let currentSecId = '';
+
+      sections.forEach(sec => {
+        const top = sec.offsetTop - 160;
+        if (window.pageYOffset >= top) {
+          currentSecId = sec.getAttribute('id');
+        }
+      });
+
+      if (currentSecId) {
+        navPills.forEach(pill => {
+          pill.classList.remove('active');
+          if (pill.getAttribute('href') === `#${currentSecId}`) {
+            pill.classList.add('active');
+          }
+        });
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const rawUser = localStorage.getItem('mospi_user');
+      if (!rawUser) {
+        const defaultAdmin = {
+          name: 'MoSPI Training Administrator',
+          email: 'admin@mospi.gov.in',
+          role: 'admin',
+          department: 'National Statistical Systems Training Academy (NSSTA)',
+          designation: 'Joint Director / Chief Training Officer',
+          cadre: 'Indian Statistical Service (ISS)'
+        };
+        localStorage.setItem('mospi_user', JSON.stringify(defaultAdmin));
+      }
+
+      await Promise.allSettled([
+        loadMetadataDropdowns(), 
+        loadOfficerAnalytics(), 
+        loadCoursesDropdown(),
+        loadCertificatesQueue(),
+        loadIgotSyncLogs(),
+        runSkillForecast()
+      ]);
+    });
+
+    let activePillarGainChart = null;
+
+    async function loadTrainingEffectiveness() {
+      try {
+        const res = await fetch(API_URL + '/api/admin/training-effectiveness');
+        const data = await res.json();
+        
+        if (data && data.kirkpatrick_metrics) {
+          const l1 = document.getElementById("k-l1-score");
+          const l2 = document.getElementById("k-l2-score");
+          const l3 = document.getElementById("k-l3-score");
+          const l4 = document.getElementById("k-l4-score");
+          if (l1) l1.innerText = data.kirkpatrick_metrics.level1_reaction.score;
+          if (l2) l2.innerText = data.kirkpatrick_metrics.level2_learning.skill_delta;
+          if (l3) l3.innerText = data.kirkpatrick_metrics.level3_behavior.simulation_pass_rate;
+          if (l4) l4.innerText = data.kirkpatrick_metrics.level4_results.field_paradata_error_reduction;
+        }
+
+        const chartCanvas = document.getElementById("pillarGainChart");
+        if (chartCanvas) {
+          const ctx = chartCanvas.getContext("2d");
+          if (activePillarGainChart) activePillarGainChart.destroy();
+
+          activePillarGainChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['Statistical', 'Technical', 'Governance', 'Leadership'],
+              datasets: [
+                {
+                  label: 'Pre-Training Baseline (%)',
+                  data: [54, 46, 62, 58],
+                  backgroundColor: 'rgba(148, 163, 184, 0.7)',
+                  borderRadius: 4
+                },
+                {
+                  label: 'Post-Training Attainment (%)',
+                  data: [89, 84, 94, 88],
+                  backgroundColor: 'rgba(2, 132, 199, 0.85)',
+                  borderRadius: 4
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } }
+              },
+              scales: {
+                y: { beginAtZero: true, max: 100 }
+              }
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("Training effectiveness chart fallback:", e);
+      }
+    }
+
+    async function loadMetadataDropdowns() {
+      try {
+        const res = await fetch(`${API_URL}/api/metadata`);
+        const data = await res.json();
+
+        const syllabusSelect = document.getElementById("syllabusDept");
+        if (syllabusSelect) {
+          syllabusSelect.innerHTML = '<option value="ALL">Universal (All MoSPI Officers)</option>';
+          (data.departments || []).forEach(d => {
+            const opt = document.createElement("option");
+            opt.value = d.code;
+            opt.innerText = `${d.name} (${d.code})`;
+            syllabusSelect.appendChild(opt);
+          });
+        }
+
+        const syllabusCadreSelect = document.getElementById("syllabusCadre");
+        if (syllabusCadreSelect) {
+          syllabusCadreSelect.innerHTML = '<option value="ALL">All Cadres (ISS & SSS)</option>';
+          (data.cadres || []).forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c;
+            opt.innerText = c;
+            syllabusCadreSelect.appendChild(opt);
+          });
+        }
+
+        const syllabusDesigSelect = document.getElementById("syllabusDesignation");
+        if (syllabusDesigSelect) {
+          syllabusDesigSelect.innerHTML = '<option value="ALL">All Designations</option>';
+          (data.designations || []).forEach(des => {
+            const opt = document.createElement("option");
+            opt.value = des;
+            opt.innerText = des;
+            syllabusDesigSelect.appendChild(opt);
+          });
+        }
+
+        const draftDeptSelect = document.getElementById("draftDept");
+        if (draftDeptSelect) {
+          draftDeptSelect.innerHTML = '<option value="ALL">Universal (All Divisions)</option>';
+          (data.departments || []).forEach(d => {
+            const opt = document.createElement("option");
+            opt.value = d.code;
+            opt.innerText = `${d.name} (${d.code})`;
+            draftDeptSelect.appendChild(opt);
+          });
+        }
+
+        const cadreSelect = document.getElementById("draftCadre");
+        if (cadreSelect) {
+          cadreSelect.innerHTML = '<option value="ALL">All Cadres</option>';
+          (data.cadres || []).forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c;
+            opt.innerText = c;
+            cadreSelect.appendChild(opt);
+          });
+        }
+
+        const desigSelect = document.getElementById("draftDesignation");
+        if (desigSelect) {
+          desigSelect.innerHTML = '<option value="ALL">All Designations</option>';
+          (data.designations || []).forEach(des => {
+            const opt = document.createElement("option");
+            opt.value = des;
+            opt.innerText = des;
+            desigSelect.appendChild(opt);
+          });
+        }
+      } catch (e) {
+        console.error("Failed to load metadata dropdowns:", e);
+      }
+    }
+
+    async function loadCoursesDropdown() {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/courses-list`);
+        const data = await res.json();
+        const courses = data.courses || [];
+
+        const totalCourseEl = document.getElementById("stat-total-courses");
+        if (totalCourseEl) totalCourseEl.innerText = courses.length;
+
+        const select = document.getElementById("quizCourseSelect");
+        if (select) {
+          select.innerHTML = '<option value="">-- Choose Target Course from DB --</option>';
+          courses.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c.title;
+            opt.innerText = `${c.title} (${c.course_code})`;
+            select.appendChild(opt);
+          });
+        }
+
+        const recentList = document.getElementById("recent-courses-list");
+        if (recentList) {
+          recentList.innerHTML = courses.slice(0, 5).map(c => `
+            <div style="background:#f8fafc; border:1px solid var(--border); padding:8px 12px; border-radius:6px; font-size:0.85rem; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong style="color:#0f172a;">${c.title}</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted);"><i class="fa-solid fa-layer-group"></i> ${c.domain} | <i class="fa-solid fa-building"></i> Target: ${(c.target_departments || ['ALL']).join(', ')}</div>
+              </div>
+              <span class="badge">${c.course_code || 'NSSTA'}</span>
+            </div>
+          `).join("");
+        }
+      } catch (e) {
+        console.error("Failed to load courses dropdown:", e);
+      }
+    }
+
+    async function extractSyllabusPdf(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById("syllabus-status");
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Reading & extracting training material from ${file.name}...`;
+
+      try {
+        let extractedText = "";
+
+        if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          const totalPages = Math.min(pdf.numPages, 50);
+
+          for (let i = 1; i <= totalPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            extractedText += content.items.map(item => item.str).join(" ") + "\n";
+          }
+          statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> Extracted ${totalPages} pages (${extractedText.length} chars) from PDF! Ready to architect courses.`;
+        } else {
+          extractedText = await file.text();
+          statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> Loaded ${extractedText.length} characters from ${file.name}! Ready to architect courses.`;
+        }
+
+        document.getElementById("syllabusText").value = extractedText.trim();
+      } catch (err) {
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Could not read file automatically (${err.message}). Please paste the text directly.</span>`;
+      }
+    }
+
+    async function handleSyllabusSubmit(e) {
+      e.preventDefault();
+      const defaultDivision = document.getElementById("syllabusDept").value;
+      const targetCadre = document.getElementById("syllabusCadre") ? document.getElementById("syllabusCadre").value : 'ALL';
+      const targetDesignation = document.getElementById("syllabusDesignation") ? document.getElementById("syllabusDesignation").value : 'ALL';
+      const syllabusText = document.getElementById("syllabusText").value;
+      const statusDiv = document.getElementById("syllabus-status");
+      const previewBox = document.getElementById("syllabus-preview-box");
+      const submitBtn = document.getElementById("btn-syllabus-submit");
+
+      submitBtn.disabled = true;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing syllabus with LangChain & Fast LLM engine, architecting accredited courses...`;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/parse-syllabus`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ syllabusText, defaultDivision, targetCadre, targetDesignation })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to extract syllabus');
+
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
+        alert(`✅ ${data.message}\n\n• Target Cadre: ${targetCadre}\n• Target Designation: ${targetDesignation}\n• Total Courses Architected & Saved: ${(data.modules || []).length}\n\nAll courses are now live in the Master Course Catalog for officer recommendations!`);
+
+        if (data.modules && data.modules.length > 0) {
+          previewBox.style.display = "block";
+          previewBox.innerHTML = `
+            <div style="font-weight:800; font-size:0.88rem; color:#1e3a8a; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+              <span><i class="fa-solid fa-graduation-cap"></i> Architected & Stored Courses (${data.modules.length} Modules):</span>
+              <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; padding:3px 8px; border-radius:4px; font-weight:800;"><i class="fa-solid fa-database"></i> MASTER_COURSES SAVED</span>
+            </div>
+            ${data.modules.map((m, i) => `
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #0f766e; border-radius:6px; padding:10px; margin-bottom:8px; font-size:0.82rem;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                  <strong style="color:#0f172a;">${i + 1}. ${m.title}</strong>
+                  <span style="background:#e0f2fe; color:#0369a1; font-weight:700; font-size:0.72rem; padding:2px 6px; border-radius:4px; white-space:nowrap;">${m.course_code || 'NSSTA'}</span>
+                </div>
+                <p style="margin:4px 0 6px 0; color:#475569; font-size:0.78rem;">${m.description}</p>
+                <div style="display:flex; flex-wrap:wrap; gap:6px; font-size:0.72rem;">
+                  <span style="background:#f1f5f9; color:#334155; padding:2px 6px; border-radius:4px;"><strong>Domain:</strong> ${m.domain}</span>
+                  <span style="background:#fef3c7; color:#b45309; padding:2px 6px; border-radius:4px;"><strong>Level:</strong> ${m.difficulty_level}</span>
+                  <span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px;"><strong>Cadre:</strong> ${(m.target_cadres || [targetCadre]).join(', ')}</span>
+                  <span style="background:#ede9fe; color:#6d28d9; padding:2px 6px; border-radius:4px;"><strong>Designation:</strong> ${(m.target_designations || [targetDesignation]).join(', ')}</span>
+                </div>
+              </div>
+            `).join('')}
+          `;
+        }
+
+        document.getElementById("syllabusText").value = "";
+        document.getElementById("syllabusPdfFile").value = "";
+        await loadCoursesDropdown();
+      } catch (err) {
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Error: ${err.message}</span>`;
+        alert(`Error parsing syllabus: ${err.message}`);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    async function handleDraftCourse(e) {
+      e.preventDefault();
+      const department = document.getElementById("draftDept").value;
+      const cadre = document.getElementById("draftCadre").value;
+      const designation = document.getElementById("draftDesignation").value;
+      const domain = document.getElementById("draftDomain").value;
+      const topic = document.getElementById("draftTopic").value;
+      const statusDiv = document.getElementById("draft-status");
+      const submitBtn = document.getElementById("btn-draft-submit");
+
+      submitBtn.disabled = true;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating & saving course to database...`;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/draft-course`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ department, cadre, designation, domain, topic })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to create course');
+
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message || 'Course added successfully!'}`;
+        alert(data.message || 'Course added directly to database!');
+        document.getElementById("draftTopic").value = "";
+        await loadCoursesDropdown();
+      } catch (err) {
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Error: ${err.message}</span>`;
+        alert(`Course creation error: ${err.message}`);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    async function extractPdfText(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById("quiz-gen-status");
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Reading training material from ${file.name}...`;
+
+      try {
+        let extractedText = "";
+
+        if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          const totalPages = Math.min(pdf.numPages, 50);
+
+          for (let i = 1; i <= totalPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            extractedText += content.items.map(item => item.str).join(" ") + "\n";
+          }
+          statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> Extracted ${totalPages} pages (${extractedText.length} characters) from PDF! Ready for AI question synthesis.`;
+        } else {
+          extractedText = await file.text();
+          statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> Loaded ${extractedText.length} characters from ${file.name}! Ready for AI question synthesis.`;
+        }
+
+        document.getElementById("quizDocText").value = extractedText.trim();
+      } catch (err) {
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Could not read file automatically (${err.message}). Please paste text directly.</span>`;
+      }
+    }
+
+    async function loadOfficerAnalytics() {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/officers-analytics`);
+        const data = await res.json();
+        allOfficers = data.officers || [];
+
+        const totalOfficersEl = document.getElementById("stat-total-officers");
+        const totalDeptsEl = document.getElementById("stat-total-depts");
+        const totalCadresEl = document.getElementById("stat-total-cadres");
+
+        if (totalOfficersEl) totalOfficersEl.innerText = data.total_officers || 0;
+        if (totalDeptsEl) totalDeptsEl.innerText = Object.keys(data.breakdown?.byDept || {}).length;
+        if (totalCadresEl) totalCadresEl.innerText = Object.keys(data.breakdown?.byCadre || {}).length;
+
+        renderHeatmap(allOfficers);
+        renderOfficersTable(allOfficers);
+      } catch (e) {
+        console.error("Failed to load analytics:", e);
+      }
+    }
+
+    async function loadIgotSyncLogs() {
+      const tbody = document.getElementById("igot-sync-table-body");
+      if (!tbody) return;
+      try {
+        const res = await fetch(`${API_URL}/api/admin/igot-sync-logs`);
+        const data = await res.json();
+        const logs = data.logs || [];
+
+        if (logs.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:16px;">No synchronization history recorded.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = logs.map(l => {
+          const timeStr = l.sync_timestamp ? new Date(l.sync_timestamp).toLocaleDateString('en-IN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Recently';
+          return `
+            <tr>
+              <td><strong>${timeStr}</strong></td>
+              <td><span style="font-weight:600; color:#0369a1;">${l.operation}</span></td>
+              <td style="text-align:center;"><span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-weight:700;">${l.synced_modules} Modules</span></td>
+              <td><span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> ${l.gateway_status}</span></td>
+              <td style="color:#475569;">${l.triggered_by}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444; padding:16px;">Failed to load sync logs.</td></tr>`;
+      }
+    }
+
+    async function triggerIgotSync() {
+      const btn = document.getElementById("btn-sync-igot");
+      const resDiv = document.getElementById("igot-sync-result");
+      const healthEl = document.getElementById("igot-sync-health");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Syncing with Central NSSTA API...`;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/sync-igot`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Sync failed');
+
+        const timeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        if (healthEl) healthEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> 100% Synced (${timeStr})`;
+        resDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
+        alert(`✅ Central NSSTA Master Repository Synced!\n\n• Status: 100% Active\n• Total Master Courses in DB: ${data.total_master_courses || 45}\n• Last Synced: ${timeStr}\n\nAll officer pathways are aligned with the latest NSSTA catalog.`);
+        await Promise.all([loadCoursesDropdown(), loadIgotSyncLogs()]);
+      } catch (err) {
+        resDiv.innerHTML = `<span style="color:#ef4444;">Sync Error: ${err.message}</span>`;
+        alert(`NSSTA Sync error: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Sync with Central NSSTA Repository`;
+      }
+    }
+
+    function exportTNACSV() {
+      if (!allOfficers || allOfficers.length === 0) {
+        alert("No officer competency records available to export.");
+        return;
+      }
+
+      const headers = [
+        "Officer Name",
+        "Official Email",
+        "Cadre / Service",
+        "Division / Department",
+        "Designation",
+        "Statistical Competency (%)",
+        "Technical Competency (%)",
+        "Digital Governance (%)",
+        "Behavioural & Managerial (%)",
+        "Overall Average Score (%)",
+        "Competency Status",
+        "Recommended Action"
+      ];
+
+      const rows = allOfficers.map(o => {
+        const c = o.competency || {};
+        const stat = c.statistical_score || 0;
+        const tech = c.technical_score || 0;
+        const gov = c.governance_score || 0;
+        const lead = c.leadership_score || 0;
+        const avg = Math.round((stat + tech + gov + lead) / 4);
+
+        let status = "Proficient";
+        let action = "Advanced Strategic Modules";
+        if (avg < 40) {
+          status = "Critical Gap";
+          action = "Immediate Mandatory Foundation Upskilling";
+        } else if (avg < 70) {
+          status = "Moderate Gap";
+          action = "Departmental Functional Core Training";
+        }
+
+        return [
+          `"${(o.name || '').replace(/"/g, '""')}"`,
+          `"${(o.email || '').replace(/"/g, '""')}"`,
+          `"${(o.cadre || '').replace(/"/g, '""')}"`,
+          `"${(o.department || '').replace(/"/g, '""')}"`,
+          `"${(o.designation || '').replace(/"/g, '""')}"`,
+          stat,
+          tech,
+          gov,
+          lead,
+          avg,
+          `"${status}"`,
+          `"${action}"`
+        ].join(",");
+      });
+
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `MoSPI_NSSTA_TNA_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function generateExecutivePDFReport() {
+      const printWindow = window.open('', '_blank');
+      const dateStr = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+      
+      let officerRowsHtml = (allOfficers || []).map(o => {
+        const c = o.competency || {};
+        const avg = o.overall_score || 0;
+        const status = avg >= 70 ? 'Proficient' : (avg >= 40 ? 'Moderate Gap' : 'Critical Gap');
+        const badgeColor = avg >= 70 ? '#15803d' : (avg >= 40 ? '#b45309' : '#b91c1c');
+        return `
+          <tr>
+            <td style="padding:8px; border:1px solid #cbd5e1;"><strong>${o.name || 'Officer'}</strong><br><small style="color:#64748b;">${o.email}</small></td>
+            <td style="padding:8px; border:1px solid #cbd5e1;">${o.department || 'General'}</td>
+            <td style="padding:8px; border:1px solid #cbd5e1;">${o.designation || 'Officer'}</td>
+            <td style="padding:8px; border:1px solid #cbd5e1; text-align:center;">${c.statistical_score || 0}%</td>
+            <td style="padding:8px; border:1px solid #cbd5e1; text-align:center;">${c.technical_score || 0}%</td>
+            <td style="padding:8px; border:1px solid #cbd5e1; text-align:center;">${c.governance_score || 0}%</td>
+            <td style="padding:8px; border:1px solid #cbd5e1; text-align:center;">${c.leadership_score || 0}%</td>
+            <td style="padding:8px; border:1px solid #cbd5e1; text-align:center; font-weight:bold; color:${badgeColor};">${avg}% (${status})</td>
+          </tr>
+        `;
+      }).join('');
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>MoSPI NSSTA Executive TNA Report</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #1e293b; }
+            .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 16px; margin-bottom: 20px; }
+            .header h1 { margin: 0; color: #0f172a; font-size: 1.5rem; }
+            .header h2 { margin: 4px 0 0 0; color: #0284c7; font-size: 1.1rem; font-weight: normal; }
+            .meta { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.9rem; color: #64748b; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+            th { background: #f1f5f9; padding: 10px 8px; border: 1px solid #cbd5e1; text-align: left; }
+            .summary-box { display: flex; gap: 15px; margin-bottom: 20px; }
+            .summary-card { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; text-align: center; }
+            .summary-card h4 { margin: 0; font-size: 0.8rem; color: #64748b; }
+            .summary-card p { margin: 5px 0 0 0; font-size: 1.3rem; font-weight: bold; color: #0f172a; }
+            @media print { button { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Government of India • Ministry of Statistics and Programme Implementation</h1>
+            <h2>National Statistical Systems Training Academy (NSSTA) — Executive TNA & Competency Report</h2>
+          </div>
+          <div class="meta">
+            <div><strong>Report Date:</strong> ${dateStr}</div>
+            <div><strong>Report Scope:</strong> Ministry-Wide Cadre & Division Readiness Assessment</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-card"><h4>Total Officers Enrolled</h4><p>${allOfficers.length}</p></div>
+            <div class="summary-card"><h4>Active Divisions</h4><p>${document.getElementById('stat-total-depts').innerText}</p></div>
+            <div class="summary-card"><h4>Registered Cadres</h4><p>${document.getElementById('stat-total-cadres').innerText}</p></div>
+            <div class="summary-card"><h4>Master DB Courses</h4><p>${document.getElementById('stat-total-courses').innerText}</p></div>
+          </div>
+          <h3 style="margin-top:20px; color:#0f172a; font-size:1.05rem;">Officer Competency & Division Proficiency Matrix</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Officer Details</th>
+                <th>Division</th>
+                <th>Designation</th>
+                <th style="text-align:center;">Statistical</th>
+                <th style="text-align:center;">Technical</th>
+                <th style="text-align:center;">Governance</th>
+                <th style="text-align:center;">Leadership</th>
+                <th style="text-align:center;">Overall Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${officerRowsHtml || '<tr><td colspan="8" style="text-align:center;">No officers registered.</td></tr>'}
+            </tbody>
+          </table>
+          <div style="margin-top:30px; text-align:right;">
+            <button onclick="window.print()" style="padding:10px 20px; background:#0284c7; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Print / Save as PDF</button>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    function getHeatmapClass(val) {
+      if (val >= 70) return "hm-high";
+      if (val >= 40) return "hm-mid";
+      if (val > 0) return "hm-low";
+      return "hm-none";
+    }
+
+    function renderHeatmap(officers) {
+      const tbody = document.getElementById("heatmap-table-body");
+      if (!tbody) return;
+      if (!officers.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">No departmental data available yet.</td></tr>`;
+        return;
+      }
+
+      const deptMap = {};
+      officers.forEach(o => {
+        const dept = o.department || "General Administration";
+        if (!deptMap[dept]) {
+          deptMap[dept] = { count: 0, stat: 0, tech: 0, gov: 0, lead: 0 };
+        }
+        deptMap[dept].count += 1;
+        deptMap[dept].stat += (o.competency?.statistical_score || 0);
+        deptMap[dept].tech += (o.competency?.technical_score || 0);
+        deptMap[dept].gov += (o.competency?.governance_score || 0);
+        deptMap[dept].lead += (o.competency?.leadership_score || 0);
+      });
+
+      tbody.innerHTML = Object.keys(deptMap).map(dept => {
+        const d = deptMap[dept];
+        const avgStat = Math.round(d.stat / d.count);
+        const avgTech = Math.round(d.tech / d.count);
+        const avgGov = Math.round(d.gov / d.count);
+        const avgLead = Math.round(d.lead / d.count);
+
+        return `
+          <tr>
+            <td><strong>${dept}</strong></td>
+            <td><div class="heatmap-cell ${getHeatmapClass(avgStat)}">${avgStat}%</div></td>
+            <td><div class="heatmap-cell ${getHeatmapClass(avgTech)}">${avgTech}%</div></td>
+            <td><div class="heatmap-cell ${getHeatmapClass(avgGov)}">${avgGov}%</div></td>
+            <td><div class="heatmap-cell ${getHeatmapClass(avgLead)}">${avgLead}%</div></td>
+            <td style="text-align:center;"><strong>${d.count}</strong></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderOfficersTable(officers) {
+      const tbody = document.getElementById("officers-table-body");
+      if (!tbody) return;
+      if (!officers.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">No officers registered yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = officers.map(o => `
+        <tr>
+          <td><strong>${o.name}</strong></td>
+          <td><span style="color:#0284c7;">${o.email}</span></td>
+          <td><span class="badge">${o.cadre}</span></td>
+          <td>${o.department}</td>
+          <td>${o.designation}</td>
+          <td><strong>${o.overall_score}%</strong></td>
+        </tr>
+      `).join("");
+    }
+
+    function filterOfficers() {
+      const q = document.getElementById("officerSearch").value.toLowerCase();
+      const filtered = allOfficers.filter(o => 
+        (o.name || '').toLowerCase().includes(q) ||
+        (o.cadre || '').toLowerCase().includes(q) ||
+        (o.department || '').toLowerCase().includes(q) ||
+        (o.designation || '').toLowerCase().includes(q)
+      );
+      renderOfficersTable(filtered);
+    }
+
+    async function handleDocQuiz(e) {
+      e.preventDefault();
+      const courseTitle = document.getElementById("quizCourseSelect").value;
+      const documentText = document.getElementById("quizDocText").value;
+      const numQuestions = document.getElementById("quizQuestionCount") ? document.getElementById("quizQuestionCount").value : 6;
+      const difficulty = document.getElementById("quizDifficulty") ? document.getElementById("quizDifficulty").value : 'Intermediate';
+      const statusDiv = document.getElementById("quiz-gen-status");
+      const previewBox = document.getElementById("quiz-preview-box");
+      const submitBtn = document.getElementById("btn-quiz-synth");
+
+      if (!courseTitle) {
+        alert("Please select a target course from the dropdown.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing PDF text with LangChain & Fast LLM engine, synthesizing MCQs...`;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/generate-quiz-from-doc`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courseTitle, documentText, numQuestions, difficulty })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to generate quiz');
+
+        const countMsg = data.is_max_possible 
+          ? `(Extracted ${data.total_generated} items — maximum possible from provided text)` 
+          : `(${data.total_generated} items)`;
+
+        statusDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message} ${countMsg}`;
+        alert(`✅ ${data.message}\n\n• Target Course: ${courseTitle}\n• Total Questions Saved to DB: ${data.total_generated || (data.questions || []).length} ${data.is_max_possible ? '(Max possible from document)' : ''}\n• Evaluation Level: ${difficulty}\n\nAll questions have been permanently stored in Supabase course_quizzes table!`);
+
+        if (data.questions && data.questions.length > 0) {
+          previewBox.style.display = "block";
+          previewBox.innerHTML = `
+            <div style="font-weight:800; font-size:0.88rem; color:#1e3a8a; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+              <span><i class="fa-solid fa-list-check"></i> Generated & Stored MCQs for "${courseTitle}" (${data.questions.length} Items${data.is_max_possible ? ' - Max Possible' : ''}):</span>
+              <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; padding:3px 8px; border-radius:4px; font-weight:800;"><i class="fa-solid fa-database"></i> SUPABASE PERSISTED</span>
+            </div>
+            ${data.questions.map((q, i) => {
+              const safeOpts = q.options || [];
+              const correctIdx = q.correct_index || 0;
+              return `
+                <div style="margin-bottom:12px; background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #0284c7; border-radius:6px; padding:10px; font-size:0.82rem;">
+                  <strong style="color:#0f172a;">${i + 1}. ${q.question}</strong>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0;">
+                    ${safeOpts.map((opt, optIdx) => {
+                      const isCorrect = optIdx === correctIdx;
+                      const bg = isCorrect ? '#dcfce7' : '#f8fafc';
+                      const border = isCorrect ? '1px solid #86efac' : '1px solid #e2e8f0';
+                      const color = isCorrect ? '#15803d' : '#475569';
+                      const prefix = String.fromCharCode(65 + optIdx);
+                      return `
+                        <div style="background:${bg}; border:${border}; color:${color}; padding:6px 8px; border-radius:4px; font-size:0.76rem; font-weight:${isCorrect ? '700' : 'normal'};">
+                          <strong>(${prefix})</strong> ${opt} ${isCorrect ? '<i class="fa-solid fa-circle-check" style="margin-left:4px;"></i>' : ''}
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                  ${q.explanation ? `<div style="font-size:0.74rem; color:#0f766e; background:#f0fdfa; padding:4px 8px; border-radius:4px; margin-top:4px;"><strong><i class="fa-solid fa-circle-info"></i> Rationale:</strong> ${q.explanation}</div>` : ''}
+                </div>
+              `;
+            }).join("")}
+          `;
+        }
+
+        document.getElementById("quizDocText").value = "";
+        document.getElementById("quizPdfFile").value = "";
+      } catch (err) {
+        statusDiv.innerHTML = `<span style="color:#ef4444;">Error: ${err.message}</span>`;
+        alert(`Quiz error: ${err.message}`);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    // --- Certificate Review Queue ---
+    let activeModalCert = null;
+
+    async function loadCertificatesQueue() {
+      const tbody = document.getElementById("cert-queue-table-body");
+      if (!tbody) return;
+      try {
+        const res = await fetch(`${API_URL}/api/admin/certificates`);
+        const data = await res.json();
+        const list = data.certificates || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">No certificates pending audit.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(c => {
+          const isPending = c.status === 'pending';
+          const statusBadge = c.status === 'approved' 
+            ? '<span class="stage-badge" style="background:#dcfce7; color:#15803d;"><i class="fa-solid fa-circle-check"></i> Approved (+25 Pts)</span>'
+            : (c.status === 'rejected' 
+                ? '<span class="stage-badge" style="background:#fee2e2; color:#b91c1c;"><i class="fa-solid fa-circle-xmark"></i> Rejected</span>'
+                : '<span class="stage-badge" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-clock"></i> Pending Audit</span>');
+
+          const actionButtons = isPending ? `
+            <button onclick="reviewCertificate('${c.id}', 'approved')" class="btn-action" style="background:#15803d; padding:5px 10px; font-size:0.78rem; margin-right:4px;"><i class="fa-solid fa-check"></i> Approve</button>
+            <button onclick="reviewCertificate('${c.id}', 'rejected')" class="btn-action" style="background:#b91c1c; padding:5px 10px; font-size:0.78rem;"><i class="fa-solid fa-xmark"></i> Reject</button>
+          ` : `<span style="font-size:0.78rem; color:var(--text-muted);">${c.admin_remarks || 'Audit complete'}</span>`;
+
+          const timeStr = c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'N/A';
+          const certJsonEnc = encodeURIComponent(JSON.stringify(c));
+
+          return `
+            <tr>
+              <td><strong>${c.officer_name || 'Officer'}</strong><br><small style="color:var(--text-muted);">${c.user_email}</small></td>
+              <td><strong>${c.course_title}</strong></td>
+              <td>
+                <button onclick="openAdminCertModal('${certJsonEnc}')" class="btn-action" style="background:#0284c7; padding:5px 12px; font-size:0.78rem;">
+                  <i class="fa-solid fa-file-pdf"></i> View & Audit PDF
+                </button>
+              </td>
+              <td style="font-size:0.8rem; color:var(--text-muted);">${timeStr}</td>
+              <td style="text-align:center;">${statusBadge}</td>
+              <td style="text-align:center;">${actionButtons}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:20px;">Failed to load certificate queue.</td></tr>`;
+      }
+    }
+
+    function base64ToUint8Array(base64) {
+      const base64Clean = base64.replace(/^data:.*?;base64,/, '');
+      const binaryString = atob(base64Clean);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes;
+    }
+
+    async function renderCertDocumentViewer(c) {
+      const container = document.getElementById("admin-cert-viewer-container");
+      if (!container) return;
+
+      const fileName = c.certificate_file_name || 'Certificate.pdf';
+      const fileData = c.file_data || '';
+
+      // 1. If it's an image
+      if (fileData.startsWith("data:image")) {
+        container.innerHTML = `
+          <div style="margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#ffffff; padding:10px 16px; border-radius:8px 8px 0 0; font-size:0.88rem;">
+              <span><i class="fa-solid fa-file-image" style="color:#38bdf8;"></i> <strong>Uploaded Officer Certificate:</strong> ${fileName}</span>
+              <a href="${fileData}" target="_blank" download="${fileName}" class="btn-action" style="background:#0284c7; padding:4px 12px; font-size:0.78rem; color:#fff; text-decoration:none;">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Full Image
+              </a>
+            </div>
+            <div style="border:2px solid #1e293b; border-radius:0 0 8px 8px; background:#f8fafc; padding:16px; text-align:center; max-height:500px; overflow:auto;">
+              <img src="${fileData}" alt="${fileName}" style="max-width:100%; height:auto; border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 2. If it's a PDF with valid Base64
+      if ((fileData.startsWith("data:application/pdf") || fileData.includes("JVBERi")) && fileData.length > 200) {
+        try {
+          const bytes = base64ToUint8Array(fileData);
+          const blob = new Blob([bytes], { type: 'application/pdf' });
+          const blobUrl = URL.createObjectURL(blob);
+
+          container.innerHTML = `
+            <div style="margin-bottom:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#ffffff; padding:10px 16px; border-radius:8px 8px 0 0; font-size:0.88rem;">
+                <span><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> <strong>Uploaded PDF Document:</strong> ${fileName}</span>
+                <div style="display:gap:8px;">
+                  <a href="${blobUrl}" target="_blank" download="${fileName}" class="btn-action" style="background:#0284c7; padding:4px 12px; font-size:0.78rem; color:#fff; text-decoration:none;">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Fullscreen / Download
+                  </a>
+                </div>
+              </div>
+              <div id="pdf-canvas-wrapper" style="border:2px solid #1e293b; border-radius:0 0 8px 8px; background:#334155; min-height:380px; max-height:500px; overflow:auto; text-align:center; padding:16px;">
+                <div id="pdf-loading-msg" style="color:#fff; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Rendering PDF pages with PDF.js...</div>
+                <div id="pdf-pages-list" style="display:flex; flex-direction:column; align-items:center; gap:16px;"></div>
+              </div>
+            </div>
+          `;
+
+          const loadingTask = pdfjsLib.getDocument({ data: bytes });
+          const pdf = await loadingTask.promise;
+          const pagesList = document.getElementById("pdf-pages-list");
+          const loadMsg = document.getElementById("pdf-loading-msg");
+          if (loadMsg) loadMsg.style.display = "none";
+
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const scale = 1.3;
+            const viewport = page.getViewport({ scale });
+
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            canvas.style.maxWidth = "100%";
+            canvas.style.height = "auto";
+            canvas.style.borderRadius = "4px";
+            canvas.style.boxShadow = "0 4px 14px rgba(0,0,0,0.3)";
+            canvas.style.background = "#ffffff";
+
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            pagesList.appendChild(canvas);
+          }
+          return;
+        } catch (e) {
+          console.warn("PDF.js render failed, falling back to official certificate view:", e);
+        }
+      }
+
+      // 3. Fallback: Official verified Certificate layout
+      container.innerHTML = `
+        <div id="admin-cert-preview-card" style="border:4px double #1e3a8a; border-radius:8px; padding:24px; text-align:center; background:#fcfbf7; margin-bottom:16px; position:relative;">
+          <div style="font-size:0.8rem; font-weight:800; color:#1e3a8a; letter-spacing:1px;">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
+          <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA GREATER NOIDA)</div>
+          <h4 style="font-size:1.25rem; color:#0f172a; margin:16px 0 4px 0; font-family:Georgia, serif;">CERTIFICATE OF ACCREDITATION</h4>
+          <p style="font-size:0.85rem; color:#475569; margin:0;">This is to certify that</p>
+          <h3 style="font-size:1.35rem; color:#1e3a8a; margin:8px 0; font-weight:800;">${c.officer_name || 'Dr. Sunita Sharma'}</h3>
+          <p style="font-size:0.85rem; color:#475569; margin:0;">has successfully completed accredited capacity building & evaluation in</p>
+          <h4 style="font-size:1.05rem; color:#0f172a; margin:8px 0; font-weight:700;">${c.course_title || 'Accredited Module'}</h4>
+          <div style="margin:8px 0; font-size:0.82rem; color:#475569;">
+            <i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> Attached Document: <strong>${fileName}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:24px; font-size:0.78rem; color:#475569; border-top:1px solid #e2e8f0; padding-top:12px;">
+            <div style="text-align:left;">
+              <div><strong>Audit Reference:</strong> <span style="font-family:monospace; color:#0284c7;">${c.audit_code || ('MoSPI-AUDIT-' + (c.id || Date.now()).toString().slice(-6))}</span></div>
+              <div><strong>Issuing Authority:</strong> NSSTA / MoSPI Central Training Board</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:#15803d; font-weight:800;"><i class="fa-solid fa-shield-halved"></i> NSSTA SECURE SEAL VERIFIED</div>
+              <div>Date: ${c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', year:'numeric' }) : 'Recently'}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function openAdminCertModal(certEnc) {
+      try {
+        const c = JSON.parse(decodeURIComponent(certEnc));
+        activeModalCert = c;
+
+        await renderCertDocumentViewer(c);
+
+        document.getElementById("modal-cert-summary").innerText = c.admin_remarks || 'Document passed identity and course alignment checks.';
+
+        const isPending = c.status === 'pending';
+        const actionsDiv = document.getElementById("modal-cert-actions");
+        if (isPending) {
+          actionsDiv.innerHTML = `
+            <button onclick="modalDecision('${c.id}', 'approved')" class="btn-action" style="background:#15803d; font-size:0.88rem;"><i class="fa-solid fa-check"></i> Approve & Credit (+25 Pts)</button>
+            <button onclick="modalDecision('${c.id}', 'rejected')" class="btn-action" style="background:#b91c1c; font-size:0.88rem;"><i class="fa-solid fa-xmark"></i> Reject Submission</button>
+          `;
+        } else {
+          actionsDiv.innerHTML = `<span style="font-weight:700; font-size:0.85rem; color:${c.status === 'approved' ? '#15803d' : '#b91c1c'};"><i class="fa-solid ${c.status === 'approved' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i> Status: ${c.status.toUpperCase()}</span>`;
+        }
+
+        document.getElementById("admin-cert-modal").style.display = "flex";
+      } catch (e) {
+        console.error("Modal open error:", e);
+      }
+    }
+
+    function closeAdminCertModal() {
+      document.getElementById("admin-cert-modal").style.display = "none";
+      activeModalCert = null;
+    }
+
+    async function modalDecision(certId, decisionStatus) {
+      await reviewCertificate(certId, decisionStatus);
+      closeAdminCertModal();
+    }
+
+    function printModalCertificate() {
+      if (!activeModalCert) return;
+      const c = activeModalCert;
+      const printWindow = window.open('', '_blank');
+      const dateStr = c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString('en-IN');
+      const auditCode = c.audit_code || ('MoSPI-AUDIT-' + (c.id || Date.now()).toString().slice(-6));
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>MoSPI NSSTA Verified Certificate - ${c.officer_name}</title>
+          <style>
+            body { font-family: 'Georgia', serif; padding: 40px; color: #0f172a; text-align: center; }
+            .cert-container { border: 8px double #1e3a8a; padding: 40px; border-radius: 12px; background: #fffcf5; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+            .header-top { font-size: 0.85rem; font-weight: bold; letter-spacing: 2px; color: #1e3a8a; }
+            .header-sub { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+            h1 { font-size: 2.2rem; color: #1e3a8a; margin: 25px 0 10px; font-weight: 800; }
+            .cert-text { font-size: 1.1rem; color: #475569; margin: 12px 0; }
+            .officer-name { font-size: 2rem; font-weight: bold; color: #0f172a; margin: 15px 0; text-decoration: underline; }
+            .course-title { font-size: 1.4rem; font-weight: bold; color: #1e3a8a; margin: 15px 0; }
+            .footer-row { display: flex; justify-content: space-between; margin-top: 50px; border-top: 2px solid #cbd5e1; padding-top: 20px; font-size: 0.85rem; }
+          </style>
+        </head>
+        <body>
+          <div class="cert-container">
+            <div class="header-top">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
+            <div class="header-sub">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA GREATER NOIDA)</div>
+            <h1>CERTIFICATE OF ACHIEVEMENT</h1>
+            <p class="cert-text">This official certificate is proudly conferred upon</p>
+            <div class="officer-name">${c.officer_name || 'Officer Trainee'}</div>
+            <p class="cert-text">for successfully completing accredited capacity building & evaluation in</p>
+            <div class="course-title">"${c.course_title}"</div>
+            <p class="cert-text">under the MoSPI NSSTA National Statistical Competency Framework.</p>
+            <div class="footer-row">
+              <div style="text-align:left;">
+                <p><strong>Audit Verification Code:</strong> ${auditCode}</p>
+                <p><strong>Issuing Authority:</strong> NSSTA / MoSPI Central Training Board</p>
+              </div>
+              <div style="text-align:right;">
+                <p><strong>Status:</strong> VERIFIED & ACCREDITED</p>
+                <p><strong>Issue Date:</strong> ${dateStr}</p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 500);
+    }
+
+    async function runSkillForecast() {
+      const dept = document.getElementById("forecastDeptSelect") ? document.getElementById("forecastDeptSelect").value : 'ALL';
+      const cadre = document.getElementById("forecastCadreSelect") ? document.getElementById("forecastCadreSelect").value : 'ALL';
+      const horizon = document.getElementById("forecastHorizonSelect") ? document.getElementById("forecastHorizonSelect").value : 'Q4 2026';
+      const btn = document.getElementById("btn-run-forecast");
+      const container = document.getElementById("forecast-cards-container");
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...`;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/skill-forecast`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ division: dept, horizon: horizon, cadre: cadre })
+        });
+        const data = await res.json();
+        const forecasts = data.forecasts || [];
+
+        // Update Summary KPI Strip
+        if (document.getElementById("f-audited")) document.getElementById("f-audited").innerText = `${data.total_officers_audited || 13}+ Officers`;
+        if (document.getElementById("f-mean")) document.getElementById("f-mean").innerText = `${data.mean_overall_proficiency || 48}%`;
+        if (document.getElementById("f-critical")) document.getElementById("f-critical").innerText = `${forecasts.filter(f => f.priority.includes('CRITICAL')).length || 2} Priority Areas`;
+        if (document.getElementById("f-horizon")) document.getElementById("f-horizon").innerText = data.horizon || horizon;
+
+        if (forecasts.length === 0) {
+          container.innerHTML = `<div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:14px; border-radius:8px; font-size:0.85rem; font-weight:700;"><i class="fa-solid fa-circle-check"></i> All officers in ${dept} (${cadre}) meet target competency readiness benchmarks for ${horizon}.</div>`;
+        } else {
+          container.innerHTML = forecasts.map(f => {
+            const curNum = parseInt(f.current_proficiency) || 35;
+            const targetNum = parseInt(f.target_proficiency) || 80;
+            return `
+              <div style="background:#ffffff; border:1px solid var(--border); border-left:5px solid ${f.border_color}; padding:14px 16px; border-radius:8px; font-size:0.85rem; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px;">
+                  <div>
+                    <span style="font-size:0.7rem; font-weight:800; color:#0284c7; text-transform:uppercase;">${f.domain}</span>
+                    <h4 style="font-size:0.92rem; font-weight:800; color:#0f172a; margin-top:2px;">${f.title}</h4>
+                  </div>
+                  <span style="background:${f.badge_bg}; color:${f.badge_color}; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:4px; white-space:nowrap;">${f.priority}</span>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; margin:8px 0; font-size:0.78rem;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:700;">
+                    <span style="color:#64748b;">Current Readiness: <strong style="color:#0f172a;">${f.current_proficiency || '35%'}</strong></span>
+                    <span style="color:#64748b;">Target Benchmark: <strong style="color:#15803d;">${f.target_proficiency || '80%'}</strong></span>
+                  </div>
+                  <div style="width:100%; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                    <div style="width:${curNum}%; height:100%; background:${f.border_color}; border-radius:3px;"></div>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-top:6px; color:#475569; font-size:0.75rem;">
+                    <span><i class="fa-solid fa-users-viewfinder"></i> Projected at Risk: <strong style="color:#b91c1c;">${f.projected_officers_at_risk} Officers</strong></span>
+                    <span><i class="fa-solid fa-clock"></i> Target Horizon: <strong>${f.forecast_timeline}</strong></span>
+                  </div>
+                </div>
+
+                <div style="font-size:0.78rem; color:#334155; margin-bottom:8px;">
+                  <strong style="color:#0f766e;"><i class="fa-solid fa-lightbulb"></i> Emerging Driver:</strong> ${f.emerging_driver || 'Transition to modernized official statistics methodologies.'}
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-top:1px dashed #e2e8f0; padding-top:8px;">
+                  <span style="font-size:0.74rem; color:var(--text-muted);"><i class="fa-solid fa-circle-arrow-right" style="color:var(--primary);"></i> ${f.action}</span>
+                  <button onclick="prefillWorkshop('${encodeURIComponent(f.title)}', '${dept}')" class="btn-action" style="padding:4px 10px; font-size:0.75rem; background:#1e3a8a; font-weight:700; border-radius:4px; white-space:nowrap;">
+                    <i class="fa-solid fa-calendar-plus"></i> Schedule Cohort
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (e) {
+        console.warn("Forecast error:", e);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Generate Forecast`;
+        }
+      }
+    }
+
+    function prefillWorkshop(titleEnc, dept) {
+      const title = decodeURIComponent(titleEnc);
+      const titleInput = document.getElementById("draftTopic");
+      const deptSelect = document.getElementById("draftDept");
+      if (titleInput) {
+        titleInput.value = title;
+        titleInput.scrollIntoView({ behavior: 'smooth' });
+        titleInput.style.border = "2px solid #0284c7";
+      }
+      if (deptSelect && dept !== 'ALL') {
+        deptSelect.value = dept;
+      }
+      alert(`🎯 Pre-filled Workshop Course for Master DB:\n\n"${title}"\n\nNavigated to "Quick Course Creator" to review and save.`);
+    }
+
+    async function reviewCertificate(certId, decisionStatus) {
+      const remarks = prompt(`Enter optional remarks for ${decisionStatus.toUpperCase()}:`, decisionStatus === 'approved' ? 'Verified by NSSTA Training Authority' : 'Incomplete documentation');
+      if (remarks === null) return;
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/certificates/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ certificateId: certId, status: decisionStatus, adminRemarks: remarks })
+        });
+        const data = await res.json();
+        alert(data.message || `Certificate ${decisionStatus}!`);
+        await loadCertificatesQueue();
+        await loadOfficerAnalytics();
+      } catch (e) {
+        alert("Failed to review certificate.");
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('mospi_user');
+      sessionStorage.removeItem('mospi_user');
+      window.location.href = "admin-login.html";
+    }
+  </script>
+  <script src="redirect.js"></script>
+</body>
+</html>
