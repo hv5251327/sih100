@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Registration | MoSPI Competency Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border, #cbd5e1);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background-color: #ffffff;
+            color: var(--text-main, #0f172a);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
+        }
+        .form-group select:focus {
+            border-color: var(--primary, #1e3a8a);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+        }
+        @media (max-width: 600px) {
+            .center-body { padding: 0.8rem; }
+            .login-card { padding: 1.5rem 1.1rem !important; border-radius: 12px; }
+            .icon-box { font-size: 2.2rem; margin-bottom: 0.5rem; }
+            .subtitle { font-size: 0.85rem; margin-bottom: 1.2rem; }
+            .form-group select, input { padding: 10px 12px; font-size: 0.88rem; }
+            .btn-submit { padding: 12px; font-size: 0.9rem; min-height: 44px; }
+        }
+    </style>
+</head>
+<body class="center-body">
+    <div class="login-card" style="max-width: 580px; width: 100%;">
+        <div class="icon-box"><i class="fa-solid fa-user-plus"></i></div>
+        <h2>MoSPI Competency Portal</h2>
+        <p class="subtitle">Employee Registration</p>
+        
+        <form id="registerForm" onsubmit="event.preventDefault(); submitRegistration();">
+            <div class="form-group">
+                <label>Officer Full Name</label>
+                <input type="text" id="regName" placeholder="e.g. Dr. Sunita Sharma" required>
+            </div>
+
+            <div class="form-group">
+                <label>Official Government Email ID</label>
+                <input type="email" id="regEmail" placeholder="e.g. sunita.sharma@mospi.gov.in" required>
+            </div>
+
+            <div class="form-group">
+                <label>Account Password</label>
+                <input type="password" id="regPassword" placeholder="Create a secure password (e.g. mospi123)" required>
+            </div>
+
+            <div class="form-group">
+                <label>Statistical Cadre</label>
+                <select id="regCadre" required>
+                    <option value="">-- Select Cadre --</option>
+                    <option value="Indian Statistical Service (ISS)">Indian Statistical Service (ISS) — Group 'A' Central Service</option>
+                    <option value="Subordinate Statistical Service (SSS)">Subordinate Statistical Service (SSS) — Group 'B' Central Service</option>
+                    <option value="State DES Cadre">State Directorate of Economics & Statistics (DES) Cadre</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Division / Department / Organization</label>
+                <select id="regDept" required onchange="handleDeptChange()">
+                    <option value="">-- Select Division / Department --</option>
+                    <option value="NAD">National Accounts Division (NAD) — Macro Aggregates & GDP</option>
+                    <option value="ESD">Economic Statistics Division (ESD) — IIP & ASI</option>
+                    <option value="PSD">Price Statistics Division (PSD) — CPI & Inflation</option>
+                    <option value="SSD">Social Statistics Division (SSD) — SDG Metrics</option>
+                    <option value="FOD">Field Operations Division (FOD) — Primary Field Surveys</option>
+                    <option value="SDRD">Survey Design and Research Division (SDRD) — Sampling Design</option>
+                    <option value="DPD">Data Processing Division (DPD) — Validation & Tabulation</option>
+                    <option value="DIID">Data Informatics & Innovation Division (DIID) — Cloud & AI</option>
+                    <option value="NSSTA">National Statistical Systems Training Academy (NSSTA) — Training HQ</option>
+                    <option value="CAPD">Coordination & Publication Division (CAPD)</option>
+                    <option value="NSSO">National Sample Survey Office Secretariat (NSSO HQs)</option>
+                    <option value="IPMD">Infrastructure & Project Monitoring Division (IPMD)</option>
+                    <option value="SDG_LAB">Sustainable Development Goals (SDG) Unit / Data Innovation Lab</option>
+                    <option value="STATE_DES">State Directorate of Economics and Statistics (State DES) — State HQ</option>
+                    <option value="DSO">District Statistical Office (DSO) — Field Unit</option>
+                    <option value="TALUK">State Sub-Divisional / Taluk Statistical Unit</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Designation</label>
+                <select id="regDesignation" required>
+                    <option value="">-- Select Designation --</option>
+                    <optgroup label="Central Statistical Services (ISS & SSS Group 'A' & 'B')">
+                        <option value="Director General (DG)">Director General (DG)</option>
+                        <option value="Additional Director General (ADG)">Additional Director General (ADG)</option>
+                        <option value="Deputy Director General (DDG)">Deputy Director General (DDG)</option>
+                        <option value="Director / Joint Director">Director / Joint Director</option>
+                        <option value="Director">Director</option>
+                        <option value="Joint Director">Joint Director</option>
+                        <option value="Deputy Director / Assistant Director">Deputy Director / Assistant Director</option>
+                        <option value="Deputy Director">Deputy Director</option>
+                        <option value="Assistant Director">Assistant Director</option>
+                        <option value="Assistant Director / SSO">Assistant Director / SSO</option>
+                        <option value="Assistant Director / JSO">Assistant Director / JSO</option>
+                        <option value="Senior Statistical Officer (SSO)">Senior Statistical Officer (SSO)</option>
+                        <option value="Junior Statistical Officer (JSO)">Junior Statistical Officer (JSO)</option>
+                        <option value="Senior Statistical Officer">Senior Statistical Officer</option>
+                        <option value="Junior Statistical Officer">Junior Statistical Officer</option>
+                        <option value="ISS Probationer / Officer Trainee (NSSTA)">ISS Probationer / Officer Trainee (NSSTA)</option>
+                    </optgroup>
+                    <optgroup label="State Directorate of Economics & Statistics (State DES & DSO)">
+                        <option value="Director / Commissioner of Economics & Statistics (State Head)">Director / Commissioner of Economics & Statistics (State Head)</option>
+                        <option value="Joint Director (DES)">Joint Director (DES)</option>
+                        <option value="Joint Director / Deputy Director (State DES)">Joint Director / Deputy Director (State DES)</option>
+                        <option value="District Statistical Officer (DSO)">District Statistical Officer (DSO)</option>
+                        <option value="Assistant Statistical Officer (ASO)">Assistant Statistical Officer (ASO)</option>
+                        <option value="Assistant Statistical Officer / Statistical Officer (State)">Assistant Statistical Officer / Statistical Officer (State)</option>
+                        <option value="Statistical Inspector / Research Assistant (DES)">Statistical Inspector / Research Assistant (DES)</option>
+                        <option value="Sub-Divisional / Taluk Statistical Officer">Sub-Divisional / Taluk Statistical Officer</option>
+                    </optgroup>
+                    <optgroup label="Field Operations Division & Primary Cadres (FOD / NSSO)">
+                        <option value="Deputy Director General (DDG / Regional Head)">Deputy Director General (DDG / Regional Head)</option>
+                        <option value="Senior Statistical Officer (SSO / Field Supervisor)">Senior Statistical Officer (SSO / Field Supervisor)</option>
+                        <option value="Junior Statistical Officer (JSO / Field Investigator)">Junior Statistical Officer (JSO / Field Investigator)</option>
+                        <option value="Primary Field Investigator / Enumerator">Primary Field Investigator / Enumerator</option>
+                        <option value="Statistical Compiler / Computer Operator">Statistical Compiler / Computer Operator</option>
+                    </optgroup>
+                    <optgroup label="Training Academy Faculty (NSSTA Greater Noida)">
+                        <option value="Additional Director General (ADG / Head of Academy)">Additional Director General (ADG / Head of Academy)</option>
+                        <option value="Director / Joint Director (Faculty)">Director / Joint Director (Faculty)</option>
+                        <option value="Deputy Director / Assistant Director (Course Coordinator)">Deputy Director / Assistant Director (Course Coordinator)</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <button type="button" onclick="submitRegistration()" id="btnRegSubmit" class="btn-submit" style="margin-top: 15px;">
+                <i class="fa-solid fa-user-plus"></i> Register & Create Profile
+            </button>
+        </form>
+
+            <p class="footer-text">Already registered? <a href="employee-login.html">Login here</a></p>
+            <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
+    </div>
+
+    <!-- AI-Powered Diagnostic Baseline & Skill-Gap Assessment Modal -->
+    <div id="diagnosticModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.88); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px); padding:20px;">
+        <div style="background:#ffffff; border-radius:12px; max-width:650px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); border:1px solid #e2e8f0; padding:26px;">
+            <div style="display:flex; align-items:center; gap:12px; border-bottom:1px solid #e2e8f0; padding-bottom:14px; margin-bottom:18px;">
+                <div style="background:linear-gradient(135deg, #1e3a8a, #0284c7); color:#fff; width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.25rem;"><i class="fa-solid fa-brain"></i></div>
+                <div>
+                    <h3 style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:0;">AI Diagnostic Competency Assessment</h3>
+                    <p style="font-size:0.78rem; color:#64748b; margin:0;">MoSPI / NSSTA Baseline Skill-Gap Calibration</p>
+                </div>
+            </div>
+
+            <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px; margin-bottom:18px; font-size:0.8rem; color:#0369a1; line-height:1.5;">
+                <i class="fa-solid fa-circle-info" style="color:#0284c7;"></i> Welcome, Officer! To personalize your 3-stage learning roadmap and identify your competency deficits, please answer this 4-pillar diagnostic self-assessment.
+            </div>
+
+            <form id="diagnosticForm" onsubmit="submitDiagnosticAssessment(event)" style="display:flex; flex-direction:column; gap:18px;">
+                <!-- Pillar 1: Statistical Methods -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
+                    <label style="font-weight:700; font-size:0.85rem; color:#1e3a8a; display:block; margin-bottom:6px;">
+                        <i class="fa-solid fa-chart-pie"></i> 1. Statistical Methods & Sampling
+                    </label>
+                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">What is your current practical experience with official survey sampling, National Accounts (SNA), or index numbers?</p>
+                    <select id="diag_stat" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
+                        <option value="90">Advanced — Regularly compile GVA/GDP, design stratified multi-stage frames, or compute deflators</option>
+                        <option value="65" selected>Intermediate — Familiar with NSS weighting, CPI baskets, and survey paradata auditing</option>
+                        <option value="40">Basic — Conceptual understanding of statistical indicators and descriptive summaries</option>
+                        <option value="20">Novice / Need Training — New to official statistics methodologies</option>
+                    </select>
+                </div>
+
+                <!-- Pillar 2: Technical Tools -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
+                    <label style="font-weight:700; font-size:0.85rem; color:#0284c7; display:block; margin-bottom:6px;">
+                        <i class="fa-solid fa-laptop-code"></i> 2. Technical & Data Analysis Tools
+                    </label>
+                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">Which data processing and analytical tools do you actively use for survey microdata?</p>
+                    <select id="diag_tech" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
+                        <option value="85">Advanced Programming — Python (Pandas/NumPy), R survey models, or complex SQL queries</option>
+                        <option value="60" selected>Intermediate Tools — Stata / SPSS / SAS panel econometrics or CAPI tablet validation</option>
+                        <option value="40">Basic Tools — Spreadsheets, basic formula-based calculations, and standard tabulations</option>
+                        <option value="20">Novice / Need Training — Require foundational training in Python, R, and relational SQL</option>
+                    </select>
+                </div>
+
+                <!-- Pillar 3: Digital Governance -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
+                    <label style="font-weight:700; font-size:0.85rem; color:#15803d; display:block; margin-bottom:6px;">
+                        <i class="fa-solid fa-shield-halved"></i> 3. Digital Governance & Data Privacy
+                    </label>
+                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">What is your familiarity with government data protection laws and cybersecurity protocols?</p>
+                    <select id="diag_gov" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
+                        <option value="85">Thorough — Active compliance with DPDP Act 2023, k-anonymity, and CERT-In guidelines</option>
+                        <option value="65" selected>Moderate — Aware of e-Office, PKI digital signatures, and official classification</option>
+                        <option value="40">Basic — General awareness of government IT and security policies</option>
+                        <option value="20">Novice / Need Training — Need comprehensive guidance on DPDP Act 2023 mandates</option>
+                    </select>
+                </div>
+
+                <!-- Pillar 4: Behavioural & Leadership -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
+                    <label style="font-weight:700; font-size:0.85rem; color:#b45309; display:block; margin-bottom:6px;">
+                        <i class="fa-solid fa-users-gear"></i> 4. Behavioural, Leadership & Public Administration
+                    </label>
+                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">What is your background in administrative decision-making, project monitoring, and civil service ethics?</p>
+                    <select id="diag_lead" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
+                        <option value="85">Executive / Senior — Drafting Cabinet notes, OCMS project monitoring, policy formulation</option>
+                        <option value="60" selected>Operational / Team Lead — Supervisory field inspection, POSH/GFR compliance, team coordination</option>
+                        <option value="40">Foundational — Participating in office workflows and standard administrative procedures</option>
+                        <option value="20">Entry Level — Orientation to civil services conduct rules and public administration</option>
+                    </select>
+                </div>
+
+                <button type="button" onclick="submitDiagnosticAssessment(event)" id="diagSubmitBtn" class="btn-submit" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); padding:12px; font-size:0.95rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
+                    <i class="fa-solid fa-chart-line"></i> Calibrate Competencies & Generate Roadmap
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const CATEGORIZED_DESIGNATIONS = {
+            "Central Statistical Services (ISS & SSS Group 'A' & 'B')": [
+                "Director General (DG)",
+                "Additional Director General (ADG)",
+                "Deputy Director General (DDG)",
+                "Director / Joint Director",
+                "Director",
+                "Joint Director",
+                "Deputy Director / Assistant Director",
+                "Deputy Director",
+                "Assistant Director",
+                "Assistant Director / SSO",
+                "Assistant Director / JSO",
+                "Senior Statistical Officer (SSO)",
+                "Junior Statistical Officer (JSO)",
+                "Senior Statistical Officer",
+                "Junior Statistical Officer",
+                "ISS Probationer / Officer Trainee (NSSTA)"
+            ],
+            "Field Operations Division & Primary Cadres (FOD / NSSO)": [
+                "Deputy Director General (DDG / Regional Head)",
+                "Senior Statistical Officer (SSO / Field Supervisor)",
+                "Junior Statistical Officer (JSO / Field Investigator)",
+                "Primary Field Investigator / Enumerator",
+                "Statistical Compiler / Computer Operator"
+            ],
+            "State Directorate of Economics & Statistics (State DES & DSO)": [
+                "Director / Commissioner of Economics & Statistics (State Head)",
+                "Joint Director (DES)",
+                "Joint Director / Deputy Director (State DES)",
+                "District Statistical Officer (DSO)",
+                "Assistant Statistical Officer (ASO)",
+                "Assistant Statistical Officer / Statistical Officer (State)",
+                "Statistical Inspector / Research Assistant (DES)",
+                "Sub-Divisional / Taluk Statistical Officer"
+            ],
+            "Training Academy Faculty (NSSTA Greater Noida)": [
+                "Additional Director General (ADG / Head of Academy)",
+                "Director / Joint Director (Faculty)",
+                "Deputy Director / Assistant Director (Course Coordinator)"
+            ]
+        };
+
+        function renderDesignationsDropdown() {
+            const desigSelect = document.getElementById('regDesignation');
+            if (!desigSelect) return;
+            const currentVal = desigSelect.value;
+            
+            desigSelect.innerHTML = '<option value="">-- Select Designation --</option>';
+
+            // Cleanly render all categorized official designations without duplicate star groups
+            Object.keys(CATEGORIZED_DESIGNATIONS).forEach(groupLabel => {
+                const grp = document.createElement('optgroup');
+                grp.label = groupLabel;
+                CATEGORIZED_DESIGNATIONS[groupLabel].forEach(role => {
+                    const opt = document.createElement('option');
+                    opt.value = role;
+                    opt.textContent = role;
+                    if (role === currentVal) opt.selected = true;
+                    grp.appendChild(opt);
+                });
+                desigSelect.appendChild(grp);
+            });
+        }
+
+        function handleDeptChange() {
+            // Keep clean dropdown without modifying designation choices
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            renderDesignationsDropdown();
+            try {
+                const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
+                const res = await fetch(`${API_URL}/api/metadata`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.designations && data.designations.length > 0) {
+                        data.designations.forEach(d => {
+                            let found = false;
+                            Object.values(CATEGORIZED_DESIGNATIONS).forEach(arr => {
+                                if (arr.includes(d)) found = true;
+                            });
+                            if (!found) {
+                                if (!CATEGORIZED_DESIGNATIONS["Other Official Designations"]) {
+                                    CATEGORIZED_DESIGNATIONS["Other Official Designations"] = [];
+                                }
+                                CATEGORIZED_DESIGNATIONS["Other Official Designations"].push(d);
+                            }
+                        });
+                        renderDesignationsDropdown();
+                    }
+                }
+            } catch (e) {}
+        });
+    </script>
+    <script src="auth.js?v=2.7"></script>
+</body>
+</html>
