@@ -1164,6 +1164,7 @@
           }
         }
 
+        // 1. Immediately render officer profile details (zero delay)
         if (document.getElementById("officer-name-display")) document.getElementById("officer-name-display").innerText = currentUser.name || 'Officer Trainee';
         if (document.getElementById("disp-officer-name")) document.getElementById("disp-officer-name").innerText = currentUser.name || 'N/A';
         if (document.getElementById("disp-officer-email")) document.getElementById("disp-officer-email").innerText = currentUser.email || 'N/A';
@@ -1171,6 +1172,12 @@
         if (document.getElementById("disp-officer-dept")) document.getElementById("disp-officer-dept").innerText = currentUser.department || 'N/A';
         if (document.getElementById("disp-officer-desig")) document.getElementById("disp-officer-desig").innerText = currentUser.designation || 'N/A';
 
+        // 2. Immediately download/pre-warm the Virtual Box Python Sandbox in background
+        if (window.MoSPIOffline && typeof window.MoSPIOffline.prewarmPyodide === 'function') {
+          window.MoSPIOffline.prewarmPyodide();
+        }
+
+        // 3. Fetch competencies, recommendations, and credentials in parallel
         await Promise.allSettled([
           loadIgotProfile(),
           loadCompetencies(), 
@@ -1318,7 +1325,7 @@
         allRecommendedCourses = [...DEFAULT_MASTER_COURSES];
         renderSimplifiedModules();
 
-          // Auto-save all recommended courses and quizzes to local IndexedDB for seamless offline usage
+          // Background cache course list metadata
           if (window.MoSPIOffline) {
             allRecommendedCourses.forEach(c => {
               window.MoSPIOffline.saveCourseOffline(c);
@@ -3003,33 +3010,29 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
           console.warn("Offline quiz fetch, checking local cache...");
         }
 
-        // Offline Quiz Generator Fallback from Saved Course
+        // Fallback live questions
         if (!rawQuiz || rawQuiz.length === 0) {
-          if (window.MoSPIOffline) {
-            const offlineQuiz = await window.MoSPIOffline.getOfflineQuiz(title);
-            if (offlineQuiz && offlineQuiz.length > 0) {
-              rawQuiz = offlineQuiz;
+          if (!navigator.onLine) {
+            questionsBody.innerHTML = '<div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:16px; text-align:center; color:#991b1b;"><i class="fa-solid fa-wifi" style="font-size:1.5rem; margin-bottom:8px;"></i><p style="font-weight:700; margin:0;">Online Assessment Required</p><p style="font-size:0.82rem; margin-top:4px;">Quiz attempts require an active internet connection to evaluate accredited answers with the server. (Virtual Box Python sandbox is available offline).</p></div>';
+            return;
+          }
+          rawQuiz = [
+            {
+              question: `What is the primary statutory standard governing official ${title} data collection in MoSPI?`,
+              options: ["Collection of Statistics Act, 2008", "Companies Act, 2013", "Information Technology Act, 2000", "Public Records Act, 1993"],
+              correctIndex: 0
+            },
+            {
+              question: `Which statistical methodology is applied for sampling estimation in ${title}?`,
+              options: ["Multi-Stage Stratified Random Sampling (Horvitz-Thompson)", "Simple Non-Probability Quota", "Convenience Cluster Polling", "Unweighted Snowball Sampling"],
+              correctIndex: 0
+            },
+            {
+              question: `Under DPDP Act 2023 compliance, how must field informant records in ${title} be handled?`,
+              options: ["Pseudonymized with SHA-256 Hashing and Consent Registry", "Stored as plain public text without encryption", "Shared openly across third-party portals", "Destroyed immediately without tabulation"],
+              correctIndex: 0
             }
-          }
-          if (!rawQuiz || rawQuiz.length === 0) {
-            rawQuiz = [
-              {
-                question: `What is the primary statutory standard governing official ${title} data collection in MoSPI?`,
-                options: ["Collection of Statistics Act, 2008", "Companies Act, 2013", "Information Technology Act, 2000", "Public Records Act, 1993"],
-                correctIndex: 0
-              },
-              {
-                question: `Which statistical methodology is applied for sampling estimation in ${title}?`,
-                options: ["Multi-Stage Stratified Random Sampling (Horvitz-Thompson)", "Simple Non-Probability Quota", "Convenience Cluster Polling", "Unweighted Snowball Sampling"],
-                correctIndex: 0
-              },
-              {
-                question: `Under DPDP Act 2023 compliance, how must field informant records in ${title} be handled?`,
-                options: ["Pseudonymized with SHA-256 Hashing and Consent Registry", "Stored as plain public text without encryption", "Shared openly across third-party portals", "Destroyed immediately without tabulation"],
-                correctIndex: 0
-              }
-            ];
-          }
+          ];
         }
 
         // Shuffle options and recalculate correct index

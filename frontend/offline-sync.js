@@ -240,7 +240,17 @@ class MoSPIOfflineStore {
   // =========================================================================
   // CLIENT-SIDE PYODIDE PYTHON WEBASSEMBLY ENGINE
   // =========================================================================
-  async initPyodide(statusCallback) {
+    async prewarmPyodide() {
+    try {
+      // Download and initialize Pyodide WebAssembly Python Kernel in background
+      await this.initPyodide();
+      console.log('[MoSPI PWA] WebAssembly Python Sandbox pre-warmed and ready offline.');
+    } catch (e) {
+      console.warn('[MoSPI PWA] Background Pyodide pre-warm:', e);
+    }
+  }
+
+async initPyodide(statusCallback) {
     if (this.pyodide) return this.pyodide;
     if (this.pyodideLoading) {
       while (this.pyodideLoading) {
@@ -410,24 +420,9 @@ def harmonize_cpi_item_weights(item_weights, current_prices, base_prices):
     }, 45000);
   }
 
-  showToast(message, type = 'info') {
-    let container = document.getElementById('mospi-toast-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'mospi-toast-container';
-      container.style.cssText = 'position:fixed; bottom:24px; right:24px; z-index:99999; display:flex; flex-direction:column; gap:10px; max-width:380px;';
-      document.body.appendChild(container);
-    }
-
-    const toast = document.createElement('div');
-    const bg = type === 'success' ? '#15803d' : type === 'warning' ? '#b45309' : '#1e3a8a';
-    toast.style.cssText = `background:${bg}; color:#ffffff; padding:12px 18px; border-radius:8px; font-size:0.86rem; font-weight:700; box-shadow:0 4px 14px rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:space-between; gap:10px; transition:all 0.3s ease; animation: slideIn 0.3s ease;`;
-    toast.innerHTML = `<span>${message}</span><button style="background:none; border:none; color:#fff; font-size:1rem; cursor:pointer; font-weight:800;" onclick="this.parentElement.remove()">&times;</button>`;
-
-    container.appendChild(toast);
-    setTimeout(() => {
-      if (toast.parentElement) toast.remove();
-    }, 5000);
+      showToast(message, type = 'info') {
+    // Silent console log - side notification popup removed as requested
+    console.log('[MoSPI Sync ' + type + ']: ' + message);
   }
 }
 
