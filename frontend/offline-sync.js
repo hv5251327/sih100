@@ -250,12 +250,23 @@ class MoSPIOfflineStore {
     }
 
     this.pyodideLoading = true;
-    if (statusCallback) statusCallback('Loading WebAssembly Python Engine (Pyodide v0.26)...');
+    if (statusCallback) statusCallback('Lazy-loading WebAssembly Python Kernel (Pyodide v0.26)...');
 
     try {
+      // Lazy-load Pyodide CDN script bundle dynamically on-demand
       if (typeof loadPyodide === 'undefined') {
-        throw new Error('Pyodide script not loaded in page');
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js';
+          script.onload = () => {
+            console.log('[MoSPI Pyodide] Dynamically loaded pyodide.js script bundle on demand.');
+            resolve();
+          };
+          script.onerror = (err) => reject(new Error('Failed to fetch Pyodide WebAssembly bundle from CDN.'));
+          document.head.appendChild(script);
+        });
       }
+
       this.pyodide = await loadPyodide({
         indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/'
       });

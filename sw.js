@@ -1,5 +1,5 @@
 // MoSPI / NSSTA Service Worker - Offline Field Caching Engine
-const CACHE_NAME = 'mospi-field-pwa-v2';
+const CACHE_NAME = 'mospi-field-pwa-v3';
 
 const PRECACHE_ASSETS = [
   './',
@@ -18,7 +18,6 @@ const PRECACHE_ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js',
-  'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'
 ];
 
 // Install: pre-cache static assets
