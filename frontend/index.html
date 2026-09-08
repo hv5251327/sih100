@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoSPI Competency Portal | Ministry of Statistics</title>
+    <title>iGOT Karmayogi | MoSPI Intelligence</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="manifest" href="manifest.json">
@@ -12,42 +12,58 @@
 <body>
     <div class="top-nav">
         <span><i class="fa-solid fa-flag"></i> Government of India | Ministry of Statistics & Programme Implementation</span>
-        <span>National Statistical Systems Training Academy (NSSTA)</span>
+        <span>iGOT Karmayogi Bharat Integrated</span>
     </div>
 
     <header class="navbar">
         <div class="brand">
             <i class="fa-solid fa-graduation-cap brand-icon"></i>
             <div class="brand-text">
-                <h2>MoSPI Competency Portal</h2>
-                <small>National Statistical Systems Training Academy (NSSTA)</small>
+                <h2>कर्मयोगी भारत</h2>
+                <small>iGOT MoSPI Intelligence</small>
             </div>
         </div>
-        <div class="auth-buttons" id="mainAuthButtons">
-            <a href="admin-login.html" class="btn btn-outline"><i class="fa-solid fa-shield-halved"></i> Admin Login</a>
-            <a href="employee-login.html" class="btn btn-outline"><i class="fa-solid fa-user-tie"></i> Employee Login</a>
-            <a href="register.html" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> New Registration</a>
+        <nav class="nav-links">
+            <a href="#showcased-courses">Courses</a>
+            <a href="#case-studies">Case Studies</a>
+            <a href="#partners">Partners</a>
+            <a href="https://www.mospi.gov.in" target="_blank" rel="noopener">MoSPI Official <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i></a>
+            <a href="https://igotkarmayogi.gov.in" target="_blank" rel="noopener">iGOT Portal <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i></a>
+            <a href="employee-login.html">Help & Support</a>
+        </nav>
+        <div class="auth-buttons">
+            <button class="btn btn-outline" onclick="window.location.href='admin-login.html'"><i class="fa-solid fa-shield-halved"></i> Admin Login</button>
+            <button class="btn btn-outline" onclick="window.location.href='employee-login.html'"><i class="fa-solid fa-user-tie"></i> Employee Login</button>
+            <button class="btn btn-primary" onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> New Registration</button>
         </div>
     </header>
 
     <section class="hero-section">
         <div class="hero-content">
+            <span class="sub-badge">iGOT Karmayogi MoSPI</span>
             <h1>Empowering National Statistical<br>& Administrative Excellence</h1>
+            <div class="social-icons">
+                <span>Connect with MoSPI</span>
+                <a href="https://www.linkedin.com/company/ministry-of-statistics-and-programme-implementation" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a href="https://www.youtube.com/@mospigofficial" target="_blank" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                <a href="https://twitter.com/GoIStats" target="_blank" title="Twitter / X"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="https://facebook.com/GoIStats" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            </div>
         </div>
         <div class="hero-card">
-            <h4>CONGRATULATIONS, OFFICERS!</h4>
-            <div class="counter" id="hero-registered-count">12+</div>
-            <p><strong>Registered Officers</strong></p>
+            <h4>CONGRATULATIONS, KARMAYOGIS!</h4>
+            <div class="counter">1.7 Crore+</div>
+            <p><strong>Users Onboarded</strong></p>
             <small>Let's continue to learn, grow and lead!</small>
         </div>
     </section>
 
     <section class="stats-ribbon">
-        <div class="stat-item"><i class="fa-solid fa-users"></i><h3 id="ribbon-registered-count">12</h3><p>Total Registered Officers</p></div>
-        <div class="stat-item"><i class="fa-solid fa-book-open"></i><h3>45+</h3><p>Accredited Courses</p></div>
-        <div class="stat-item"><i class="fa-solid fa-circle-check"></i><h3>100%</h3><p>NSSTA Curriculum Aligned</p></div>
-        <div class="stat-item"><i class="fa-solid fa-user-check"></i><h3>Active</h3><p>Competency TNA System</p></div>
-        <div class="stat-item"><i class="fa-solid fa-certificate"></i><h3>Verified</h3><p>NSSTA Digital Credentials</p></div>
+        <div class="stat-item"><i class="fa-solid fa-users"></i><h3>1,72,04,488</h3><p>Total Karmayogis Onboarded</p></div>
+        <div class="stat-item"><i class="fa-solid fa-book-open"></i><h3>6,252</h3><p>Total Courses</p></div>
+        <div class="stat-item"><i class="fa-solid fa-circle-check"></i><h3>14,96,44,900</h3><p>Total Completions</p></div>
+        <div class="stat-item"><i class="fa-solid fa-user-check"></i><h3>16,53,660</h3><p>Monthly Active Users</p></div>
+        <div class="stat-item"><i class="fa-solid fa-certificate"></i><h3>2,90,521</h3><p>Certificates Issued Yesterday</p></div>
     </section>
 
     <section class="course-section" id="showcased-courses">
@@ -103,53 +119,91 @@
         </div>
     </section>
 
+    <section class="course-section bg-light" id="case-studies">
+        <div class="section-title">
+            <h2>Amrit Gyaan Kosh Case Studies</h2>
+            <a href="employee-login.html" class="show-all">View All Case Studies <i class="fa-solid fa-chevron-right"></i></a>
+        </div>
+        <div class="card-grid">
+            <div class="video-card" onclick="window.location.href='employee-login.html'" style="cursor:pointer;">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=500&auto=format&fit=crop');">
+                    <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag blue">Governance & Administration</span>
+                    <h4>From Darkness to Dignity: Transformation of Malappuram</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&auto=format&fit=crop');">
+                    <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h 10m</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag blue">Information Technology</span>
+                    <h4>MANTHAN: Building India's Demand-Driven Industry Bridge</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop');">
+                    <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h 30m</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag blue">Urban Development</span>
+                    <h4>Smart Mobility for Digital India: Delhi Metro Rail Corp</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="thumbnail" style="background-image: url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&auto=format&fit=crop');">
+                    <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+                    <span class="duration"><i class="fa-regular fa-clock"></i> 1h 30m</span>
+                </div>
+                <div class="card-body">
+                    <span class="tag blue">Welfare</span>
+                    <h4>Extreme Poverty Identification Process (EPIP): Kerala</h4>
+                    <p class="author"><i class="fa-solid fa-user-shield"></i> By Capacity Building Commission</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="partner-section">
+        <h3>Content Partners</h3>
+        <div class="partner-icons">
+            <div><i class="fa-solid fa-building-columns"></i><span>DPIIT</span></div>
+            <div><i class="fa-solid fa-shield-halved"></i><span>RAKNPA</span></div>
+            <div><i class="fa-solid fa-feather-pointed"></i><span>WF</span></div>
+            <div><i class="fa-solid fa-graduation-cap"></i><span>ISB</span></div>
+            <div><i class="fa-solid fa-award"></i><span>LBSNAA</span></div>
+            <div><i class="fa-solid fa-tree"></i><span>MoEFCC</span></div>
+            <div><i class="fa-solid fa-landmark"></i><span>ISTM</span></div>
+        </div>
+
+        <h3 style="margin-top: 1rem;">Organisation Partners</h3>
+        <div class="ministry-list">
+            <span>Ministry of Agriculture & Farmers Welfare</span>
+            <span class="divider">|</span>
+            <span>Ministry of AYUSH</span>
+            <span class="divider">|</span>
+            <span>Ministry of Chemicals & Fertilizers</span>
+            <span class="divider">|</span>
+            <span>Ministry of Civil Aviation</span>
+            <span class="divider">|</span>
+            <span>Ministry of Coal</span>
+            <span class="divider">|</span>
+            <div class="ministry-break"></div>
+            <span>Ministry of Statistics & Programme Implementation (MoSPI)</span>
+        </div>
+    </section>
+
     <footer>
-        <p>&copy; 2026 Ministry of Statistics & Programme Implementation (MoSPI). All Rights Reserved.</p>
+        <p>&copy; 2026 iGOT Karmayogi Bharat | Ministry of Statistics & Programme Implementation. All Rights Reserved.</p>
     </footer>
-
-    <script>
-        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:5000'
-            : 'https://sih100-backend.onrender.com';
-
-        async function fetchLiveRegisteredStats() {
-            try {
-                const res = await fetch(`${API_URL}/api/public/stats`);
-                const data = await res.json();
-                const count = data.total_registered_officers || 12;
-
-                const heroEl = document.getElementById('hero-registered-count');
-                if (heroEl) {
-                    heroEl.innerText = `${count.toLocaleString('en-IN')}+`;
-                }
-
-                const ribbonEl = document.getElementById('ribbon-registered-count');
-                if (ribbonEl) {
-                    ribbonEl.innerText = count.toLocaleString('en-IN');
-                }
-            } catch (e) {
-                console.warn("Live stats fallback:", e);
-                const heroEl = document.getElementById('hero-registered-count');
-                if (heroEl) heroEl.innerText = '12+';
-            }
-        }
-
-        function toggleMobileNav() {
-            const navLinks = document.getElementById('mainNavLinks');
-            const authBtns = document.getElementById('mainAuthButtons');
-            if (navLinks) navLinks.classList.toggle('open');
-            if (authBtns) authBtns.classList.toggle('open');
-        }
-
-        function closeMobileNav() {
-            const navLinks = document.getElementById('mainNavLinks');
-            const authBtns = document.getElementById('mainAuthButtons');
-            if (navLinks) navLinks.classList.remove('open');
-            if (authBtns) authBtns.classList.remove('open');
-        }
-
-        document.addEventListener('DOMContentLoaded', fetchLiveRegisteredStats);
-    </script>
 
   <script>
     if ('serviceWorker' in navigator) {
