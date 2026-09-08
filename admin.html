@@ -16,11 +16,12 @@
       --primary: #1e3a8a;
       --primary-hover: #172554;
       --primary-light: #eff6ff;
-      --bg: #f8fafc;
+      --bg: #f1f5f9;
       --card-bg: #ffffff;
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --border: #e2e8f0;
+      --border: #cbd5e1;
+      --border-light: #e2e8f0;
       --border-focus: #3b82f6;
       --accent: #0284c7;
       --teal: #0f766e;
@@ -28,8 +29,10 @@
       --warning: #d97706;
       --danger: #dc2626;
       --purple: #7c3aed;
-      --nav-height: 62px;
-      --sidebar-width: 270px;
+      --indigo: #4338ca;
+      --rose: #e11d48;
+      --nav-height: 64px;
+      --sidebar-width: 280px;
     }
     
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
@@ -41,40 +44,40 @@
       width: 100%;
       height: var(--nav-height);
       background: #ffffff;
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
+      border-bottom: 1px solid var(--border-light);
+      padding: 0 28px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 60;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
     }
     .nav-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
     .brand-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 8px;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
       background: linear-gradient(135deg, #1e3a8a, #0284c7);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
-      font-size: 1.15rem;
-      box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+      font-size: 1.25rem;
+      box-shadow: 0 4px 10px rgba(30, 58, 138, 0.25);
     }
     .brand-text { display: flex; flex-direction: column; }
-    .brand-title { font-size: 1.08rem; font-weight: 800; color: var(--primary); line-height: 1.2; letter-spacing: -0.2px; }
-    .brand-subtitle { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .brand-title { font-size: 1.12rem; font-weight: 800; color: var(--primary); line-height: 1.2; letter-spacing: -0.2px; }
+    .brand-subtitle { font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
     .btn-nav-link {
       text-decoration: none;
       color: var(--text-main);
-      font-size: 0.84rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      padding: 7px 14px;
+      padding: 8px 16px;
       border: 1px solid var(--border);
       border-radius: 8px;
       background: #ffffff;
@@ -83,23 +86,23 @@
       gap: 7px;
       transition: all 0.2s ease;
     }
-    .btn-nav-link:hover { background: #f1f5f9; border-color: #cbd5e1; color: var(--primary); }
+    .btn-nav-link:hover { background: #f8fafc; border-color: #94a3b8; color: var(--primary); transform: translateY(-1px); }
     
     .logout-btn {
       background: #fee2e2;
-      border: 1px solid #fecaca;
+      border: 1px solid #fca5a5;
       color: #dc2626;
-      padding: 7px 14px;
+      padding: 8px 16px;
       border-radius: 8px;
       cursor: pointer;
       font-weight: 700;
-      font-size: 0.84rem;
+      font-size: 0.85rem;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       transition: all 0.2s ease;
     }
-    .logout-btn:hover { background: #fecaca; border-color: #fca5a5; }
+    .logout-btn:hover { background: #fecaca; border-color: #f87171; }
 
     /* Main Dashboard Layout with Side Navigation Bar */
     .admin-layout {
@@ -113,34 +116,34 @@
     .admin-sidebar {
       width: var(--sidebar-width);
       background: #ffffff;
-      border-right: 1px solid var(--border);
+      border-right: 1px solid var(--border-light);
       position: sticky;
       top: var(--nav-height);
       height: calc(100vh - var(--nav-height));
       overflow-y: auto;
-      padding: 20px 14px;
+      padding: 22px 14px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
       flex-shrink: 0;
-      box-shadow: 1px 0 4px rgba(0,0,0,0.02);
+      box-shadow: 2px 0 8px rgba(15, 23, 42, 0.03);
       scrollbar-width: thin;
       scrollbar-color: #cbd5e1 transparent;
     }
-    .admin-sidebar::-webkit-scrollbar { width: 4px; }
+    .admin-sidebar::-webkit-scrollbar { width: 5px; }
     .admin-sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
     .sidebar-heading {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.6px;
-      padding: 6px 12px 10px 12px;
+      letter-spacing: 0.8px;
+      padding: 8px 12px 12px 12px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      border-bottom: 1px solid var(--border);
+      gap: 8px;
+      border-bottom: 1px solid var(--border-light);
       margin-bottom: 6px;
     }
 
@@ -153,28 +156,28 @@
       border-radius: 8px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 11px;
       transition: all 0.2s ease;
       border: 1px solid transparent;
     }
     .sidebar-nav-item i {
       font-size: 0.95rem;
-      width: 20px;
+      width: 22px;
       text-align: center;
       color: var(--primary);
       transition: color 0.2s ease;
     }
     .sidebar-nav-item:hover {
-      background: #f1f5f9;
+      background: #f8fafc;
       color: var(--primary);
-      border-color: #e2e8f0;
-      transform: translateX(2px);
+      border-color: #cbd5e1;
+      transform: translateX(3px);
     }
     .sidebar-nav-item.active {
       background: var(--primary);
       color: #ffffff;
       border-color: var(--primary);
-      box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
     }
     .sidebar-nav-item.active i {
       color: #93c5fd;
@@ -184,16 +187,16 @@
     .admin-main-content {
       flex: 1;
       min-width: 0;
-      padding: 24px 28px 48px 28px;
+      padding: 28px 36px 64px 36px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
-      max-width: 1380px;
+      gap: 32px;
+      max-width: 1420px;
     }
 
     /* Target Section Offset for Smooth Side-Nav Jump */
     .admin-section {
-      scroll-margin-top: 80px;
+      scroll-margin-top: 84px;
       width: 100%;
     }
 
@@ -201,7 +204,7 @@
     .kpi-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      gap: 18px;
       width: 100%;
     }
     @media(max-width: 1200px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
@@ -209,10 +212,10 @@
 
     .kpi-card {
       background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 20px 22px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -221,21 +224,21 @@
     }
     .kpi-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
     }
     .kpi-content { display: flex; flex-direction: column; }
-    .kpi-label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .kpi-val { font-size: 1.85rem; font-weight: 800; color: var(--primary); margin: 4px 0 2px 0; line-height: 1.1; }
-    .kpi-badge-sub { font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; color: #0284c7; }
+    .kpi-label { font-size: 0.76rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+    .kpi-val { font-size: 2rem; font-weight: 800; color: var(--primary); margin: 4px 0 2px 0; line-height: 1.1; }
+    .kpi-badge-sub { font-size: 0.74rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; color: #0284c7; }
     
     .kpi-icon-box {
-      width: 50px;
-      height: 50px;
+      width: 52px;
+      height: 52px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.35rem;
+      font-size: 1.4rem;
       flex-shrink: 0;
     }
     .kpi-blue { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
@@ -243,73 +246,116 @@
     .kpi-purple { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
     .kpi-emerald { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
 
-    /* Vertical Full-Width Panels */
+    /* Vertical Modular Panels with Clear Distinction */
     .panel {
       background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 22px 24px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 28px 32px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 20px;
       width: 100%;
       min-width: 0;
+      position: relative;
     }
+
+    /* Distinct Left Accent Borders & Tags for Immediate Visual Differentiation */
+    .panel-mod-overview { border-left: 6px solid #1e3a8a; }
+    .panel-mod-syllabus { border-left: 6px solid #d97706; }
+    .panel-mod-course-creator { border-left: 6px solid #2563eb; }
+    .panel-mod-mcq { border-left: 6px solid #e11d48; }
+    .panel-mod-heatmap { border-left: 6px solid #059669; }
+    .panel-mod-tna { border-left: 6px solid #0f172a; }
+    .panel-mod-certs { border-left: 6px solid #0284c7; }
+    .panel-mod-forecasting { border-left: 6px solid #7c3aed; }
+    .panel-mod-officers { border-left: 6px solid #4f46e5; }
+    .panel-mod-sync { border-left: 6px solid #0369a1; }
+
+    .module-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      width: fit-content;
+    }
+    .tag-overview { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
+    .tag-syllabus { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .tag-course-creator { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .tag-mcq { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+    .tag-heatmap { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+    .tag-tna { background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; }
+    .tag-certs { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
+    .tag-forecasting { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+    .tag-officers { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+    .tag-sync { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
+
     .panel-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 16px;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 14px;
     }
     .panel-header-left {
       display: flex;
-      align-items: center;
-      gap: 12px;
+      align-items: flex-start;
+      gap: 14px;
     }
     .panel-icon-badge {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.05rem;
+      font-size: 1.2rem;
       flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     }
     .badge-teal { background: #f0fdfa; color: #0f766e; border: 1px solid #ccfbf1; }
     .badge-blue { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
     .badge-sky { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
     .badge-purple { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+    .badge-indigo { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
     .badge-emerald { background: #ecfdf5; color: #15803d; border: 1px solid #bbf7d0; }
     .badge-amber { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
     .badge-rose { background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; }
+    .badge-slate { background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; }
 
     .panel-header h2 {
-      font-size: 1.08rem;
+      font-size: 1.18rem;
       font-weight: 800;
-      color: var(--primary);
+      color: var(--text-main);
       margin: 0;
+      line-height: 1.3;
     }
     .panel-subtitle {
-      font-size: 0.84rem;
+      font-size: 0.86rem;
       color: var(--text-muted);
-      line-height: 1.4;
+      line-height: 1.45;
+      margin-top: 4px;
     }
 
     /* Form Controls & Inputs */
-    .form-group { display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; }
-    .form-group label { font-size: 0.84rem; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px; }
-    .form-group label i { color: var(--accent); font-size: 0.8rem; }
+    .form-group { display: flex; flex-direction: column; gap: 7px; width: 100%; min-width: 0; }
+    .form-group label { font-size: 0.85rem; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 7px; }
+    .form-group label i { color: var(--accent); font-size: 0.85rem; }
     .form-group input, .form-group select, .form-group textarea {
       width: 100%;
-      padding: 10px 12px;
+      padding: 11px 14px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       color: var(--text-main);
       background: #ffffff;
       outline: none;
@@ -317,52 +363,61 @@
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
     
     .btn-action {
       background: var(--primary);
       color: #fff;
       border: none;
-      padding: 10px 18px;
+      padding: 11px 20px;
       border-radius: 8px;
       font-weight: 700;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
+      gap: 8px;
       transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(30, 58, 138, 0.15);
     }
-    .btn-action:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-action:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25); }
     .btn-action:active { transform: translateY(0); }
 
     /* Tables */
-    .table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); background: #ffffff; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 650px; }
-    th { background: #f8fafc; text-align: left; padding: 11px 14px; font-weight: 700; color: #334155; border-bottom: 1px solid var(--border); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.3px; }
-    td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: #1e293b; }
+    .table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid var(--border-light); background: #ffffff; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 650px; }
+    th { background: #f8fafc; text-align: left; padding: 13px 16px; font-weight: 800; color: #334155; border-bottom: 1px solid var(--border-light); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.4px; }
+    td { padding: 13px 16px; border-bottom: 1px solid var(--border-light); color: #1e293b; }
     tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #f8fafc; }
-    .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; background: #e0f2fe; color: #0369a1; }
-    .stage-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+    .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.74rem; font-weight: 800; background: #e0f2fe; color: #0369a1; }
+    .stage-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.74rem; font-weight: 800; display: inline-flex; align-items: center; gap: 5px; }
 
     /* Heatmap styling */
     .heatmap-cell {
       text-align: center;
-      font-weight: 700;
+      font-weight: 800;
       border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 0.82rem;
+      padding: 9px 12px;
+      font-size: 0.86rem;
       transition: all 0.2s ease;
     }
     .hm-high { background: #dcfce7; color: #15803d; }
     .hm-mid { background: #fef3c7; color: #b45309; }
     .hm-low { background: #fee2e2; color: #b91c1c; }
     .hm-none { background: #f1f5f9; color: #64748b; }
-    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; }
-    .legend-box { width: 14px; height: 14px; border-radius: 3px; }
+    .legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.82rem; font-weight: 700; }
+    .legend-box { width: 16px; height: 16px; border-radius: 4px; }
+
+    /* Sub-containers & Inner Grouping Panels */
+    .inner-panel {
+      background: #f8fafc;
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
 
     /* Responsive Design */
     @media (max-width: 1024px) {
@@ -374,21 +429,22 @@
         top: var(--nav-height);
         z-index: 45;
         border-right: none;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--border-light);
         flex-direction: row;
         overflow-x: auto;
-        padding: 8px 12px;
+        padding: 10px 14px;
         gap: 6px;
       }
       .sidebar-heading { display: none; }
-      .sidebar-nav-item { padding: 6px 12px; white-space: nowrap; flex-shrink: 0; font-size: 0.8rem; }
-      .admin-main-content { padding: 16px; }
+      .sidebar-nav-item { padding: 8px 14px; white-space: nowrap; flex-shrink: 0; font-size: 0.82rem; }
+      .admin-main-content { padding: 20px 16px; gap: 24px; }
+      .panel { padding: 20px 18px; }
     }
     @media (max-width: 600px) {
-      .navbar { padding: 0 14px; }
-      .brand-title { font-size: 0.92rem; }
+      .navbar { padding: 0 16px; }
+      .brand-title { font-size: 0.95rem; }
       .brand-subtitle { display: none; }
-      .btn-action { width: 100%; min-height: 42px; font-size: 0.85rem; }
+      .btn-action { width: 100%; min-height: 44px; font-size: 0.88rem; }
       .panel-header { flex-direction: column; align-items: flex-start; }
     }
   </style>
@@ -418,23 +474,40 @@
     <!-- Left Side Navigation Bar -->
     <aside class="admin-sidebar">
       <div class="sidebar-heading"><i class="fa-solid fa-bars-staggered"></i> Admin Modules</div>
-      <a href="#sec-overview" class="sidebar-nav-item active"><i class="fa-solid fa-chart-pie"></i><span>Overview & KPIs</span></a>
-      <a href="#sec-forecasting" class="sidebar-nav-item"><i class="fa-solid fa-brain"></i><span>Skill Forecasting</span></a>
-      <a href="#sec-sync" class="sidebar-nav-item"><i class="fa-solid fa-arrows-rotate"></i><span>NSSTA Sync</span></a>
-      <a href="#sec-tna" class="sidebar-nav-item"><i class="fa-solid fa-file-invoice"></i><span>TNA Reports</span></a>
-      <a href="#sec-heatmap" class="sidebar-nav-item"><i class="fa-solid fa-chart-simple"></i><span>Competency Heatmap</span></a>
-      <a href="#sec-officers" class="sidebar-nav-item"><i class="fa-solid fa-users-viewfinder"></i><span>Officer Registry</span></a>
-      <a href="#sec-syllabus" class="sidebar-nav-item"><i class="fa-solid fa-book-open-reader"></i><span>Syllabus Parser</span></a>
-      <a href="#sec-quick-course" class="sidebar-nav-item"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Quick Course Creator</span></a>
-      <a href="#sec-quiz-gen" class="sidebar-nav-item"><i class="fa-solid fa-file-pdf"></i><span>Auto MCQ Generator</span></a>
-      <a href="#sec-certificates" class="sidebar-nav-item"><i class="fa-solid fa-stamp"></i><span>Certificate Queue</span></a>
+      <a href="#sec-overview" class="sidebar-nav-item active"><i class="fa-solid fa-chart-pie"></i><span>1. System Overview</span></a>
+      <a href="#sec-syllabus" class="sidebar-nav-item"><i class="fa-solid fa-book-open-reader"></i><span>2. Syllabus Parser</span></a>
+      <a href="#sec-quick-course" class="sidebar-nav-item"><i class="fa-solid fa-wand-magic-sparkles"></i><span>3. Course Creator</span></a>
+      <a href="#sec-quiz-gen" class="sidebar-nav-item"><i class="fa-solid fa-file-pdf"></i><span>4. MCQ Generator</span></a>
+      <a href="#sec-heatmap" class="sidebar-nav-item"><i class="fa-solid fa-chart-simple"></i><span>5. Competency Heatmap</span></a>
+      <a href="#sec-tna" class="sidebar-nav-item"><i class="fa-solid fa-file-invoice"></i><span>6. TNA Reports</span></a>
+      <a href="#sec-certificates" class="sidebar-nav-item"><i class="fa-solid fa-stamp"></i><span>7. Certificate Verification</span></a>
+      <a href="#sec-forecasting" class="sidebar-nav-item"><i class="fa-solid fa-brain"></i><span>8. Skill Forecasting</span></a>
+      <a href="#sec-officers" class="sidebar-nav-item"><i class="fa-solid fa-users-viewfinder"></i><span>9. Officer Registry</span></a>
+      <a href="#sec-sync" class="sidebar-nav-item"><i class="fa-solid fa-arrows-rotate"></i><span>10. NSSTA Gateway Sync</span></a>
     </aside>
 
     <!-- Right Main Vertical Content Area -->
     <main class="admin-main-content">
       
-      <!-- 1. KPI Overview Strip -->
-      <section id="sec-overview" class="admin-section">
+      <!-- ========================================================================= -->
+      <!-- 1. SYSTEM OVERVIEW & KPI METRICS (Vertical Full-Width) -->
+      <!-- ========================================================================= -->
+      <section id="sec-overview" class="admin-section panel panel-mod-overview">
+        <div>
+          <span class="module-tag tag-overview"><i class="fa-solid fa-chart-pie"></i> Module 01 • Enterprise Intelligence</span>
+          <div class="panel-header" style="border-bottom:none; padding-bottom:4px; margin-bottom:8px;">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-blue">
+                <i class="fa-solid fa-gauge-high"></i>
+              </div>
+              <div>
+                <h2>System Overview & Key Intelligence Metrics</h2>
+                <p class="panel-subtitle">Real-time status of enrolled officers, active statistical divisions, registered cadres, and accredited NSSTA courses.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="kpi-row">
           <!-- Officers Enrolled -->
           <div class="kpi-card">
@@ -486,236 +559,27 @@
         </div>
       </section>
 
-      <!-- 2. Predictive Capacity Planning & Future Skill Forecasting (Vertical Full-Width) -->
-      <section id="sec-forecasting" class="admin-section panel">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <div class="panel-icon-badge badge-teal">
-              <i class="fa-solid fa-brain"></i>
-            </div>
-            <div>
-              <h2>Predictive Capacity Planning & Future Skill Forecasting</h2>
-              <p class="panel-subtitle">AI-driven predictive analytics forecasting emerging technology demands, methodology transitions, and proactive upskilling requirements across MoSPI & State DES cadres.</p>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Filter Controls -->
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid var(--border);">
-          <div style="display:flex; align-items:center; gap:6px; font-size:0.84rem; font-weight:700; color:#334155;">
-            <i class="fa-solid fa-filter" style="color:var(--accent);"></i> Filters:
-          </div>
-          <select id="forecastDeptSelect" style="padding:7px 12px; border-radius:6px; border:1px solid var(--border); font-size:0.84rem; font-weight:700; background:#fff;">
-            <option value="ALL">All Divisions (Universal)</option>
-            <option value="NAD">National Accounts Division (NAD)</option>
-            <option value="FOD">Field Operations Division (FOD)</option>
-            <option value="PSD">Price Statistics Division (PSD)</option>
-            <option value="SSD">Social Statistics Division (SSD)</option>
-            <option value="ESD">Economic Statistics Division (ESD)</option>
-            <option value="SDRD">Survey Design & Research (SDRD)</option>
-            <option value="DIID">Data Informatics & AI (DIID)</option>
-            <option value="NSSTA">NSSTA Greater Noida</option>
-            <option value="STATE_DES">State DES Cadres</option>
-          </select>
-          <select id="forecastCadreSelect" style="padding:7px 12px; border-radius:6px; border:1px solid var(--border); font-size:0.84rem; font-weight:700; background:#fff;">
-            <option value="ALL">All Cadres (ISS, SSS, DES)</option>
-            <option value="ISS">Indian Statistical Service (ISS)</option>
-            <option value="SSS">Subordinate Statistical Service (SSS)</option>
-            <option value="DES">State DES Cadre</option>
-          </select>
-          <select id="forecastHorizonSelect" style="padding:7px 12px; border-radius:6px; border:1px solid var(--border); font-size:0.84rem; font-weight:700; background:#fff;">
-            <option value="Q3 2026">Horizon: Q3 2026 (Immediate)</option>
-            <option value="Q4 2026" selected>Horizon: Q4 2026 (Target Base Year)</option>
-            <option value="FY 2026-27">Horizon: FY 2026-27 (Medium-Term)</option>
-            <option value="FY 2027-28">Horizon: FY 2027-28 (Strategic Vision)</option>
-          </select>
-          <button onclick="runSkillForecast(), loadTrainingEffectiveness()" id="btn-run-forecast" class="btn-action" style="padding:7px 16px; font-size:0.84rem; background:#0f766e; font-weight:800;"><i class="fa-solid fa-bolt"></i> Generate Forecast</button>
-        </div>
-
-        <!-- Predictive Summary KPI Strip -->
-        <div id="forecast-kpi-strip" style="background:#f0fdfa; border:1px solid #ccfbf1; border-radius:8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; font-size:0.84rem;">
-          <div><i class="fa-solid fa-users-viewfinder" style="color:#0f766e;"></i> <span style="color:#64748b;">Audited Officers:</span> <strong id="f-audited" style="color:#0f766e;">13+ Officers</strong></div>
-          <div><i class="fa-solid fa-chart-line" style="color:#0284c7;"></i> <span style="color:#64748b;">Mean Competency:</span> <strong id="f-mean" style="color:#0284c7;">48%</strong></div>
-          <div><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> <span style="color:#64748b;">Critical Action Gaps:</span> <strong id="f-critical" style="color:#dc2626;">3 Priority Areas</strong></div>
-          <div><i class="fa-solid fa-clock" style="color:#7c3aed;"></i> <span style="color:#64748b;">Target Horizon:</span> <strong id="f-horizon" style="color:#7c3aed;">Q4 2026</strong></div>
-        </div>
-
-        <div id="forecast-cards-container" style="display:flex; flex-direction:column; gap:12px; max-height:480px; overflow-y:auto; padding-right:4px;">
-          <!-- Populated dynamically by runSkillForecast() -->
-        </div>
-      </section>
-
-      <!-- 3. Central NSSTA Repository Sync & SSO Governance (Vertical Full-Width) -->
-      <section id="sec-sync" class="admin-section panel">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <div class="panel-icon-badge badge-sky">
-              <i class="fa-solid fa-cloud-arrow-down"></i>
-            </div>
-            <div>
-              <h2>Central NSSTA Repository Sync & SSO Governance</h2>
-              <p class="panel-subtitle">Synchronizes MoSPI's internal LMS database with the central <strong>NSSTA MoSPI Training Catalog</strong>. Ingests new accredited circulars, updates curriculum taxonomies, and aligns officer competency roadmaps with national statistical standards.</p>
-            </div>
-          </div>
-        </div>
-
-        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-left:4px solid #0284c7; padding:12px 16px; border-radius:6px; font-size:0.86rem; color:#0369a1;">
-          <strong><i class="fa-solid fa-circle-info"></i> NSSTA Directory Sync Protocol:</strong> Real-time bi-directional pipeline synchronizing curriculum structures, officer progress telemetry, and training needs assessments with NSSTA Greater Noida repositories.
-        </div>
-
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; background:#f8fafc; border:1px solid var(--border); padding:14px; border-radius:8px;">
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <span style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;"><i class="fa-solid fa-heart-pulse"></i> Catalogue Sync Health</span>
-            <strong style="color:var(--success); font-size:0.95rem;" id="igot-sync-health"><i class="fa-solid fa-circle-check"></i> 100% Synced</strong>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <span style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;"><i class="fa-solid fa-user-shield"></i> System Access Control</span>
-            <strong style="color:var(--primary); font-size:0.95rem;"><i class="fa-solid fa-lock"></i> MoSPI Role-Based Access</strong>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <span style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;"><i class="fa-solid fa-user-lock"></i> Role-Based Permissions</span>
-            <strong style="color:var(--text-main); font-size:0.95rem;"><i class="fa-solid fa-certificate"></i> MoSPI / NSSTA Admin Role Verified</strong>
-          </div>
-        </div>
-
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <button class="btn-action" id="btn-sync-igot" onclick="triggerIgotSync()" style="background:#0284c7; font-weight:800;"><i class="fa-solid fa-arrows-rotate"></i> Sync with Central NSSTA Repository</button>
-          <div id="igot-sync-result" style="font-size:0.84rem; font-weight:700; color:var(--success);"></div>
-        </div>
-
-        <!-- NSSTA Sync Audit Logs Table -->
-        <div style="margin-top:8px;">
-          <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; color:var(--primary); display:flex; align-items:center; gap:8px;">
-            <i class="fa-solid fa-clock-rotate-left"></i> Central Directory Sync Audit Logs
-          </h3>
-          <div class="table-container" style="max-height:200px; overflow-y:auto;">
-            <table>
-              <thead style="position:sticky; top:0; z-index:2;">
-                <tr>
-                  <th><i class="fa-solid fa-clock"></i> Timestamp</th>
-                  <th><i class="fa-solid fa-gear"></i> Operation</th>
-                  <th style="text-align:center;"><i class="fa-solid fa-cubes"></i> Modules</th>
-                  <th><i class="fa-solid fa-signal"></i> Gateway Status</th>
-                  <th><i class="fa-solid fa-user"></i> Triggered By</th>
-                </tr>
-              </thead>
-              <tbody id="igot-sync-table-body">
-                <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">Loading sync logs...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4. Official NSSTA Training Needs Assessment (TNA) Report Generation (Vertical Full-Width) -->
-      <section id="sec-tna" class="admin-section panel" style="background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); border-left: 5px solid var(--primary);">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <div class="panel-icon-badge badge-blue">
-              <i class="fa-solid fa-file-invoice"></i>
-            </div>
-            <div>
-              <h2>MoSPI / NSSTA Training Needs Assessment (TNA) & Report Generation</h2>
-              <p class="panel-subtitle">Export official competency matrices and training deficit reports for Standing Committee & Cadre reviews.</p>
-            </div>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn-action" onclick="exportTNACSV()" style="background:#0f766e; font-size:0.86rem;"><i class="fa-solid fa-file-csv"></i> Download TNA Matrix (CSV)</button>
-            <button class="btn-action" onclick="generateExecutivePDFReport()" style="background:#1e3a8a; font-size:0.86rem;"><i class="fa-solid fa-print"></i> Generate Executive Summary (Print/PDF)</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- 5. Organization-Wide Competency & Skill Gap Heatmap (Vertical Full-Width) -->
-      <section id="sec-heatmap" class="admin-section panel">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <div class="panel-icon-badge badge-emerald">
-              <i class="fa-solid fa-chart-simple"></i>
-            </div>
-            <div>
-              <h2>Division-Wise Competency & Skill Gap Heatmap</h2>
-              <p class="panel-subtitle">Real-time aggregated proficiency metrics across the four mandatory MoSPI competency frameworks by division.</p>
-            </div>
-          </div>
-          <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; background:#f8fafc; padding:6px 12px; border-radius:6px; border:1px solid var(--border);">
-            <div class="legend-item"><span class="legend-box hm-high"></span> 70-100% (Strong)</div>
-            <div class="legend-item"><span class="legend-box hm-mid"></span> 40-69% (Moderate)</div>
-            <div class="legend-item"><span class="legend-box hm-low"></span> 0-39% (Critical Gap)</div>
-          </div>
-        </div>
-
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th style="min-width:200px;"><i class="fa-solid fa-sitemap"></i> Division / Department</th>
-                <th style="text-align:center;"><i class="fa-solid fa-chart-line"></i> Statistical Competencies</th>
-                <th style="text-align:center;"><i class="fa-solid fa-laptop-code"></i> Technical Competencies</th>
-                <th style="text-align:center;"><i class="fa-solid fa-shield-halved"></i> Digital Governance</th>
-                <th style="text-align:center;"><i class="fa-solid fa-user-tie"></i> Behavioural & Managerial</th>
-                <th style="text-align:center;"><i class="fa-solid fa-users"></i> Officers</th>
-              </tr>
-            </thead>
-            <tbody id="heatmap-table-body">
-              <tr><td colspan="6" style="text-align:center; padding:20px;">Aggregating division competencies...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- 6. Officer Registry (Grouped by Cadre, Department & Designation) (Vertical Full-Width) -->
-      <section id="sec-officers" class="admin-section panel">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <div class="panel-icon-badge badge-purple">
-              <i class="fa-solid fa-users-viewfinder"></i>
-            </div>
-            <div>
-              <h2>Officer Registry & Employee Directory</h2>
-              <p class="panel-subtitle">Audited records grouped by Cadre, Department, and Designation with live overall proficiency scores.</p>
-            </div>
-          </div>
-          <div style="position:relative; width:100%; max-width:320px;">
-            <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.85rem;"></i>
-            <input type="text" id="officerSearch" placeholder="Filter by Name, Cadre or Division..." onkeyup="filterOfficers()" style="padding:8px 12px 8px 34px; border:1px solid var(--border); border-radius:8px; font-size:0.86rem; width:100%;">
-          </div>
-        </div>
-        <div class="table-container" style="max-height:360px; overflow-y:auto;">
-          <table>
-            <thead style="position:sticky; top:0; background:#f8fafc; z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
-              <tr>
-                <th><i class="fa-solid fa-user"></i> Officer Name</th>
-                <th><i class="fa-solid fa-envelope"></i> Official Email</th>
-                <th><i class="fa-solid fa-id-badge"></i> Cadre</th>
-                <th><i class="fa-solid fa-sitemap"></i> Division / Department</th>
-                <th><i class="fa-solid fa-briefcase"></i> Designation</th>
-                <th><i class="fa-solid fa-chart-pie"></i> Avg Competency</th>
-              </tr>
-            </thead>
-            <tbody id="officers-table-body">
-              <tr><td colspan="6" style="text-align:center; padding:20px;">Loading officer directory...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- 7. PDF Syllabus Parser Panel (Vertical Full-Width) -->
-      <section id="sec-syllabus" class="admin-section panel">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <div class="panel-icon-badge badge-amber">
-              <i class="fa-solid fa-book-open-reader"></i>
-            </div>
-            <div>
-              <h2>NSSTA Training Syllabus PDF Parser & Course Generator</h2>
-              <p class="panel-subtitle">Upload official NSSTA syllabus documents, presentation slides, or circular PDFs. LangChain extracts structured competency courses mapped directly to targeted divisions, cadres, and designations, and saves them permanently to the Master Database.</p>
+      <!-- ========================================================================= -->
+      <!-- 2. SYLLABUS PARSER & AI COURSE ARCHITECT (Vertical Full-Width) -->
+      <!-- ========================================================================= -->
+      <section id="sec-syllabus" class="admin-section panel panel-mod-syllabus">
+        <div>
+          <span class="module-tag tag-syllabus"><i class="fa-solid fa-book-open-reader"></i> Module 02 • AI Curriculum Architecture</span>
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-amber">
+                <i class="fa-solid fa-book-open-reader"></i>
+              </div>
+              <div>
+                <h2>NSSTA Training Syllabus PDF Parser & Course Generator</h2>
+                <p class="panel-subtitle">Upload official NSSTA syllabus documents, presentation slides, or circular PDFs. LangChain extracts structured competency courses mapped directly to targeted divisions, cadres, and designations, and saves them permanently to the Master Database.</p>
+              </div>
             </div>
           </div>
         </div>
         
         <form id="syllabusParserForm" onsubmit="handleSyllabusSubmit(event)">
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
             <div class="form-group">
               <label><i class="fa-solid fa-building-columns"></i> Target Statistical Division</label>
               <select id="syllabusDept" required>
@@ -736,35 +600,40 @@
             </div>
             <div class="form-group">
               <label><i class="fa-solid fa-file-pdf"></i> Upload Syllabus / Circular PDF / Slides</label>
-              <input type="file" id="syllabusPdfFile" accept=".pdf,.txt,.md,.docx,.csv" onchange="extractSyllabusPdf(event)" style="padding:8px; border:1px dashed var(--border); border-radius:8px; cursor:pointer; background:#f8fafc;">
+              <input type="file" id="syllabusPdfFile" accept=".pdf,.txt,.md,.docx,.csv" onchange="extractSyllabusPdf(event)" style="padding:10px; border:2px dashed var(--border); border-radius:8px; cursor:pointer; background:#f8fafc;">
             </div>
           </div>
-          <div class="form-group" style="margin-top:12px;">
+          <div class="form-group" style="margin-top:14px;">
             <label><i class="fa-solid fa-file-lines"></i> Extracted Syllabus Content (Auto-filled from PDF or paste directly)</label>
             <textarea id="syllabusText" rows="5" placeholder="Upload a syllabus PDF above or paste circular topics here..." required></textarea>
           </div>
-          <button type="submit" class="btn-action" id="btn-syllabus-submit" style="margin-top:10px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract & Save Accredited Courses to Master DB</button>
+          <button type="submit" class="btn-action" id="btn-syllabus-submit" style="margin-top:12px; background:linear-gradient(135deg, #d97706, #b45309);"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract & Save Accredited Courses to Master DB</button>
         </form>
-        <div id="syllabus-status" style="font-size:0.86rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
-        <div id="syllabus-preview-box" style="display:none; margin-top:10px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:14px; max-height:300px; overflow-y:auto;"></div>
+        <div id="syllabus-status" style="font-size:0.88rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
+        <div id="syllabus-preview-box" style="display:none; margin-top:12px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:18px; max-height:360px; overflow-y:auto;"></div>
       </section>
 
-      <!-- 8. Quick Course Creator (Vertical Full-Width) -->
-      <section id="sec-quick-course" class="admin-section panel">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <div class="panel-icon-badge badge-blue">
-              <i class="fa-solid fa-wand-magic-sparkles"></i>
-            </div>
-            <div>
-              <h2>Quick Course Creator</h2>
-              <p class="panel-subtitle">Create and publish custom competency courses directly to the MoSPI Master Catalog for targeted cadres and designations.</p>
+      <!-- ========================================================================= -->
+      <!-- 3. QUICK COURSE CREATOR (Vertical Full-Width) -->
+      <!-- ========================================================================= -->
+      <section id="sec-quick-course" class="admin-section panel panel-mod-course-creator">
+        <div>
+          <span class="module-tag tag-course-creator"><i class="fa-solid fa-wand-magic-sparkles"></i> Module 03 • Fast Course Publishing</span>
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-blue">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+              </div>
+              <div>
+                <h2>Quick Course Creator</h2>
+                <p class="panel-subtitle">Create and publish custom competency courses directly to the MoSPI Master Catalog for targeted cadres and designations.</p>
+              </div>
             </div>
           </div>
         </div>
         
         <form id="draftCourseForm" onsubmit="handleDraftCourse(event)">
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
             <div class="form-group">
               <label><i class="fa-solid fa-building-columns"></i> Target Division / Department</label>
               <select id="draftDept" required>
@@ -793,38 +662,43 @@
               </select>
             </div>
           </div>
-          <div class="form-group" style="margin-top:12px;">
+          <div class="form-group" style="margin-top:14px;">
             <label><i class="fa-solid fa-pen-to-square"></i> Course Topic / Core Objective</label>
             <input type="text" id="draftTopic" placeholder="e.g., CAPI Tablet Quality Auditing, OCMS Cost Tracking, PLFS Microdata Estimation" required>
           </div>
-          <button type="submit" class="btn-action" id="btn-draft-submit" style="margin-top:10px;"><i class="fa-solid fa-database"></i> Generate & Save Directly to Database</button>
+          <button type="submit" class="btn-action" id="btn-draft-submit" style="margin-top:12px; background:linear-gradient(135deg, #1e3a8a, #2563eb);"><i class="fa-solid fa-database"></i> Generate & Save Directly to Database</button>
         </form>
-        <div id="draft-status" style="font-size:0.86rem; font-weight:700; color:var(--success); margin-top:6px;"></div>
+        <div id="draft-status" style="font-size:0.88rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
 
-        <div style="margin-top:14px;">
-          <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; color:var(--primary); display:flex; align-items:center; gap:8px;">
+        <div style="margin-top:16px;">
+          <h3 style="font-size:0.98rem; font-weight:800; margin-bottom:12px; color:var(--primary); display:flex; align-items:center; gap:8px;">
             <i class="fa-solid fa-list-check"></i> Recently Added Master Courses
           </h3>
-          <div id="recent-courses-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;"></div>
+          <div id="recent-courses-list" style="display:flex; flex-direction:column; gap:10px; max-height:260px; overflow-y:auto;"></div>
         </div>
       </section>
 
-      <!-- 9. Training Material Quiz Synthesizer (Auto MCQ Generator) (Vertical Full-Width) -->
-      <section id="sec-quiz-gen" class="admin-section panel">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <div class="panel-icon-badge badge-rose">
-              <i class="fa-solid fa-file-pdf"></i>
-            </div>
-            <div>
-              <h2>Auto MCQ Question Generator from PDF & Text</h2>
-              <p class="panel-subtitle">Upload training manual PDFs or paste syllabus circulars. AI extracts statistical methodology and synthesizes accredited MCQs directly into the database for officer evaluations.</p>
+      <!-- ========================================================================= -->
+      <!-- 4. AUTO MCQ GENERATOR & QUIZ SYNTHESIZER (Vertical Full-Width) -->
+      <!-- ========================================================================= -->
+      <section id="sec-quiz-gen" class="admin-section panel panel-mod-mcq">
+        <div>
+          <span class="module-tag tag-mcq"><i class="fa-solid fa-file-pdf"></i> Module 04 • Psychometric Assessment Engine</span>
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-rose">
+                <i class="fa-solid fa-file-pdf"></i>
+              </div>
+              <div>
+                <h2>Auto MCQ Question Generator from PDF & Text</h2>
+                <p class="panel-subtitle">Upload training manual PDFs or paste syllabus circulars. AI extracts statistical methodology and synthesizes accredited MCQs directly into the database for officer evaluations.</p>
+              </div>
             </div>
           </div>
         </div>
 
         <form id="quizDocForm" onsubmit="handleDocQuiz(event)">
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
             <div class="form-group">
               <label><i class="fa-solid fa-graduation-cap"></i> Assign Assessment to Course</label>
               <select id="quizCourseSelect" required>
@@ -845,35 +719,115 @@
             </div>
             <div class="form-group">
               <label><i class="fa-solid fa-file-arrow-up"></i> Upload Training PDF / Text / PPT File</label>
-              <input type="file" id="quizPdfFile" accept=".pdf,.txt,.md,.json,.csv" onchange="extractPdfText(event)" style="padding:8px; border:1px dashed var(--border); border-radius:8px; cursor:pointer; background:#f8fafc;">
+              <input type="file" id="quizPdfFile" accept=".pdf,.txt,.md,.json,.csv" onchange="extractPdfText(event)" style="padding:10px; border:2px dashed var(--border); border-radius:8px; cursor:pointer; background:#f8fafc;">
             </div>
           </div>
-          <div class="form-group" style="margin-top:12px;">
+          <div class="form-group" style="margin-top:14px;">
             <label><i class="fa-solid fa-file-lines"></i> Document Content</label>
             <textarea id="quizDocText" rows="4" placeholder="Upload a PDF above or paste training text here..." required></textarea>
           </div>
-          <button type="submit" class="btn-action" id="btn-quiz-synth" style="background:#0f766e; font-weight:800; margin-top:10px;"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Store MCQs in Database</button>
+          <button type="submit" class="btn-action" id="btn-quiz-synth" style="background:linear-gradient(135deg, #e11d48, #be123c); font-weight:800; margin-top:12px;"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Store MCQs in Database</button>
         </form>
-        <div id="quiz-gen-status" style="font-size:0.86rem; font-weight:700; color:var(--success); margin-top:6px;"></div>
-        <div id="quiz-preview-box" style="display:none; margin-top:10px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:14px; max-height:280px; overflow-y:auto;"></div>
+        <div id="quiz-gen-status" style="font-size:0.88rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
+        <div id="quiz-preview-box" style="display:none; margin-top:12px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:18px; max-height:360px; overflow-y:auto;"></div>
       </section>
 
-      <!-- 10. Officer Certificate Verification & Approval Queue (Vertical Full-Width) -->
-      <section id="sec-certificates" class="admin-section panel" style="border-top: 4px solid var(--accent);">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <div class="panel-icon-badge badge-sky">
-              <i class="fa-solid fa-stamp"></i>
+      <!-- ========================================================================= -->
+      <!-- 5. DIVISION-WISE COMPETENCY & SKILL GAP HEATMAP (Vertical Full-Width) -->
+      <!-- ========================================================================= -->
+      <section id="sec-heatmap" class="admin-section panel panel-mod-heatmap">
+        <div>
+          <span class="module-tag tag-heatmap"><i class="fa-solid fa-chart-simple"></i> Module 05 • National Gap Analytics</span>
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-emerald">
+                <i class="fa-solid fa-chart-simple"></i>
+              </div>
+              <div>
+                <h2>Division-Wise Competency & Skill Gap Heatmap</h2>
+                <p class="panel-subtitle">Real-time aggregated proficiency metrics across the four mandatory MoSPI competency frameworks by division.</p>
+              </div>
             </div>
-            <div>
-              <h2>Officer Certificate Verification & Approval Queue</h2>
-              <p class="panel-subtitle">Audit uploaded course certificates, verify document validity, and credit verified competency points (+25 Pts) to officer records.</p>
+            <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; background:#f8fafc; padding:8px 14px; border-radius:8px; border:1px solid var(--border-light);">
+              <div class="legend-item"><span class="legend-box hm-high"></span> 70-100% (Strong)</div>
+              <div class="legend-item"><span class="legend-box hm-mid"></span> 40-69% (Moderate)</div>
+              <div class="legend-item"><span class="legend-box hm-low"></span> 0-39% (Critical Gap)</div>
             </div>
           </div>
-          <button class="btn-action" onclick="loadCertificatesQueue()" style="background:#0284c7; padding:7px 14px; font-size:0.84rem;"><i class="fa-solid fa-arrows-rotate"></i> Refresh Queue</button>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="min-width:220px;"><i class="fa-solid fa-sitemap"></i> Division / Department</th>
+                <th style="text-align:center;"><i class="fa-solid fa-chart-line"></i> Statistical Competencies</th>
+                <th style="text-align:center;"><i class="fa-solid fa-laptop-code"></i> Technical Competencies</th>
+                <th style="text-align:center;"><i class="fa-solid fa-shield-halved"></i> Digital Governance</th>
+                <th style="text-align:center;"><i class="fa-solid fa-user-tie"></i> Behavioural & Managerial</th>
+                <th style="text-align:center;"><i class="fa-solid fa-users"></i> Officers</th>
+              </tr>
+            </thead>
+            <tbody id="heatmap-table-body">
+              <tr><td colspan="6" style="text-align:center; padding:24px;">Aggregating division competencies...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- 6. TRAINING NEEDS ASSESSMENT (TNA) REPORT (Vertical Full-Width) -->
+      <!-- ========================================================================= -->
+      <section id="sec-tna" class="admin-section panel panel-mod-tna" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
+        <div>
+          <span class="module-tag tag-tna"><i class="fa-solid fa-file-invoice"></i> Module 06 • Official TNA Reporting</span>
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-slate">
+                <i class="fa-solid fa-file-invoice"></i>
+              </div>
+              <div>
+                <h2>MoSPI / NSSTA Training Needs Assessment (TNA) & Report Generation</h2>
+                <p class="panel-subtitle">Export official competency matrices and training deficit reports for Standing Committee & Cadre reviews.</p>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <button class="btn-action" onclick="exportTNACSV()" style="background:#0f766e; font-size:0.88rem;"><i class="fa-solid fa-file-csv"></i> Download TNA Matrix (CSV)</button>
+              <button class="btn-action" onclick="generateExecutivePDFReport()" style="background:#1e3a8a; font-size:0.88rem;"><i class="fa-solid fa-print"></i> Generate Executive Summary (Print/PDF)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="inner-panel" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <strong style="color:#0f172a; font-size:0.92rem;"><i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Standing Committee Ready</strong>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Audit reports include comprehensive 4-pillar scores, officer designations, and prioritized training pathways.</p>
+          </div>
+          <span style="font-size:0.78rem; font-weight:700; color:#0369a1; background:#e0f2fe; padding:4px 10px; border-radius:6px;"><i class="fa-solid fa-shield-halved"></i> Official NSSTA Standard</span>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- 7. OFFICER CERTIFICATE VERIFICATION & AUDIT (Vertical Full-Width) -->
+      <!-- ========================================================================= -->
+      <section id="sec-certificates" class="admin-section panel panel-mod-certs">
+        <div>
+          <span class="module-tag tag-certs"><i class="fa-solid fa-stamp"></i> Module 07 • Credential Verification</span>
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-sky">
+                <i class="fa-solid fa-stamp"></i>
+              </div>
+              <div>
+                <h2>Officer Certificate Verification & Approval Queue</h2>
+                <p class="panel-subtitle">Audit uploaded course certificates, verify document validity, and credit verified competency points (+25 Pts) to officer records.</p>
+              </div>
+            </div>
+            <button class="btn-action" onclick="loadCertificatesQueue()" style="background:#0284c7; padding:8px 16px; font-size:0.85rem;"><i class="fa-solid fa-arrows-rotate"></i> Refresh Queue</button>
+          </div>
         </div>
         
-        <div class="table-container" style="max-height:300px; overflow-y:auto;">
+        <div class="table-container" style="max-height:360px; overflow-y:auto;">
           <table>
             <thead style="position:sticky; top:0; background:#f8fafc; z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
               <tr>
@@ -886,9 +840,181 @@
               </tr>
             </thead>
             <tbody id="cert-queue-table-body">
-              <tr><td colspan="6" style="text-align:center; padding:20px;">Loading certificate verification queue...</td></tr>
+              <tr><td colspan="6" style="text-align:center; padding:24px;">Loading certificate verification queue...</td></tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- 8. PREDICTIVE FUTURE SKILL FORECASTING (Vertical Full-Width) -->
+      <!-- ========================================================================= -->
+      <section id="sec-forecasting" class="admin-section panel panel-mod-forecasting">
+        <div>
+          <span class="module-tag tag-forecasting"><i class="fa-solid fa-brain"></i> Module 08 • Predictive Intelligence</span>
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-purple">
+                <i class="fa-solid fa-brain"></i>
+              </div>
+              <div>
+                <h2>Predictive Capacity Planning & Future Skill Forecasting</h2>
+                <p class="panel-subtitle">AI-driven predictive analytics forecasting emerging technology demands, methodology transitions, and proactive upskilling requirements across MoSPI & State DES cadres.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Filter Controls -->
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; background:#f8fafc; padding:14px 16px; border-radius:10px; border:1px solid var(--border-light);">
+          <div style="display:flex; align-items:center; gap:6px; font-size:0.86rem; font-weight:700; color:#334155;">
+            <i class="fa-solid fa-filter" style="color:var(--accent);"></i> Filters:
+          </div>
+          <select id="forecastDeptSelect" style="padding:8px 14px; border-radius:6px; border:1px solid var(--border); font-size:0.86rem; font-weight:700; background:#fff;">
+            <option value="ALL">All Divisions (Universal)</option>
+            <option value="NAD">National Accounts Division (NAD)</option>
+            <option value="FOD">Field Operations Division (FOD)</option>
+            <option value="PSD">Price Statistics Division (PSD)</option>
+            <option value="SSD">Social Statistics Division (SSD)</option>
+            <option value="ESD">Economic Statistics Division (ESD)</option>
+            <option value="SDRD">Survey Design & Research (SDRD)</option>
+            <option value="DIID">Data Informatics & AI (DIID)</option>
+            <option value="NSSTA">NSSTA Greater Noida</option>
+            <option value="STATE_DES">State DES Cadres</option>
+          </select>
+          <select id="forecastCadreSelect" style="padding:8px 14px; border-radius:6px; border:1px solid var(--border); font-size:0.86rem; font-weight:700; background:#fff;">
+            <option value="ALL">All Cadres (ISS, SSS, DES)</option>
+            <option value="ISS">Indian Statistical Service (ISS)</option>
+            <option value="SSS">Subordinate Statistical Service (SSS)</option>
+            <option value="DES">State DES Cadre</option>
+          </select>
+          <select id="forecastHorizonSelect" style="padding:8px 14px; border-radius:6px; border:1px solid var(--border); font-size:0.86rem; font-weight:700; background:#fff;">
+            <option value="Q3 2026">Horizon: Q3 2026 (Immediate)</option>
+            <option value="Q4 2026" selected>Horizon: Q4 2026 (Target Base Year)</option>
+            <option value="FY 2026-27">Horizon: FY 2026-27 (Medium-Term)</option>
+            <option value="FY 2027-28">Horizon: FY 2027-28 (Strategic Vision)</option>
+          </select>
+          <button onclick="runSkillForecast(), loadTrainingEffectiveness()" id="btn-run-forecast" class="btn-action" style="padding:8px 18px; font-size:0.86rem; background:#7c3aed; font-weight:800;"><i class="fa-solid fa-bolt"></i> Generate Forecast</button>
+        </div>
+
+        <!-- Predictive Summary KPI Strip -->
+        <div id="forecast-kpi-strip" style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:10px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; font-size:0.86rem;">
+          <div><i class="fa-solid fa-users-viewfinder" style="color:#7c3aed;"></i> <span style="color:#64748b;">Audited Officers:</span> <strong id="f-audited" style="color:#6d28d9;">13+ Officers</strong></div>
+          <div><i class="fa-solid fa-chart-line" style="color:#0284c7;"></i> <span style="color:#64748b;">Mean Competency:</span> <strong id="f-mean" style="color:#0284c7;">48%</strong></div>
+          <div><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> <span style="color:#64748b;">Critical Action Gaps:</span> <strong id="f-critical" style="color:#dc2626;">3 Priority Areas</strong></div>
+          <div><i class="fa-solid fa-clock" style="color:#7c3aed;"></i> <span style="color:#64748b;">Target Horizon:</span> <strong id="f-horizon" style="color:#7c3aed;">Q4 2026</strong></div>
+        </div>
+
+        <div id="forecast-cards-container" style="display:flex; flex-direction:column; gap:14px; max-height:500px; overflow-y:auto; padding-right:4px;">
+          <!-- Populated dynamically by runSkillForecast() -->
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- 9. OFFICER REGISTRY & CADRE DIRECTORY (Vertical Full-Width) -->
+      <!-- ========================================================================= -->
+      <section id="sec-officers" class="admin-section panel panel-mod-officers">
+        <div>
+          <span class="module-tag tag-officers"><i class="fa-solid fa-users-viewfinder"></i> Module 09 • Cadre Directory</span>
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-indigo">
+                <i class="fa-solid fa-users-viewfinder"></i>
+              </div>
+              <div>
+                <h2>Officer Registry & Employee Directory</h2>
+                <p class="panel-subtitle">Audited records grouped by Cadre, Department, and Designation with live overall proficiency scores.</p>
+              </div>
+            </div>
+            <div style="position:relative; width:100%; max-width:340px;">
+              <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.88rem;"></i>
+              <input type="text" id="officerSearch" placeholder="Filter by Name, Cadre or Division..." onkeyup="filterOfficers()" style="padding:9px 14px 9px 38px; border:1px solid var(--border); border-radius:8px; font-size:0.88rem; width:100%;">
+            </div>
+          </div>
+        </div>
+        <div class="table-container" style="max-height:380px; overflow-y:auto;">
+          <table>
+            <thead style="position:sticky; top:0; background:#f8fafc; z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
+              <tr>
+                <th><i class="fa-solid fa-user"></i> Officer Name</th>
+                <th><i class="fa-solid fa-envelope"></i> Official Email</th>
+                <th><i class="fa-solid fa-id-badge"></i> Cadre</th>
+                <th><i class="fa-solid fa-sitemap"></i> Division / Department</th>
+                <th><i class="fa-solid fa-briefcase"></i> Designation</th>
+                <th><i class="fa-solid fa-chart-pie"></i> Avg Competency</th>
+              </tr>
+            </thead>
+            <tbody id="officers-table-body">
+              <tr><td colspan="6" style="text-align:center; padding:24px;">Loading officer directory...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- 10. CENTRAL NSSTA REPOSITORY SYNC & GATEWAY (Vertical Full-Width) -->
+      <!-- ========================================================================= -->
+      <section id="sec-sync" class="admin-section panel panel-mod-sync">
+        <div>
+          <span class="module-tag tag-sync"><i class="fa-solid fa-arrows-rotate"></i> Module 10 • Central Directory Sync</span>
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-sky">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+              </div>
+              <div>
+                <h2>Central NSSTA Repository Sync & SSO Governance</h2>
+                <p class="panel-subtitle">Synchronizes MoSPI's internal LMS database with the central <strong>NSSTA MoSPI Training Catalog</strong>. Ingests new accredited circulars, updates curriculum taxonomies, and aligns officer competency roadmaps with national statistical standards.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-left:5px solid #0284c7; padding:14px 18px; border-radius:8px; font-size:0.88rem; color:#0369a1;">
+          <strong><i class="fa-solid fa-circle-info"></i> NSSTA Directory Sync Protocol:</strong> Real-time bi-directional pipeline synchronizing curriculum structures, officer progress telemetry, and training needs assessments with NSSTA Greater Noida repositories.
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:14px; background:#f8fafc; border:1px solid var(--border-light); padding:16px; border-radius:10px;">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <span style="font-size:0.78rem; color:var(--text-muted); font-weight:800; text-transform:uppercase;"><i class="fa-solid fa-heart-pulse"></i> Catalogue Sync Health</span>
+            <strong style="color:var(--success); font-size:0.98rem;" id="igot-sync-health"><i class="fa-solid fa-circle-check"></i> 100% Synced</strong>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <span style="font-size:0.78rem; color:var(--text-muted); font-weight:800; text-transform:uppercase;"><i class="fa-solid fa-user-shield"></i> System Access Control</span>
+            <strong style="color:var(--primary); font-size:0.98rem;"><i class="fa-solid fa-lock"></i> MoSPI Role-Based Access</strong>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <span style="font-size:0.78rem; color:var(--text-muted); font-weight:800; text-transform:uppercase;"><i class="fa-solid fa-user-lock"></i> Role-Based Permissions</span>
+            <strong style="color:var(--text-main); font-size:0.98rem;"><i class="fa-solid fa-certificate"></i> MoSPI / NSSTA Admin Role Verified</strong>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <button class="btn-action" id="btn-sync-igot" onclick="triggerIgotSync()" style="background:#0284c7; font-weight:800;"><i class="fa-solid fa-arrows-rotate"></i> Sync with Central NSSTA Repository</button>
+          <div id="igot-sync-result" style="font-size:0.86rem; font-weight:700; color:var(--success);"></div>
+        </div>
+
+        <!-- NSSTA Sync Audit Logs Table -->
+        <div style="margin-top:10px;">
+          <h3 style="font-size:0.98rem; font-weight:800; margin-bottom:12px; color:var(--primary); display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-clock-rotate-left"></i> Central Directory Sync Audit Logs
+          </h3>
+          <div class="table-container" style="max-height:220px; overflow-y:auto;">
+            <table>
+              <thead style="position:sticky; top:0; z-index:2;">
+                <tr>
+                  <th><i class="fa-solid fa-clock"></i> Timestamp</th>
+                  <th><i class="fa-solid fa-gear"></i> Operation</th>
+                  <th style="text-align:center;"><i class="fa-solid fa-cubes"></i> Modules</th>
+                  <th><i class="fa-solid fa-signal"></i> Gateway Status</th>
+                  <th><i class="fa-solid fa-user"></i> Triggered By</th>
+                </tr>
+              </thead>
+              <tbody id="igot-sync-table-body">
+                <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">Loading sync logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -897,9 +1023,9 @@
 
   <!-- Certificate Inspection & PDF Audit Modal for Admin -->
   <div class="modal-backdrop" id="admin-cert-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.75); z-index:9999; justify-content:center; align-items:center; padding:20px;">
-    <div class="modal-box" style="background:#ffffff; width:100%; max-width:820px; max-height:92vh; overflow-y:auto; border-radius:12px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.25);">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
-        <h3 style="margin:0; color:#1e3a8a; font-size:1.15rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-stamp"></i> Certificate Verification & PDF Audit</h3>
+    <div class="modal-box" style="background:#ffffff; width:100%; max-width:820px; max-height:92vh; overflow-y:auto; border-radius:14px; padding:26px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:14px; margin-bottom:18px;">
+        <h3 style="margin:0; color:#1e3a8a; font-size:1.18rem; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-stamp"></i> Certificate Verification & PDF Audit</h3>
         <button onclick="closeAdminCertModal()" style="background:none; border:none; font-size:1.4rem; color:#64748b; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
@@ -907,21 +1033,21 @@
       <div id="admin-cert-viewer-container"></div>
 
       <!-- AI Audit Analysis Box -->
-      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:14px; margin-bottom:18px; font-size:0.86rem;">
-        <div style="font-weight:700; color:#1e3a8a; margin-bottom:6px;"><i class="fa-solid fa-wand-magic-sparkles"></i> MoSPI AI Credential Audit Findings:</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
-          <div><strong>Confidence Score:</strong> <span style="color:#15803d; font-weight:700;">95% (High Authenticity)</span></div>
-          <div><strong>Recipient Identity:</strong> <span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Matched</span></div>
-          <div><strong>Course Alignment:</strong> <span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Validated</span></div>
-          <div><strong>Competency Points:</strong> <span style="color:#1e3a8a; font-weight:700;">+25 Points (On Approval)</span></div>
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:16px; margin-bottom:18px; font-size:0.88rem;">
+        <div style="font-weight:800; color:#1e3a8a; margin-bottom:8px;"><i class="fa-solid fa-wand-magic-sparkles"></i> MoSPI AI Credential Audit Findings:</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+          <div><strong>Confidence Score:</strong> <span style="color:#15803d; font-weight:800;">95% (High Authenticity)</span></div>
+          <div><strong>Recipient Identity:</strong> <span style="color:#15803d; font-weight:800;"><i class="fa-solid fa-circle-check"></i> Matched</span></div>
+          <div><strong>Course Alignment:</strong> <span style="color:#15803d; font-weight:800;"><i class="fa-solid fa-circle-check"></i> Validated</span></div>
+          <div><strong>Competency Points:</strong> <span style="color:#1e3a8a; font-weight:800;">+25 Points (On Approval)</span></div>
         </div>
         <div><strong>Audit Summary:</strong> <span id="modal-cert-summary" style="color:#334155;">Certificate validated under MoSPI AI credential audit protocol.</span></div>
       </div>
 
       <!-- Action Buttons -->
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <button onclick="printModalCertificate()" class="btn-action" style="background:#475569; font-size:0.85rem;"><i class="fa-solid fa-print"></i> Open / Print Certificate (PDF)</button>
-        <div style="display:flex; gap:8px;" id="modal-cert-actions">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <button onclick="printModalCertificate()" class="btn-action" style="background:#475569; font-size:0.88rem;"><i class="fa-solid fa-print"></i> Open / Print Certificate (PDF)</button>
+        <div style="display:flex; gap:10px;" id="modal-cert-actions">
           <!-- Dynamic approval buttons populated on open -->
         </div>
       </div>
@@ -995,43 +1121,6 @@
           if (l2) l2.innerText = data.kirkpatrick_metrics.level2_learning.skill_delta;
           if (l3) l3.innerText = data.kirkpatrick_metrics.level3_behavior.simulation_pass_rate;
           if (l4) l4.innerText = data.kirkpatrick_metrics.level4_results.field_paradata_error_reduction;
-        }
-
-        const chartCanvas = document.getElementById("pillarGainChart");
-        if (chartCanvas) {
-          const ctx = chartCanvas.getContext("2d");
-          if (activePillarGainChart) activePillarGainChart.destroy();
-
-          activePillarGainChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: ['Statistical', 'Technical', 'Governance', 'Leadership'],
-              datasets: [
-                {
-                  label: 'Pre-Training Baseline (%)',
-                  data: [54, 46, 62, 58],
-                  backgroundColor: 'rgba(148, 163, 184, 0.7)',
-                  borderRadius: 4
-                },
-                {
-                  label: 'Post-Training Attainment (%)',
-                  data: [89, 84, 94, 88],
-                  backgroundColor: 'rgba(2, 132, 199, 0.85)',
-                  borderRadius: 4
-                }
-              ]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } }
-              },
-              scales: {
-                y: { beginAtZero: true, max: 100 }
-              }
-            }
-          });
         }
       } catch (e) {
         console.warn("Training effectiveness chart fallback:", e);
@@ -1136,10 +1225,10 @@
         const recentList = document.getElementById("recent-courses-list");
         if (recentList) {
           recentList.innerHTML = courses.slice(0, 5).map(c => `
-            <div style="background:#f8fafc; border:1px solid var(--border); padding:8px 12px; border-radius:6px; font-size:0.85rem; display:flex; justify-content:space-between; align-items:center;">
+            <div style="background:#f8fafc; border:1px solid var(--border-light); padding:10px 14px; border-radius:8px; font-size:0.86rem; display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <strong style="color:#0f172a;">${c.title}</strong>
-                <div style="font-size:0.75rem; color:var(--text-muted);"><i class="fa-solid fa-layer-group"></i> ${c.domain} | <i class="fa-solid fa-building"></i> Target: ${(c.target_departments || ['ALL']).join(', ')}</div>
+                <div style="font-size:0.76rem; color:var(--text-muted); margin-top:2px;"><i class="fa-solid fa-layer-group"></i> ${c.domain} | <i class="fa-solid fa-building"></i> Target: ${(c.target_departments || ['ALL']).join(', ')}</div>
               </div>
               <span class="badge">${c.course_code || 'NSSTA'}</span>
             </div>
@@ -1210,22 +1299,22 @@
         if (data.modules && data.modules.length > 0) {
           previewBox.style.display = "block";
           previewBox.innerHTML = `
-            <div style="font-weight:800; font-size:0.88rem; color:#1e3a8a; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:800; font-size:0.92rem; color:#1e3a8a; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
               <span><i class="fa-solid fa-graduation-cap"></i> Architected & Stored Courses (${data.modules.length} Modules):</span>
-              <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; padding:3px 8px; border-radius:4px; font-weight:800;"><i class="fa-solid fa-database"></i> MASTER_COURSES SAVED</span>
+              <span style="background:#dcfce7; color:#15803d; font-size:0.74rem; padding:3px 8px; border-radius:4px; font-weight:800;"><i class="fa-solid fa-database"></i> MASTER_COURSES SAVED</span>
             </div>
             ${data.modules.map((m, i) => `
-              <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #0f766e; border-radius:6px; padding:10px; margin-bottom:8px; font-size:0.82rem;">
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #0f766e; border-radius:8px; padding:12px; margin-bottom:10px; font-size:0.84rem;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
                   <strong style="color:#0f172a;">${i + 1}. ${m.title}</strong>
-                  <span style="background:#e0f2fe; color:#0369a1; font-weight:700; font-size:0.72rem; padding:2px 6px; border-radius:4px; white-space:nowrap;">${m.course_code || 'NSSTA'}</span>
+                  <span style="background:#e0f2fe; color:#0369a1; font-weight:800; font-size:0.74rem; padding:2px 8px; border-radius:4px; white-space:nowrap;">${m.course_code || 'NSSTA'}</span>
                 </div>
-                <p style="margin:4px 0 6px 0; color:#475569; font-size:0.78rem;">${m.description}</p>
-                <div style="display:flex; flex-wrap:wrap; gap:6px; font-size:0.72rem;">
-                  <span style="background:#f1f5f9; color:#334155; padding:2px 6px; border-radius:4px;"><strong>Domain:</strong> ${m.domain}</span>
-                  <span style="background:#fef3c7; color:#b45309; padding:2px 6px; border-radius:4px;"><strong>Level:</strong> ${m.difficulty_level}</span>
-                  <span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px;"><strong>Cadre:</strong> ${(m.target_cadres || [targetCadre]).join(', ')}</span>
-                  <span style="background:#ede9fe; color:#6d28d9; padding:2px 6px; border-radius:4px;"><strong>Designation:</strong> ${(m.target_designations || [targetDesignation]).join(', ')}</span>
+                <p style="margin:6px 0 8px 0; color:#475569; font-size:0.8rem; line-height:1.4;">${m.description}</p>
+                <div style="display:flex; flex-wrap:wrap; gap:8px; font-size:0.74rem;">
+                  <span style="background:#f1f5f9; color:#334155; padding:3px 8px; border-radius:4px;"><strong>Domain:</strong> ${m.domain}</span>
+                  <span style="background:#fef3c7; color:#b45309; padding:3px 8px; border-radius:4px;"><strong>Level:</strong> ${m.difficulty_level}</span>
+                  <span style="background:#dcfce7; color:#166534; padding:3px 8px; border-radius:4px;"><strong>Cadre:</strong> ${(m.target_cadres || [targetCadre]).join(', ')}</span>
+                  <span style="background:#ede9fe; color:#6d28d9; padding:3px 8px; border-radius:4px;"><strong>Designation:</strong> ${(m.target_designations || [targetDesignation]).join(', ')}</span>
                 </div>
               </div>
             `).join('')}
@@ -1339,7 +1428,7 @@
         const logs = data.logs || [];
 
         if (logs.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:16px;">No synchronization history recorded.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:18px;">No synchronization history recorded.</td></tr>`;
           return;
         }
 
@@ -1348,15 +1437,15 @@
           return `
             <tr>
               <td><strong>${timeStr}</strong></td>
-              <td><span style="font-weight:600; color:#0369a1;">${l.operation}</span></td>
-              <td style="text-align:center;"><span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-weight:700;">${l.synced_modules} Modules</span></td>
-              <td><span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> ${l.gateway_status}</span></td>
+              <td><span style="font-weight:700; color:#0369a1;">${l.operation}</span></td>
+              <td style="text-align:center;"><span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-weight:800;">${l.synced_modules} Modules</span></td>
+              <td><span style="color:#15803d; font-weight:800;"><i class="fa-solid fa-circle-check"></i> ${l.gateway_status}</span></td>
               <td style="color:#475569;">${l.triggered_by}</td>
             </tr>
           `;
         }).join('');
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444; padding:16px;">Failed to load sync logs.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444; padding:18px;">Failed to load sync logs.</td></tr>`;
       }
     }
 
@@ -1462,14 +1551,14 @@
         const badgeColor = avg >= 70 ? '#15803d' : (avg >= 40 ? '#b45309' : '#b91c1c');
         return `
           <tr>
-            <td style="padding:8px; border:1px solid #cbd5e1;"><strong>${o.name || 'Officer'}</strong><br><small style="color:#64748b;">${o.email}</small></td>
-            <td style="padding:8px; border:1px solid #cbd5e1;">${o.department || 'General'}</td>
-            <td style="padding:8px; border:1px solid #cbd5e1;">${o.designation || 'Officer'}</td>
-            <td style="padding:8px; border:1px solid #cbd5e1; text-align:center;">${c.statistical_score || 0}%</td>
-            <td style="padding:8px; border:1px solid #cbd5e1; text-align:center;">${c.technical_score || 0}%</td>
-            <td style="padding:8px; border:1px solid #cbd5e1; text-align:center;">${c.governance_score || 0}%</td>
-            <td style="padding:8px; border:1px solid #cbd5e1; text-align:center;">${c.leadership_score || 0}%</td>
-            <td style="padding:8px; border:1px solid #cbd5e1; text-align:center; font-weight:bold; color:${badgeColor};">${avg}% (${status})</td>
+            <td style="padding:10px; border:1px solid #cbd5e1;"><strong>${o.name || 'Officer'}</strong><br><small style="color:#64748b;">${o.email}</small></td>
+            <td style="padding:10px; border:1px solid #cbd5e1;">${o.department || 'General'}</td>
+            <td style="padding:10px; border:1px solid #cbd5e1;">${o.designation || 'Officer'}</td>
+            <td style="padding:10px; border:1px solid #cbd5e1; text-align:center;">${c.statistical_score || 0}%</td>
+            <td style="padding:10px; border:1px solid #cbd5e1; text-align:center;">${c.technical_score || 0}%</td>
+            <td style="padding:10px; border:1px solid #cbd5e1; text-align:center;">${c.governance_score || 0}%</td>
+            <td style="padding:10px; border:1px solid #cbd5e1; text-align:center;">${c.leadership_score || 0}%</td>
+            <td style="padding:10px; border:1px solid #cbd5e1; text-align:center; font-weight:bold; color:${badgeColor};">${avg}% (${status})</td>
           </tr>
         `;
       }).join('');
@@ -1547,7 +1636,7 @@
       const tbody = document.getElementById("heatmap-table-body");
       if (!tbody) return;
       if (!officers.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">No departmental data available yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">No departmental data available yet.</td></tr>`;
         return;
       }
 
@@ -1588,18 +1677,18 @@
       const tbody = document.getElementById("officers-table-body");
       if (!tbody) return;
       if (!officers.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">No officers registered yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">No officers registered yet.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = officers.map(o => `
         <tr>
           <td><strong>${o.name}</strong></td>
-          <td><span style="color:#0284c7;">${o.email}</span></td>
+          <td><span style="color:#0284c7; font-weight:700;">${o.email}</span></td>
           <td><span class="badge">${o.cadre}</span></td>
           <td>${o.department}</td>
           <td>${o.designation}</td>
-          <td><strong>${o.overall_score}%</strong></td>
+          <td><strong style="color:var(--primary);">${o.overall_score}%</strong></td>
         </tr>
       `).join("");
     }
@@ -1652,17 +1741,17 @@
         if (data.questions && data.questions.length > 0) {
           previewBox.style.display = "block";
           previewBox.innerHTML = `
-            <div style="font-weight:800; font-size:0.88rem; color:#1e3a8a; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <div style="font-weight:800; font-size:0.92rem; color:#1e3a8a; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
               <span><i class="fa-solid fa-list-check"></i> Generated & Stored MCQs for "${courseTitle}" (${data.questions.length} Items${data.is_max_possible ? ' - Max Possible' : ''}):</span>
-              <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; padding:3px 8px; border-radius:4px; font-weight:800;"><i class="fa-solid fa-database"></i> SUPABASE PERSISTED</span>
+              <span style="background:#dcfce7; color:#15803d; font-size:0.74rem; padding:3px 8px; border-radius:4px; font-weight:800;"><i class="fa-solid fa-database"></i> SUPABASE PERSISTED</span>
             </div>
             ${data.questions.map((q, i) => {
               const safeOpts = q.options || [];
               const correctIdx = q.correct_index || 0;
               return `
-                <div style="margin-bottom:12px; background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #0284c7; border-radius:6px; padding:10px; font-size:0.82rem;">
+                <div style="margin-bottom:14px; background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #0284c7; border-radius:8px; padding:12px; font-size:0.84rem;">
                   <strong style="color:#0f172a;">${i + 1}. ${q.question}</strong>
-                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0;">
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0;">
                     ${safeOpts.map((opt, optIdx) => {
                       const isCorrect = optIdx === correctIdx;
                       const bg = isCorrect ? '#dcfce7' : '#f8fafc';
@@ -1670,13 +1759,13 @@
                       const color = isCorrect ? '#15803d' : '#475569';
                       const prefix = String.fromCharCode(65 + optIdx);
                       return `
-                        <div style="background:${bg}; border:${border}; color:${color}; padding:6px 8px; border-radius:4px; font-size:0.76rem; font-weight:${isCorrect ? '700' : 'normal'};">
+                        <div style="background:${bg}; border:${border}; color:${color}; padding:8px 10px; border-radius:6px; font-size:0.78rem; font-weight:${isCorrect ? '800' : 'normal'};">
                           <strong>(${prefix})</strong> ${opt} ${isCorrect ? '<i class="fa-solid fa-circle-check" style="margin-left:4px;"></i>' : ''}
                         </div>
                       `;
                     }).join('')}
                   </div>
-                  ${q.explanation ? `<div style="font-size:0.74rem; color:#0f766e; background:#f0fdfa; padding:4px 8px; border-radius:4px; margin-top:4px;"><strong><i class="fa-solid fa-circle-info"></i> Rationale:</strong> ${q.explanation}</div>` : ''}
+                  ${q.explanation ? `<div style="font-size:0.76rem; color:#0f766e; background:#f0fdfa; padding:6px 10px; border-radius:6px; margin-top:6px;"><strong><i class="fa-solid fa-circle-info"></i> Rationale:</strong> ${q.explanation}</div>` : ''}
                 </div>
               `;
             }).join("")}
@@ -1705,7 +1794,7 @@
         const list = data.certificates || [];
 
         if (list.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">No certificates pending audit.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">No certificates pending audit.</td></tr>`;
           return;
         }
 
@@ -1718,9 +1807,9 @@
                 : '<span class="stage-badge" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-clock"></i> Pending Audit</span>');
 
           const actionButtons = isPending ? `
-            <button onclick="reviewCertificate('${c.id}', 'approved')" class="btn-action" style="background:#15803d; padding:5px 10px; font-size:0.78rem; margin-right:4px;"><i class="fa-solid fa-check"></i> Approve</button>
-            <button onclick="reviewCertificate('${c.id}', 'rejected')" class="btn-action" style="background:#b91c1c; padding:5px 10px; font-size:0.78rem;"><i class="fa-solid fa-xmark"></i> Reject</button>
-          ` : `<span style="font-size:0.78rem; color:var(--text-muted);">${c.admin_remarks || 'Audit complete'}</span>`;
+            <button onclick="reviewCertificate('${c.id}', 'approved')" class="btn-action" style="background:#15803d; padding:6px 12px; font-size:0.8rem; margin-right:4px;"><i class="fa-solid fa-check"></i> Approve</button>
+            <button onclick="reviewCertificate('${c.id}', 'rejected')" class="btn-action" style="background:#b91c1c; padding:6px 12px; font-size:0.8rem;"><i class="fa-solid fa-xmark"></i> Reject</button>
+          ` : `<span style="font-size:0.8rem; color:var(--text-muted);">${c.admin_remarks || 'Audit complete'}</span>`;
 
           const timeStr = c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-IN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'N/A';
           const certJsonEnc = encodeURIComponent(JSON.stringify(c));
@@ -1730,18 +1819,18 @@
               <td><strong>${c.officer_name || 'Officer'}</strong><br><small style="color:var(--text-muted);">${c.user_email}</small></td>
               <td><strong>${c.course_title}</strong></td>
               <td>
-                <button onclick="openAdminCertModal('${certJsonEnc}')" class="btn-action" style="background:#0284c7; padding:5px 12px; font-size:0.78rem;">
+                <button onclick="openAdminCertModal('${certJsonEnc}')" class="btn-action" style="background:#0284c7; padding:6px 14px; font-size:0.8rem;">
                   <i class="fa-solid fa-file-pdf"></i> View & Audit PDF
                 </button>
               </td>
-              <td style="font-size:0.8rem; color:var(--text-muted);">${timeStr}</td>
+              <td style="font-size:0.82rem; color:var(--text-muted);">${timeStr}</td>
               <td style="text-align:center;">${statusBadge}</td>
               <td style="text-align:center;">${actionButtons}</td>
             </tr>
           `;
         }).join('');
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:20px;">Failed to load certificate queue.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:24px;">Failed to load certificate queue.</td></tr>`;
       }
     }
 
@@ -1766,15 +1855,15 @@
       // 1. If it's an image
       if (fileData.startsWith("data:image")) {
         container.innerHTML = `
-          <div style="margin-bottom:16px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#ffffff; padding:10px 16px; border-radius:8px 8px 0 0; font-size:0.88rem;">
+          <div style="margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#ffffff; padding:12px 18px; border-radius:10px 10px 0 0; font-size:0.9rem;">
               <span><i class="fa-solid fa-file-image" style="color:#38bdf8;"></i> <strong>Uploaded Officer Certificate:</strong> ${fileName}</span>
-              <a href="${fileData}" target="_blank" download="${fileName}" class="btn-action" style="background:#0284c7; padding:4px 12px; font-size:0.78rem; color:#fff; text-decoration:none;">
+              <a href="${fileData}" target="_blank" download="${fileName}" class="btn-action" style="background:#0284c7; padding:5px 14px; font-size:0.8rem; color:#fff; text-decoration:none;">
                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Full Image
               </a>
             </div>
-            <div style="border:2px solid #1e293b; border-radius:0 0 8px 8px; background:#f8fafc; padding:16px; text-align:center; max-height:500px; overflow:auto;">
-              <img src="${fileData}" alt="${fileName}" style="max-width:100%; height:auto; border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+            <div style="border:2px solid #1e293b; border-radius:0 0 10px 10px; background:#f8fafc; padding:18px; text-align:center; max-height:500px; overflow:auto;">
+              <img src="${fileData}" alt="${fileName}" style="max-width:100%; height:auto; border-radius:6px; box-shadow:0 4px 14px rgba(0,0,0,0.1);">
             </div>
           </div>
         `;
@@ -1789,18 +1878,18 @@
           const blobUrl = URL.createObjectURL(blob);
 
           container.innerHTML = `
-            <div style="margin-bottom:16px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#ffffff; padding:10px 16px; border-radius:8px 8px 0 0; font-size:0.88rem;">
+            <div style="margin-bottom:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#ffffff; padding:12px 18px; border-radius:10px 10px 0 0; font-size:0.9rem;">
                 <span><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> <strong>Uploaded PDF Document:</strong> ${fileName}</span>
-                <div style="display:flex; gap:8px;">
-                  <a href="${blobUrl}" target="_blank" download="${fileName}" class="btn-action" style="background:#0284c7; padding:4px 12px; font-size:0.78rem; color:#fff; text-decoration:none;">
+                <div style="display:flex; gap:10px;">
+                  <a href="${blobUrl}" target="_blank" download="${fileName}" class="btn-action" style="background:#0284c7; padding:5px 14px; font-size:0.8rem; color:#fff; text-decoration:none;">
                     <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Fullscreen / Download
                   </a>
                 </div>
               </div>
-              <div id="pdf-canvas-wrapper" style="border:2px solid #1e293b; border-radius:0 0 8px 8px; background:#334155; min-height:380px; max-height:500px; overflow:auto; text-align:center; padding:16px;">
+              <div id="pdf-canvas-wrapper" style="border:2px solid #1e293b; border-radius:0 0 10px 10px; background:#334155; min-height:380px; max-height:500px; overflow:auto; text-align:center; padding:18px;">
                 <div id="pdf-loading-msg" style="color:#fff; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Rendering PDF pages with PDF.js...</div>
-                <div id="pdf-pages-list" style="display:flex; flex-direction:column; align-items:center; gap:16px;"></div>
+                <div id="pdf-pages-list" style="display:flex; flex-direction:column; align-items:center; gap:18px;"></div>
               </div>
             </div>
           `;
@@ -1822,8 +1911,8 @@
             canvas.width = viewport.width;
             canvas.style.maxWidth = "100%";
             canvas.style.height = "auto";
-            canvas.style.borderRadius = "4px";
-            canvas.style.boxShadow = "0 4px 14px rgba(0,0,0,0.3)";
+            canvas.style.borderRadius = "6px";
+            canvas.style.boxShadow = "0 4px 16px rgba(0,0,0,0.3)";
             canvas.style.background = "#ffffff";
 
             await page.render({ canvasContext: ctx, viewport }).promise;
@@ -1837,18 +1926,18 @@
 
       // 3. Fallback: Official verified Certificate layout
       container.innerHTML = `
-        <div id="admin-cert-preview-card" style="border:4px double #1e3a8a; border-radius:8px; padding:24px; text-align:center; background:#fcfbf7; margin-bottom:16px; position:relative;">
-          <div style="font-size:0.8rem; font-weight:800; color:#1e3a8a; letter-spacing:1px;">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
-          <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA GREATER NOIDA)</div>
-          <h4 style="font-size:1.25rem; color:#0f172a; margin:16px 0 4px 0; font-family:Georgia, serif;">CERTIFICATE OF ACCREDITATION</h4>
-          <p style="font-size:0.85rem; color:#475569; margin:0;">This is to certify that</p>
-          <h3 style="font-size:1.35rem; color:#1e3a8a; margin:8px 0; font-weight:800;">${c.officer_name || 'Dr. Sunita Sharma'}</h3>
-          <p style="font-size:0.85rem; color:#475569; margin:0;">has successfully completed accredited capacity building & evaluation in</p>
-          <h4 style="font-size:1.05rem; color:#0f172a; margin:8px 0; font-weight:700;">${c.course_title || 'Accredited Module'}</h4>
-          <div style="margin:8px 0; font-size:0.82rem; color:#475569;">
+        <div id="admin-cert-preview-card" style="border:4px double #1e3a8a; border-radius:10px; padding:26px; text-align:center; background:#fcfbf7; margin-bottom:18px; position:relative;">
+          <div style="font-size:0.82rem; font-weight:800; color:#1e3a8a; letter-spacing:1px;">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</div>
+          <div style="font-size:0.74rem; color:#64748b; margin-top:2px;">NATIONAL STATISTICAL SYSTEMS TRAINING ACADEMY (NSSTA GREATER NOIDA)</div>
+          <h4 style="font-size:1.3rem; color:#0f172a; margin:18px 0 4px 0; font-family:Georgia, serif;">CERTIFICATE OF ACCREDITATION</h4>
+          <p style="font-size:0.88rem; color:#475569; margin:0;">This is to certify that</p>
+          <h3 style="font-size:1.45rem; color:#1e3a8a; margin:10px 0; font-weight:800;">${c.officer_name || 'Dr. Sunita Sharma'}</h3>
+          <p style="font-size:0.88rem; color:#475569; margin:0;">has successfully completed accredited capacity building & evaluation in</p>
+          <h4 style="font-size:1.1rem; color:#0f172a; margin:10px 0; font-weight:700;">${c.course_title || 'Accredited Module'}</h4>
+          <div style="margin:10px 0; font-size:0.84rem; color:#475569;">
             <i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> Attached Document: <strong>${fileName}</strong>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:24px; font-size:0.78rem; color:#475569; border-top:1px solid #e2e8f0; padding-top:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:26px; font-size:0.8rem; color:#475569; border-top:1px solid #e2e8f0; padding-top:14px;">
             <div style="text-align:left;">
               <div><strong>Audit Reference:</strong> <span style="font-family:monospace; color:#0284c7;">${c.audit_code || ('MoSPI-AUDIT-' + (c.id || Date.now()).toString().slice(-6))}</span></div>
               <div><strong>Issuing Authority:</strong> NSSTA / MoSPI Central Training Board</div>
@@ -1979,42 +2068,42 @@
         if (document.getElementById("f-horizon")) document.getElementById("f-horizon").innerText = data.horizon || horizon;
 
         if (forecasts.length === 0) {
-          container.innerHTML = `<div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:14px; border-radius:8px; font-size:0.85rem; font-weight:700;"><i class="fa-solid fa-circle-check"></i> All officers in ${dept} (${cadre}) meet target competency readiness benchmarks for ${horizon}.</div>`;
+          container.innerHTML = `<div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:16px; border-radius:10px; font-size:0.88rem; font-weight:700;"><i class="fa-solid fa-circle-check"></i> All officers in ${dept} (${cadre}) meet target competency readiness benchmarks for ${horizon}.</div>`;
         } else {
           container.innerHTML = forecasts.map(f => {
             const curNum = parseInt(f.current_proficiency) || 35;
             const targetNum = parseInt(f.target_proficiency) || 80;
             return `
-              <div style="background:#ffffff; border:1px solid var(--border); border-left:5px solid ${f.border_color}; padding:14px 16px; border-radius:8px; font-size:0.85rem; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px;">
+              <div style="background:#ffffff; border:1px solid var(--border-light); border-left:5px solid ${f.border_color}; padding:16px 18px; border-radius:10px; font-size:0.86rem; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px;">
                   <div>
-                    <span style="font-size:0.7rem; font-weight:800; color:#0284c7; text-transform:uppercase;">${f.domain}</span>
-                    <h4 style="font-size:0.92rem; font-weight:800; color:#0f172a; margin-top:2px;">${f.title}</h4>
+                    <span style="font-size:0.72rem; font-weight:800; color:#0284c7; text-transform:uppercase;">${f.domain}</span>
+                    <h4 style="font-size:0.96rem; font-weight:800; color:#0f172a; margin-top:2px;">${f.title}</h4>
                   </div>
-                  <span style="background:${f.badge_bg}; color:${f.badge_color}; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:4px; white-space:nowrap;">${f.priority}</span>
+                  <span style="background:${f.badge_bg}; color:${f.badge_color}; font-size:0.74rem; font-weight:800; padding:4px 10px; border-radius:6px; white-space:nowrap;">${f.priority}</span>
                 </div>
 
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; margin:8px 0; font-size:0.78rem;">
-                  <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:700;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; margin:10px 0; font-size:0.8rem;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-weight:700;">
                     <span style="color:#64748b;">Current Readiness: <strong style="color:#0f172a;">${f.current_proficiency || '35%'}</strong></span>
                     <span style="color:#64748b;">Target Benchmark: <strong style="color:#15803d;">${f.target_proficiency || '80%'}</strong></span>
                   </div>
-                  <div style="width:100%; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
-                    <div style="width:${curNum}%; height:100%; background:${f.border_color}; border-radius:3px;"></div>
+                  <div style="width:100%; height:7px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
+                    <div style="width:${curNum}%; height:100%; background:${f.border_color}; border-radius:4px;"></div>
                   </div>
-                  <div style="display:flex; justify-content:space-between; margin-top:6px; color:#475569; font-size:0.75rem;">
+                  <div style="display:flex; justify-content:space-between; margin-top:8px; color:#475569; font-size:0.76rem;">
                     <span><i class="fa-solid fa-users-viewfinder"></i> Projected at Risk: <strong style="color:#b91c1c;">${f.projected_officers_at_risk} Officers</strong></span>
                     <span><i class="fa-solid fa-clock"></i> Target Horizon: <strong>${f.forecast_timeline}</strong></span>
                   </div>
                 </div>
 
-                <div style="font-size:0.78rem; color:#334155; margin-bottom:8px;">
+                <div style="font-size:0.8rem; color:#334155; margin-bottom:10px;">
                   <strong style="color:#0f766e;"><i class="fa-solid fa-lightbulb"></i> Emerging Driver:</strong> ${f.emerging_driver || 'Transition to modernized official statistics methodologies.'}
                 </div>
 
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-top:1px dashed #e2e8f0; padding-top:8px;">
-                  <span style="font-size:0.74rem; color:var(--text-muted);"><i class="fa-solid fa-circle-arrow-right" style="color:var(--primary);"></i> ${f.action}</span>
-                  <button onclick="prefillWorkshop('${encodeURIComponent(f.title)}', '${dept}')" class="btn-action" style="padding:4px 10px; font-size:0.75rem; background:#1e3a8a; font-weight:700; border-radius:4px; white-space:nowrap;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-top:1px dashed #e2e8f0; padding-top:10px;">
+                  <span style="font-size:0.76rem; color:var(--text-muted);"><i class="fa-solid fa-circle-arrow-right" style="color:var(--primary);"></i> ${f.action}</span>
+                  <button onclick="prefillWorkshop('${encodeURIComponent(f.title)}', '${dept}')" class="btn-action" style="padding:5px 12px; font-size:0.78rem; background:#1e3a8a; font-weight:700; border-radius:6px; white-space:nowrap;">
                     <i class="fa-solid fa-calendar-plus"></i> Schedule Cohort
                   </button>
                 </div>
