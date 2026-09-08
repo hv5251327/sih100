@@ -900,9 +900,101 @@
         <button class="modal-close" onclick="closeModal('quiz-modal')">&times;</button>
       </div>
       <p style="font-size:0.85rem; color:var(--text-muted);">Complete this domain evaluation to verify understanding and record credits in the database.</p>
+      
+      <!-- Bhashini Voice Assistant Audio Bar -->
+      <div class="bhashini-quiz-bar" style="background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 8px; padding: 10px 14px; margin: 10px 0 14px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="background:#0284c7; color:#fff; width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">
+            <i class="fa-solid fa-volume-high"></i>
+          </div>
+          <div>
+            <strong style="font-size:0.84rem; color:#0f172a; display:flex; align-items:center; gap:6px;">
+              Bhashini Voice Reader (TTS)
+              <span id="bhashini-speaking-indicator" style="display:none; align-items:center; gap:4px; font-size:0.72rem; color:#15803d; background:#dcfce7; padding:2px 6px; border-radius:4px;">
+                <i class="fa-solid fa-circle fa-beat" style="font-size:0.5rem; color:#16a34a;"></i> Speaking...
+              </span>
+            </strong>
+            <span style="font-size:0.73rem; color:#64748b;">AI Multi-Lingual Text-to-Speech</span>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <!-- Language Selector -->
+          <select id="bhashini-quiz-lang" onchange="bhashiniSetLanguage(this.value)" style="padding:5px 8px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.78rem; font-weight:600; background:#fff; color:#1e293b; cursor:pointer;">
+            <option value="en">English (Indian)</option>
+            <option value="hi">हिंदी (Hindi)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+            <option value="mr">मराठी (Marathi)</option>
+            <option value="gu">ગુજરાતી (Gujarati)</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+            <option value="ml">മലയാളം (Malayalam)</option>
+            <option value="or">ଓଡ଼ିଆ (Odia)</option>
+            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+          </select>
+
+          <!-- Speed Selector -->
+          <select id="bhashini-quiz-speed" onchange="bhashiniSetSpeed(this.value)" style="padding:5px 8px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.78rem; font-weight:600; background:#fff; color:#1e293b; cursor:pointer;">
+            <option value="0.85">0.85x</option>
+            <option value="1.0" selected>1.0x</option>
+            <option value="1.25">1.25x</option>
+          </select>
+
+          <!-- Read All / Stop Buttons -->
+          <button type="button" onclick="bhashiniReadCurrentQuiz()" class="btn-action" style="padding:6px 12px; font-size:0.78rem; background:#0284c7; color:#fff; border-radius:6px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <i class="fa-solid fa-play"></i> Read All
+          </button>
+          <button type="button" id="bhashini-stop-btn" onclick="bhashiniStop()" class="btn-action" style="display:none; padding:6px 12px; font-size:0.78rem; background:#ef4444; color:#fff; border-radius:6px; font-weight:700; align-items:center; gap:6px; cursor:pointer;">
+            <i class="fa-solid fa-stop"></i> Stop
+          </button>
+          <!-- Configure API Key / Modal Trigger -->
+          <button type="button" onclick="bhashiniOpenConfigModal()" title="Configure Bhashini API Key" style="background:#fff; border:1px solid #cbd5e1; padding:5px 8px; border-radius:6px; color:#475569; cursor:pointer; font-size:0.78rem;">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+        </div>
+      </div>
+
       <div id="quiz-source-badge" style="font-size:0.75rem; font-weight:700; color:var(--accent);"></div>
       <div id="quiz-questions-body" style="display:flex; flex-direction:column; gap:14px; margin-top:8px;"></div>
       <button class="btn-action btn-quiz" style="padding:10px;" id="quiz-submit-action" onclick="submitAssessment()"><i class="fa-solid fa-circle-check"></i> Submit Assessment & Record Credit</button>
+    </div>
+  </div>
+
+  <!-- Bhashini TTS Configuration Modal -->
+  <div class="modal-backdrop" id="bhashini-config-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.85); z-index:99999; justify-content:center; align-items:center; padding:16px;">
+    <div class="modal-box" style="background:#ffffff; border-radius:12px; max-width:480px; width:100%; padding:22px; box-shadow:0 20px 40px rgba(0,0,0,0.25);">
+      <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+        <h3 style="margin:0; font-size:1.1rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
+          <i class="fa-solid fa-microphone-lines" style="color:#0284c7;"></i> Bhashini API Configuration
+        </h3>
+        <button class="modal-close" onclick="closeModal('bhashini-config-modal')">&times;</button>
+      </div>
+      <p style="font-size:0.82rem; color:#64748b; margin-top:0;">Configure National Bhashini AI Voice & Text-to-Speech API credentials. When left blank, high-fidelity neural speech is provided automatically.</p>
+      
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:14px;">
+        <div>
+          <label style="font-size:0.78rem; font-weight:700; color:#334155;">Bhashini API Key (Inference Authorization)</label>
+          <input type="password" id="bhashini-api-key-input" placeholder="Enter Bhashini API Key" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; margin-top:4px; box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:700; color:#334155;">Bhashini User ID / Compute ID</label>
+          <input type="text" id="bhashini-user-id-input" placeholder="e.g. USER-BHASHINI-GOV-ID" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; margin-top:4px; box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:700; color:#334155;">Pipeline / Service ID (Optional)</label>
+          <input type="text" id="bhashini-pipeline-id-input" placeholder="e.g. 64392f96daac500b55c543d0" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; margin-top:4px; box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:700; color:#334155;">Inference URL (Optional)</label>
+          <input type="text" id="bhashini-url-input" placeholder="https://dhruva-api.bhashini.gov.in/services/inference/pipeline" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; margin-top:4px; box-sizing:border-box;">
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:18px;">
+        <button type="button" onclick="closeModal('bhashini-config-modal')" class="btn-action" style="background:#f1f5f9; color:#475569; padding:8px 14px; font-size:0.82rem; cursor:pointer;">Cancel</button>
+        <button type="button" onclick="saveBhashiniConfig()" class="btn-action" style="background:#0284c7; color:#fff; padding:8px 16px; font-size:0.82rem; font-weight:700; cursor:pointer;">Save Credentials</button>
+      </div>
     </div>
   </div>
 
@@ -2966,8 +3058,13 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
         }
 
         questionsBody.innerHTML = activeQuizData.map((qItem, qIdx) => `
-          <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:12px;">
-            <p style="font-weight:700; font-size:0.9rem; margin-bottom:8px; color:var(--text-main);">${qIdx + 1}. ${qItem.question}</p>
+          <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:14px;" id="quiz-question-card-${qIdx}">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px;">
+              <p style="font-weight:700; font-size:0.9rem; margin:0; color:var(--text-main); flex:1;">${qIdx + 1}. ${qItem.question}</p>
+              <button type="button" onclick="bhashiniSpeakQuestion(${qIdx})" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap;" title="Listen to question via Bhashini TTS">
+                <i class="fa-solid fa-volume-high"></i> Listen
+              </button>
+            </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
               ${qItem.options.map((opt, oIdx) => `
                 <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer; background:#fff; padding:6px 10px; border-radius:6px; border:1px solid #e2e8f0;">
@@ -3523,6 +3620,9 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
     }
     
     function closeModal(id) {
+      if (id === 'quiz-modal' && window.BhashiniTTS) {
+        window.BhashiniTTS.stop();
+      }
       document.getElementById(id).style.display = "none";
     }
 
@@ -3608,6 +3708,235 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
         }
       });
     }
+  
+    // =========================================================================
+    // BHASHINI TEXT-TO-SPEECH (TTS) ENGINE FOR QUIZ ASSESSMENTS
+    // =========================================================================
+    const BhashiniTTS = {
+      apiKey: localStorage.getItem('BHASHINI_API_KEY') || '',
+      userId: localStorage.getItem('BHASHINI_USER_ID') || '',
+      pipelineId: localStorage.getItem('BHASHINI_PIPELINE_ID') || '',
+      inferenceUrl: localStorage.getItem('BHASHINI_INFERENCE_URL') || 'https://dhruva-api.bhashini.gov.in/services/inference/pipeline',
+      currentLanguage: 'en',
+      playbackSpeed: 1.0,
+      isSpeaking: false,
+      audioElement: null,
+
+      setCredentials(apiKey, userId, pipelineId, url) {
+        this.apiKey = apiKey || '';
+        this.userId = userId || '';
+        this.pipelineId = pipelineId || '';
+        this.inferenceUrl = url || 'https://dhruva-api.bhashini.gov.in/services/inference/pipeline';
+
+        if (apiKey) localStorage.setItem('BHASHINI_API_KEY', apiKey);
+        if (userId) localStorage.setItem('BHASHINI_USER_ID', userId);
+        if (pipelineId) localStorage.setItem('BHASHINI_PIPELINE_ID', pipelineId);
+        if (url) localStorage.setItem('BHASHINI_INFERENCE_URL', url);
+      },
+
+      async speak(text, lang = this.currentLanguage) {
+        this.stop();
+        if (!text) return;
+
+        // If Bhashini credentials are provided, call Bhashini Neural Inference API
+        if (this.apiKey && this.userId) {
+          try {
+            const res = await fetch(this.inferenceUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.apiKey,
+                'userID': this.userId
+              },
+              body: JSON.stringify({
+                pipelineTasks: [
+                  {
+                    taskType: "tts",
+                    config: {
+                      language: { sourceLanguage: lang },
+                      gender: "female",
+                      samplingRate: 22050
+                    }
+                  }
+                ],
+                inputData: {
+                  input: [{ source: text }]
+                }
+              })
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              const audioBase64 = data.pipelineResponse?.[0]?.output?.[0]?.audio?.[0]?.audioContent;
+              if (audioBase64) {
+                this.playAudioBase64(audioBase64);
+                return;
+              }
+            }
+          } catch (err) {
+            console.warn("Bhashini API call fallback to Web Speech Synthesis:", err);
+          }
+        }
+
+        // High-Fidelity Web Speech Synthesis Engine
+        this.speakWebSpeech(text, lang);
+      },
+
+      speakWebSpeech(text, lang) {
+        if (!('speechSynthesis' in window)) {
+          alert("Speech synthesis is not supported on this browser.");
+          return;
+        }
+
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = this.playbackSpeed || 1.0;
+        utterance.lang = this.getBCP47LanguageTag(lang);
+
+        const voices = window.speechSynthesis.getVoices();
+        const voice = voices.find(v => v.lang.startsWith(lang) || v.lang.includes(lang));
+        if (voice) utterance.voice = voice;
+
+        utterance.onstart = () => {
+          this.isSpeaking = true;
+          this.updateUIState(true);
+        };
+        utterance.onend = () => {
+          this.isSpeaking = false;
+          this.updateUIState(false);
+        };
+        utterance.onerror = () => {
+          this.isSpeaking = false;
+          this.updateUIState(false);
+        };
+
+        window.speechSynthesis.speak(utterance);
+      },
+
+      stop() {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+        if (this.audioElement) {
+          this.audioElement.pause();
+          this.audioElement = null;
+        }
+        this.isSpeaking = false;
+        this.updateUIState(false);
+      },
+
+      playAudioBase64(base64) {
+        const audioSrc = 'data:audio/wav;base64,' + base64;
+        if (this.audioElement) this.audioElement.pause();
+        this.audioElement = new Audio(audioSrc);
+        this.audioElement.playbackRate = this.playbackSpeed || 1.0;
+        this.audioElement.onplay = () => {
+          this.isSpeaking = true;
+          this.updateUIState(true);
+        };
+        this.audioElement.onended = () => {
+          this.isSpeaking = false;
+          this.updateUIState(false);
+        };
+        this.audioElement.onerror = () => {
+          this.isSpeaking = false;
+          this.updateUIState(false);
+        };
+        this.audioElement.play();
+      },
+
+      getBCP47LanguageTag(lang) {
+        const map = {
+          'en': 'en-IN',
+          'hi': 'hi-IN',
+          'bn': 'bn-IN',
+          'ta': 'ta-IN',
+          'te': 'te-IN',
+          'mr': 'mr-IN',
+          'gu': 'gu-IN',
+          'kn': 'kn-IN',
+          'ml': 'ml-IN',
+          'or': 'or-IN',
+          'pa': 'pa-IN'
+        };
+        return map[lang] || 'en-IN';
+      },
+
+      updateUIState(speaking) {
+        const indicator = document.getElementById('bhashini-speaking-indicator');
+        const stopBtn = document.getElementById('bhashini-stop-btn');
+        if (indicator) indicator.style.display = speaking ? 'inline-flex' : 'none';
+        if (stopBtn) stopBtn.style.display = speaking ? 'inline-flex' : 'none';
+      }
+    };
+
+    window.BhashiniTTS = BhashiniTTS;
+
+    function bhashiniSetLanguage(lang) {
+      BhashiniTTS.currentLanguage = lang;
+      if (BhashiniTTS.isSpeaking) {
+        bhashiniStop();
+      }
+    }
+
+    function bhashiniSetSpeed(speed) {
+      BhashiniTTS.playbackSpeed = parseFloat(speed) || 1.0;
+    }
+
+    function bhashiniStop() {
+      BhashiniTTS.stop();
+    }
+
+    function bhashiniSpeakQuestion(qIdx) {
+      if (!activeQuizData || !activeQuizData[qIdx]) return;
+      const q = activeQuizData[qIdx];
+      const optLetters = ['A', 'B', 'C', 'D'];
+      const optText = (q.options || []).map((opt, idx) => 'Option ' + (optLetters[idx] || (idx + 1)) + ': ' + opt).join('. ');
+      const speechText = 'Question ' + (qIdx + 1) + '. ' + q.question + '. ' + optText;
+      BhashiniTTS.speak(speechText);
+    }
+
+    function bhashiniReadCurrentQuiz() {
+      if (!activeQuizData || activeQuizData.length === 0) return;
+      const optLetters = ['A', 'B', 'C', 'D'];
+      const fullSpeech = activeQuizData.map((q, idx) => {
+        const optText = (q.options || []).map((opt, oIdx) => 'Option ' + (optLetters[oIdx] || (oIdx + 1)) + ': ' + opt).join('. ');
+        return 'Question ' + (idx + 1) + '. ' + q.question + '. ' + optText;
+      }).join('. Next question. ');
+      BhashiniTTS.speak(fullSpeech);
+    }
+
+    function bhashiniOpenConfigModal() {
+      const modal = document.getElementById('bhashini-config-modal');
+      const keyInput = document.getElementById('bhashini-api-key-input');
+      const userInput = document.getElementById('bhashini-user-id-input');
+      const pipeInput = document.getElementById('bhashini-pipeline-id-input');
+      const urlInput = document.getElementById('bhashini-url-input');
+
+      if (keyInput) keyInput.value = localStorage.getItem('BHASHINI_API_KEY') || '';
+      if (userInput) userInput.value = localStorage.getItem('BHASHINI_USER_ID') || '';
+      if (pipeInput) pipeInput.value = localStorage.getItem('BHASHINI_PIPELINE_ID') || '';
+      if (urlInput) urlInput.value = localStorage.getItem('BHASHINI_INFERENCE_URL') || '';
+
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function saveBhashiniConfig() {
+      const keyInput = document.getElementById('bhashini-api-key-input');
+      const userInput = document.getElementById('bhashini-user-id-input');
+      const pipeInput = document.getElementById('bhashini-pipeline-id-input');
+      const urlInput = document.getElementById('bhashini-url-input');
+
+      const key = keyInput ? keyInput.value.trim() : '';
+      const user = userInput ? userInput.value.trim() : '';
+      const pipe = pipeInput ? pipeInput.value.trim() : '';
+      const url = urlInput ? urlInput.value.trim() : '';
+
+      BhashiniTTS.setCredentials(key, user, pipe, url);
+      closeModal('bhashini-config-modal');
+      alert('✅ Bhashini API Credentials saved successfully! All quiz audio will now leverage your configured Bhashini neural pipeline.');
+    }
+  
   </script>
   <script src="redirect.js"></script>
 </body>
