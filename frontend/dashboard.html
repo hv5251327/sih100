@@ -1251,6 +1251,13 @@
       if (!allRecommendedCourses || allRecommendedCourses.length === 0) {
         allRecommendedCourses = [...DEFAULT_MASTER_COURSES];
         renderSimplifiedModules();
+
+          // Auto-save all recommended courses and quizzes to local IndexedDB for seamless offline usage
+          if (window.MoSPIOffline) {
+            allRecommendedCourses.forEach(c => {
+              window.MoSPIOffline.saveCourseOffline(c);
+            });
+          }
         if (statusLabel) statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
       }
 
@@ -1361,15 +1368,12 @@
                         <div class="simple-course-title">${safeTitle}</div>
                         <div class="simple-course-desc">${cleanDesc}</div>
                       </div>
-                      <div class="simple-card-actions">
+                      <div class="simple-card-actions" style="grid-template-columns: 1fr 1fr;">
                         <button class="btn-simple-quiz" onclick="launchAssessment('${encodeURIComponent(safeTitle)}', '${encodeURIComponent(safeDomain)}')">
                           <i class="fa-solid fa-list-check"></i> Take Quiz
                         </button>
                         <button class="btn-simple-cert" onclick="openCertModal('${encodeURIComponent(safeTitle)}')">
                           <i class="fa-solid fa-file-arrow-up"></i> Certificate
-                        </button>
-                        <button class="btn-simple-offline" id="btn-off-${course.id || globalThumbIdx}" onclick="handleDownloadCourseOffline('${encodeURIComponent(JSON.stringify(course))}', this)">
-                          <i class="fa-solid fa-cloud-arrow-down"></i> Save Offline
                         </button>
                       </div>
                     </div>
