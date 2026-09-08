@@ -473,14 +473,14 @@
     <aside class="admin-sidebar">
       <div class="sidebar-heading"><i class="fa-solid fa-bars-staggered"></i> Admin Modules</div>
       <a href="#sec-overview" class="sidebar-nav-item active"><i class="fa-solid fa-chart-pie"></i><span>System Overview</span></a>
-      <a href="#sec-syllabus" class="sidebar-nav-item"><i class="fa-solid fa-book-open-reader"></i><span>Syllabus Parser</span></a>
+      <a href="#sec-syllabus" class="sidebar-nav-item"><i class="fa-solid fa-book-open-reader"></i><span>Course Generator</span></a>
       <a href="#sec-quick-course" class="sidebar-nav-item"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Quick Course Creator</span></a>
-      <a href="#sec-quiz-gen" class="sidebar-nav-item"><i class="fa-solid fa-file-pdf"></i><span>Auto MCQ Generator</span></a>
-      <a href="#sec-heatmap" class="sidebar-nav-item"><i class="fa-solid fa-chart-simple"></i><span>Competency Heatmap</span></a>
-      <a href="#sec-tna" class="sidebar-nav-item"><i class="fa-solid fa-file-invoice"></i><span>TNA Reports</span></a>
-      <a href="#sec-certificates" class="sidebar-nav-item"><i class="fa-solid fa-stamp"></i><span>Certificate Verification</span></a>
-      <a href="#sec-forecasting" class="sidebar-nav-item"><i class="fa-solid fa-brain"></i><span>Skill Forecasting</span></a>
-      <a href="#sec-officers" class="sidebar-nav-item"><i class="fa-solid fa-users-viewfinder"></i><span>Officer Registry</span></a>
+      <a href="#sec-quiz-gen" class="sidebar-nav-item"><i class="fa-solid fa-file-pdf"></i><span>MCQ Generator</span></a>
+      <a href="#sec-heatmap" class="sidebar-nav-item"><i class="fa-solid fa-chart-simple"></i><span>Division-Wise Competency Heatmap</span></a>
+      <a href="#sec-tna" class="sidebar-nav-item"><i class="fa-solid fa-file-invoice"></i><span>TNA Report</span></a>
+      <a href="#sec-certificates" class="sidebar-nav-item"><i class="fa-solid fa-stamp"></i><span>Officer Certificate Verification</span></a>
+      <a href="#sec-forecasting" class="sidebar-nav-item"><i class="fa-solid fa-brain"></i><span>Future Skill Forecasting</span></a>
+      <a href="#sec-officers" class="sidebar-nav-item"><i class="fa-solid fa-users-viewfinder"></i><span>Employee Registry</span></a>
     </aside>
 
     <!-- Right Main Vertical Content Area -->
@@ -498,7 +498,7 @@
                 <i class="fa-solid fa-gauge-high"></i>
               </div>
               <div>
-                <h2>System Overview & Key Intelligence Metrics</h2>
+                <h2>System Overview</h2>
                 <p class="panel-subtitle">Real-time status of enrolled officers, active statistical divisions, registered cadres, and accredited NSSTA courses.</p>
               </div>
             </div>
@@ -511,7 +511,7 @@
             <div class="kpi-content">
               <span class="kpi-label">Total Officers Enrolled</span>
               <h3 class="kpi-val" id="stat-total-officers">0</h3>
-              <span class="kpi-badge-sub"><i class="fa-solid fa-user-check"></i> MoSPI & State DES</span>
+              
             </div>
             <div class="kpi-icon-box kpi-blue">
               <i class="fa-solid fa-users"></i>
@@ -523,7 +523,7 @@
             <div class="kpi-content">
               <span class="kpi-label">Active Divisions</span>
               <h3 class="kpi-val" id="stat-total-depts">0</h3>
-              <span class="kpi-badge-sub"><i class="fa-solid fa-sitemap"></i> NAD, FOD, PSD, SSD...</span>
+              
             </div>
             <div class="kpi-icon-box kpi-indigo">
               <i class="fa-solid fa-building-columns"></i>
@@ -535,7 +535,7 @@
             <div class="kpi-content">
               <span class="kpi-label">Registered Cadres</span>
               <h3 class="kpi-val" id="stat-total-cadres">0</h3>
-              <span class="kpi-badge-sub"><i class="fa-solid fa-id-card-clip"></i> ISS, SSS, DES</span>
+              
             </div>
             <div class="kpi-icon-box kpi-purple">
               <i class="fa-solid fa-layer-group"></i>
@@ -547,7 +547,7 @@
             <div class="kpi-content">
               <span class="kpi-label">Master DB Courses</span>
               <h3 class="kpi-val" id="stat-total-courses" style="color:var(--success);">0</h3>
-              <span class="kpi-badge-sub" style="color:var(--success);"><i class="fa-solid fa-circle-check"></i> NSSTA Accredited</span>
+              
             </div>
             <div class="kpi-icon-box kpi-emerald">
               <i class="fa-solid fa-graduation-cap"></i>
@@ -568,7 +568,7 @@
                 <i class="fa-solid fa-book-open-reader"></i>
               </div>
               <div>
-                <h2>NSSTA Training Syllabus PDF Parser & Course Generator</h2>
+                <h2>Course Generator</h2>
                 <p class="panel-subtitle">Upload official NSSTA syllabus documents, presentation slides, or circular PDFs. LangChain extracts structured competency courses mapped directly to targeted divisions, cadres, and designations, and saves them permanently to the Master Database.</p>
               </div>
             </div>
@@ -687,7 +687,7 @@
                 <i class="fa-solid fa-file-pdf"></i>
               </div>
               <div>
-                <h2>Auto MCQ Question Generator from PDF & Text</h2>
+                <h2>MCQ Generator</h2>
                 <p class="panel-subtitle">Upload training manual PDFs or paste syllabus circulars. AI extracts statistical methodology and synthesizes accredited MCQs directly into the database for officer evaluations.</p>
               </div>
             </div>
@@ -741,7 +741,7 @@
                 <i class="fa-solid fa-chart-simple"></i>
               </div>
               <div>
-                <h2>Division-Wise Competency & Skill Gap Heatmap</h2>
+                <h2>Division-Wise Competency Heatmap</h2>
                 <p class="panel-subtitle">Real-time aggregated proficiency metrics across the four mandatory MoSPI competency frameworks by division.</p>
               </div>
             </div>
@@ -784,7 +784,7 @@
                 <i class="fa-solid fa-file-invoice"></i>
               </div>
               <div>
-                <h2>MoSPI / NSSTA Training Needs Assessment (TNA) & Report Generation</h2>
+                <h2>TNA Report</h2>
                 <p class="panel-subtitle">Export official competency matrices and training deficit reports for Standing Committee & Cadre reviews.</p>
               </div>
             </div>
@@ -816,7 +816,7 @@
                 <i class="fa-solid fa-stamp"></i>
               </div>
               <div>
-                <h2>Officer Certificate Verification & Approval Queue</h2>
+                <h2>Officer Certificate Verification</h2>
                 <p class="panel-subtitle">Audit uploaded course certificates, verify document validity, and credit verified competency points (+25 Pts) to officer records.</p>
               </div>
             </div>
@@ -855,7 +855,7 @@
                 <i class="fa-solid fa-brain"></i>
               </div>
               <div>
-                <h2>Predictive Capacity Planning & Future Skill Forecasting</h2>
+                <h2>Future Skill Forecasting</h2>
                 <p class="panel-subtitle">AI-driven predictive analytics forecasting emerging technology demands, methodology transitions, and proactive upskilling requirements across MoSPI & State DES cadres.</p>
               </div>
             </div>
@@ -919,7 +919,7 @@
                 <i class="fa-solid fa-users-viewfinder"></i>
               </div>
               <div>
-                <h2>Officer Registry & Employee Directory</h2>
+                <h2>Employee Registry</h2>
                 <p class="panel-subtitle">Audited records grouped by Cadre, Department, and Designation with live overall proficiency scores.</p>
               </div>
             </div>
