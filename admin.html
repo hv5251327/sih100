@@ -271,7 +271,6 @@
     .panel-mod-certs { border-left: 6px solid #0284c7; }
     .panel-mod-forecasting { border-left: 6px solid #7c3aed; }
     .panel-mod-officers { border-left: 6px solid #4f46e5; }
-    .panel-mod-sync { border-left: 6px solid #0369a1; }
 
     .module-tag {
       display: inline-flex;
@@ -295,7 +294,6 @@
     .tag-certs { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
     .tag-forecasting { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
     .tag-officers { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
-    .tag-sync { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
 
     .panel-header {
       display: flex;
@@ -471,19 +469,18 @@
   <!-- Main Layout with Left Side Navigation Bar -->
   <div class="admin-layout">
     
-    <!-- Left Side Navigation Bar -->
+    <!-- Left Side Navigation Bar (Clean labels without numbers) -->
     <aside class="admin-sidebar">
       <div class="sidebar-heading"><i class="fa-solid fa-bars-staggered"></i> Admin Modules</div>
-      <a href="#sec-overview" class="sidebar-nav-item active"><i class="fa-solid fa-chart-pie"></i><span>1. System Overview</span></a>
-      <a href="#sec-syllabus" class="sidebar-nav-item"><i class="fa-solid fa-book-open-reader"></i><span>2. Syllabus Parser</span></a>
-      <a href="#sec-quick-course" class="sidebar-nav-item"><i class="fa-solid fa-wand-magic-sparkles"></i><span>3. Course Creator</span></a>
-      <a href="#sec-quiz-gen" class="sidebar-nav-item"><i class="fa-solid fa-file-pdf"></i><span>4. MCQ Generator</span></a>
-      <a href="#sec-heatmap" class="sidebar-nav-item"><i class="fa-solid fa-chart-simple"></i><span>5. Competency Heatmap</span></a>
-      <a href="#sec-tna" class="sidebar-nav-item"><i class="fa-solid fa-file-invoice"></i><span>6. TNA Reports</span></a>
-      <a href="#sec-certificates" class="sidebar-nav-item"><i class="fa-solid fa-stamp"></i><span>7. Certificate Verification</span></a>
-      <a href="#sec-forecasting" class="sidebar-nav-item"><i class="fa-solid fa-brain"></i><span>8. Skill Forecasting</span></a>
-      <a href="#sec-officers" class="sidebar-nav-item"><i class="fa-solid fa-users-viewfinder"></i><span>9. Officer Registry</span></a>
-      <a href="#sec-sync" class="sidebar-nav-item"><i class="fa-solid fa-arrows-rotate"></i><span>10. NSSTA Gateway Sync</span></a>
+      <a href="#sec-overview" class="sidebar-nav-item active"><i class="fa-solid fa-chart-pie"></i><span>System Overview</span></a>
+      <a href="#sec-syllabus" class="sidebar-nav-item"><i class="fa-solid fa-book-open-reader"></i><span>Syllabus Parser</span></a>
+      <a href="#sec-quick-course" class="sidebar-nav-item"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Quick Course Creator</span></a>
+      <a href="#sec-quiz-gen" class="sidebar-nav-item"><i class="fa-solid fa-file-pdf"></i><span>Auto MCQ Generator</span></a>
+      <a href="#sec-heatmap" class="sidebar-nav-item"><i class="fa-solid fa-chart-simple"></i><span>Competency Heatmap</span></a>
+      <a href="#sec-tna" class="sidebar-nav-item"><i class="fa-solid fa-file-invoice"></i><span>TNA Reports</span></a>
+      <a href="#sec-certificates" class="sidebar-nav-item"><i class="fa-solid fa-stamp"></i><span>Certificate Verification</span></a>
+      <a href="#sec-forecasting" class="sidebar-nav-item"><i class="fa-solid fa-brain"></i><span>Skill Forecasting</span></a>
+      <a href="#sec-officers" class="sidebar-nav-item"><i class="fa-solid fa-users-viewfinder"></i><span>Officer Registry</span></a>
     </aside>
 
     <!-- Right Main Vertical Content Area -->
@@ -494,7 +491,7 @@
       <!-- ========================================================================= -->
       <section id="sec-overview" class="admin-section panel panel-mod-overview">
         <div>
-          <span class="module-tag tag-overview"><i class="fa-solid fa-chart-pie"></i> Module 01 • Enterprise Intelligence</span>
+          <span class="module-tag tag-overview"><i class="fa-solid fa-chart-pie"></i> Enterprise Intelligence</span>
           <div class="panel-header" style="border-bottom:none; padding-bottom:4px; margin-bottom:8px;">
             <div class="panel-header-left">
               <div class="panel-icon-badge badge-blue">
@@ -564,7 +561,7 @@
       <!-- ========================================================================= -->
       <section id="sec-syllabus" class="admin-section panel panel-mod-syllabus">
         <div>
-          <span class="module-tag tag-syllabus"><i class="fa-solid fa-book-open-reader"></i> Module 02 • AI Curriculum Architecture</span>
+          <span class="module-tag tag-syllabus"><i class="fa-solid fa-book-open-reader"></i> AI Curriculum Architecture</span>
           <div class="panel-header">
             <div class="panel-header-left">
               <div class="panel-icon-badge badge-amber">
@@ -618,7 +615,7 @@
       <!-- ========================================================================= -->
       <section id="sec-quick-course" class="admin-section panel panel-mod-course-creator">
         <div>
-          <span class="module-tag tag-course-creator"><i class="fa-solid fa-wand-magic-sparkles"></i> Module 03 • Fast Course Publishing</span>
+          <span class="module-tag tag-course-creator"><i class="fa-solid fa-wand-magic-sparkles"></i> Fast Course Publishing</span>
           <div class="panel-header">
             <div class="panel-header-left">
               <div class="panel-icon-badge badge-blue">
@@ -683,7 +680,7 @@
       <!-- ========================================================================= -->
       <section id="sec-quiz-gen" class="admin-section panel panel-mod-mcq">
         <div>
-          <span class="module-tag tag-mcq"><i class="fa-solid fa-file-pdf"></i> Module 04 • Psychometric Assessment Engine</span>
+          <span class="module-tag tag-mcq"><i class="fa-solid fa-file-pdf"></i> Psychometric Assessment Engine</span>
           <div class="panel-header">
             <div class="panel-header-left">
               <div class="panel-icon-badge badge-rose">
@@ -737,7 +734,7 @@
       <!-- ========================================================================= -->
       <section id="sec-heatmap" class="admin-section panel panel-mod-heatmap">
         <div>
-          <span class="module-tag tag-heatmap"><i class="fa-solid fa-chart-simple"></i> Module 05 • National Gap Analytics</span>
+          <span class="module-tag tag-heatmap"><i class="fa-solid fa-chart-simple"></i> National Gap Analytics</span>
           <div class="panel-header">
             <div class="panel-header-left">
               <div class="panel-icon-badge badge-emerald">
@@ -780,7 +777,7 @@
       <!-- ========================================================================= -->
       <section id="sec-tna" class="admin-section panel panel-mod-tna" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
         <div>
-          <span class="module-tag tag-tna"><i class="fa-solid fa-file-invoice"></i> Module 06 • Official TNA Reporting</span>
+          <span class="module-tag tag-tna"><i class="fa-solid fa-file-invoice"></i> Official TNA Reporting</span>
           <div class="panel-header">
             <div class="panel-header-left">
               <div class="panel-icon-badge badge-slate">
@@ -812,7 +809,7 @@
       <!-- ========================================================================= -->
       <section id="sec-certificates" class="admin-section panel panel-mod-certs">
         <div>
-          <span class="module-tag tag-certs"><i class="fa-solid fa-stamp"></i> Module 07 • Credential Verification</span>
+          <span class="module-tag tag-certs"><i class="fa-solid fa-stamp"></i> Credential Verification</span>
           <div class="panel-header">
             <div class="panel-header-left">
               <div class="panel-icon-badge badge-sky">
@@ -851,7 +848,7 @@
       <!-- ========================================================================= -->
       <section id="sec-forecasting" class="admin-section panel panel-mod-forecasting">
         <div>
-          <span class="module-tag tag-forecasting"><i class="fa-solid fa-brain"></i> Module 08 • Predictive Intelligence</span>
+          <span class="module-tag tag-forecasting"><i class="fa-solid fa-brain"></i> Predictive Intelligence</span>
           <div class="panel-header">
             <div class="panel-header-left">
               <div class="panel-icon-badge badge-purple">
@@ -915,7 +912,7 @@
       <!-- ========================================================================= -->
       <section id="sec-officers" class="admin-section panel panel-mod-officers">
         <div>
-          <span class="module-tag tag-officers"><i class="fa-solid fa-users-viewfinder"></i> Module 09 • Cadre Directory</span>
+          <span class="module-tag tag-officers"><i class="fa-solid fa-users-viewfinder"></i> Cadre Directory</span>
           <div class="panel-header">
             <div class="panel-header-left">
               <div class="panel-icon-badge badge-indigo">
@@ -948,73 +945,6 @@
               <tr><td colspan="6" style="text-align:center; padding:24px;">Loading officer directory...</td></tr>
             </tbody>
           </table>
-        </div>
-      </section>
-
-      <!-- ========================================================================= -->
-      <!-- 10. CENTRAL NSSTA REPOSITORY SYNC & GATEWAY (Vertical Full-Width) -->
-      <!-- ========================================================================= -->
-      <section id="sec-sync" class="admin-section panel panel-mod-sync">
-        <div>
-          <span class="module-tag tag-sync"><i class="fa-solid fa-arrows-rotate"></i> Module 10 • Central Directory Sync</span>
-          <div class="panel-header">
-            <div class="panel-header-left">
-              <div class="panel-icon-badge badge-sky">
-                <i class="fa-solid fa-cloud-arrow-down"></i>
-              </div>
-              <div>
-                <h2>Central NSSTA Repository Sync & SSO Governance</h2>
-                <p class="panel-subtitle">Synchronizes MoSPI's internal LMS database with the central <strong>NSSTA MoSPI Training Catalog</strong>. Ingests new accredited circulars, updates curriculum taxonomies, and aligns officer competency roadmaps with national statistical standards.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-left:5px solid #0284c7; padding:14px 18px; border-radius:8px; font-size:0.88rem; color:#0369a1;">
-          <strong><i class="fa-solid fa-circle-info"></i> NSSTA Directory Sync Protocol:</strong> Real-time bi-directional pipeline synchronizing curriculum structures, officer progress telemetry, and training needs assessments with NSSTA Greater Noida repositories.
-        </div>
-
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:14px; background:#f8fafc; border:1px solid var(--border-light); padding:16px; border-radius:10px;">
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <span style="font-size:0.78rem; color:var(--text-muted); font-weight:800; text-transform:uppercase;"><i class="fa-solid fa-heart-pulse"></i> Catalogue Sync Health</span>
-            <strong style="color:var(--success); font-size:0.98rem;" id="igot-sync-health"><i class="fa-solid fa-circle-check"></i> 100% Synced</strong>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <span style="font-size:0.78rem; color:var(--text-muted); font-weight:800; text-transform:uppercase;"><i class="fa-solid fa-user-shield"></i> System Access Control</span>
-            <strong style="color:var(--primary); font-size:0.98rem;"><i class="fa-solid fa-lock"></i> MoSPI Role-Based Access</strong>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <span style="font-size:0.78rem; color:var(--text-muted); font-weight:800; text-transform:uppercase;"><i class="fa-solid fa-user-lock"></i> Role-Based Permissions</span>
-            <strong style="color:var(--text-main); font-size:0.98rem;"><i class="fa-solid fa-certificate"></i> MoSPI / NSSTA Admin Role Verified</strong>
-          </div>
-        </div>
-
-        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-          <button class="btn-action" id="btn-sync-igot" onclick="triggerIgotSync()" style="background:#0284c7; font-weight:800;"><i class="fa-solid fa-arrows-rotate"></i> Sync with Central NSSTA Repository</button>
-          <div id="igot-sync-result" style="font-size:0.86rem; font-weight:700; color:var(--success);"></div>
-        </div>
-
-        <!-- NSSTA Sync Audit Logs Table -->
-        <div style="margin-top:10px;">
-          <h3 style="font-size:0.98rem; font-weight:800; margin-bottom:12px; color:var(--primary); display:flex; align-items:center; gap:8px;">
-            <i class="fa-solid fa-clock-rotate-left"></i> Central Directory Sync Audit Logs
-          </h3>
-          <div class="table-container" style="max-height:220px; overflow-y:auto;">
-            <table>
-              <thead style="position:sticky; top:0; z-index:2;">
-                <tr>
-                  <th><i class="fa-solid fa-clock"></i> Timestamp</th>
-                  <th><i class="fa-solid fa-gear"></i> Operation</th>
-                  <th style="text-align:center;"><i class="fa-solid fa-cubes"></i> Modules</th>
-                  <th><i class="fa-solid fa-signal"></i> Gateway Status</th>
-                  <th><i class="fa-solid fa-user"></i> Triggered By</th>
-                </tr>
-              </thead>
-              <tbody id="igot-sync-table-body">
-                <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">Loading sync logs...</td></tr>
-              </tbody>
-            </table>
-          </div>
         </div>
       </section>
 
@@ -1100,7 +1030,6 @@
         loadOfficerAnalytics(), 
         loadCoursesDropdown(),
         loadCertificatesQueue(),
-        loadIgotSyncLogs(),
         runSkillForecast()
       ]);
     });
@@ -1416,62 +1345,6 @@
         renderOfficersTable(allOfficers);
       } catch (e) {
         console.error("Failed to load analytics:", e);
-      }
-    }
-
-    async function loadIgotSyncLogs() {
-      const tbody = document.getElementById("igot-sync-table-body");
-      if (!tbody) return;
-      try {
-        const res = await fetch(`${API_URL}/api/admin/igot-sync-logs`);
-        const data = await res.json();
-        const logs = data.logs || [];
-
-        if (logs.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:18px;">No synchronization history recorded.</td></tr>`;
-          return;
-        }
-
-        tbody.innerHTML = logs.map(l => {
-          const timeStr = l.sync_timestamp ? new Date(l.sync_timestamp).toLocaleDateString('en-IN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Recently';
-          return `
-            <tr>
-              <td><strong>${timeStr}</strong></td>
-              <td><span style="font-weight:700; color:#0369a1;">${l.operation}</span></td>
-              <td style="text-align:center;"><span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-weight:800;">${l.synced_modules} Modules</span></td>
-              <td><span style="color:#15803d; font-weight:800;"><i class="fa-solid fa-circle-check"></i> ${l.gateway_status}</span></td>
-              <td style="color:#475569;">${l.triggered_by}</td>
-            </tr>
-          `;
-        }).join('');
-      } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444; padding:18px;">Failed to load sync logs.</td></tr>`;
-      }
-    }
-
-    async function triggerIgotSync() {
-      const btn = document.getElementById("btn-sync-igot");
-      const resDiv = document.getElementById("igot-sync-result");
-      const healthEl = document.getElementById("igot-sync-health");
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Syncing with Central NSSTA API...`;
-
-      try {
-        const res = await fetch(`${API_URL}/api/admin/sync-igot`, { method: 'POST' });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Sync failed');
-
-        const timeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        if (healthEl) healthEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> 100% Synced (${timeStr})`;
-        resDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
-        alert(`✅ Central NSSTA Master Repository Synced!\n\n• Status: 100% Active\n• Total Master Courses in DB: ${data.total_master_courses || 45}\n• Last Synced: ${timeStr}\n\nAll officer pathways are aligned with the latest NSSTA catalog.`);
-        await Promise.all([loadCoursesDropdown(), loadIgotSyncLogs()]);
-      } catch (err) {
-        resDiv.innerHTML = `<span style="color:#ef4444;">Sync Error: ${err.message}</span>`;
-        alert(`NSSTA Sync error: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Sync with Central NSSTA Repository`;
       }
     }
 
