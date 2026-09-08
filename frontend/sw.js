@@ -1,5 +1,5 @@
 // MoSPI / NSSTA Service Worker - Offline Field Caching Engine
-const CACHE_NAME = 'mospi-field-pwa-v3';
+const CACHE_NAME = 'mospi-field-pwa-v4';
 
 const PRECACHE_ASSETS = [
   './',
@@ -17,7 +17,7 @@ const PRECACHE_ASSETS = [
   './style.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js'
 ];
 
 // Install: pre-cache static assets
@@ -49,30 +49,18 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: Cache-First for static assets, Network-First for API with cache fallback
+// Fetch: ONLY handle GET requests for static UI assets. NEVER block or fake API responses.
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  const url = new URL(req.url);
-
-  // Skip non-GET requests (handled by IndexedDB offline queue)
   if (req.method !== 'GET') return;
 
-  // For API requests, use Network-first
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(
-      fetch(req).catch(() => {
-        return caches.match(req).then((cached) => {
-          if (cached) return cached;
-          return new Response(JSON.stringify({ offline: true, error: 'Offline - served from field cache' }), {
-            headers: { 'Content-Type': 'application/json' }
-          });
-        });
-      })
-    );
+  const url = new URL(req.url);
+
+  // Let browser natively handle API routes and cross-origin backends
+  if (url.pathname.startsWith('/api/') || url.hostname.includes('onrender.com') || url.hostname.includes('supabase.co')) {
     return;
   }
 
-  // For static assets, HTML, Pyodide WASM, CDN fonts: Cache-first, then network with cache update
   event.respondWith(
     caches.match(req).then((cachedResponse) => {
       if (cachedResponse) {
@@ -95,7 +83,6 @@ self.addEventListener('fetch', (event) => {
         });
         return networkResponse;
       }).catch(() => {
-        // Fallback for HTML page navigation
         if (req.headers.get('accept') && req.headers.get('accept').includes('text/html')) {
           return caches.match('./dashboard.html') || caches.match('./index.html');
         }
