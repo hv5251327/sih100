@@ -2442,6 +2442,13 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
     function openVideoModal(titleEnc, videoUrl) {
       currentActiveCourse = decodeURIComponent(titleEnc);
       document.getElementById("video-modal-title").innerHTML = `<i class="fa-solid fa-circle-play"></i> Training: ${currentActiveCourse}`;
+
+      if (!navigator.onLine) {
+        if (window.MoSPIOffline) {
+          window.MoSPIOffline.showToast('ℹ️ Video streaming requires an internet connection. The syllabus manual, quizzes, and Python sandbox are available offline!', 'info');
+        }
+      }
+
       let targetSrc = videoUrl || 'https://www.youtube.com/embed/1Il5UUPrSNk';
       if (!targetSrc.includes('embed') && targetSrc.includes('youtube.com/watch?v=')) {
         targetSrc = targetSrc.replace('watch?v=', 'embed/');
