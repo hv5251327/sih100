@@ -81,9 +81,9 @@ input:focus, select:focus { border-color: #2563eb; }
 .partner-icons div { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .partner-icons div i { font-size: 2rem; color: #1a365d; }
 .partner-icons div span { font-size: 0.78rem; font-weight: 700; color: #334155; }
-.ministry-list { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 10px; max-width: 960px; line-height: 1.8; }
-.ministry-list span { font-size: 0.85rem; color: #2563eb; font-weight: 600; }
-.ministry-list .divider { color: #cbd5e1; font-size: 0.85rem; padding: 0 2px; }
+.sector-list { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 10px; max-width: 960px; line-height: 1.8; }
+.sector-list span { font-size: 0.85rem; color: #2563eb; font-weight: 600; }
+.sector-list .divider { color: #cbd5e1; font-size: 0.85rem; padding: 0 2px; }
 
 /* ===================================================
    📱 RESPONSIVE MOBILE & TABLET MEDIA QUERIES
@@ -126,7 +126,7 @@ input:focus, select:focus { border-color: #2563eb; }
     .partner-icons { gap: 1.6rem; }
     .partner-icons div i { font-size: 1.6rem; }
     .partner-icons div span { font-size: 0.72rem; }
-    .ministry-list span { font-size: 0.78rem; }
+    .sector-list span { font-size: 0.78rem; }
 
     .login-card { padding: 1.8rem 1.2rem; border-radius: 12px; }
     .icon-box { font-size: 2.2rem; }
