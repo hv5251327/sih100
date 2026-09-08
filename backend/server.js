@@ -486,7 +486,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Statistical Competencies',
         difficulty_level: 'Intermediate',
         description: 'Compiling Gross Value Added (GVA), Supply and Use Tables (SUT), institutional sector accounts, and base year revisions following UN SNA 2008 standards.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/nK32aCq3mNk',
         is_general_mandatory: false,
         target_departments: ['NAD', 'ESD']
     },
@@ -496,7 +496,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Statistical Competencies',
         difficulty_level: 'Intermediate',
         description: 'Design of market price baskets, Laspeyres and Jevons price index construction, geometric mean weighting, item substitution rules, and inflation forecasting.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/rPZ3_XFmgm4',
         is_general_mandatory: false,
         target_departments: ['PSD']
     },
@@ -506,7 +506,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Statistical Competencies',
         difficulty_level: 'Intermediate',
         description: 'Concepts of Usual Principal Status (UPS), Current Weekly Status (CWS), Worker Population Ratio (WPR), LFPR, and weight application on NSSO unit-level data.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/fUj4oX-hQcQ',
         is_general_mandatory: false,
         target_departments: ['SSD', 'SDRD', 'FOD']
     },
@@ -516,7 +516,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Statistical Competencies',
         difficulty_level: 'Intermediate',
         description: 'Agricultural census frames, General Crop Estimation Surveys (GCES), remote sensing yield forecasting, and integration of administrative land records.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/g0kZ8HlS-uM',
         is_general_mandatory: false,
         target_departments: ['ESD', 'STATE_DES', 'SSD']
     },
@@ -526,7 +526,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Statistical Competencies',
         difficulty_level: 'Intermediate',
         description: 'Factory sector sampling frame maintenance, NIC-2008 industrial classification, gross output validation, working capital analysis, and monthly IIP compilation.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/s2skans2dP4',
         is_general_mandatory: false,
         target_departments: ['ESD']
     },
@@ -536,7 +536,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Statistical Competencies',
         difficulty_level: 'Intermediate',
         description: 'Monitoring 300+ NIF indicators aligned with UN SDGs, baseline metadata harmonization, disaggregated social statistics, and state indicator dashboards.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/0XTBYMfZyrM',
         is_general_mandatory: false,
         target_departments: ['SSD', 'SDG_LAB', 'STATE_DES']
     },
@@ -546,7 +546,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Statistical Competencies',
         difficulty_level: 'Advanced',
         description: 'Statistical Data and Metadata eXchange (SDMX) protocols, Data Documentation Initiative (DDI) XML schemas, and quality audits under UN-NQAF principles.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/4K8bX4n_a3w',
         is_general_mandatory: false,
         target_departments: ['DIID', 'DPD', 'SDRD']
     },
@@ -558,7 +558,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Technical Competencies',
         difficulty_level: 'Advanced',
         description: 'Data wrangling with Pandas and NumPy, automated outlier detection, time series decomposition (SARIMA), Scikit-Learn classification, and pipeline scripting.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/rfscVS0vtbw',
         is_general_mandatory: true,
         target_departments: ['ALL']
     },
@@ -568,7 +568,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Technical Competencies',
         difficulty_level: 'Advanced',
         description: 'Complex survey design analysis using R survey package, robust regression models, multi-level panel regressions, and automated statistical reporting with R Markdown.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/_V8eKsto3Ug',
         is_general_mandatory: false,
         target_departments: ['ALL']
     },
@@ -578,7 +578,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Technical Competencies',
         difficulty_level: 'Foundation',
         description: 'Relational database schema design for MoSPI survey tables, complex window functions, cross-tabulation aggregation queries, and automated data integrity triggers.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/HXV3zeRR3h4',
         is_general_mandatory: true,
         target_departments: ['ALL']
     },
@@ -588,7 +588,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Technical Competencies',
         difficulty_level: 'Intermediate',
         description: 'Survey weighting commands in Stata (svyset), panel fixed and random effect estimations, multi-dimensional cross-tabulations in SPSS, and output formatting.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/m6l8b7cE17E',
         is_general_mandatory: false,
         target_departments: ['NAD', 'ESD', 'PSD', 'SSD']
     },
@@ -598,7 +598,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Technical Competencies',
         difficulty_level: 'Advanced',
         description: 'QGIS integration, satellite imagery land classification (NDVI), urban and rural enumeration block (EB) spatial frame delineation, and thematic choropleth cartography.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/2_2G3j7-f5E',
         is_general_mandatory: false,
         target_departments: ['FOD', 'SDRD', 'STATE_DES']
     },
@@ -608,7 +608,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Technical Competencies',
         difficulty_level: 'Intermediate',
         description: 'Building national statistical dashboards using Power BI and Tableau, interactive chart principles, color theory for official reports, and automated PDF report compilation.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/3fy4fK0mQoQ',
         is_general_mandatory: false,
         target_departments: ['ALL']
     },
@@ -618,7 +618,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Technical Competencies',
         difficulty_level: 'Advanced',
         description: 'RESTful API creation for official microdata dissemination, Open Government Data (data.gov.in) interoperability standards, and high-performance cloud processing.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/yZqKzL98v4g',
         is_general_mandatory: false,
         target_departments: ['DIID', 'DPD']
     },
@@ -628,7 +628,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Technical Competencies',
         difficulty_level: 'Intermediate',
         description: 'Field survey tablet configuration, real-time GPS paradata audits, secure mobile sqlite encryption, error flagging routines, and field synchronization protocols.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/k9zTr2MAo4s',
         is_general_mandatory: false,
         target_departments: ['FOD', 'SDRD']
     },
@@ -640,7 +640,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Digital Governance',
         difficulty_level: 'Intermediate',
         description: 'Securing statistical microdata assets, CERT-In cybersecurity directives, multi-factor authentication, endpoint hygiene, and security incident response protocols.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/inWWhr5tnEA',
         is_general_mandatory: false,
         target_departments: ['ALL']
     },
@@ -650,7 +650,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Digital Governance',
         difficulty_level: 'Foundation',
         description: 'Statutory compliance with DPDP Act 2023, informed consent capture, anonymization techniques (k-anonymity, differential privacy), and data fiduciary obligations for MoSPI.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/fW_c3-p9Vrk',
         is_general_mandatory: true,
         target_departments: ['ALL']
     },
@@ -660,7 +660,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Digital Governance',
         difficulty_level: 'Foundation',
         description: 'Public Key Infrastructure (PKI) standards, DSC token issuance, Aadhaar-based e-Sign integration, and tamper-evident PDF document certification.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/GSIDS_lvRv4',
         is_general_mandatory: false,
         target_departments: ['ALL']
     },
@@ -670,7 +670,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Digital Governance',
         difficulty_level: 'Intermediate',
         description: 'National Cloud MeghRaj deployment guidelines, cloud storage tiering for census microdata, disaster recovery architectures, and MeitY empanelment audits.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/M988_fsOSWo',
         is_general_mandatory: false,
         target_departments: ['DIID', 'DPD']
     },
@@ -680,7 +680,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Digital Governance',
         difficulty_level: 'Intermediate',
         description: 'Leveraging India Stack components (Aadhaar, DigiLocker, UPI, DEPA), National Data Governance Framework Policy (NDGFP), and cross-ministerial data sharing.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/zOxW51aD6_M',
         is_general_mandatory: false,
         target_departments: ['ALL']
     },
@@ -692,7 +692,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Behavioural & Managerial',
         difficulty_level: 'Foundation',
         description: 'Central Civil Services (Conduct) Rules, POSH Act 2013 legal mandates, Internal Complaints Committee (ICC) functions, and professional ethics in civil service.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/gP9NfXGzN2U',
         is_general_mandatory: true,
         target_departments: ['ALL']
     },
@@ -702,7 +702,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Behavioural & Managerial',
         difficulty_level: 'Advanced',
         description: 'Strategic visioning, high-performance team leadership in survey operations, conflict resolution, emotional intelligence, and transformational leadership in public policy.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/wX78iKhInsc',
         is_general_mandatory: false,
         target_departments: ['ALL']
     },
@@ -712,7 +712,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Behavioural & Managerial',
         difficulty_level: 'Intermediate',
         description: 'Principles of drafting Cabinet Notes, replies to Parliamentary Questions, official press releases, and narrative data storytelling for statistical releases.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/n4NVPg2kHv4',
         is_general_mandatory: false,
         target_departments: ['ALL']
     },
@@ -722,7 +722,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Behavioural & Managerial',
         difficulty_level: 'Intermediate',
         description: 'Monitoring central sector infrastructure projects costing Rs 150 Crore+, critical path method (CPM/PERT), flash report analysis, and milestone tracking.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/6pB83h9A-68',
         is_general_mandatory: false,
         target_departments: ['IPMD']
     },
@@ -732,7 +732,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Behavioural & Managerial',
         difficulty_level: 'Advanced',
         description: 'Translating empirical survey statistics into actionable public policy recommendations, policy impact evaluation, and strategic advisory for central ministries.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/1kK1G9y_R7A',
         is_general_mandatory: false,
         target_departments: ['ALL']
     },
@@ -742,7 +742,7 @@ const IGOT_MASTER_CATALOG = [
         domain: 'Behavioural & Managerial',
         difficulty_level: 'Advanced',
         description: 'Frameworks for managing digital transformation, overcoming institutional inertia, agile capacity building, and institutionalizing continuous TNA under Mission Karmayogi.',
-        video_url: 'https://www.youtube.com/embed/1Il5UUPrSNk',
+        video_url: 'https://www.youtube.com/embed/PQ0doKfhecQ',
         is_general_mandatory: false,
         target_departments: ['ALL']
     }
@@ -2483,24 +2483,54 @@ function getRelevantVideoUrl(title, domain) {
     const t = (title || '').toLowerCase();
     if (t.includes('national accounts') || t.includes('sna') || t.includes('sut') || t.includes('gdp') || t.includes('gva') || t.includes('capital stock') || t.includes('fisim')) {
         return 'https://www.youtube.com/embed/nK32aCq3mNk';
-    } else if (t.includes('plfs') || t.includes('sampling') || t.includes('hces') || t.includes('strata') || t.includes('multiplier') || t.includes('neyman')) {
+    } else if (t.includes('plfs') || t.includes('labour') || t.includes('employment') || t.includes('wpr') || t.includes('lfpr')) {
+        return 'https://www.youtube.com/embed/fUj4oX-hQcQ';
+    } else if (t.includes('sampling') || t.includes('hces') || t.includes('strata') || t.includes('multiplier') || t.includes('neyman') || t.includes('survey design')) {
         return 'https://www.youtube.com/embed/1Il5UUPrSNk';
     } else if (t.includes('capi') || t.includes('gps') || t.includes('fod') || t.includes('field') || t.includes('asuse') || t.includes('listing')) {
         return 'https://www.youtube.com/embed/k9zTr2MAo4s';
-    } else if (t.includes('dpdp') || t.includes('privacy') || t.includes('confidentiality') || t.includes('statistics act') || t.includes('governance')) {
+    } else if (t.includes('dpdp') || t.includes('privacy') || t.includes('confidentiality') || t.includes('anonymization') || t.includes('disclosure control')) {
         return 'https://www.youtube.com/embed/fW_c3-p9Vrk';
     } else if (t.includes('asi') || t.includes('iip') || t.includes('industrial') || t.includes('service production') || t.includes('factory')) {
         return 'https://www.youtube.com/embed/s2skans2dP4';
-    } else if (t.includes('cpi') || t.includes('wpi') || t.includes('price') || t.includes('inflation')) {
+    } else if (t.includes('cpi') || t.includes('wpi') || t.includes('price') || t.includes('inflation') || t.includes('deflator')) {
         return 'https://www.youtube.com/embed/rPZ3_XFmgm4';
-    } else if (t.includes('python') || t.includes('pandas') || t.includes('numpy') || t.includes('data wrangling')) {
+    } else if (t.includes('agriculture') || t.includes('crop') || t.includes('land use') || t.includes('gces')) {
+        return 'https://www.youtube.com/embed/g0kZ8HlS-uM';
+    } else if (t.includes('sdg') || t.includes('sustainable development') || t.includes('indicator framework') || t.includes('nif')) {
+        return 'https://www.youtube.com/embed/0XTBYMfZyrM';
+    } else if (t.includes('metadata') || t.includes('sdmx') || t.includes('ddi') || t.includes('un-nqaf') || t.includes('quality framework')) {
+        return 'https://www.youtube.com/embed/4K8bX4n_a3w';
+    } else if (t.includes('python') || t.includes('pandas') || t.includes('numpy') || t.includes('machine learning') || t.includes('data wrangling')) {
         return 'https://www.youtube.com/embed/rfscVS0vtbw';
-    } else if (t.includes(' r ') || t.includes('econometric') || t.includes('survey package') || t.includes('x-13arima')) {
+    } else if (t.includes(' r ') || t.includes('r programming') || t.includes('econometric') || t.includes('survey package') || t.includes('x-13arima')) {
         return 'https://www.youtube.com/embed/_V8eKsto3Ug';
+    } else if (t.includes('sql') || t.includes('database') || t.includes('relational') || t.includes('postgres') || t.includes('query')) {
+        return 'https://www.youtube.com/embed/HXV3zeRR3h4';
+    } else if (t.includes('stata') || t.includes('spss') || t.includes('tabulation') || t.includes('cross-tab')) {
+        return 'https://www.youtube.com/embed/m6l8b7cE17E';
     } else if (t.includes('gis') || t.includes('qgis') || t.includes('geopandas') || t.includes('spatial') || t.includes('remote sensing') || t.includes('urban frame')) {
         return 'https://www.youtube.com/embed/2_2G3j7-f5E';
+    } else if (t.includes('visualization') || t.includes('dashboard') || t.includes('power bi') || t.includes('tableau') || t.includes('chart')) {
+        return 'https://www.youtube.com/embed/3fy4fK0mQoQ';
+    } else if (t.includes('cloud') || t.includes('api') || t.includes('open government') || t.includes('data.gov.in') || t.includes('meghraj')) {
+        return 'https://www.youtube.com/embed/yZqKzL98v4g';
+    } else if (t.includes('cyber') || t.includes('iso 27001') || t.includes('cert-in') || t.includes('security')) {
+        return 'https://www.youtube.com/embed/inWWhr5tnEA';
+    } else if (t.includes('e-sign') || t.includes('pki') || t.includes('digital signature') || t.includes('dsc')) {
+        return 'https://www.youtube.com/embed/GSIDS_lvRv4';
+    } else if (t.includes('dpi') || t.includes('india stack') || t.includes('digilocker') || t.includes('ndgfp')) {
+        return 'https://www.youtube.com/embed/zOxW51aD6_M';
     } else if (t.includes('gfr') || t.includes('gem') || t.includes('procurement') || t.includes('posh') || t.includes('ethics') || t.includes('conduct')) {
         return 'https://www.youtube.com/embed/gP9NfXGzN2U';
+    } else if (t.includes('communication') || t.includes('parliamentary') || t.includes('storytelling') || t.includes('cabinet note')) {
+        return 'https://www.youtube.com/embed/n4NVPg2kHv4';
+    } else if (t.includes('project monitoring') || t.includes('ocms') || t.includes('infrastructure') || t.includes('cpm') || t.includes('pert')) {
+        return 'https://www.youtube.com/embed/6pB83h9A-68';
+    } else if (t.includes('evidence-based') || t.includes('policy formulation') || t.includes('impact evaluation')) {
+        return 'https://www.youtube.com/embed/1kK1G9y_R7A';
+    } else if (t.includes('change management') || t.includes('transformation') || t.includes('institutional inertia')) {
+        return 'https://www.youtube.com/embed/PQ0doKfhecQ';
     } else if (domain === 'Behavioural & Managerial' || t.includes('leadership') || t.includes('policy') || t.includes('management') || t.includes('change')) {
         return 'https://www.youtube.com/embed/wX78iKhInsc';
     }

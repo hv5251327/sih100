@@ -1340,11 +1340,20 @@
       tbody.innerHTML = courses.map(c => {
         const stageColor = c.learning_stage === 'Advanced Strategic' ? '#b45309; background:#fef3c7;' : (c.learning_stage === 'Foundation' ? '#2563eb; background:#dbeafe;' : '#0f766e; background:#ccfbf1;');
         const targetDesc = (c.target_department || c.department || 'All Divisions') + ' • ' + (c.target_cadre || c.cadre || 'All Cadres');
+        const videoUrl = c.video_url || getAdminCourseVideoUrl(c.title);
+        
         return `
           <tr>
             <td>
-              <strong style="color:#0f172a; font-size:0.92rem;">${c.title}</strong><br>
-              <small style="color:var(--text-muted); font-family:monospace;">ID: ${c.id || 'c_nssta_auto'}</small>
+              <div style="display:flex; align-items:flex-start; gap:10px;">
+                <button onclick="openAdminVideoModal('${encodeURIComponent(c.title)}', '${videoUrl}')" style="background:#eff6ff; color:#0284c7; border:1px solid #bfdbfe; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:0.78rem; font-weight:700; display:flex; align-items:center; gap:5px; flex-shrink:0;" title="Preview Course Video">
+                  <i class="fa-solid fa-play" style="color:#ef4444;"></i> Preview
+                </button>
+                <div>
+                  <strong style="color:#0f172a; font-size:0.92rem;">${c.title}</strong><br>
+                  <small style="color:var(--text-muted); font-family:monospace;">ID: ${c.id || c.course_code || 'c_nssta_auto'}</small>
+                </div>
+              </div>
             </td>
             <td><span style="font-weight:700; color:#0369a1; font-size:0.84rem;">${c.domain || 'Statistical'}</span></td>
             <td><span style="font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px; color:${stageColor}">${c.learning_stage || 'Functional Core'}</span></td>
@@ -1353,6 +1362,82 @@
           </tr>
         `;
       }).join('');
+    }
+
+    function openAdminVideoModal(titleEnc, videoUrl) {
+      const title = decodeURIComponent(titleEnc);
+      const titleElem = document.getElementById("admin-video-modal-title");
+      if (titleElem) {
+        titleElem.innerHTML = `<i class="fa-solid fa-circle-play" style="color:#ef4444;"></i> Course Lecture Preview &middot; ${title}`;
+      }
+
+      let targetSrc = (videoUrl || '').trim();
+      if (!targetSrc || targetSrc === 'https://portal.igotkarmayogi.gov.in') {
+        targetSrc = getAdminCourseVideoUrl(title);
+      }
+
+      if (targetSrc.includes('youtube.com/watch?v=')) {
+        const vId = targetSrc.split('watch?v=')[1]?.split('&')[0];
+        if (vId) targetSrc = `https://www.youtube.com/embed/${vId}`;
+      } else if (targetSrc.includes('youtu.be/')) {
+        const vId = targetSrc.split('youtu.be/')[1]?.split('?')[0];
+        if (vId) targetSrc = `https://www.youtube.com/embed/${vId}`;
+      }
+
+      if (!targetSrc.includes('autoplay=1')) {
+        targetSrc += (targetSrc.includes('?') ? '&' : '?') + 'autoplay=1&rel=0&modestbranding=1';
+      }
+
+      const iframe = document.getElementById("admin-video-frame");
+      if (iframe) iframe.src = targetSrc;
+
+      const modal = document.getElementById("admin-video-modal");
+      if (modal) modal.style.display = "flex";
+    }
+
+    function closeAdminVideoModal() {
+      const iframe = document.getElementById("admin-video-frame");
+      if (iframe) iframe.src = "";
+      const modal = document.getElementById("admin-video-modal");
+      if (modal) modal.style.display = "none";
+    }
+
+    function getAdminCourseVideoUrl(title) {
+      const t = (title || '').toLowerCase();
+      if (t.includes('national accounts') || t.includes('sna') || t.includes('sut') || t.includes('gdp') || t.includes('gva')) {
+        return 'https://www.youtube.com/embed/nK32aCq3mNk';
+      } else if (t.includes('plfs') || t.includes('labour') || t.includes('employment')) {
+        return 'https://www.youtube.com/embed/fUj4oX-hQcQ';
+      } else if (t.includes('sampling') || t.includes('hces') || t.includes('strata') || t.includes('multiplier')) {
+        return 'https://www.youtube.com/embed/1Il5UUPrSNk';
+      } else if (t.includes('capi') || t.includes('gps') || t.includes('field')) {
+        return 'https://www.youtube.com/embed/k9zTr2MAo4s';
+      } else if (t.includes('dpdp') || t.includes('privacy') || t.includes('confidentiality')) {
+        return 'https://www.youtube.com/embed/fW_c3-p9Vrk';
+      } else if (t.includes('asi') || t.includes('iip') || t.includes('industrial')) {
+        return 'https://www.youtube.com/embed/s2skans2dP4';
+      } else if (t.includes('cpi') || t.includes('wpi') || t.includes('price') || t.includes('inflation')) {
+        return 'https://www.youtube.com/embed/rPZ3_XFmgm4';
+      } else if (t.includes('agriculture') || t.includes('crop')) {
+        return 'https://www.youtube.com/embed/g0kZ8HlS-uM';
+      } else if (t.includes('sdg') || t.includes('nif')) {
+        return 'https://www.youtube.com/embed/0XTBYMfZyrM';
+      } else if (t.includes('python') || t.includes('machine learning')) {
+        return 'https://www.youtube.com/embed/rfscVS0vtbw';
+      } else if (t.includes(' r ') || t.includes('econometric')) {
+        return 'https://www.youtube.com/embed/_V8eKsto3Ug';
+      } else if (t.includes('sql') || t.includes('database')) {
+        return 'https://www.youtube.com/embed/HXV3zeRR3h4';
+      } else if (t.includes('gis') || t.includes('qgis')) {
+        return 'https://www.youtube.com/embed/2_2G3j7-f5E';
+      } else if (t.includes('visualization') || t.includes('dashboard')) {
+        return 'https://www.youtube.com/embed/3fy4fK0mQoQ';
+      } else if (t.includes('posh') || t.includes('ethics') || t.includes('gfr')) {
+        return 'https://www.youtube.com/embed/gP9NfXGzN2U';
+      } else if (t.includes('leadership') || t.includes('policy')) {
+        return 'https://www.youtube.com/embed/wX78iKhInsc';
+      }
+      return 'https://www.youtube.com/embed/1Il5UUPrSNk';
     }
 
     function filterCoursesCatalog() {
@@ -1912,7 +1997,27 @@
           <div style="margin-top:30px; text-align:right;">
             <button onclick="window.print()" style="padding:10px 20px; background:#0284c7; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Print / Save as PDF</button>
           </div>
-        </body>
+        
+  <!-- In-Portal Admin Video Preview Modal -->
+  <div class="modal-backdrop" id="admin-video-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.75); z-index:9999; justify-content:center; align-items:center; padding:20px; backdrop-filter:blur(4px);">
+    <div class="modal-box" style="background:#ffffff; width:100%; max-width:760px; border-radius:14px; padding:22px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); border:1px solid #e2e8f0;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
+        <h3 id="admin-video-modal-title" style="margin:0; color:#0f172a; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+          <i class="fa-solid fa-circle-play" style="color:#ef4444;"></i> Course Lecture Preview
+        </h3>
+        <button onclick="closeAdminVideoModal()" style="background:none; border:none; font-size:1.4rem; color:#64748b; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:10px; background:#000; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+        <iframe id="admin-video-frame" src="" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; font-size:0.8rem; color:#64748b;">
+        <span><i class="fa-solid fa-shield-halved" style="color:#0284c7;"></i> NSSTA / MoSPI Curated Educational Resource</span>
+        <button onclick="closeAdminVideoModal()" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; padding:6px 14px; border-radius:6px; font-weight:700; cursor:pointer;">Close Preview</button>
+      </div>
+    </div>
+  </div>
+  
+</body>
         </html>
       `);
       printWindow.document.close();

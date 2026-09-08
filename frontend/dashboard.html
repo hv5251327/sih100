@@ -2634,26 +2634,106 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
     }
 
     function openVideoModal(titleEnc, videoUrl) {
-      currentActiveCourse = decodeURIComponent(titleEnc);
-      document.getElementById("video-modal-title").innerHTML = `<i class="fa-solid fa-circle-play"></i> Training: ${currentActiveCourse}`;
-
-      if (!navigator.onLine) {
-        if (window.MoSPIOffline) {
-          window.MoSPIOffline.showToast('ℹ️ Video streaming requires an internet connection. The syllabus manual, quizzes, and Python sandbox are available offline!', 'info');
-        }
+      currentActiveCourse = decodeURIComponent(titleEnc || 'MoSPI Accredited Course');
+      const modalTitle = document.getElementById("video-modal-title");
+      if (modalTitle) {
+        modalTitle.innerHTML = `<i class="fa-solid fa-circle-play" style="color:#ef4444;"></i> Course Training Video &middot; ${currentActiveCourse}`;
       }
 
-      let targetSrc = videoUrl || 'https://www.youtube.com/embed/1Il5UUPrSNk';
-      if (!targetSrc.includes('embed') && targetSrc.includes('youtube.com/watch?v=')) {
-        targetSrc = targetSrc.replace('watch?v=', 'embed/');
+      let targetSrc = (videoUrl || '').trim();
+      if (!targetSrc || targetSrc === 'https://portal.igotkarmayogi.gov.in') {
+        targetSrc = getCourseVideoUrl(currentActiveCourse);
       }
-      document.getElementById("video-frame").src = targetSrc;
-      document.getElementById("video-modal").style.display = "flex";
+
+      // Convert standard YouTube watch/share URLs to embedded format
+      if (targetSrc.includes('youtube.com/watch?v=')) {
+        const vId = targetSrc.split('watch?v=')[1]?.split('&')[0];
+        if (vId) targetSrc = `https://www.youtube.com/embed/${vId}`;
+      } else if (targetSrc.includes('youtu.be/')) {
+        const vId = targetSrc.split('youtu.be/')[1]?.split('?')[0];
+        if (vId) targetSrc = `https://www.youtube.com/embed/${vId}`;
+      }
+
+      if (!targetSrc.includes('autoplay=1')) {
+        targetSrc += (targetSrc.includes('?') ? '&' : '?') + 'autoplay=1&rel=0&modestbranding=1';
+      }
+
+      const iframe = document.getElementById("video-frame");
+      if (iframe) {
+        iframe.src = targetSrc;
+      }
+      
+      const modal = document.getElementById("video-modal");
+      if (modal) {
+        modal.style.display = "flex";
+      }
     }
 
     function closeVideoModal() {
-      document.getElementById("video-frame").src = "";
-      document.getElementById("video-modal").style.display = "none";
+      const iframe = document.getElementById("video-frame");
+      if (iframe) {
+        iframe.src = "";
+      }
+      const modal = document.getElementById("video-modal");
+      if (modal) {
+        modal.style.display = "none";
+      }
+    }
+
+    function getCourseVideoUrl(title) {
+      const t = (title || '').toLowerCase();
+      if (t.includes('national accounts') || t.includes('sna') || t.includes('sut') || t.includes('gdp') || t.includes('gva') || t.includes('capital stock')) {
+        return 'https://www.youtube.com/embed/nK32aCq3mNk';
+      } else if (t.includes('plfs') || t.includes('labour') || t.includes('employment') || t.includes('wpr') || t.includes('lfpr')) {
+        return 'https://www.youtube.com/embed/fUj4oX-hQcQ';
+      } else if (t.includes('sampling') || t.includes('hces') || t.includes('strata') || t.includes('multiplier') || t.includes('neyman') || t.includes('survey design')) {
+        return 'https://www.youtube.com/embed/1Il5UUPrSNk';
+      } else if (t.includes('capi') || t.includes('gps') || t.includes('fod') || t.includes('field') || t.includes('asuse')) {
+        return 'https://www.youtube.com/embed/k9zTr2MAo4s';
+      } else if (t.includes('dpdp') || t.includes('privacy') || t.includes('confidentiality') || t.includes('anonymization')) {
+        return 'https://www.youtube.com/embed/fW_c3-p9Vrk';
+      } else if (t.includes('asi') || t.includes('iip') || t.includes('industrial') || t.includes('factory')) {
+        return 'https://www.youtube.com/embed/s2skans2dP4';
+      } else if (t.includes('cpi') || t.includes('wpi') || t.includes('price') || t.includes('inflation') || t.includes('deflator')) {
+        return 'https://www.youtube.com/embed/rPZ3_XFmgm4';
+      } else if (t.includes('agriculture') || t.includes('crop') || t.includes('land use') || t.includes('gces')) {
+        return 'https://www.youtube.com/embed/g0kZ8HlS-uM';
+      } else if (t.includes('sdg') || t.includes('sustainable development') || t.includes('indicator framework') || t.includes('nif')) {
+        return 'https://www.youtube.com/embed/0XTBYMfZyrM';
+      } else if (t.includes('metadata') || t.includes('sdmx') || t.includes('ddi') || t.includes('un-nqaf')) {
+        return 'https://www.youtube.com/embed/4K8bX4n_a3w';
+      } else if (t.includes('python') || t.includes('pandas') || t.includes('numpy') || t.includes('machine learning')) {
+        return 'https://www.youtube.com/embed/rfscVS0vtbw';
+      } else if (t.includes(' r ') || t.includes('r programming') || t.includes('econometric') || t.includes('survey package')) {
+        return 'https://www.youtube.com/embed/_V8eKsto3Ug';
+      } else if (t.includes('sql') || t.includes('database') || t.includes('relational') || t.includes('postgres')) {
+        return 'https://www.youtube.com/embed/HXV3zeRR3h4';
+      } else if (t.includes('stata') || t.includes('spss') || t.includes('tabulation')) {
+        return 'https://www.youtube.com/embed/m6l8b7cE17E';
+      } else if (t.includes('gis') || t.includes('qgis') || t.includes('geopandas') || t.includes('spatial') || t.includes('remote sensing')) {
+        return 'https://www.youtube.com/embed/2_2G3j7-f5E';
+      } else if (t.includes('visualization') || t.includes('dashboard') || t.includes('power bi') || t.includes('tableau')) {
+        return 'https://www.youtube.com/embed/3fy4fK0mQoQ';
+      } else if (t.includes('cloud') || t.includes('api') || t.includes('open government') || t.includes('data.gov.in') || t.includes('meghraj')) {
+        return 'https://www.youtube.com/embed/yZqKzL98v4g';
+      } else if (t.includes('cyber') || t.includes('iso 27001') || t.includes('cert-in')) {
+        return 'https://www.youtube.com/embed/inWWhr5tnEA';
+      } else if (t.includes('e-sign') || t.includes('pki') || t.includes('digital signature')) {
+        return 'https://www.youtube.com/embed/GSIDS_lvRv4';
+      } else if (t.includes('dpi') || t.includes('india stack') || t.includes('digilocker')) {
+        return 'https://www.youtube.com/embed/zOxW51aD6_M';
+      } else if (t.includes('gfr') || t.includes('gem') || t.includes('procurement') || t.includes('posh') || t.includes('ethics')) {
+        return 'https://www.youtube.com/embed/gP9NfXGzN2U';
+      } else if (t.includes('communication') || t.includes('parliamentary') || t.includes('storytelling')) {
+        return 'https://www.youtube.com/embed/n4NVPg2kHv4';
+      } else if (t.includes('project monitoring') || t.includes('ocms') || t.includes('infrastructure')) {
+        return 'https://www.youtube.com/embed/6pB83h9A-68';
+      } else if (t.includes('evidence-based') || t.includes('policy formulation')) {
+        return 'https://www.youtube.com/embed/1kK1G9y_R7A';
+      } else if (t.includes('change management') || t.includes('transformation')) {
+        return 'https://www.youtube.com/embed/PQ0doKfhecQ';
+      }
+      return 'https://www.youtube.com/embed/1Il5UUPrSNk';
     }
 
     function toggleFrameworkTaxonomy() {
