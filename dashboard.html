@@ -462,8 +462,8 @@
     }
 
     .dashboard-section {
-      scroll-margin-top: 80px;
-      width: 100%;
+      scroll-margin-top: 85px;
+      margin-bottom: 24px;
     }
 
     @media (max-width: 1024px) {
@@ -670,13 +670,12 @@
   <div class="dashboard-layout">
     
     <!-- Left Side Navigation Bar -->
-    <aside class="dashboard-sidebar">
+        <aside class="dashboard-sidebar">
       <div class="sidebar-heading"><i class="fa-solid fa-bars-staggered"></i> Officer Dashboard</div>
       <a href="#sec-profile" class="sidebar-nav-item active"><i class="fa-solid fa-id-card-clip"></i><span>Officer Profile</span></a>
-      <a href="#sec-sync" class="sidebar-nav-item"><i class="fa-solid fa-link"></i><span>NSSTA Gateway</span></a>
-      <a href="#sec-gaps" class="sidebar-nav-item"><i class="fa-solid fa-chart-line"></i><span>Competency Gaps</span></a>
-      <a href="#sec-virtualbox" class="sidebar-nav-item"><i class="fa-solid fa-cube"></i><span>Virtual Box</span></a>
-      <a href="#sec-recommendations" class="sidebar-nav-item"><i class="fa-solid fa-graduation-cap"></i><span>Course Catalog</span></a>
+      <a href="#sec-gaps" class="sidebar-nav-item"><i class="fa-solid fa-chart-line"></i><span>Competency Level</span></a>
+      <a href="#sec-recommendations" class="sidebar-nav-item"><i class="fa-solid fa-graduation-cap"></i><span>Recommended Courses</span></a>
+      <a href="#sec-virtualbox" class="sidebar-nav-item"><i class="fa-solid fa-cube"></i><span>Sandbox</span></a>
       <a href="#sec-credentials" class="sidebar-nav-item"><i class="fa-solid fa-award"></i><span>My Credentials</span></a>
       
       <div style="margin-top:auto; padding-top:16px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:8px;">
@@ -707,12 +706,12 @@
         </div>
       </section>
 
-      <!-- 2. NSSTA Official Profile Sync Gateway -->
+      <!-- iGOT Learning Gateway -->
       <section id="sec-sync" class="dashboard-section dashboard-panel" style="background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border-left: 4px solid #0284c7; padding: 18px 24px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
           <div>
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-              <span style="background:#0284c7; color:#fff; font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px;"><i class="fa-solid fa-link"></i> NSSTA LEARNING GATEWAY</span>
+              <span style="background:#0284c7; color:#fff; font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px;"><i class="fa-solid fa-link"></i> iGOT LEARNING GATEWAY</span>
               <span id="igot-live-status" style="font-size:0.8rem; color:#15803d; font-weight:700;"><i class="fa-solid fa-circle" style="font-size:0.6rem;"></i> Connected (v2.4 Live)</span>
             </div>
             <div style="font-size:0.95rem; color:#0f172a; font-weight:700;">
@@ -728,12 +727,12 @@
         </div>
       </section>
 
-      <!-- 3. Areas Needing Competency Improvement -->
+      <!-- Competency Level -->
       <section id="sec-gaps" class="dashboard-section dashboard-panel">
         <div class="panel-header">
           <div class="panel-header-left">
             <i class="fa-solid fa-chart-line"></i>
-            <h2>Areas Needing Competency Improvement</h2>
+            <h2>Competency Level</h2>
           </div>
         </div>
         <div class="pillars-grid">
@@ -760,14 +759,24 @@
         </div>
       </section>
 
-      
+      <!-- Recommended Courses -->
+      <section id="sec-recommendations" class="dashboard-section dashboard-panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <h2>Recommended Courses</h2>
+        </div>
+        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Fetching recommended courses...</span>
+      </div>
+      <div id="dynamic-modules-container"></div>
+    </section>
 
-    <!-- VIRTUAL BOX PANEL -->
-    <section id="sec-virtualbox" class="dashboard-section dashboard-panel" style="border-left: 4px solid #0284c7; background: #ffffff;">
+      <!-- Sandbox -->
+      <section id="sec-virtualbox" class="dashboard-section dashboard-panel" style="border-left: 4px solid #0284c7; background: #ffffff;">
       <div class="panel-header" style="flex-wrap:wrap; gap:8px;">
         <div class="panel-header-left">
           <i class="fa-solid fa-cube" style="color:#0284c7;"></i>
-          <h2>Virtual Box</h2>
+          <h2>Sandbox</h2>
         </div>
       </div>
       <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:12px;">
@@ -801,23 +810,12 @@
       <div id="sim-result-box" style="display:none; margin-top:14px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:14px;"></div>
     </section>
 
-    <section id="sec-recommendations" class="dashboard-section dashboard-panel">
-      <div class="panel-header">
-        <div class="panel-header-left">
-          <i class="fa-solid fa-graduation-cap"></i>
-          <h2>Recommended Training Modules</h2>
-        </div>
-        <span id="recommendation-status" style="font-size:0.8rem; font-weight:700; color:var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Fetching recommended courses...</span>
-      </div>
-      <div id="dynamic-modules-container"></div>
-    </section>
-
-    <!-- My Verified Credentials & Completed Courses -->
-    <section id="sec-credentials" class="dashboard-section dashboard-panel" style="border-top:4px solid var(--success);">
+      <!-- My Credentials -->
+      <section id="sec-credentials" class="dashboard-section dashboard-panel" style="border-top:4px solid var(--success);">
       <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
         <div class="panel-header-left">
           <i class="fa-solid fa-award"></i>
-          <h2>My Verified Credentials & Training History</h2>
+          <h2>My Credentials</h2>
         </div>
         <button class="btn-action" onclick="downloadCompetencyPassport()" style="background:#1e3a8a; color:#fff; font-size:0.85rem; padding:8px 14px;"><i class="fa-solid fa-print"></i> Download Competency Passport (Print/PDF)</button>
       </div>
@@ -991,27 +989,64 @@
     let currentActiveCourse = "";
 
     
-    // Active Side Navigation Highlight Spy for Employee Dashboard
-    window.addEventListener('scroll', () => {
-      const sections = document.querySelectorAll('.dashboard-section');
-      const navItems = document.querySelectorAll('.sidebar-nav-item');
-      let currentSecId = '';
+    // Active Side Navigation Highlight Spy for Employee Dashboard with bottom detection
+    function updateActiveOfficerNav() {
+      const sections = Array.from(document.querySelectorAll('.dashboard-section'));
+      const navItems = Array.from(document.querySelectorAll('.sidebar-nav-item'));
+      if (!sections.length || !navItems.length) return;
 
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+
+      // Bottom of page detection -> highlight My Credentials (#sec-credentials)
+      if (scrollY + windowHeight >= docHeight - 80) {
+        navItems.forEach(i => i.classList.remove('active'));
+        const lastNav = document.querySelector('.sidebar-nav-item[href="#sec-credentials"]');
+        if (lastNav) lastNav.classList.add('active');
+        return;
+      }
+
+      let currentSecId = 'sec-profile';
       sections.forEach(sec => {
-        const top = sec.offsetTop - 120;
-        if (window.pageYOffset >= top) {
-          currentSecId = sec.getAttribute('id');
+        const top = sec.offsetTop - 140;
+        if (scrollY >= top) {
+          const id = sec.getAttribute('id');
+          // If sec-sync, keep sec-profile active
+          currentSecId = (id === 'sec-sync') ? 'sec-profile' : id;
         }
       });
 
-      if (currentSecId) {
-        navItems.forEach(item => {
+      navItems.forEach(item => {
+        if (item.getAttribute('href') === '#' + currentSecId) {
+          item.classList.add('active');
+        } else {
           item.classList.remove('active');
-          if (item.getAttribute('href') === `#${currentSecId}`) {
-            item.classList.add('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', updateActiveOfficerNav, { passive: true });
+    window.addEventListener('resize', updateActiveOfficerNav);
+    window.addEventListener('load', updateActiveOfficerNav);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          const href = item.getAttribute('href');
+          if (href && href.startsWith('#')) {
+            const target = document.querySelector(href);
+            if (target) {
+              e.preventDefault();
+              target.scrollIntoView({ behavior: 'smooth' });
+              document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+              item.classList.add('active');
+              history.replaceState(null, null, href);
+            }
           }
         });
-      }
+      });
+      updateActiveOfficerNav();
     });
 
     document.addEventListener("DOMContentLoaded", async () => {
