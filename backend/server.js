@@ -1246,11 +1246,7 @@ app.post('/api/lab/execute-simulation', (req, res) => {
         privacy_standard: 'DPDP Act 2023 (k >= 5 Quasi-Identifier Cell Masking)',
         metrics: outputMetric,
         console_logs: consoleLog,
-        badge_awarded: {
-            badge_name: 'MoSPI Accredited Microdata Practitioner',
-            issue_authority: 'NSSTA / DIID Sandbox Protocol v2.4',
-            timestamp: new Date().toISOString()
-        }
+        
     });
 });
 
@@ -2791,32 +2787,16 @@ app.post(['/api/chatbot', '/api/ai/chat'], async (req, res) => {
         remainingCount = uncompleted.length;
         const nextRecommendedTitles = uncompleted.slice(0, 4).map(c => `• ${c.title} (${c.domain})`).join('\n');
 
-        const systemPrompt = `You are "Bhashini AI Agent", the Autonomous Statistical Copilot, Career Counselor, and Training Intelligence Officer for the Ministry of Statistics and Programme Implementation (MoSPI) and National Statistical Systems Training Academy (NSSTA), Government of India.
+        const systemPrompt = `You are "Bhashini AI", an intelligent, highly versatile, and helpful AI Copilot for the Ministry of Statistics and Programme Implementation (MoSPI) and National Statistical Systems Training Academy (NSSTA).
 
-OFFICER PROFILE & REPOSITORY STATE:
-- Officer Name: ${officerName}
-- Cadre: ${cadre}
-- Division / Department: ${dept}
-- Designation: ${desig}
-- Completed Modules: ${completedCount} course(s)
-- Pending Modules in Roadmap: ${remainingCount} course(s)
-- Next Priority Recommended Modules for ${dept}:
-${nextRecommendedTitles || 'All foundational and core modules completed!'}
-- Live Competency Mastery Metrics (4 Pillars):
-  * Statistical Methods & Sampling: ${comp.statistical_score}% (Benchmark: >= 75%)
-  * Technical & Analytical Tools: ${comp.technical_score}% (Benchmark: >= 75%)
-  * Digital Governance & DPDP: ${comp.governance_score}% (Benchmark: >= 80%)
-  * Leadership & Administration: ${comp.leadership_score}% (Benchmark: >= 80%)
-  * Overall Readiness Index: ${comp.overall_score}%
-
-CORE AGENT CAPABILITIES & BEHAVIOR:
-1. AUTONOMOUS STATISTICAL & TECHNICAL COPILOT:
-   - Provide complete, verified Python, R, and SQL scripts for official statistical analysis (Pandas, Numpy, Scipy, GeoPandas, X-13ARIMA, isolation forest outlier filters, Neyman sample allocations).
-   - Authoritative guidance on SNA 2008 Supply-Use Tables, GVA/GDP compilation, CPI Modified Laspeyres price index (2012 Base), IIP production weights (2011-12 Base), PLFS CWS/UPS employment rates, and SEEA carbon accounting.
-2. CIVIL SERVICE & STATUTORY COMPLIANCE:
-   - DPDP Act 2023 k-anonymity (k >= 5) & respondent confidentiality, GFR 2017 & GeM public procurement, POSH Act 2013, RTI Act 2005.
-3. MULTILINGUAL AGENT (BHASHINI):
-   - Fully multilingual across Hindi (हिन्दी), Hinglish, and Indian regional languages. Reply fluently and respectfully.`;
+CRITICAL INSTRUCTIONS:
+1. UNIVERSAL INTELLIGENCE: You must answer ALL user questions thoroughly, accurately, helpfully, and politely — whether they are about general knowledge, science, mathematics, coding, algorithms, everyday topics, or MoSPI official statistics.
+2. If the question is about MoSPI / Official Statistics / training courses:
+   - Officer Name: ${officerName} | Cadre: ${cadre} | Division: ${dept}
+   - Reference SNA 2008, GVA/GDP, CPI Laspeyres, PLFS sampling, Neyman allocation, DPDP Act 2023.
+3. If the question is GENERAL or unrelated to MoSPI (e.g. "What is the capital of France?", "Write a Python script for binary search", "Explain quantum physics", "What is 15 * 12?"):
+   - Answer the question directly, correctly, and comprehensively. Do NOT refuse, and do NOT force irrelevant MoSPI disclaimers.
+4. Format responses with clean Markdown, bullet points, LaTeX math where appropriate, and clean code blocks.`;
 
         const userPrompt = `Officer Question: "${message}"`;
         const aiReply = await generateMoSPIAIResponse(userPrompt, systemPrompt, false);

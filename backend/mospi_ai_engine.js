@@ -175,8 +175,8 @@ SECTION 8: DIGITAL PERSONAL DATA PROTECTION (DPDP) ACT 2023 & PRIVACY PRESERVATI
 
 async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = false, customGroqKey = null) {
     const sysPrompt = systemInstruction 
-        ? `${systemInstruction}\n\nAUTHORITATIVE KNOWLEDGE BASE:\n${MOSPI_MASTER_KNOWLEDGE_BASE.substring(0, 12000)}`
-        : `You are the Principal Director & Chief Statistical Scientist of the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India.\n\nAUTHORITATIVE KNOWLEDGE BASE:\n${MOSPI_MASTER_KNOWLEDGE_BASE.substring(0, 12000)}`;
+        ? systemInstruction
+        : "You are Bhashini AI, an intelligent, versatile AI Assistant and Statistical Copilot. Answer all user questions thoroughly, accurately, and politely.";
 
     const GROQ_API_KEY = customGroqKey || process.env.GROQ_API_KEY;
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -204,7 +204,7 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
                         ],
                         temperature: isJson ? 0.1 : 0.3
                     }),
-                    signal: AbortSignal.timeout(3000)
+                    signal: AbortSignal.timeout(15000)
                 });
                 const data = await res.json();
                 if (res.ok && data?.choices?.[0]?.message?.content) {
@@ -231,7 +231,7 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
                             temperature: isJson ? 0.1 : 0.3
                         }
                     }),
-                    signal: AbortSignal.timeout(3000)
+                    signal: AbortSignal.timeout(15000)
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -261,7 +261,7 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
                         ],
                         temperature: isJson ? 0.1 : 0.3
                     }),
-                    signal: AbortSignal.timeout(3000)
+                    signal: AbortSignal.timeout(15000)
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -289,7 +289,7 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
                     ],
                     temperature: isJson ? 0.1 : 0.3
                 }),
-                signal: AbortSignal.timeout(3000)
+                signal: AbortSignal.timeout(15000)
             });
             if (res.ok) {
                 const data = await res.json();
@@ -315,7 +315,7 @@ async function generateMoSPIAIResponse(prompt, systemInstruction = '', isJson = 
                         prompt: `${sysPrompt}\n\n${prompt}`,
                         stream: false
                     }),
-                    signal: AbortSignal.timeout(3000)
+                    signal: AbortSignal.timeout(15000)
                 });
                 if (res.ok) {
                     const data = await res.json();
