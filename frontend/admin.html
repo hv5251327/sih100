@@ -1402,42 +1402,62 @@
       if (modal) modal.style.display = "none";
     }
 
-    function getAdminCourseVideoUrl(title) {
+            function getAdminCourseVideoUrl(title) {
       const t = (title || '').toLowerCase();
       if (t.includes('national accounts') || t.includes('sna') || t.includes('sut') || t.includes('gdp') || t.includes('gva')) {
-        return 'https://www.youtube.com/embed/nK32aCq3mNk';
+        return 'https://www.youtube.com/embed/A307rSHkJdc';
       } else if (t.includes('plfs') || t.includes('labour') || t.includes('employment')) {
-        return 'https://www.youtube.com/embed/fUj4oX-hQcQ';
-      } else if (t.includes('sampling') || t.includes('hces') || t.includes('strata') || t.includes('multiplier')) {
-        return 'https://www.youtube.com/embed/1Il5UUPrSNk';
-      } else if (t.includes('capi') || t.includes('gps') || t.includes('field')) {
-        return 'https://www.youtube.com/embed/k9zTr2MAo4s';
-      } else if (t.includes('dpdp') || t.includes('privacy') || t.includes('confidentiality')) {
-        return 'https://www.youtube.com/embed/fW_c3-p9Vrk';
-      } else if (t.includes('asi') || t.includes('iip') || t.includes('industrial')) {
-        return 'https://www.youtube.com/embed/s2skans2dP4';
-      } else if (t.includes('cpi') || t.includes('wpi') || t.includes('price') || t.includes('inflation')) {
-        return 'https://www.youtube.com/embed/rPZ3_XFmgm4';
+        return 'https://www.youtube.com/embed/G4hL5Om4Bec';
+      } else if (t.includes('sampling') || t.includes('hces') || t.includes('survey')) {
+        return 'https://www.youtube.com/embed/kYfNrtN48-Y';
+      } else if (t.includes('cpi') || t.includes('price') || t.includes('inflation')) {
+        return 'https://www.youtube.com/embed/B43YEW2F_88';
       } else if (t.includes('agriculture') || t.includes('crop')) {
-        return 'https://www.youtube.com/embed/g0kZ8HlS-uM';
-      } else if (t.includes('sdg') || t.includes('nif')) {
+        return 'https://www.youtube.com/embed/Z0qBfOa-YhE';
+      } else if (t.includes('asi') || t.includes('iip') || t.includes('industry')) {
+        return 'https://www.youtube.com/embed/rPZ3_XFmgm4';
+      } else if (t.includes('sdg') || t.includes('sustainable')) {
         return 'https://www.youtube.com/embed/0XTBYMfZyrM';
+      } else if (t.includes('metadata') || t.includes('sdmx') || t.includes('nqaf')) {
+        return 'https://www.youtube.com/embed/4K8bX4n_a3w';
       } else if (t.includes('python') || t.includes('machine learning')) {
-        return 'https://www.youtube.com/embed/rfscVS0vtbw';
-      } else if (t.includes(' r ') || t.includes('econometric')) {
-        return 'https://www.youtube.com/embed/_V8eKsto3Ug';
+        return 'https://www.youtube.com/embed/LHBE6Q9Xzns';
+      } else if (t.includes(' r ') || t.includes('r programming')) {
+        return 'https://www.youtube.com/embed/O15W6s4S5X4';
       } else if (t.includes('sql') || t.includes('database')) {
-        return 'https://www.youtube.com/embed/HXV3zeRR3h4';
-      } else if (t.includes('gis') || t.includes('qgis')) {
-        return 'https://www.youtube.com/embed/2_2G3j7-f5E';
-      } else if (t.includes('visualization') || t.includes('dashboard')) {
+        return 'https://www.youtube.com/embed/HXV3zeQKqGY';
+      } else if (t.includes('stata') || t.includes('spss')) {
+        return 'https://www.youtube.com/embed/m6l8b7cE17E';
+      } else if (t.includes('gis') || t.includes('qgis') || t.includes('spatial')) {
+        return 'https://www.youtube.com/embed/kCz3Xyeghp8';
+      } else if (t.includes('visualization') || t.includes('dashboard') || t.includes('power bi')) {
         return 'https://www.youtube.com/embed/3fy4fK0mQoQ';
-      } else if (t.includes('posh') || t.includes('ethics') || t.includes('gfr')) {
+      } else if (t.includes('cloud') || t.includes('api')) {
+        return 'https://www.youtube.com/embed/yZqKzL98v4g';
+      } else if (t.includes('capi') || t.includes('field')) {
+        return 'https://www.youtube.com/embed/k9zTr2MAo4s';
+      } else if (t.includes('cyber') || t.includes('iso 27001')) {
+        return 'https://www.youtube.com/embed/inWWhr5tnEA';
+      } else if (t.includes('dpdp') || t.includes('privacy') || t.includes('anonymization')) {
+        return 'https://www.youtube.com/embed/fW_c3-p9Vrk';
+      } else if (t.includes('e-sign') || t.includes('pki')) {
+        return 'https://www.youtube.com/embed/GSIDS_lvRv4';
+      } else if (t.includes('dpi') || t.includes('india stack')) {
+        return 'https://www.youtube.com/embed/zOxW51aD6_M';
+      } else if (t.includes('posh') || t.includes('ethics')) {
         return 'https://www.youtube.com/embed/gP9NfXGzN2U';
-      } else if (t.includes('leadership') || t.includes('policy')) {
+      } else if (t.includes('leadership')) {
         return 'https://www.youtube.com/embed/wX78iKhInsc';
+      } else if (t.includes('communication')) {
+        return 'https://www.youtube.com/embed/n4NVPg2kHv4';
+      } else if (t.includes('project monitoring')) {
+        return 'https://www.youtube.com/embed/6pB83h9A-68';
+      } else if (t.includes('evidence-based')) {
+        return 'https://www.youtube.com/embed/1kK1G9y_R7A';
+      } else if (t.includes('change management')) {
+        return 'https://www.youtube.com/embed/PQ0doKfhecQ';
       }
-      return 'https://www.youtube.com/embed/1Il5UUPrSNk';
+      return 'https://www.youtube.com/embed/kYfNrtN48-Y';
     }
 
     function filterCoursesCatalog() {
