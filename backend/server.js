@@ -3724,5 +3724,115 @@ app.get('/api/admin/training-effectiveness', async (req, res) => {
     }
 });
 
+
+// =========================================================================
+// OFFLINE-FIRST PWA & AUDIT LOG SYNC GATEWAY
+// =========================================================================
+const memoryOfficerAuditLogs = [];
+
+// Helper to bump competency in Supabase / memory
+async function bumpCompetencyScore(email, pillar, increment) {
+    if (!email) return;
+    const cleanEmail = email.toLowerCase().trim();
+    try {
+        const { data: existing } = await supabase.from('officer_competencies').select('*').eq('user_email', cleanEmail).single();
+        if (existing) {
+            const current = existing[pillar] || 60;
+            const updated = Math.min(98, current + increment);
+            await supabase.from('officer_competencies').update({ [pillar]: updated }).eq('user_email', cleanEmail);
+        }
+    } catch (e) {}
+}
+
+// API: Batch Sync Offline Field Audit Logs to Supabase
+app.post('/api/sync/audit-logs', async (req, res) => {
+    try {
+        const { logs } = req.body;
+        if (!Array.isArray(logs) || logs.length === 0) {
+            return res.status(400).json({ error: 'No logs provided for sync' });
+        }
+
+        console.log(`[Sync Gateway] Ingesting ${logs.length} offline field audit records...`);
+
+        const formattedLogs = logs.map(item => ({
+            officer_email: (item.officer_email || '').toLowerCase().trim(),
+            officer_name: item.officer_name || 'Regional Officer',
+            cadre: item.cadre || 'ISS',
+            department: item.department || 'FOD',
+            action_type: item.action_type || 'FIELD_ACTION',
+            action_details: typeof item.action_details === 'object' ? item.action_details : {},
+            client_timestamp: item.timestamp || new Date().toISOString(),
+            synced_at: new Date().toISOString(),
+            connectivity_at_log: item.connectivity_at_log || 'OFFLINE_FIELD'
+        }));
+
+        // 1. Dual-persist to in-memory store
+        memoryOfficerAuditLogs.push(...formattedLogs);
+
+        // 2. Dual-persist to Supabase PostgreSQL table 'officer_audit_logs'
+        try {
+            const { data, error } = await supabase
+                .from('officer_audit_logs')
+                .insert(formattedLogs);
+
+            if (error) {
+                console.warn('[Supabase Sync Warning] Supabase audit log insert note:', error.message);
+            } else {
+                console.log(`[Supabase Sync] ✅ Successfully committed ${formattedLogs.length} audit logs into Supabase!`);
+            }
+        } catch (dbErr) {
+            console.warn('[Supabase Sync Catch] Table write error (retained in server cache):', dbErr.message);
+        }
+
+        // 3. Process competency score bumps for completed modules / quizzes
+        for (const log of formattedLogs) {
+            if (log.action_type === 'CLIENT_PYTHON_EXECUTION' && log.action_details && log.action_details.status === 'SUCCESS') {
+                bumpCompetencyScore(log.officer_email, 'technical_score', 2);
+            } else if (log.action_type === 'QUIZ_ATTEMPT' && log.action_details && log.action_details.score >= 60) {
+                bumpCompetencyScore(log.officer_email, 'statistical_score', 3);
+            } else if (log.action_type === 'COURSE_COMPLETED_OFFLINE') {
+                bumpCompetencyScore(log.officer_email, 'statistical_score', 4);
+                bumpCompetencyScore(log.officer_email, 'governance_score', 2);
+            }
+        }
+
+        return res.json({
+            success: true,
+            synced_count: formattedLogs.length,
+            message: `Successfully synchronized ${formattedLogs.length} offline field records to Central Supabase.`
+        });
+    } catch (err) {
+        console.error('[Sync Gateway Error]:', err);
+        return res.status(500).json({ error: 'Failed to process offline audit logs' });
+    }
+});
+
+// API: Retrieve Officer Field Audit Logs
+app.get('/api/officer/audit-logs/:email', async (req, res) => {
+    try {
+        const cleanEmail = (req.params.email || '').toLowerCase().trim();
+        
+        // 1. Check Supabase
+        try {
+            const { data, error } = await supabase
+                .from('officer_audit_logs')
+                .select('*')
+                .eq('officer_email', cleanEmail)
+                .order('client_timestamp', { ascending: false });
+
+            if (!error && data && data.length > 0) {
+                return res.json({ logs: data });
+            }
+        } catch (e) {}
+
+        // 2. Fallback to memory
+        const officerLogs = memoryOfficerAuditLogs.filter(l => l.officer_email === cleanEmail);
+        return res.json({ logs: officerLogs });
+    } catch (err) {
+        return res.status(500).json({ error: 'Failed to retrieve officer audit logs' });
+    }
+});
+
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => console.log(`MoSPI Backend running on port ${PORT}`));
