@@ -549,7 +549,7 @@
     /* Offline Action Buttons on Course Cards */
     .simple-card-actions {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 8px;
       margin-top: 10px;
     }
@@ -574,22 +574,7 @@
       color: #15803d;
       border-color: #86efac;
     }
-    .btn-simple-manual {
-      background: #f1f5f9;
-      color: #334155;
-      border: 1px solid #cbd5e1;
-      padding: 7px 10px;
-      border-radius: 6px;
-      font-size: 0.76rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      transition: all 0.2s;
-    }
-    .btn-simple-manual:hover { background: #e2e8f0; color: #0f172a; }
+    
 
     /* Python WASM Terminal Styles */
     .py-terminal-output {
@@ -1294,9 +1279,6 @@
                         </button>
                         <button class="btn-simple-cert" onclick="openCertModal('${encodeURIComponent(safeTitle)}')">
                           <i class="fa-solid fa-file-arrow-up"></i> Certificate
-                        </button>
-                        <button class="btn-simple-manual" onclick="openOfflineManualModal('${encodeURIComponent(JSON.stringify(course))}')">
-                          <i class="fa-solid fa-book-open"></i> Read Manual
                         </button>
                         <button class="btn-simple-offline" id="btn-off-${course.id || globalThumbIdx}" onclick="handleDownloadCourseOffline('${encodeURIComponent(JSON.stringify(course))}', this)">
                           <i class="fa-solid fa-cloud-arrow-down"></i> Save Offline
@@ -2617,48 +2599,6 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
             </div>
           </div>
         
-  <!-- OFFLINE SYLLABUS & MANUAL READER MODAL -->
-  <div id="offlineManualModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(3px);">
-    <div style="background:#ffffff; border-radius:12px; width:100%; max-width:750px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 10px 25px rgba(0,0,0,0.3); overflow:hidden;">
-      <div style="padding:16px 20px; background:linear-gradient(135deg, #1e3a8a, #0284c7); color:#fff; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <span id="manual-modal-domain" style="font-size:0.72rem; font-weight:700; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px; letter-spacing:0.5px; text-transform:uppercase;">Statistical Methodologies</span>
-          <h3 id="manual-modal-title" style="font-size:1.1rem; font-weight:800; margin-top:4px;">NSSTA Training Manual & Syllabus</h3>
-        </div>
-        <button onclick="closeModal('offlineManualModal')" style="background:none; border:none; color:#fff; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
-      </div>
-      <div style="padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px; font-size:0.88rem; color:#334155; line-height:1.6;">
-        <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:12px 16px; display:flex; align-items:center; gap:10px;">
-          <i class="fa-solid fa-cloud-check" style="color:#16a34a; font-size:1.3rem;"></i>
-          <span style="color:#166534; font-weight:700; font-size:0.84rem;">100% Offline Field Reading Enabled • Downloaded from Master DB Cache</span>
-        </div>
-        <div>
-          <h4 style="color:#1e3a8a; font-weight:800; font-size:0.96rem; margin-bottom:6px;"><i class="fa-solid fa-bullseye"></i> Core Learning Objectives</h4>
-          <p id="manual-course-obj">Master practical application of curriculum modules under NSSTA MoSPI guidelines.</p>
-        </div>
-        <div>
-          <h4 style="color:#1e3a8a; font-weight:800; font-size:0.96rem; margin-bottom:6px;"><i class="fa-solid fa-book"></i> Syllabus Description & Topics</h4>
-          <p id="manual-modal-desc">Detailed module content.</p>
-        </div>
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
-          <h4 style="color:#1e3a8a; font-weight:800; font-size:0.92rem; margin-bottom:6px;"><i class="fa-solid fa-scale-balanced"></i> Statutory & Field Compliance Standards</h4>
-          <ul style="margin-left:20px; font-size:0.84rem; color:#475569;">
-            <li>Collection of Statistics Act, 2008 (Confidentiality of informant data)</li>
-            <li>Digital Personal Data Protection (DPDP) Act 2023 pseudonymization guidelines</li>
-            <li>NSSO / MoSPI Standard Data Tabulation and Sampling Validation Protocols</li>
-          </ul>
-        </div>
-      </div>
-      <div style="padding:14px 20px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; gap:10px;">
-        <span style="font-size:0.78rem; color:#64748b;"><i class="fa-solid fa-award"></i> Awards +4 Statistical & +2 Governance Competency Points</span>
-        <div style="display:flex; gap:10px;">
-          <button onclick="closeModal('offlineManualModal')" style="padding:8px 14px; border:1px solid #cbd5e1; background:#fff; border-radius:6px; font-size:0.85rem; font-weight:700; cursor:pointer;">Close</button>
-          <button id="btn-complete-offline-manual" style="padding:8px 16px; background:#16a34a; color:#fff; border:none; border-radius:6px; font-size:0.85rem; font-weight:700; cursor:pointer;"><i class="fa-solid fa-check-double"></i> Mark Completed (Offline)</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- OFFLINE SYNC QUEUE & AUDIT MODAL -->
   <div id="offlineSyncModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(3px);">
     <div style="background:#ffffff; border-radius:12px; width:100%; max-width:680px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 10px 25px rgba(0,0,0,0.3); overflow:hidden;">
@@ -2890,13 +2830,49 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
       document.getElementById("quiz-modal").style.display = "flex";
 
       try {
-        const res = await fetch(`${API_URL}/api/generate-quiz`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ courseTitle: title, category: cat })
-        });
-        const data = await res.json();
-        const rawQuiz = data.quiz || [];
+        let rawQuiz = [];
+        try {
+          const res = await fetch(`${API_URL}/api/generate-quiz`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ courseTitle: title, category: cat })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            rawQuiz = data.quiz || [];
+          }
+        } catch (netErr) {
+          console.warn("Offline quiz fetch, checking local cache...");
+        }
+
+        // Offline Quiz Generator Fallback from Saved Course
+        if (!rawQuiz || rawQuiz.length === 0) {
+          if (window.MoSPIOffline) {
+            const offlineQuiz = await window.MoSPIOffline.getOfflineQuiz(title);
+            if (offlineQuiz && offlineQuiz.length > 0) {
+              rawQuiz = offlineQuiz;
+            }
+          }
+          if (!rawQuiz || rawQuiz.length === 0) {
+            rawQuiz = [
+              {
+                question: `What is the primary statutory standard governing official ${title} data collection in MoSPI?`,
+                options: ["Collection of Statistics Act, 2008", "Companies Act, 2013", "Information Technology Act, 2000", "Public Records Act, 1993"],
+                correctIndex: 0
+              },
+              {
+                question: `Which statistical methodology is applied for sampling estimation in ${title}?`,
+                options: ["Multi-Stage Stratified Random Sampling (Horvitz-Thompson)", "Simple Non-Probability Quota", "Convenience Cluster Polling", "Unweighted Snowball Sampling"],
+                correctIndex: 0
+              },
+              {
+                question: `Under DPDP Act 2023 compliance, how must field informant records in ${title} be handled?`,
+                options: ["Pseudonymized with SHA-256 Hashing and Consent Registry", "Stored as plain public text without encryption", "Shared openly across third-party portals", "Destroyed immediately without tabulation"],
+                correctIndex: 0
+              }
+            ];
+          }
+        }
 
         // Shuffle options and recalculate correct index
         activeQuizData = rawQuiz.map(q => {
@@ -2962,16 +2938,31 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
       const isPassed = finalPercentage >= 80;
 
       try {
-        const res = await fetch(`${API_URL}/api/progress/save`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: currentUser.email,
+        let serverSaved = false;
+        try {
+          const res = await fetch(`${API_URL}/api/progress/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: currentUser.email,
+              courseTitle: currentActiveCourse,
+              score: finalPercentage
+            })
+          });
+          if (res.ok) serverSaved = true;
+        } catch (netErr) {
+          console.warn("Quiz submission network note (saving offline):", netErr);
+        }
+
+        // Always queue in offline audit log to guarantee sync to Supabase
+        if (window.MoSPIOffline) {
+          await window.MoSPIOffline.queueAuditLog('QUIZ_ATTEMPT', {
             courseTitle: currentActiveCourse,
-            score: finalPercentage
-          })
-        });
-        const data = await res.json();
+            score: finalPercentage,
+            isPassed: isPassed,
+            serverSavedDirectly: serverSaved
+          });
+        }
 
         if (isPassed) {
           closeModal('quiz-modal');

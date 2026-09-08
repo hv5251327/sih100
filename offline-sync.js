@@ -114,6 +114,18 @@ class MoSPIOfflineStore {
   }
 
   // =========================================================================
+  
+  async saveOfflineQuiz(courseTitle, questions) {
+    const key = (courseTitle || '').toLowerCase().trim();
+    await this.tx('offline_quizzes', 'readwrite', (store) => store.put({ course_id: key, questions: questions }));
+  }
+
+  async getOfflineQuiz(courseTitle) {
+    const key = (courseTitle || '').toLowerCase().trim();
+    const res = await this.tx('offline_quizzes', 'readonly', (store) => store.get(key));
+    return res ? res.questions : null;
+  }
+
   // AUDIT LOG QUEUE & AUTO-SYNC ENGINE
   // =========================================================================
   async queueAuditLog(actionType, actionDetails) {
