@@ -783,22 +783,40 @@
         A zero-setup, in-browser sandbox for executing Python, R, and SQL scripts directly on official datasets (PLFS, ASI, HCES). The engine validates code syntax and verifies statistical outputs in real-time.
       </p>
 
-      <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
-        <label style="font-size:0.82rem; font-weight:700; color:#334155;">Select Dataset:</label>
-        <select id="simDatasetSelect" onchange="loadSimDatasetTemplate()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); font-size:0.85rem; font-weight:700; flex:1; min-width:240px;">
-          <option value="PLFS-2023-24">PLFS 2023-24 (Labour Force Unit Microdata - N=5,000)</option>
-          <option value="ASI-2022-23">ASI 2022-23 (Factory Sector Schedules - N=2,500)</option>
-          <option value="HCES-2022-23">HCES 2022-23 (Consumer Expenditure MPCE Deciles - N=3,000)</option>
-        </select>
-        <button type="button" onclick="openCodeLabModal('Workspace')" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#1e293b; font-size:0.8rem; font-weight:700; padding:8px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-expand"></i> Open Fullscreen Virtual Box</button>
+      <div style="display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap; align-items:center;">
+        <!-- Language Selector Directly Available -->
+        <div style="display:flex; align-items:center; gap:6px;">
+          <label style="font-size:0.82rem; font-weight:700; color:#334155;"><i class="fa-solid fa-code" style="color:#0284c7;"></i> Language:</label>
+          <select id="sandboxLangSelect" onchange="switchSandboxLanguage(this.value)" style="padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.85rem; font-weight:700; background:#fff; color:#0f172a; cursor:pointer;">
+            <option value="python">Python 3.11 (Pyodide Wasm)</option>
+            <option value="r">R Official Statistics (Survey/Hmisc)</option>
+            <option value="sql">SQL / PostgreSQL Microdata Query</option>
+          </select>
+        </div>
+
+        <!-- Dataset Selector -->
+        <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:260px;">
+          <label style="font-size:0.82rem; font-weight:700; color:#334155;"><i class="fa-solid fa-database" style="color:#0f766e;"></i> Dataset:</label>
+          <select id="simDatasetSelect" onchange="loadSimDatasetTemplate()" style="padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.85rem; font-weight:700; width:100%; background:#fff; color:#0f172a; cursor:pointer;">
+            <option value="PLFS-2023-24">PLFS 2023-24 (Labour Force Unit Microdata - N=5,000)</option>
+            <option value="ASI-2022-23">ASI 2022-23 (Factory Sector Schedules - N=2,500)</option>
+            <option value="HCES-2022-23">HCES 2022-23 (Consumer Expenditure MPCE Deciles - N=3,000)</option>
+          </select>
+        </div>
+
+        <button type="button" onclick="openCodeLabModal('Workspace')" style="background:#f8fafc; border:1px solid #cbd5e1; color:#1e293b; font-size:0.82rem; font-weight:700; padding:8px 14px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-expand"></i> Fullscreen View</button>
       </div>
 
-      <div style="background:#0f172a; border-radius:8px; padding:12px; color:#e2e8f0; font-family:monospace; font-size:0.82rem; margin-bottom:12px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:8px;">
-          <span style="color:#38bdf8; font-weight:700;"><i class="fa-solid fa-terminal"></i> In-Browser Virtual Box Kernel</span>
-          <span id="pyKernelStatus" style="color:#94a3b8; font-size:0.74rem;"><i class="fa-solid fa-microchip"></i> Python 3.11 Kernel: On-Demand (Lazy Loaded)</span>
+      <!-- Large Code Editor Area -->
+      <div style="background:#0f172a; border-radius:10px; padding:16px; color:#e2e8f0; font-family:'Fira Code', monospace; font-size:0.86rem; margin-bottom:14px; border:1px solid #334155; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px; margin-bottom:12px;">
+          <span style="color:#38bdf8; font-weight:700; display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-terminal"></i> In-Browser Sandbox Kernel
+            <span id="sandboxLangBadge" style="background:#0369a1; color:#fff; font-size:0.72rem; padding:2px 8px; border-radius:4px;">PYTHON 3.11</span>
+          </span>
+          <span id="pyKernelStatus" style="color:#94a3b8; font-size:0.76rem;"><i class="fa-solid fa-microchip"></i> Wasm Kernel: Ready Offline</span>
         </div>
-        <textarea id="simCodeEditor" rows="6" style="width:100%; background:transparent; color:#38bdf8; border:none; outline:none; font-family:monospace; font-size:0.82rem; resize:vertical; line-height:1.45;"></textarea>
+        <textarea id="simCodeEditor" rows="12" style="width:100%; min-height:260px; background:transparent; color:#38bdf8; border:none; outline:none; font-family:'Fira Code', Consolas, monospace; font-size:0.88rem; resize:vertical; line-height:1.55; box-sizing:border-box;"></textarea>
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -998,7 +1016,7 @@
     </div>
   </div>
 
-  <!-- Interactive Virtual Box Modal -->
+  <!-- Interactive Sandbox Modal -->
   <div class="modal-backdrop" id="codelab-modal">
     <div class="modal-box" style="max-width:860px; width:95%; background:#0f172a; color:#f8fafc; border:1px solid #334155; padding:22px;">
       <div class="modal-header" style="border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:12px;">
@@ -1007,7 +1025,7 @@
             <i class="fa-solid fa-cube"></i>
           </div>
           <div>
-            <h3 id="codelab-modal-title" style="color:#f8fafc; font-size:1.05rem; margin:0; font-weight:800;">Virtual Box</h3>
+            <h3 id="codelab-modal-title" style="color:#f8fafc; font-size:1.05rem; margin:0; font-weight:800;">Interactive Sandbox</h3>
             <span style="font-size:0.75rem; color:#94a3b8;"><i class="fa-solid fa-terminal"></i> Zero-Setup Programming Environment • Python / R / SQL Execution Engine</span>
           </div>
         </div>
@@ -1172,7 +1190,7 @@
         if (document.getElementById("disp-officer-dept")) document.getElementById("disp-officer-dept").innerText = currentUser.department || 'N/A';
         if (document.getElementById("disp-officer-desig")) document.getElementById("disp-officer-desig").innerText = currentUser.designation || 'N/A';
 
-        // 2. Immediately download/pre-warm the Virtual Box Python Sandbox in background
+        // 2. Immediately download/pre-warm the Python Sandbox in background
         if (window.MoSPIOffline && typeof window.MoSPIOffline.prewarmPyodide === 'function') {
           window.MoSPIOffline.prewarmPyodide();
         }
@@ -1549,7 +1567,7 @@ print("=======================================================")`
 
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 6000);
+          const timeoutId = setTimeout(() => controller.abort(), 25000);
 
           const res = await fetch(`${API_URL}/api/lab/execute-simulation`, {
             method: 'POST',
@@ -2493,7 +2511,7 @@ echo "\n[SUCCESS] Ingestion Complete. Data Warehouse Synced."`,
     };
 
     function openCodeLabModal(titleEnc, domainEnc) {
-      document.getElementById("codelab-modal-title").innerHTML = `<i class="fa-solid fa-cube" style="color:#38bdf8;"></i> Virtual Box`;
+      document.getElementById("codelab-modal-title").innerHTML = `<i class="fa-solid fa-cube" style="color:#38bdf8;"></i> Interactive Sandbox &middot; ${title}`;
       
       const select = document.getElementById("codelab-preset-select");
       let targetKey = "python";
@@ -3275,7 +3293,7 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
 
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const timeoutId = setTimeout(() => controller.abort(), 25000);
 
         const res = await fetch(`${API_URL}/api/chatbot`, {
           method: 'POST',
@@ -3662,7 +3680,7 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
       });
     }
 
-    // Trigger lazy-load on Intersection (when scrolling near Virtual Box) or user input focus
+    // Trigger lazy-load on Intersection (when scrolling near Sandbox) or user input focus
     document.addEventListener('DOMContentLoaded', () => {
       const virtBox = document.getElementById('sec-virtualbox');
       const simEditor = document.getElementById('simCodeEditor');
@@ -3940,6 +3958,43 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
       alert('✅ Bhashini API Credentials saved successfully! All quiz audio will now leverage your configured Bhashini neural pipeline.');
     }
   
+      function switchSandboxLanguage(lang) {
+      const badge = document.getElementById("sandboxLangBadge");
+      const editor = document.getElementById("simCodeEditor");
+      if (badge) badge.innerText = lang.toUpperCase();
+
+      if (lang === 'python') {
+        loadSimDatasetTemplate();
+      } else if (lang === 'r') {
+        if (editor) {
+          editor.value = `# R Official Statistics - PLFS Survey Analysis & Standard Errors
+library(survey)
+
+# Load synthetic PLFS microdata sample
+weights <- c(1420.5, 980.2, 2150.0, 1640.8, 890.4)
+employed <- c(1, 1, 0, 1, 0)
+df <- data.frame(w=weights, emp=employed)
+
+# Design-based weighted estimate
+design <- svydesign(ids=~1, weights=~w, data=df)
+w_mean <- svymean(~emp, design)
+print(paste("Estimated Labour Force Participation Rate:", round(coef(w_mean)*100, 2), "%"))`;
+        }
+      } else if (lang === 'sql') {
+        if (editor) {
+          editor.value = `-- PostgreSQL / SQLite Official Microdata Aggregation
+SELECT 
+    division_code,
+    COUNT(officer_id) AS total_officers,
+    ROUND(AVG(statistical_score), 2) AS mean_stat_proficiency,
+    ROUND(AVG(technical_score), 2) AS mean_tech_proficiency
+FROM officer_competencies
+GROUP BY division_code
+ORDER BY mean_stat_proficiency DESC;`;
+        }
+      }
+    }
+
   </script>
   <script src="redirect.js"></script>
 </body>
