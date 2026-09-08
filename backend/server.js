@@ -3833,6 +3833,133 @@ app.get('/api/officer/audit-logs/:email', async (req, res) => {
     }
 });
 
+
+// ==========================================
+// 🚀 PISTON MULTI-LANGUAGE CODE EXECUTION API
+// ==========================================
+app.post('/api/piston/execute', async (req, res) => {
+    try {
+        const {
+            language = 'python',
+            version = '*',
+            files = [],
+            stdin = '',
+            args = [],
+            pistonApiKey,
+            pistonEndpoint
+        } = req.body;
+
+        if (!Array.isArray(files) || files.length === 0) {
+            return res.status(400).json({ error: 'At least one code file is required' });
+        }
+
+        // Target Piston endpoint URL
+        let targetUrl = (pistonEndpoint || process.env.PISTON_ENDPOINT || 'https://emkc.org/api/v2/piston/execute').trim();
+        if (!targetUrl.startsWith('http')) {
+            targetUrl = 'https://' + targetUrl;
+        }
+        if (!targetUrl.endsWith('/execute') && !targetUrl.includes('/api/v2/piston')) {
+            targetUrl = targetUrl.replace(/\/+$/, '') + '/api/v2/piston/execute';
+        }
+
+        // Target API Key / Auth token
+        const apiKey = (pistonApiKey || process.env.PISTON_API_KEY || '').trim();
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (apiKey) {
+            headers['Authorization'] = apiKey;
+        }
+
+        const pistonPayload = {
+            language,
+            version: version || '*',
+            files,
+            stdin: stdin || '',
+            args: Array.isArray(args) ? args : []
+        };
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+        const startTime = Date.now();
+        const response = await fetch(targetUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(pistonPayload),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        const duration = Date.now() - startTime;
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+            return res.status(response.status || 400).json({
+                ok: false,
+                status: response.status,
+                message: data?.message || `Piston execution failed with HTTP ${response.status}`,
+                details: data,
+                requiresApiKey: response.status === 401 || (data?.message && (data.message.includes('whitelist') || data.message.includes('API key') || data.message.includes('Unauthorized')))
+            });
+        }
+
+        return res.json({
+            ok: true,
+            language: data.language || language,
+            version: data.version || version,
+            run: data.run || {
+                stdout: '',
+                stderr: '',
+                code: 0,
+                output: ''
+            },
+            duration_ms: duration,
+            engine: 'Piston Multi-Language Execution Engine'
+        });
+    } catch (err) {
+        console.error('[Piston Server Execution Error]:', err);
+        return res.status(500).json({
+            ok: false,
+            error: err.message || 'Piston execution timed out or failed'
+        });
+    }
+});
+
+app.get('/api/piston/runtimes', async (req, res) => {
+    try {
+        const targetUrl = (process.env.PISTON_ENDPOINT || 'https://emkc.org/api/v2/piston/runtimes').trim();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const response = await fetch(targetUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (response.ok) {
+            const runtimes = await response.json();
+            return res.json({ ok: true, runtimes });
+        }
+    } catch (e) {}
+
+    const supportedRuntimes = [
+        { language: 'python', version: '3.10.0', aliases: ['py', 'python3'] },
+        { language: 'rscript', version: '4.1.1', aliases: ['r'] },
+        { language: 'sqlite3', version: '3.36.0', aliases: ['sql', 'sqlite'] },
+        { language: 'javascript', version: '18.15.0', aliases: ['js', 'node'] },
+        { language: 'typescript', version: '5.0.3', aliases: ['ts'] },
+        { language: 'c', version: '10.2.0', aliases: ['gcc'] },
+        { language: 'c++', version: '10.2.0', aliases: ['cpp', 'g++'] },
+        { language: 'java', version: '15.0.2', aliases: [] },
+        { language: 'bash', version: '5.2.0', aliases: ['sh', 'shell'] },
+        { language: 'rust', version: '1.68.2', aliases: ['rs'] },
+        { language: 'go', version: '1.16.2', aliases: ['golang'] },
+        { language: 'julia', version: '1.8.5', aliases: ['jl'] },
+        { language: 'php', version: '8.2.3', aliases: [] },
+        { language: 'ruby', version: '3.0.1', aliases: ['rb'] },
+        { language: 'kotlin', version: '1.8.20', aliases: ['kt'] }
+    ];
+    return res.json({ ok: true, runtimes: supportedRuntimes });
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`MoSPI Backend running on port ${PORT}`));

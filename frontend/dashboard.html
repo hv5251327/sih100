@@ -783,15 +783,39 @@
         A zero-setup, in-browser sandbox for executing Python, R, and SQL scripts directly on official datasets (PLFS, ASI, HCES). The engine validates code syntax and verifies statistical outputs in real-time.
       </p>
 
-      <div style="display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap; align-items:center;">
-        <!-- Language Selector Directly Available -->
-        <div style="display:flex; align-items:center; gap:6px;">
-          <label style="font-size:0.82rem; font-weight:700; color:#334155;"><i class="fa-solid fa-code" style="color:#0284c7;"></i> Language:</label>
-          <select id="sandboxLangSelect" onchange="switchSandboxLanguage(this.value)" style="padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.85rem; font-weight:700; background:#fff; color:#0f172a; cursor:pointer;">
-            <option value="python">Python 3.11 (Pyodide Wasm)</option>
-            <option value="r">R Official Statistics (Survey/Hmisc)</option>
-            <option value="sql">SQL / PostgreSQL Microdata Query</option>
+      <div style="display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+        <!-- Language Selector Directly Available with Piston Multi-Language Support -->
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <label style="font-size:0.82rem; font-weight:700; color:#334155;"><i class="fa-solid fa-code" style="color:#0284c7;"></i> Language / Runtime:</label>
+          <select id="sandboxLangSelect" onchange="switchSandboxLanguage(this.value)" style="padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.84rem; font-weight:700; background:#fff; color:#0f172a; cursor:pointer; min-width:210px;">
+            <option value="python">Python 3.10 / 3.11 (Official Analytics)</option>
+            <option value="rscript">R (Survey & Econometrics)</option>
+            <option value="sqlite3">SQL / SQLite (Microdata Aggregations)</option>
+            <option value="javascript">JavaScript / Node.js (V8 Engine)</option>
+            <option value="typescript">TypeScript (Typed Models)</option>
+            <option value="c">C (GCC High-Performance)</option>
+            <option value="cpp">C++ (Vector Algorithms)</option>
+            <option value="java">Java 15 (Enterprise Pipelines)</option>
+            <option value="bash">Bash / Shell (Batch Scripting)</option>
+            <option value="rust">Rust (High-Assurance Statistical)</option>
+            <option value="go">Go (Concurrent Microservices)</option>
+            <option value="julia">Julia (Scientific Matrix Math)</option>
+            <option value="php">PHP (Statistical Reporting)</option>
+            <option value="ruby">Ruby (Data Wrangling)</option>
+            <option value="kotlin">Kotlin (Survey Validation)</option>
           </select>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <!-- Piston Settings Button -->
+          <button type="button" onclick="openPistonSettingsModal()" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0369a1; font-size:0.82rem; font-weight:700; padding:8px 12px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px;" title="Configure Piston API Key or Custom Endpoint">
+            <i class="fa-solid fa-gear"></i> Piston Engine / API Key
+          </button>
+
+          <!-- Fullscreen View -->
+          <button type="button" onclick="openCodeLabModal('Workspace')" style="background:#f8fafc; border:1px solid #cbd5e1; color:#1e293b; font-size:0.82rem; font-weight:700; padding:8px 12px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-expand"></i> Fullscreen
+          </button>
         </div>
 
         <!-- Dataset Selector -->
@@ -814,7 +838,7 @@
             <i class="fa-solid fa-terminal"></i> In-Browser Sandbox Kernel
             <span id="sandboxLangBadge" style="background:#0369a1; color:#fff; font-size:0.72rem; padding:2px 8px; border-radius:4px;">PYTHON 3.11</span>
           </span>
-          <span id="pyKernelStatus" style="color:#94a3b8; font-size:0.76rem;"><i class="fa-solid fa-microchip"></i> Wasm Kernel: Ready Offline</span>
+          <span id="pyKernelStatus" style="color:#38bdf8; font-size:0.76rem;"><i class="fa-solid fa-bolt"></i> Piston Execution Engine: Active</span>
         </div>
         <textarea id="simCodeEditor" rows="12" style="width:100%; min-height:260px; background:transparent; color:#38bdf8; border:none; outline:none; font-family:'Fira Code', Consolas, monospace; font-size:0.88rem; resize:vertical; line-height:1.55; box-sizing:border-box;"></textarea>
       </div>
@@ -1190,7 +1214,12 @@
         if (document.getElementById("disp-officer-dept")) document.getElementById("disp-officer-dept").innerText = currentUser.department || 'N/A';
         if (document.getElementById("disp-officer-desig")) document.getElementById("disp-officer-desig").innerText = currentUser.designation || 'N/A';
 
-        // 2. Immediately download/pre-warm the Python Sandbox in background
+        // 2. Initialize Sandbox Editor with Piston Starter Template
+        if (typeof switchSandboxLanguage === 'function') {
+          switchSandboxLanguage('python');
+        }
+
+        // 2b. Immediately download/pre-warm the Python Sandbox in background
         if (window.MoSPIOffline && typeof window.MoSPIOffline.prewarmPyodide === 'function') {
           window.MoSPIOffline.prewarmPyodide();
         }
@@ -2803,6 +2832,64 @@ ${preset.output.split('\n').slice(2, 10).join('\n')}
       </div>
     </div>
   </div>
+
+  <!-- Piston Engine & API Key Configuration Modal -->
+  <div class="modal-backdrop" id="piston-settings-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.7); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+    <div class="modal-box" style="max-width:560px; width:92%; background:#ffffff; border-radius:12px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); border:1px solid #e2e8f0; padding:24px; color:#1e293b;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:36px; height:36px; background:#0284c7; color:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
+            <i class="fa-solid fa-microchip"></i>
+          </div>
+          <div>
+            <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:#0f172a;">Piston Engine Configuration</h3>
+            <span style="font-size:0.75rem; color:#64748b;">Manage Piston API Key & Multi-Language Execution Endpoint</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('piston-settings-modal')" style="background:none; border:none; font-size:1.4rem; color:#94a3b8; cursor:pointer;">&times;</button>
+      </div>
+
+      <p style="font-size:0.83rem; color:#475569; margin-bottom:14px; line-height:1.5;">
+        The Sandbox executes Python, R, SQL, C++, Rust, and 15+ languages using the <strong>Piston Code Execution Engine</strong>. You can use your custom Piston instance, private cluster, or enter an Authorization API Key.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:18px;">
+        <div>
+          <label style="font-size:0.8rem; font-weight:700; color:#334155; display:block; margin-bottom:4px;">
+            <i class="fa-solid fa-key" style="color:#0284c7;"></i> Piston API Key / Authorization Token:
+          </label>
+          <input type="password" id="inputPistonApiKey" placeholder="Enter Piston API Key (e.g., Bearer token or whitelist key)" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; box-sizing:border-box;">
+          <span style="font-size:0.72rem; color:#64748b;">Optional if using an open self-hosted Piston instance or local fallback.</span>
+        </div>
+
+        <div>
+          <label style="font-size:0.8rem; font-weight:700; color:#334155; display:block; margin-bottom:4px;">
+            <i class="fa-solid fa-server" style="color:#0f766e;"></i> Piston Execution Endpoint URL:
+          </label>
+          <input type="text" id="inputPistonEndpoint" placeholder="https://emkc.org/api/v2/piston/execute" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; box-sizing:border-box;">
+          <span style="font-size:0.72rem; color:#64748b;">Default: <code>https://emkc.org/api/v2/piston/execute</code> (or self-hosted e.g. <code>http://localhost:2000</code>).</span>
+        </div>
+      </div>
+
+      <div id="pistonTestStatusBox" style="display:none; padding:10px 12px; border-radius:6px; font-size:0.8rem; margin-bottom:16px;"></div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid #e2e8f0; padding-top:14px;">
+        <button type="button" onclick="testPistonConnection()" id="btnTestPiston" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-weight:700; font-size:0.82rem; padding:8px 14px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+          <i class="fa-solid fa-vial"></i> Test Connection
+        </button>
+
+        <div style="display:flex; gap:8px;">
+          <button type="button" onclick="closeModal('piston-settings-modal')" style="background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1; font-weight:700; font-size:0.82rem; padding:8px 14px; border-radius:6px; cursor:pointer;">
+            Cancel
+          </button>
+          <button type="button" onclick="savePistonSettings()" style="background:#0284c7; color:#fff; border:none; font-weight:700; font-size:0.82rem; padding:8px 16px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-floppy-disk"></i> Save Configuration
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
         </html>
       `);
