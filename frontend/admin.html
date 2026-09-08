@@ -485,6 +485,7 @@
       <a href="#sec-certificates" class="sidebar-nav-item"><i class="fa-solid fa-stamp"></i><span>Officer Certificate Verification</span></a>
       <a href="#sec-forecasting" class="sidebar-nav-item"><i class="fa-solid fa-brain"></i><span>Future Skill Forecasting</span></a>
       <a href="#sec-officers" class="sidebar-nav-item"><i class="fa-solid fa-users-viewfinder"></i><span>Employee Registry</span></a>
+      <a href="#sec-courses" class="sidebar-nav-item"><i class="fa-solid fa-graduation-cap"></i><span>Courses Available</span></a>
     </aside>
 
     <!-- Right Main Vertical Content Area -->
@@ -549,7 +550,7 @@
           <!-- Master DB Courses -->
           <div class="kpi-card">
             <div class="kpi-content">
-              <span class="kpi-label">Master DB Courses</span>
+              <span class="kpi-label">Courses Available</span>
               <h3 class="kpi-val" id="stat-total-courses" style="color:var(--success);">0</h3>
               
             </div>
@@ -608,7 +609,7 @@
             <label><i class="fa-solid fa-file-lines"></i> Extracted Syllabus Content (Auto-filled from PDF or paste directly)</label>
             <textarea id="syllabusText" rows="5" placeholder="Upload a syllabus PDF above or paste circular topics here..." required></textarea>
           </div>
-          <button type="submit" class="btn-action" id="btn-syllabus-submit" style="margin-top:12px; background:linear-gradient(135deg, #d97706, #b45309);"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract & Save Accredited Courses to Master DB</button>
+          <button type="submit" class="btn-action" id="btn-syllabus-submit" style="margin-top:12px; background:linear-gradient(135deg, #d97706, #b45309);"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract and Save Courses</button>
         </form>
         <div id="syllabus-status" style="font-size:0.88rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
         <div id="syllabus-preview-box" style="display:none; margin-top:12px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:18px; "></div>
@@ -667,7 +668,7 @@
             <label><i class="fa-solid fa-pen-to-square"></i> Course Topic / Core Objective</label>
             <input type="text" id="draftTopic" placeholder="e.g., CAPI Tablet Quality Auditing, OCMS Cost Tracking, PLFS Microdata Estimation" required>
           </div>
-          <button type="submit" class="btn-action" id="btn-draft-submit" style="margin-top:12px; background:linear-gradient(135deg, #1e3a8a, #2563eb);"><i class="fa-solid fa-database"></i> Generate & Save Directly to Database</button>
+          <button type="submit" class="btn-action" id="btn-draft-submit" style="margin-top:12px; background:linear-gradient(135deg, #1e3a8a, #2563eb);"><i class="fa-solid fa-database"></i> Save this Course</button>
         </form>
         <div id="draft-status" style="font-size:0.88rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
 
@@ -799,14 +800,7 @@
           </div>
         </div>
 
-        <div class="inner-panel" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-          <div>
-            <strong style="color:#0f172a; font-size:0.92rem;"><i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Standing Committee Ready</strong>
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Audit reports include comprehensive 4-pillar scores, officer designations, and prioritized training pathways.</p>
-          </div>
-          <span style="font-size:0.78rem; font-weight:700; color:#0369a1; background:#e0f2fe; padding:4px 10px; border-radius:6px;"><i class="fa-solid fa-shield-halved"></i> Official NSSTA Standard</span>
-        </div>
-      </section>
+        </section>
 
       <!-- ========================================================================= -->
       <!-- 7. OFFICER CERTIFICATE VERIFICATION & AUDIT (Vertical Full-Width) -->
@@ -947,6 +941,47 @@
             </thead>
             <tbody id="officers-table-body">
               <tr><td colspan="6" style="text-align:center; padding:24px;">Loading officer directory...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- 10. COURSES AVAILABLE (Master Database Catalog) -->
+      <!-- ========================================================================= -->
+      <section id="sec-courses" class="admin-section panel panel-mod-courses" style="border-left: 6px solid #0284c7;">
+        <div>
+          <span class="module-tag tag-courses" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;"><i class="fa-solid fa-graduation-cap"></i> Master Curriculum</span>
+          <div class="panel-header">
+            <div class="panel-header-left">
+              <div class="panel-icon-badge badge-blue">
+                <i class="fa-solid fa-graduation-cap"></i>
+              </div>
+              <div>
+                <h2>Courses Available</h2>
+                <p class="panel-subtitle">Master database catalog of all accredited statistical training modules, competency frameworks, and micro-courses available to officers.</p>
+              </div>
+            </div>
+            <div style="position:relative; width:100%; max-width:320px;">
+              <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.88rem;"></i>
+              <input type="text" id="courseCatalogSearch" placeholder="Filter courses by title, domain..." onkeyup="filterCoursesCatalog()" style="padding:9px 14px 9px 38px; border:1px solid var(--border); border-radius:8px; font-size:0.88rem; width:100%;">
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container" style="max-height: 560px; overflow-y: auto;">
+          <table>
+            <thead style="position:sticky; top:0; background:#f8fafc; z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
+              <tr>
+                <th style="min-width:240px;"><i class="fa-solid fa-book"></i> Course Title</th>
+                <th><i class="fa-solid fa-layer-group"></i> Competency Domain</th>
+                <th><i class="fa-solid fa-chart-line"></i> Learning Stage</th>
+                <th><i class="fa-solid fa-building-columns"></i> Target Division / Cadre</th>
+                <th><i class="fa-solid fa-circle-info"></i> Curriculum Overview</th>
+              </tr>
+            </thead>
+            <tbody id="courses-catalog-table-body">
+              <tr><td colspan="5" style="text-align:center; padding:24px;">Loading master courses...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1124,10 +1159,10 @@
       const windowHeight = window.innerHeight;
       const docHeight = document.documentElement.scrollHeight;
 
-      // Bottom of page detection -> highlight Employee Registry (#sec-officers)
+      // Bottom of page detection -> highlight last active item (#sec-courses)
       if (scrollY + windowHeight >= docHeight - 80) {
         navItems.forEach(i => i.classList.remove('active'));
-        const lastNav = document.querySelector('.sidebar-nav-item[href="#sec-officers"]');
+        const lastNav = document.querySelector('.sidebar-nav-item[href="#sec-courses"]') || document.querySelector('.sidebar-nav-item[href="#sec-officers"]');
         if (lastNav) lastNav.classList.add('active');
         return;
       }
@@ -1223,19 +1258,60 @@
     }
 
     function renderCoursesSelect(courses) {
+      masterCoursesList = courses || [];
       const totalCourseEl = document.getElementById("stat-total-courses");
-      if (totalCourseEl) totalCourseEl.innerText = courses.length;
+      if (totalCourseEl) totalCourseEl.innerText = masterCoursesList.length;
 
       const select = document.getElementById("quizCourseSelect");
       if (select) {
         select.innerHTML = '<option value="">-- Choose Target Course from DB --</option>';
-        courses.forEach(c => {
+        masterCoursesList.forEach(c => {
           const opt = document.createElement("option");
           opt.value = c.id || c.title;
           opt.innerText = c.title + ' (' + (c.learning_stage || c.domain || 'Core') + ')';
           select.appendChild(opt);
         });
       }
+      renderCoursesCatalogTable(masterCoursesList);
+    }
+
+    function renderCoursesCatalogTable(courses) {
+      const tbody = document.getElementById("courses-catalog-table-body");
+      if (!tbody) return;
+
+      if (!courses || courses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:24px;">No courses available in Master DB.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = courses.map(c => {
+        const stageColor = c.learning_stage === 'Advanced Strategic' ? '#b45309; background:#fef3c7;' : (c.learning_stage === 'Foundation' ? '#2563eb; background:#dbeafe;' : '#0f766e; background:#ccfbf1;');
+        const targetDesc = (c.target_department || c.department || 'All Divisions') + ' • ' + (c.target_cadre || c.cadre || 'All Cadres');
+        return `
+          <tr>
+            <td>
+              <strong style="color:#0f172a; font-size:0.92rem;">${c.title}</strong><br>
+              <small style="color:var(--text-muted); font-family:monospace;">ID: ${c.id || 'c_nssta_auto'}</small>
+            </td>
+            <td><span style="font-weight:700; color:#0369a1; font-size:0.84rem;">${c.domain || 'Statistical'}</span></td>
+            <td><span style="font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px; color:${stageColor}">${c.learning_stage || 'Functional Core'}</span></td>
+            <td style="font-size:0.84rem; color:#475569;">${targetDesc}</td>
+            <td style="font-size:0.82rem; color:#64748b; max-width:320px;">${(c.description || 'Accredited MoSPI training curriculum.').slice(0, 120)}...</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterCoursesCatalog() {
+      const term = (document.getElementById("courseCatalogSearch") ? document.getElementById("courseCatalogSearch").value : '').toLowerCase();
+      const filtered = masterCoursesList.filter(c => 
+        (c.title || '').toLowerCase().includes(term) ||
+        (c.domain || '').toLowerCase().includes(term) ||
+        (c.learning_stage || '').toLowerCase().includes(term) ||
+        (c.target_department || c.department || '').toLowerCase().includes(term) ||
+        (c.description || '').toLowerCase().includes(term)
+      );
+      renderCoursesCatalogTable(filtered);
     }
 
     function renderCertificatesTable(list) {
@@ -1441,7 +1517,7 @@
         resultBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">Error: ${err.message}</div>`;
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate Master Courses via AI';
+        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Extract and Save Courses';
       }
     }
 
@@ -1492,7 +1568,7 @@
         resultBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">Error: ${err.message}</div>`;
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Generate & Save Course';
+        btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Save this Course';
       }
     }
 
@@ -1589,13 +1665,28 @@
       }
     }
 
+    let masterCoursesList = [];
+
+    function deduplicateOfficers(list) {
+      const seen = new Set();
+      const clean = [];
+      (list || []).forEach(o => {
+        const key = ((o.email || o.id || o.name) + '').toLowerCase().trim();
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          clean.push(o);
+        }
+      });
+      return clean;
+    }
+
     async function loadOfficerAnalytics() {
       try {
         const res = await fetch(`${API_URL}/api/admin/officers-analytics`);
         if (res.ok) {
           const data = await res.json();
           if (data.officers && data.officers.length > 0) {
-            allOfficers = data.officers;
+            allOfficers = deduplicateOfficers(data.officers);
             updateStatsAndTables(allOfficers, data);
             renderHeatmap(allOfficers);
             renderOfficersTable(allOfficers);
@@ -1607,7 +1698,7 @@
       }
       // Fallback
       if (allOfficers.length === 0) {
-        allOfficers = [...FALLBACK_OFFICERS];
+        allOfficers = deduplicateOfficers(FALLBACK_OFFICERS);
         updateStatsAndTables(allOfficers, { total_officers: allOfficers.length });
         renderHeatmap(allOfficers);
         renderOfficersTable(allOfficers);
@@ -1772,22 +1863,23 @@
       printWindow.document.close();
     }
 
-    function getHeatmapClass(score) {
-      if (score >= 75) return "cell-high";
-      if (score >= 50) return "cell-med";
-      return "cell-low";
+    function getHeatmapBadgeStyle(score) {
+      if (score >= 70) return 'background:#dcfce7; color:#15803d; border:1px solid #86efac;';
+      if (score >= 40) return 'background:#fef3c7; color:#b45309; border:1px solid #fde68a;';
+      return 'background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;';
     }
 
     function renderHeatmap(officers) {
-      const grid = document.getElementById("heatmap-grid");
-      if (!grid) return;
+      const tbody = document.getElementById("heatmap-table-body");
+      if (!tbody) return;
 
       const deptScores = {};
       (officers || []).forEach(o => {
-        const dept = o.department || "General";
+        const dept = o.department || "General Statistical Cadre";
         if (!deptScores[dept]) {
-          deptScores[dept] = { stat: [], tech: [], gov: [], lead: [] };
+          deptScores[dept] = { stat: [], tech: [], gov: [], lead: [], count: 0 };
         }
+        deptScores[dept].count++;
         const c = o.competency || {};
         if (c.statistical_score !== undefined) deptScores[dept].stat.push(c.statistical_score);
         if (c.technical_score !== undefined) deptScores[dept].tech.push(c.technical_score);
@@ -1795,38 +1887,32 @@
         if (c.leadership_score !== undefined) deptScores[dept].lead.push(c.leadership_score);
       });
 
-      const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
-
-      let html = `
-        <div class="heatmap-header">Division / Directorate</div>
-        <div class="heatmap-header">Statistical</div>
-        <div class="heatmap-header">Technical</div>
-        <div class="heatmap-header">Governance</div>
-        <div class="heatmap-header">Leadership</div>
-      `;
-
+      const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 55;
       const depts = Object.keys(deptScores);
+
       if (depts.length === 0) {
-        grid.innerHTML = '<div style="padding:20px; color:#64748b; grid-column:span 5;">No department competency records available.</div>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">No division competency records available.</td></tr>';
         return;
       }
 
-      depts.forEach(dept => {
+      tbody.innerHTML = depts.map(dept => {
         const s = avg(deptScores[dept].stat);
         const t = avg(deptScores[dept].tech);
         const g = avg(deptScores[dept].gov);
         const l = avg(deptScores[dept].lead);
+        const cnt = deptScores[dept].count;
 
-        html += `
-          <div class="heatmap-label" title="${dept}">${dept}</div>
-          <div class="heatmap-cell ${getHeatmapClass(s)}">${s}%</div>
-          <div class="heatmap-cell ${getHeatmapClass(t)}">${t}%</div>
-          <div class="heatmap-cell ${getHeatmapClass(g)}">${g}%</div>
-          <div class="heatmap-cell ${getHeatmapClass(l)}">${l}%</div>
+        return `
+          <tr>
+            <td><strong>${dept}</strong></td>
+            <td style="text-align:center;"><span style="display:inline-block; padding:6px 12px; border-radius:6px; font-weight:800; font-size:0.86rem; min-width:60px; ${getHeatmapBadgeStyle(s)}">${s}%</span></td>
+            <td style="text-align:center;"><span style="display:inline-block; padding:6px 12px; border-radius:6px; font-weight:800; font-size:0.86rem; min-width:60px; ${getHeatmapBadgeStyle(t)}">${t}%</span></td>
+            <td style="text-align:center;"><span style="display:inline-block; padding:6px 12px; border-radius:6px; font-weight:800; font-size:0.86rem; min-width:60px; ${getHeatmapBadgeStyle(g)}">${g}%</span></td>
+            <td style="text-align:center;"><span style="display:inline-block; padding:6px 12px; border-radius:6px; font-weight:800; font-size:0.86rem; min-width:60px; ${getHeatmapBadgeStyle(l)}">${l}%</span></td>
+            <td style="text-align:center;"><span style="background:#e0f2fe; color:#0369a1; padding:4px 10px; border-radius:6px; font-weight:700; font-size:0.8rem;">${cnt} Officer${cnt > 1 ? 's' : ''}</span></td>
+          </tr>
         `;
-      });
-
-      grid.innerHTML = html;
+      }).join('');
     }
 
     function renderOfficersTable(officers) {
