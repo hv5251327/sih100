@@ -196,8 +196,13 @@
 
     /* Target Section Offset for Smooth Side-Nav Jump */
     .admin-section {
-      scroll-margin-top: 84px;
-      width: 100%;
+      scroll-margin-top: 85px;
+      margin-bottom: 38px;
+      padding: 34px 30px;
+      border-radius: var(--radius-lg);
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
     }
 
     /* KPI Summary Cards Grid */
@@ -607,7 +612,7 @@
           <button type="submit" class="btn-action" id="btn-syllabus-submit" style="margin-top:12px; background:linear-gradient(135deg, #d97706, #b45309);"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract & Save Accredited Courses to Master DB</button>
         </form>
         <div id="syllabus-status" style="font-size:0.88rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
-        <div id="syllabus-preview-box" style="display:none; margin-top:12px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:18px; max-height:360px; overflow-y:auto;"></div>
+        <div id="syllabus-preview-box" style="display:none; margin-top:12px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:18px; "></div>
       </section>
 
       <!-- ========================================================================= -->
@@ -671,7 +676,7 @@
           <h3 style="font-size:0.98rem; font-weight:800; margin-bottom:12px; color:var(--primary); display:flex; align-items:center; gap:8px;">
             <i class="fa-solid fa-list-check"></i> Recently Added Master Courses
           </h3>
-          <div id="recent-courses-list" style="display:flex; flex-direction:column; gap:10px; max-height:260px; overflow-y:auto;"></div>
+          <div id="recent-courses-list" style="display:flex; flex-direction:column; gap:10px; "></div>
         </div>
       </section>
 
@@ -726,7 +731,7 @@
           <button type="submit" class="btn-action" id="btn-quiz-synth" style="background:linear-gradient(135deg, #e11d48, #be123c); font-weight:800; margin-top:12px;"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Store MCQs in Database</button>
         </form>
         <div id="quiz-gen-status" style="font-size:0.88rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
-        <div id="quiz-preview-box" style="display:none; margin-top:12px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:18px; max-height:360px; overflow-y:auto;"></div>
+        <div id="quiz-preview-box" style="display:none; margin-top:12px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:18px; "></div>
       </section>
 
       <!-- ========================================================================= -->
@@ -824,7 +829,7 @@
           </div>
         </div>
         
-        <div class="table-container" style="max-height:360px; overflow-y:auto;">
+        <div class="table-container">
           <table>
             <thead style="position:sticky; top:0; background:#f8fafc; z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
               <tr>
@@ -902,7 +907,7 @@
           <div><i class="fa-solid fa-clock" style="color:#7c3aed;"></i> <span style="color:#64748b;">Target Horizon:</span> <strong id="f-horizon" style="color:#7c3aed;">Q4 2026</strong></div>
         </div>
 
-        <div id="forecast-cards-container" style="display:flex; flex-direction:column; gap:14px; max-height:500px; overflow-y:auto; padding-right:4px;">
+        <div id="forecast-cards-container" style="display:flex; flex-direction:column; gap:16px;">
           <!-- Populated dynamically by runSkillForecast() -->
         </div>
       </section>
@@ -929,7 +934,7 @@
             </div>
           </div>
         </div>
-        <div class="table-container" style="max-height:380px; overflow-y:auto;">
+        <div class="table-container">
           <table>
             <thead style="position:sticky; top:0; background:#f8fafc; z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
               <tr>
@@ -1110,27 +1115,63 @@
       }
     ];
 
-    // Active Side Navigation Highlight Spy
-    window.addEventListener('scroll', () => {
-      const sections = document.querySelectorAll('.admin-section');
-      const navItems = document.querySelectorAll('.sidebar-nav-item');
-      let currentSecId = '';
+    // Active Side Navigation Highlight Spy with bottom-of-page detection
+    function updateActiveNav() {
+      const sections = Array.from(document.querySelectorAll('.admin-section'));
+      const navItems = Array.from(document.querySelectorAll('.sidebar-nav-item'));
+      if (!sections.length || !navItems.length) return;
 
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+
+      // Bottom of page detection -> highlight Employee Registry (#sec-officers)
+      if (scrollY + windowHeight >= docHeight - 80) {
+        navItems.forEach(i => i.classList.remove('active'));
+        const lastNav = document.querySelector('.sidebar-nav-item[href="#sec-officers"]');
+        if (lastNav) lastNav.classList.add('active');
+        return;
+      }
+
+      let currentSecId = 'sec-overview';
       sections.forEach(sec => {
-        const top = sec.offsetTop - 120;
-        if (window.pageYOffset >= top) {
+        const top = sec.offsetTop - 140;
+        if (scrollY >= top) {
           currentSecId = sec.getAttribute('id');
         }
       });
 
-      if (currentSecId) {
-        navItems.forEach(item => {
+      navItems.forEach(item => {
+        if (item.getAttribute('href') === '#' + currentSecId) {
+          item.classList.add('active');
+        } else {
           item.classList.remove('active');
-          if (item.getAttribute('href') === '#' + currentSecId) {
-            item.classList.add('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', updateActiveNav, { passive: true });
+    window.addEventListener('resize', updateActiveNav);
+    window.addEventListener('load', updateActiveNav);
+
+    // Smooth navigation click
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          const href = item.getAttribute('href');
+          if (href && href.startsWith('#')) {
+            const target = document.querySelector(href);
+            if (target) {
+              e.preventDefault();
+              target.scrollIntoView({ behavior: 'smooth' });
+              document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+              item.classList.add('active');
+              history.replaceState(null, null, href);
+            }
           }
         });
-      }
+      });
+      updateActiveNav();
     });
 
     document.addEventListener("DOMContentLoaded", async () => {
