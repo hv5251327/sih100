@@ -13,11 +13,14 @@ const {
     evaluateOfficerArtifactAI,
     generateDepartmentBaselineQuizAI,
     evaluateOfficerCompetencyWithGrokAI,
+    executeCodeWithAIEngine,
     DEPARTMENT_NAMES_MAP
 } = require('./mospi_ai_engine');
 const { redisCache } = require('./redis_client');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+const { exec } = require('child_process');
 const { runLangChainMCQPipeline, runLangChainSyllabusPipeline } = require('./langchain_mcq_chain');
 const { evaluateLangChainRecommendations } = require('./langchain_recommendation_chain');
 
@@ -3191,6 +3194,149 @@ app.get(['/api/redis/status', '/api/cache/status'], (req, res) => {
         cache: redisCache.getStatus(),
         timestamp: new Date().toISOString()
     });
+});
+
+// =========================================================================
+// ⚡ UNIVERSAL SANDBOX RUNNER: LOCAL NATIVE & DETERMINISTIC AI EXECUTION
+// =========================================================================
+app.post(['/api/sandbox/run', '/api/code/execute', '/api/sandbox/execute'], async (req, res) => {
+    const { language, code, dataset } = req.body;
+    const cleanLang = (language || 'python').toLowerCase().trim();
+    const cleanCode = (code || '').trim();
+    const startTime = Date.now();
+    const tmpDir = os.tmpdir();
+
+    if (!cleanCode) {
+        return res.json({
+            ok: true,
+            stdout: '> Empty script executed (0 instructions).',
+            stderr: '',
+            code: 0,
+            duration_ms: 0
+        });
+    }
+
+    // 1. Check Redis Cache for identical static runs
+    const codeHash = Buffer.from(`${cleanLang}:${cleanCode}`).toString('base64').substring(0, 48);
+    const redisKey = `mospi:sandbox:${codeHash}`;
+    const cachedRun = await redisCache.get(redisKey);
+    if (cachedRun && cachedRun.stdout !== undefined) {
+        return res.json({
+            ...cachedRun,
+            duration_ms: Date.now() - startTime,
+            source: 'REDIS_CACHE_FAST'
+        });
+    }
+
+    // 2. Local Python execution if language is Python
+    if (cleanLang === 'python' || cleanLang === 'py') {
+        const filePath = path.join(tmpDir, `mospi_py_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.py`);
+        try {
+            fs.writeFileSync(filePath, cleanCode, 'utf-8');
+            return exec(`python "${filePath}"`, { timeout: 8000, maxBuffer: 1024 * 1024 }, async (err, stdout, stderr) => {
+                try { fs.unlinkSync(filePath); } catch (e) {}
+                const result = {
+                    ok: !err,
+                    stdout: stdout || '',
+                    stderr: stderr || (err ? err.message : ''),
+                    code: err ? (err.code || 1) : 0,
+                    duration_ms: Date.now() - startTime,
+                    engine: 'LOCAL_PYTHON_V3'
+                };
+                if (result.ok) await redisCache.set(redisKey, result, 3600);
+                return res.json(result);
+            });
+        } catch (e) {
+            try { fs.unlinkSync(filePath); } catch (e2) {}
+        }
+    }
+
+    // 3. Local Node.js / JavaScript execution
+    if (cleanLang === 'javascript' || cleanLang === 'js' || cleanLang === 'node') {
+        const filePath = path.join(tmpDir, `mospi_js_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.js`);
+        try {
+            fs.writeFileSync(filePath, cleanCode, 'utf-8');
+            return exec(`node "${filePath}"`, { timeout: 8000, maxBuffer: 1024 * 1024 }, async (err, stdout, stderr) => {
+                try { fs.unlinkSync(filePath); } catch (e) {}
+                const result = {
+                    ok: !err,
+                    stdout: stdout || '',
+                    stderr: stderr || (err ? err.message : ''),
+                    code: err ? (err.code || 1) : 0,
+                    duration_ms: Date.now() - startTime,
+                    engine: 'LOCAL_NODE_V8'
+                };
+                if (result.ok) await redisCache.set(redisKey, result, 3600);
+                return res.json(result);
+            });
+        } catch (e) {
+            try { fs.unlinkSync(filePath); } catch (e2) {}
+        }
+    }
+
+    // 4. Local C / C++ GCC Compilation & Execution
+    if (cleanLang === 'c' || cleanLang === 'cpp' || cleanLang === 'c++') {
+        const isCpp = cleanLang.includes('++') || cleanLang === 'cpp';
+        const ext = isCpp ? '.cpp' : '.c';
+        const srcPath = path.join(tmpDir, `mospi_c_${Date.now()}_${Math.random().toString(36).substring(2, 6)}${ext}`);
+        const exePath = path.join(tmpDir, `mospi_c_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.exe`);
+        const compiler = isCpp ? 'g++' : 'gcc';
+
+        try {
+            fs.writeFileSync(srcPath, cleanCode, 'utf-8');
+            return exec(`${compiler} "${srcPath}" -o "${exePath}"`, { timeout: 6000 }, (compileErr, cStdout, cStderr) => {
+                if (compileErr) {
+                    try { fs.unlinkSync(srcPath); } catch (e) {}
+                    return res.json({
+                        ok: false,
+                        stdout: '',
+                        stderr: `Compilation Error:\n${cStderr || compileErr.message}`,
+                        code: 1,
+                        duration_ms: Date.now() - startTime,
+                        engine: `LOCAL_${compiler.toUpperCase()}_COMPILER`
+                    });
+                }
+
+                exec(`"${exePath}"`, { timeout: 5000 }, async (runErr, rStdout, rStderr) => {
+                    try { fs.unlinkSync(srcPath); } catch (e) {}
+                    try { fs.unlinkSync(exePath); } catch (e) {}
+                    const result = {
+                        ok: !runErr,
+                        stdout: rStdout || '',
+                        stderr: rStderr || (runErr ? runErr.message : ''),
+                        code: runErr ? (runErr.code || 1) : 0,
+                        duration_ms: Date.now() - startTime,
+                        engine: `LOCAL_${compiler.toUpperCase()}_BINARY`
+                    };
+                    if (result.ok) await redisCache.set(redisKey, result, 3600);
+                    return res.json(result);
+                });
+            });
+        } catch (e) {
+            try { fs.unlinkSync(srcPath); } catch (e2) {}
+            try { fs.unlinkSync(exePath); } catch (e2) {}
+        }
+    }
+
+    // 5. Universal AI Execution Engine for R, Rust, Go, Java, Bash, Julia, PHP, Kotlin, SQLite
+    try {
+        const aiResult = await executeCodeWithAIEngine(cleanLang, cleanCode);
+        const responsePayload = {
+            ...aiResult,
+            duration_ms: Date.now() - startTime,
+            engine: 'AI_UNIVERSAL_RUNTIME'
+        };
+        if (responsePayload.ok) await redisCache.set(redisKey, responsePayload, 3600);
+        return res.json(responsePayload);
+    } catch (err) {
+        return res.json({
+            ok: false,
+            stdout: '',
+            stderr: `Sandbox Execution Exception: ${err.message}`,
+            code: 1,
+            duration_ms: Date.now() - startTime
+        });
+    }
 });
 
 // --- AUTONOMOUS AI COURSE CURRICULUM MAKER ---
