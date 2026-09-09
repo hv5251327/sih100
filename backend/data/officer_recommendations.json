@@ -2,174 +2,174 @@
   "balla@gmail.com": [
     {
       "id": 2,
-      "course_code": "GEN-02",
       "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
       "domain": "Digital Governance",
-      "difficulty_level": "Foundation",
-      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
       "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
-      "is_general_mandatory": true,
+      "course_code": "GEN-02",
+      "description": "Mandatory statutory awareness under POSH Act 2013 and internal compliance rules for civil servants.",
+      "match_score": 95,
+      "learning_stage": "Foundation",
+      "difficulty_level": "Foundation",
       "target_departments": [
         "ALL"
       ],
-      "learning_stage": "Foundation",
-      "match_score": 95
+      "is_general_mandatory": true
     },
     {
       "id": 3,
-      "course_code": "GEN-03",
       "title": "Civil Defence, First Aid & Disaster Risk Mitigation Protocols",
       "domain": "Behavioural & Managerial",
-      "difficulty_level": "Foundation",
-      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
       "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
-      "is_general_mandatory": true,
+      "course_code": "GEN-03",
+      "description": "NDRF protocols, emergency field safety, and institutional continuity during crisis situations.",
+      "match_score": 95,
+      "learning_stage": "Foundation",
+      "difficulty_level": "Foundation",
       "target_departments": [
         "ALL"
       ],
-      "learning_stage": "Foundation",
-      "match_score": 95
+      "is_general_mandatory": true
     },
     {
       "id": 8,
-      "course_code": "GEN-08",
       "title": "General Financial Rules (GFR 2017) & Public Procurement via GeM",
       "domain": "Behavioural & Managerial",
-      "difficulty_level": "Foundation",
-      "description": "GFR procurement thresholds, bid creation on GeM, and public audit compliance.",
       "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
-      "is_general_mandatory": true,
+      "course_code": "GEN-08",
+      "description": "GFR procurement thresholds, bid creation on GeM, and public audit compliance.",
+      "match_score": 95,
+      "learning_stage": "Foundation",
+      "difficulty_level": "Foundation",
       "target_departments": [
         "ALL"
       ],
-      "learning_stage": "Foundation",
-      "match_score": 95
+      "is_general_mandatory": true
     },
     {
       "id": 50,
-      "course_code": "IGOT-POSH-02",
       "title": "Workplace Ethics, POSH Compliance & Civil Services Conduct Rules",
       "domain": "Behavioural & Managerial",
-      "difficulty_level": "Foundation",
-      "description": "Code of conduct, prevention of sexual harassment (POSH), and ethics in official public administration.",
       "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
-      "is_general_mandatory": true,
+      "course_code": "IGOT-POSH-02",
+      "description": "Code of conduct, prevention of sexual harassment (POSH), and ethics in official public administration.",
+      "match_score": 95,
+      "learning_stage": "Foundation",
+      "difficulty_level": "Foundation",
       "target_departments": [
         "ALL"
       ],
-      "learning_stage": "Foundation",
-      "match_score": 95
+      "is_general_mandatory": true
     },
     {
       "id": 9,
-      "course_code": "SPEC-NAD-01",
       "title": "National Accounts Statistics (NAS): UN-SNA 2008 & GSDP Estimation",
       "domain": "Statistical Competencies",
-      "difficulty_level": "Intermediate",
-      "description": "Compiling Gross Value Added (GVA), Supply-Use Tables, and State Domestic Product.",
       "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
-      "is_general_mandatory": false,
+      "course_code": "SPEC-NAD-01",
+      "description": "Compiling Gross Value Added (GVA), Supply-Use Tables, and State Domestic Product.",
+      "match_score": 88,
+      "learning_stage": "Functional Core",
+      "difficulty_level": "Intermediate",
       "target_departments": [
         "NAD",
         "STATE_DES"
       ],
-      "learning_stage": "Functional Core",
-      "match_score": 88
+      "is_general_mandatory": false
     },
     {
       "id": 10,
-      "course_code": "SPEC-ESD-01",
       "title": "Annual Survey of Industries (ASI) & Index of Industrial Production (IIP)",
       "domain": "Statistical Competencies",
-      "difficulty_level": "Intermediate",
-      "description": "Industrial survey methodology, frame maintenance, and monthly index compilation.",
       "video_url": "https://www.youtube.com/embed/s2skans2dP4",
-      "is_general_mandatory": false,
+      "course_code": "SPEC-ESD-01",
+      "description": "Industrial survey methodology, frame maintenance, and monthly index compilation.",
+      "match_score": 88,
+      "learning_stage": "Functional Core",
+      "difficulty_level": "Intermediate",
       "target_departments": [
         "ESD"
       ],
-      "learning_stage": "Functional Core",
-      "match_score": 88
+      "is_general_mandatory": false
     },
     {
       "id": 11,
-      "course_code": "SPEC-PSD-01",
       "title": "Consumer Price Index (CPI) Basket & Rural-Urban Inflation Metrics",
       "domain": "Statistical Competencies",
-      "difficulty_level": "Intermediate",
-      "description": "Validation of price quotations, base year weighting diagrams, and core inflation calculation.",
       "video_url": "https://www.youtube.com/embed/rPZ3_XFmgm4",
-      "is_general_mandatory": false,
+      "course_code": "SPEC-PSD-01",
+      "description": "Validation of price quotations, base year weighting diagrams, and core inflation calculation.",
+      "match_score": 88,
+      "learning_stage": "Functional Core",
+      "difficulty_level": "Intermediate",
       "target_departments": [
         "PSD"
       ],
-      "learning_stage": "Functional Core",
-      "match_score": 88
+      "is_general_mandatory": false
     },
     {
       "id": 12,
-      "course_code": "SPEC-FOD-01",
       "title": "Computer-Assisted Personal Interviewing (CAPI) & Field Survey Operations",
       "domain": "Statistical Competencies",
-      "difficulty_level": "Intermediate",
-      "description": "Tablet-based field data capture, supervisor spot-checks, and quality assurance.",
       "video_url": "https://www.youtube.com/embed/k9zTr2MAo4s",
-      "is_general_mandatory": false,
+      "course_code": "SPEC-FOD-01",
+      "description": "Tablet-based field data capture, supervisor spot-checks, and quality assurance.",
+      "match_score": 88,
+      "learning_stage": "Functional Core",
+      "difficulty_level": "Intermediate",
       "target_departments": [
         "FOD",
         "DSO",
         "TALUK"
       ],
-      "learning_stage": "Functional Core",
-      "match_score": 88
+      "is_general_mandatory": false
     },
     {
       "id": 6,
-      "course_code": "GEN-06",
       "title": "Python & Pandas for Official Statistical Analysis & Data Wrangling",
       "domain": "Technical Competencies",
-      "difficulty_level": "Foundation",
-      "description": "Hands-on large microdata transformation, missing data treatment, and automated summaries in Python.",
       "video_url": "https://www.youtube.com/embed/rfscVS0vtbw",
-      "is_general_mandatory": true,
+      "course_code": "GEN-06",
+      "description": "Hands-on large microdata transformation, missing data treatment, and automated summaries in Python.",
+      "match_score": 86,
+      "learning_stage": "Advanced Strategic",
+      "difficulty_level": "Foundation",
       "target_departments": [
         "ALL"
       ],
-      "learning_stage": "Advanced Strategic",
-      "match_score": 86
+      "is_general_mandatory": true
     },
     {
       "id": 7,
-      "course_code": "GEN-07",
       "title": "Relational SQL & Survey Microdata Validation Queries",
       "domain": "Technical Competencies",
-      "difficulty_level": "Foundation",
-      "description": "Data modeling, schema validation, and running complex analytical queries on PostgreSQL datasets.",
       "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
-      "is_general_mandatory": true,
+      "course_code": "GEN-07",
+      "description": "Data modeling, schema validation, and running complex analytical queries on PostgreSQL datasets.",
+      "match_score": 86,
+      "learning_stage": "Advanced Strategic",
+      "difficulty_level": "Foundation",
       "target_departments": [
         "ALL"
       ],
-      "learning_stage": "Advanced Strategic",
-      "match_score": 86
+      "is_general_mandatory": true
     },
     {
       "id": 16,
-      "course_code": "SPEC-TECH-01",
       "title": "Geospatial Analytics & QGIS Integration for District Statistics",
       "domain": "Technical Competencies",
-      "difficulty_level": "Intermediate",
-      "description": "Spatial disaggregation, district shapefile mapping, and GIS thematic analysis.",
       "video_url": "https://www.youtube.com/embed/2_2G3j7-f5E",
-      "is_general_mandatory": false,
+      "course_code": "SPEC-TECH-01",
+      "description": "Spatial disaggregation, district shapefile mapping, and GIS thematic analysis.",
+      "match_score": 86,
+      "learning_stage": "Advanced Strategic",
+      "difficulty_level": "Intermediate",
       "target_departments": [
         "SDG_LAB",
         "STATE_DES",
         "DSO",
         "DIID"
       ],
-      "learning_stage": "Advanced Strategic",
-      "match_score": 86
+      "is_general_mandatory": false
     }
   ],
   "bahu@gmail.com": [
@@ -5002,6 +5002,149 @@
       "is_general_mandatory": false,
       "target_departments": [
         "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 90
+    }
+  ],
+  "speed_test_1788977987634@mospi.gov.in": [
+    {
+      "id": 1,
+      "course_code": "GEN-01",
+      "title": "Digital Personal Data Protection (DPDP) Act 2023 for Official Statisticians",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Statutory compliance on respondent data privacy, anonymization, and legal safeguards in Official Statistics.",
+      "video_url": "https://www.youtube.com/embed/gL6d2U0Wc_M",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 5,
+      "course_code": "GEN-05",
+      "title": "Cybersecurity Best Practices & Government Cloud Security Standards",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Preventing data leakages, zero-trust network safety, and securing statistical endpoints in MoSPI.",
+      "video_url": "https://www.youtube.com/embed/inWWhr5tnEA",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 6,
+      "course_code": "GEN-06",
+      "title": "Python & Pandas for Official Statistical Analysis & Data Wrangling",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Foundation",
+      "description": "Hands-on large microdata transformation, missing data treatment, and automated summaries in Python.",
+      "video_url": "https://www.youtube.com/embed/eWRfhZ9WAWQ",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 77,
+      "course_code": "IGOT-GOV-103",
+      "title": "e-Sign, PKI Infrastructure & Digital Signatures in Government Workflow",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Public Key Infrastructure (PKI) standards, DSC token issuance, Aadhaar-based e-Sign integration, and tamper-evident PDF document certification.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 9,
+      "course_code": "SPEC-NAD-01",
+      "title": "National Accounts Statistics (NAS): UN-SNA 2008 & GSDP Estimation",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Compiling Gross Value Added (GVA), Supply-Use Tables, and State Domestic Product.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 52,
+      "course_code": "IGOT-NAD-201",
+      "title": "National Accounts Compilation & Gross Domestic Product (GDP) Estimation (SNA 2008)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Methodologies for compiling Gross Value Added (GVA), Supply and Use Tables (SUT), institutional sector accounts, sequence of accounts, and base year revisions following UN System of National Accounts (SNA 2008).",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 73,
+      "course_code": "IGOT-TECH-104",
+      "title": "Stata & SPSS for Survey Cross-Tabulation & Complex Panel Econometrics",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Survey weighting commands in Stata (svyset), panel fixed and random effect estimations, multi-dimensional cross-tabulations in SPSS, and output formatting.",
+      "video_url": "https://www.youtube.com/embed/_V8eKsto3Ug",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD",
+        "PSD",
+        "SSD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 59,
+      "course_code": "IGOT-PYTHON-401",
+      "title": "Python & Machine Learning for Official Statistics Automation",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Data wrangling with Pandas and NumPy, automated outlier detection, time series decomposition (SARIMA), Scikit-Learn classification for survey editing, and pipeline scripting.",
+      "video_url": "https://www.youtube.com/embed/rfscVS0vtbw",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 90
+    },
+    {
+      "id": 64,
+      "course_code": "SPEC-SUT-01",
+      "title": "Supply and Use Tables (SUT) & Input-Output Matrices for NAS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Balancing supply at basic prices with uses at purchasers prices, trade/transport margins, and inter-industry Leontief multiplier analysis.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD"
       ],
       "learning_stage": "Advanced Strategic",
       "match_score": 90

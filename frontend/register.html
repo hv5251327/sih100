@@ -1049,13 +1049,19 @@
                 sessionStorage.setItem('mospi_competency_scores_' + email.toLowerCase(), JSON.stringify(compScores));
             } catch (e) {}
 
-            // Direct Supabase database insertion for live sync
+            // Parallel non-blocking sync to Supabase and Backend API with keepalive
             const SUPABASE_REST = 'https://ccdrahlnsfrncsqaiumt.supabase.co/rest/v1';
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjZHJhaGxuc2ZybmNzcWFpdW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDEzMDAsImV4cCI6MjEwMzU3NzMwMH0.O3sAoWJuLWKeJCenkiUjen3FfLnNahUu7nKbpQ1t6Fo';
+            const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? 'http://localhost:5000'
+                : 'https://sih100-backend.onrender.com';
+
+            const syncTasks = [];
 
             try {
-                await fetch(`${SUPABASE_REST}/employees`, {
+                syncTasks.push(fetch(`${SUPABASE_REST}/employees`, {
                     method: 'POST',
+                    keepalive: true,
                     headers: {
                         'apikey': SUPABASE_KEY,
                         'Authorization': 'Bearer ' + SUPABASE_KEY,
@@ -1070,10 +1076,11 @@
                         department,
                         designation
                     })
-                });
+                }).catch(() => {}));
 
-                await fetch(`${SUPABASE_REST}/officer_competencies`, {
+                syncTasks.push(fetch(`${SUPABASE_REST}/officer_competencies`, {
                     method: 'POST',
+                    keepalive: true,
                     headers: {
                         'apikey': SUPABASE_KEY,
                         'Authorization': 'Bearer ' + SUPABASE_KEY,
@@ -1088,23 +1095,23 @@
                         leadership_score: compScores.leadership_score,
                         overall_score: compScores.overall_score
                     })
-                });
-            } catch (e) {
-                console.warn('Direct Supabase registration sync:', e);
-            }
+                }).catch(() => {}));
 
-            try {
-                const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                    ? 'http://localhost:5000'
-                    : 'https://sih100-backend.onrender.com';
-                await fetch(`${API_URL}/api/auth/register`, {
+                syncTasks.push(fetch(`${API_URL}/api/auth/register`, {
                     method: 'POST',
+                    keepalive: true,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password, cadre, department, designation, scores: compScores })
-                }).catch(() => {});
+                }).catch(() => {}));
             } catch (e) {}
 
-            window.location.href = 'dashboard.html';
+            // Immediate direct navigation with minimal delay
+            Promise.race([
+                Promise.allSettled(syncTasks),
+                new Promise(resolve => setTimeout(resolve, 200))
+            ]).finally(() => {
+                window.location.href = 'dashboard.html';
+            });
         }
 
         window.submitRegistration = submitRegistration;

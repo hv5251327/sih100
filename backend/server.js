@@ -4362,20 +4362,26 @@ app.post('/api/auth/register', async (req, res) => {
             console.warn('Supabase officer competency registration upsert note:', e.message);
         }
         
-        // Immediately architect and persist tailored courses for new officer in persistent database
-        let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
-        if (!allCourses || allCourses.length === 0) allCourses = memoryCourses;
+        // Asynchronously architect and persist tailored courses in background without blocking response
+        (async () => {
+            try {
+                let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
+                if (!allCourses || allCourses.length === 0) allCourses = memoryCourses;
 
-        const initialRecs = await evaluateRecommendationsAI(allCourses, {
-            department: department.trim(),
-            designation: designation.trim(),
-            cadre: cadre.trim(),
-            comp: compRecord
-        });
-        await persistOfficerRecommendations(cleanEmail, initialRecs, { cadre, designation, department });
+                const initialRecs = await evaluateRecommendationsAI(allCourses, {
+                    department: department.trim(),
+                    designation: designation.trim(),
+                    cadre: cadre.trim(),
+                    comp: compRecord
+                });
+                await persistOfficerRecommendations(cleanEmail, initialRecs, { cadre, designation, department });
+            } catch (bgErr) {
+                console.warn('Background recommendation calculation note:', bgErr.message);
+            }
+        })();
 
         return res.status(201).json({ 
-            message: 'Registered successfully and courses saved in DB!', 
+            message: 'Registered successfully and courses initialized!', 
             user: data ? data[0] : { name, email: cleanEmail, department, designation, cadre },
             competency: compRecord
         });
