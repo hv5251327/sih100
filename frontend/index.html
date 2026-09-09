@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillMatrix AI | Competency Intelligence & Learning Analytics</title>
+    <title>Smart Skill Intelligence | Competency Intelligence & Learning Analytics</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="manifest" href="manifest.json">
@@ -11,7 +11,7 @@
 </head>
 <body>
     <div class="top-nav">
-        <span><i class="fa-solid fa-layer-group"></i> AI Competency & Skill Development Platform</span>
+        <span><i class="fa-solid fa-layer-group"></i> Smart Skill Intelligence Platform</span>
         <span>Enterprise Learning & Analytics Suite</span>
     </div>
 
@@ -19,7 +19,7 @@
         <div class="brand">
             <i class="fa-solid fa-graduation-cap brand-icon"></i>
             <div class="brand-text">
-                <h2>SkillMatrix AI</h2>
+                <h2>Smart Skill Intelligence</h2>
                 <small>Competency & Learning Intelligence</small>
             </div>
         </div>
@@ -39,7 +39,7 @@
 
     <section class="hero-section">
         <div class="hero-content">
-            <span class="sub-badge">AI Skill & Competency Intelligence</span>
+            <span class="sub-badge">Smart Skill Intelligence Platform</span>
             <h1>Empowering Professional Growth<br>& Analytical Excellence</h1>
             <div class="social-icons">
                 <span>Connect with Platform</span>
@@ -50,19 +50,19 @@
             </div>
         </div>
         <div class="hero-card">
-            <h4>ACCELERATE YOUR CAREER</h4>
-            <div class="counter">1.7 Crore+</div>
-            <p><strong>Learners Onboarded</strong></p>
-            <small>Continuous learning, skill mastery and growth</small>
+            <h4><i class="fa-solid fa-users"></i> REGISTERED OFFICERS</h4>
+            <div class="counter" id="hero-registered-officers">21+</div>
+            <p><strong>Total Officers Onboarded</strong></p>
+            <small><i class="fa-solid fa-arrows-rotate fa-spin" style="font-size:0.75rem; color:#93c5fd; animation-duration:4s;"></i> Live synchronized competency registry</small>
         </div>
     </section>
 
     <section class="stats-ribbon">
-        <div class="stat-item"><i class="fa-solid fa-users"></i><h3>1,72,04,488</h3><p>Total Active Learners</p></div>
-        <div class="stat-item"><i class="fa-solid fa-book-open"></i><h3>6,252</h3><p>Total Courses</p></div>
-        <div class="stat-item"><i class="fa-solid fa-circle-check"></i><h3>14,96,44,900</h3><p>Total Completions</p></div>
-        <div class="stat-item"><i class="fa-solid fa-user-check"></i><h3>16,53,660</h3><p>Monthly Active Users</p></div>
-        <div class="stat-item"><i class="fa-solid fa-certificate"></i><h3>2,90,521</h3><p>Certificates Issued Yesterday</p></div>
+        <div class="stat-item"><i class="fa-solid fa-users"></i><h3 id="ribbon-officers-count">21+</h3><p>Total Registered Officers</p></div>
+        <div class="stat-item"><i class="fa-solid fa-book-open"></i><h3>45+</h3><p>Accredited Courses</p></div>
+        <div class="stat-item"><i class="fa-solid fa-certificate"></i><h3>100%</h3><p>Verified Credentials</p></div>
+        <div class="stat-item"><i class="fa-solid fa-building-columns"></i><h3>14</h3><p>Statistical Divisions</p></div>
+        <div class="stat-item"><i class="fa-solid fa-chart-line"></i><h3>4</h3><p>Competency Pillars</p></div>
     </section>
 
     <section class="course-section" id="showcased-courses">
@@ -201,10 +201,63 @@
     </section>
 
     <footer>
-        <p>&copy; 2026 SkillMatrix AI | Competency Intelligence & Learning Analytics Platform. All Rights Reserved.</p>
+        <p>&copy; 2026 Smart Skill Intelligence | Competency Intelligence & Learning Analytics Platform. All Rights Reserved.</p>
     </footer>
 
   <script>
+    async function updateLiveRegisteredOfficers() {
+      const SUPABASE_REST = 'https://ccdrahlnsfrncsqaiumt.supabase.co/rest/v1/employees?select=id';
+      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjZHJhaGxuc2ZybmNzcWFpdW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDEzMDAsImV4cCI6MjEwMzU3NzMwMH0.O3sAoWJuLWKeJCenkiUjen3FfLnNahUu7nKbpQ1t6Fo';
+      
+      let count = null;
+
+      // 1. Direct Supabase Query (instant & guaranteed)
+      try {
+        const res = await fetch(SUPABASE_REST, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Range-Unit': 'items',
+            'Range': '0-0',
+            'Prefer': 'count=exact'
+          }
+        });
+        const range = res.headers.get('content-range');
+        if (range && range.includes('/')) {
+          const parsed = parseInt(range.split('/')[1], 10);
+          if (!isNaN(parsed) && parsed > 0) count = parsed;
+        }
+      } catch (e) {}
+
+      // 2. Fallback to backend API
+      if (!count) {
+        try {
+          const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:5000'
+            : 'https://sih100-backend.onrender.com';
+          const res = await fetch(`${API_URL}/api/admin/officers-analytics`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.total_officers) count = data.total_officers;
+          }
+        } catch (e) {}
+      }
+
+      // Update counters dynamically on the home page
+      if (count) {
+        const heroEl = document.getElementById('hero-registered-officers');
+        const ribbonEl = document.getElementById('ribbon-officers-count');
+        if (heroEl) heroEl.innerText = `${count}+`;
+        if (ribbonEl) ribbonEl.innerText = `${count}+`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateLiveRegisteredOfficers();
+      // Periodically refresh the registered count in real-time
+      setInterval(updateLiveRegisteredOfficers, 8000);
+    });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(() => {});

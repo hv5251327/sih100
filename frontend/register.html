@@ -300,6 +300,138 @@
             // Keep clean dropdown without modifying designation choices
         }
 
+        let pendingRegistrationData = null;
+
+        function submitRegistration() {
+            const name = document.getElementById('regName')?.value?.trim();
+            const email = document.getElementById('regEmail')?.value?.trim()?.toLowerCase();
+            const password = document.getElementById('regPassword')?.value;
+            const cadre = document.getElementById('regCadre')?.value;
+            const department = document.getElementById('regDept')?.value;
+            const designation = document.getElementById('regDesignation')?.value;
+
+            if (!name || !email || !password || !cadre || !department || !designation) {
+                alert('Please fill out all registration fields.');
+                return;
+            }
+
+            pendingRegistrationData = { name, email, password, cadre, department, designation };
+            
+            // Open Diagnostic Baseline Assessment Modal
+            const modal = document.getElementById('diagnosticModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            } else {
+                finishRegistration({ stat: 65, tech: 60, gov: 65, lead: 60 });
+            }
+        }
+
+        async function submitDiagnosticAssessment(e) {
+            if (e) e.preventDefault();
+            const stat = parseInt(document.getElementById('diag_stat')?.value || '65', 10);
+            const tech = parseInt(document.getElementById('diag_tech')?.value || '60', 10);
+            const gov = parseInt(document.getElementById('diag_gov')?.value || '65', 10);
+            const lead = parseInt(document.getElementById('diag_lead')?.value || '60', 10);
+
+            const btn = document.getElementById('diagSubmitBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving Registration & Calibrating...';
+            }
+
+            await finishRegistration({ stat, tech, gov, lead });
+        }
+
+        async function finishRegistration(scores) {
+            if (!pendingRegistrationData) return;
+            const { name, email, password, cadre, department, designation } = pendingRegistrationData;
+            const overall_score = Math.round((scores.stat + scores.tech + scores.gov + scores.lead) / 4);
+
+            const authUser = {
+                name: name,
+                email: email,
+                role: 'employee',
+                cadre: cadre,
+                department: department,
+                designation: designation,
+                competency: {
+                    statistical_score: scores.stat,
+                    technical_score: scores.tech,
+                    governance_score: scores.gov,
+                    leadership_score: scores.lead,
+                    overall_score: overall_score
+                },
+                session_token: 'GOV-AUTH-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
+                session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
+                login_timestamp: new Date().toISOString()
+            };
+
+            try {
+                localStorage.setItem('mospi_user', JSON.stringify(authUser));
+                sessionStorage.setItem('mospi_user', JSON.stringify(authUser));
+            } catch (e) {}
+
+            // Direct Supabase insertion for live real-time registry sync
+            const SUPABASE_REST = 'https://ccdrahlnsfrncsqaiumt.supabase.co/rest/v1';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjZHJhaGxuc2ZybmNzcWFpdW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDEzMDAsImV4cCI6MjEwMzU3NzMwMH0.O3sAoWJuLWKeJCenkiUjen3FfLnNahUu7nKbpQ1t6Fo';
+
+            try {
+                await fetch(`${SUPABASE_REST}/employees`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_KEY,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        password,
+                        cadre,
+                        department,
+                        designation
+                    })
+                });
+
+                await fetch(`${SUPABASE_REST}/officer_competencies`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_KEY,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify({
+                        user_email: email,
+                        statistical_score: scores.stat,
+                        technical_score: scores.tech,
+                        governance_score: scores.gov,
+                        leadership_score: scores.lead,
+                        overall_score: overall_score
+                    })
+                });
+            } catch (e) {
+                console.warn('Direct Supabase registration sync:', e);
+            }
+
+            try {
+                const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                    ? 'http://localhost:5000'
+                    : 'https://sih100-backend.onrender.com';
+                await fetch(`${API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, cadre, department, designation, scores })
+                }).catch(() => {});
+            } catch (e) {}
+
+            window.location.href = 'dashboard.html';
+        }
+
+        window.submitRegistration = submitRegistration;
+        window.submitDiagnosticAssessment = submitDiagnosticAssessment;
+
         document.addEventListener('DOMContentLoaded', async () => {
             renderDesignationsDropdown();
             try {
