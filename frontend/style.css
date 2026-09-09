@@ -124,3 +124,48 @@ input { width: 100%; padding: 0.8rem 1rem; border: 1px solid #cbd5e1; border-rad
   .auth-buttons { flex-direction: column; }
   .auth-buttons .btn { width: 100%; }
 }
+
+/* =========================================================================
+   🌐 HIDE GOOGLE TRANSLATE FLOATING TABS, BANNERS, TOOLTIPS & GADGETS
+   ========================================================================= */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+iframe[id*=":1."],
+iframe[id*=":2."],
+iframe.goog-te-banner-frame,
+iframe.skiptranslate,
+iframe[src*="translate.google.com"],
+.VIpgJd-ZVi9od-OR9QNe-Oxf5td,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-vH1Gmf,
+.VIpgJd-ZVi9od-l4eHX-hSRGPd,
+.goog-tooltip,
+.goog-tooltip:hover,
+.goog-text-highlight,
+#goog-gt-tt,
+#goog-gt-vt,
+#goog-gt-te,
+.goog-te-spinner-pos,
+.goog-te-gadget,
+.goog-te-gadget-simple,
+.goog-te-combo,
+.goog-te-menu-value,
+#google_translate_element,
+body > .skiptranslate,
+.skiptranslate {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    max-height: 0 !important;
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+    z-index: -9999 !important;
+}
+body {
+    top: 0px !important;
+    position: static !important;
+}

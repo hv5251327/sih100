@@ -7,9 +7,48 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        #google_translate_element { display: none !important; }
-        .goog-te-banner-frame { display: none !important; }
-        body { top: 0px !important; }
+        /* Hide Google Translate Floating Tab, Banner, Tooltip & Containers Completely */
+        .goog-te-banner-frame,
+        .goog-te-banner-frame.skiptranslate,
+        iframe[id*=":1."],
+        iframe[id*=":2."],
+        iframe.goog-te-banner-frame,
+        iframe.skiptranslate,
+        iframe[src*="translate.google.com"],
+        .VIpgJd-ZVi9od-OR9QNe-Oxf5td,
+        .VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+        .VIpgJd-ZVi9od-vH1Gmf,
+        .VIpgJd-ZVi9od-l4eHX-hSRGPd,
+        .goog-tooltip,
+        .goog-tooltip:hover,
+        .goog-text-highlight,
+        #goog-gt-tt,
+        #goog-gt-vt,
+        #goog-gt-te,
+        .goog-te-spinner-pos,
+        .goog-te-gadget,
+        .goog-te-gadget-simple,
+        .goog-te-combo,
+        .goog-te-menu-value,
+        #google_translate_element,
+        body > .skiptranslate,
+        .skiptranslate {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            height: 0 !important;
+            width: 0 !important;
+            max-height: 0 !important;
+            position: absolute !important;
+            top: -9999px !important;
+            left: -9999px !important;
+            z-index: -9999 !important;
+        }
+        body {
+            top: 0px !important;
+            position: static !important;
+        }
 
         .form-group select {
             width: 100%;
@@ -88,6 +127,45 @@
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
         }
+
+        // Permanently suppress and hide any Google Translate floating badge, frame, or top offset
+        document.addEventListener('DOMContentLoaded', function() {
+            const hideGoogleUI = function() {
+                const selectors = [
+                    '.goog-te-banner-frame',
+                    '.goog-te-banner-frame.skiptranslate',
+                    'iframe[id*=":1."]',
+                    'iframe[id*=":2."]',
+                    'iframe.goog-te-banner-frame',
+                    'iframe.skiptranslate',
+                    'iframe[src*="translate.google.com"]',
+                    '.VIpgJd-ZVi9od-OR9QNe-Oxf5td',
+                    '.VIpgJd-ZVi9od-aZ2wEe-wOHMyf',
+                    '.VIpgJd-ZVi9od-vH1Gmf',
+                    '.VIpgJd-ZVi9od-l4eHX-hSRGPd',
+                    '#goog-gt-tt',
+                    '#goog-gt-vt',
+                    '.goog-tooltip',
+                    '.goog-te-gadget',
+                    '.skiptranslate'
+                ];
+                document.querySelectorAll(selectors.join(', ')).forEach(function(el) {
+                    if (el.id !== 'google_translate_element') {
+                        el.style.setProperty('display', 'none', 'important');
+                        el.style.setProperty('visibility', 'hidden', 'important');
+                        el.style.setProperty('opacity', '0', 'important');
+                        el.style.setProperty('pointer-events', 'none', 'important');
+                        el.style.setProperty('position', 'absolute', 'important');
+                        el.style.setProperty('top', '-9999px', 'important');
+                    }
+                });
+                if (document.body && document.body.style.top && document.body.style.top !== '0px') {
+                    document.body.style.setProperty('top', '0px', 'important');
+                }
+            };
+            hideGoogleUI();
+            setInterval(hideGoogleUI, 250);
+        });
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
