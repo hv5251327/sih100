@@ -1885,11 +1885,30 @@ function nominateForTpac(titleEnc) {
     async function loadOfficerHistory() {
       // 1. Load Completed History & Certs
       try {
-        const res = await fetch(`${API_URL}/api/progress/${currentUser.email}`);
-        const data = await res.json();
-        const progressList = data.progress || [];
-        const certsList = data.certificates || [];
+        let data = null;
+        try {
+          const res = await fetch(`${API_URL}/api/progress/${currentUser.email}`);
+          if (res.ok) {
+            data = await res.json();
+            if (currentUser && currentUser.email) {
+              localStorage.setItem('mospi_progress_' + currentUser.email.toLowerCase(), JSON.stringify(data));
+            }
+          }
+        } catch (fetchErr) {
+          console.warn("Using offline cached progress:", fetchErr.message);
+        }
+
+        if (!data && currentUser && currentUser.email) {
+          const cached = localStorage.getItem('mospi_progress_' + currentUser.email.toLowerCase());
+          if (cached) {
+            try { data = JSON.parse(cached); } catch (e) {}
+          }
+        }
+
+        const progressList = (data && data.progress) ? data.progress : [];
+        const certsList = (data && data.certificates) ? data.certificates : [];
         const tbody = document.getElementById("completed-courses-table-body");
+        if (!tbody) return;
 
         if (progressList.length === 0 && certsList.length === 0) {
           tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No courses completed yet. Start with Foundation modules above!</td></tr>`;
@@ -3800,7 +3819,17 @@ ORDER BY mean_stat_proficiency DESC;`;
         console.warn("Server sandbox runner note:", netErr.message);
       }
 
-      // 4. If Server Unreachable, return informative error
+      // 4. If Server Unreachable (e.g. Offline)
+      if (!navigator.onLine) {
+        return {
+          ok: false,
+          stdout: '',
+          stderr: '⚠️ Offline Field Mode: Cloud compilation is offline. Python and JavaScript execution are active and running locally in your browser.',
+          code: 1,
+          duration_ms: Date.now() - startTime
+        };
+      }
+
       return {
         ok: false,
         stdout: '',

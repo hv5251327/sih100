@@ -16,14 +16,47 @@ class MoSPIOfflineStore {
     this.registerServiceWorker();
   }
 
-  // Register Service Worker
+  // Register Service Worker & Precache Assets
   registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
+      const registerSW = () => {
         navigator.serviceWorker.register('./sw.js')
-          .then((reg) => console.log('[MoSPI PWA] Service Worker registered with scope:', reg.scope))
-          .catch((err) => console.warn('[MoSPI PWA] Service Worker registration failed:', err));
-      });
+          .then((reg) => {
+            console.log('[MoSPI PWA] Service Worker registered with scope:', reg.scope);
+            this.precacheDashboardAssets();
+          })
+          .catch((err) => console.warn('[MoSPI PWA] Service Worker registration warning:', err));
+      };
+
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        registerSW();
+      } else {
+        window.addEventListener('DOMContentLoaded', registerSW);
+        window.addEventListener('load', registerSW);
+      }
+    }
+  }
+
+  async precacheDashboardAssets() {
+    if ('caches' in window) {
+      try {
+        const cache = await caches.open('mospi-portal-cache-v3');
+        const assets = [
+          './',
+          './dashboard.html',
+          './index.html',
+          './employee-login.html',
+          './offline-sync.js',
+          './redirect.js',
+          './style.css',
+          './manifest.json'
+        ];
+        for (const url of assets) {
+          try {
+            await cache.add(url);
+          } catch (e) {}
+        }
+      } catch (err) {}
     }
   }
 
