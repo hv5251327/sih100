@@ -1896,7 +1896,30 @@
       const countEl = document.getElementById("syllabus-selected-count");
       if (countEl) countEl.innerText = count;
       const bulkBtn = document.getElementById("btn-save-selected-courses");
-      if (bulkBtn) bulkBtn.disabled = count === 0;
+      if (bulkBtn) {
+        bulkBtn.disabled = false;
+        if (count === 0) {
+          bulkBtn.innerHTML = '<i class="fa-solid fa-check"></i> Accept (0 Courses)';
+        } else {
+          bulkBtn.innerHTML = `<i class="fa-solid fa-plus-circle"></i> Add Selected (${count}) to Master DB`;
+        }
+      }
+    }
+
+    function checkSyllabusPreviewRemaining() {
+      const container = document.getElementById("syllabus-course-cards-list");
+      const resultBox = document.getElementById("syllabus-preview-box") || document.getElementById("syllabusResult");
+      const remainingCards = container ? container.querySelectorAll('[id^="syllabus-card-"]') : [];
+      if (remainingCards.length === 0 && resultBox) {
+        resultBox.innerHTML = `
+          <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:18px; border-radius:10px; font-weight:700; text-align:center;">
+            <i class="fa-solid fa-circle-check" style="font-size:1.6rem; color:#16a34a; display:block; margin-bottom:8px;"></i>
+            All extracted courses have been processed and added to Master Database!
+          </div>
+        `;
+        setTimeout(() => { resultBox.style.display = 'none'; }, 2500);
+      }
+      updateSyllabusSelectedCount();
     }
 
     async function saveSingleExtractedCourse(idx) {
@@ -1904,11 +1927,10 @@
       if (!course) return;
 
       const btn = document.getElementById(`btn-save-course-${idx}`);
-      const cb = document.getElementById(`syllabus-cb-${idx}`);
       const card = document.getElementById(`syllabus-card-${idx}`);
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
       }
 
       try {
@@ -1920,19 +1942,19 @@
         const data = await res.json();
         if (res.ok) {
           window.addedCourseIndices.add(idx);
-          if (cb) {
-            cb.checked = false;
-            cb.disabled = true;
-          }
-          const actionWrap = document.getElementById(`syllabus-action-wrap-${idx}`);
-          if (actionWrap) {
-            actionWrap.innerHTML = '<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check"></i> Added to DB</span>';
-          }
           if (card) {
-            card.style.borderLeftColor = "#16a34a";
-            card.style.background = "#f0fdf4";
+            card.style.transition = 'all 0.35s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+              card.remove();
+              checkSyllabusPreviewRemaining();
+            }, 350);
           }
-          updateSyllabusSelectedCount();
+          const statusSpan = document.getElementById("syllabus-status") || document.getElementById("syllabusFileStatus");
+          if (statusSpan) {
+            statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Added "${course.title}" to Master DB!`;
+          }
           await loadCoursesDropdown();
         } else {
           alert("Failed to save course: " + (data.error || 'Server error'));
@@ -1963,8 +1985,22 @@
         }
       });
 
+      const resultBox = document.getElementById("syllabus-preview-box") || document.getElementById("syllabusResult");
+      const statusSpan = document.getElementById("syllabus-status") || document.getElementById("syllabusFileStatus");
+
+      // If zero courses selected, accept gracefully without error
       if (toSave.length === 0) {
-        alert("Please select at least one course to add.");
+        if (resultBox) {
+          resultBox.innerHTML = `
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:16px; border-radius:10px; font-weight:700; text-align:center;">
+              <i class="fa-solid fa-circle-check" style="font-size:1.4rem; display:block; margin-bottom:6px;"></i> Review accepted (0 courses added to Master DB).
+            </div>
+          `;
+          setTimeout(() => { resultBox.style.display = 'none'; }, 2200);
+        }
+        if (statusSpan) {
+          statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Review finalized (0 courses added).`;
+        }
         return;
       }
 
@@ -1984,23 +2020,17 @@
         if (res.ok) {
           indices.forEach(idx => {
             window.addedCourseIndices.add(idx);
-            const cb = document.getElementById(`syllabus-cb-${idx}`);
-            if (cb) {
-              cb.checked = false;
-              cb.disabled = true;
-            }
-            const actionWrap = document.getElementById(`syllabus-action-wrap-${idx}`);
-            if (actionWrap) {
-              actionWrap.innerHTML = '<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check"></i> Added to DB</span>';
-            }
             const card = document.getElementById(`syllabus-card-${idx}`);
             if (card) {
-              card.style.borderLeftColor = "#16a34a";
-              card.style.background = "#f0fdf4";
+              card.style.transition = 'all 0.35s ease';
+              card.style.opacity = '0';
+              card.style.transform = 'translateY(-10px)';
+              setTimeout(() => {
+                card.remove();
+                checkSyllabusPreviewRemaining();
+              }, 350);
             }
           });
-          updateSyllabusSelectedCount();
-          const statusSpan = document.getElementById("syllabus-status") || document.getElementById("syllabusFileStatus");
           if (statusSpan) {
             statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Successfully saved ${toSave.length} courses to Master Database!`;
           }
@@ -2265,7 +2295,30 @@
       const countEl = document.getElementById("quiz-selected-count");
       if (countEl) countEl.innerText = count;
       const bulkBtn = document.getElementById("btn-save-selected-quiz");
-      if (bulkBtn) bulkBtn.disabled = count === 0;
+      if (bulkBtn) {
+        bulkBtn.disabled = false;
+        if (count === 0) {
+          bulkBtn.innerHTML = '<i class="fa-solid fa-check"></i> Accept (0 Questions)';
+        } else {
+          bulkBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Approve & Add Selected (${count}) to DB`;
+        }
+      }
+    }
+
+    function checkQuizPreviewRemaining() {
+      const container = document.getElementById("quiz-questions-cards-list");
+      const resultBox = document.getElementById("quiz-preview-box") || document.getElementById("docQuizResult");
+      const remainingCards = container ? container.querySelectorAll('[id^="quiz-card-"]') : [];
+      if (remainingCards.length === 0 && resultBox) {
+        resultBox.innerHTML = `
+          <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:18px; border-radius:10px; font-weight:700; text-align:center;">
+            <i class="fa-solid fa-circle-check" style="font-size:1.6rem; color:#16a34a; display:block; margin-bottom:8px;"></i>
+            All assessment questions have been processed and saved to database!
+          </div>
+        `;
+        setTimeout(() => { resultBox.style.display = 'none'; }, 2500);
+      }
+      updateQuizSelectedCount();
     }
 
     async function saveSingleQuizQuestion(idx) {
@@ -2273,7 +2326,6 @@
       if (!question) return;
 
       const btn = document.getElementById(`btn-save-quiz-${idx}`);
-      const cb = document.getElementById(`quiz-cb-${idx}`);
       const card = document.getElementById(`quiz-card-${idx}`);
       if (btn) {
         btn.disabled = true;
@@ -2292,19 +2344,19 @@
         const data = await res.json();
         if (res.ok) {
           window.addedQuizIndices.add(idx);
-          if (cb) {
-            cb.checked = false;
-            cb.disabled = true;
-          }
-          const actionWrap = document.getElementById(`quiz-action-wrap-${idx}`);
-          if (actionWrap) {
-            actionWrap.innerHTML = '<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check"></i> Saved to DB</span>';
-          }
           if (card) {
-            card.style.borderLeftColor = "#16a34a";
-            card.style.background = "#f0fdf4";
+            card.style.transition = 'all 0.35s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+              card.remove();
+              checkQuizPreviewRemaining();
+            }, 350);
           }
-          updateQuizSelectedCount();
+          const statusSpan = document.getElementById("quiz-gen-status") || document.getElementById("pdfUploadStatus");
+          if (statusSpan) {
+            statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Saved question to database!`;
+          }
         } else {
           alert("Failed to save question: " + (data.error || 'Server error'));
           if (btn) {
@@ -2334,8 +2386,22 @@
         }
       });
 
+      const resultBox = document.getElementById("quiz-preview-box") || document.getElementById("docQuizResult");
+      const statusSpan = document.getElementById("quiz-gen-status") || document.getElementById("pdfUploadStatus");
+
+      // If zero questions selected, accept gracefully without error
       if (toSave.length === 0) {
-        alert("Please select at least one question to add.");
+        if (resultBox) {
+          resultBox.innerHTML = `
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:16px; border-radius:10px; font-weight:700; text-align:center;">
+              <i class="fa-solid fa-circle-check" style="font-size:1.4rem; display:block; margin-bottom:6px;"></i> Review accepted (0 questions saved).
+            </div>
+          `;
+          setTimeout(() => { resultBox.style.display = 'none'; }, 2200);
+        }
+        if (statusSpan) {
+          statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Review finalized (0 questions added).`;
+        }
         return;
       }
 
@@ -2358,23 +2424,17 @@
         if (res.ok) {
           indices.forEach(idx => {
             window.addedQuizIndices.add(idx);
-            const cb = document.getElementById(`quiz-cb-${idx}`);
-            if (cb) {
-              cb.checked = false;
-              cb.disabled = true;
-            }
-            const actionWrap = document.getElementById(`quiz-action-wrap-${idx}`);
-            if (actionWrap) {
-              actionWrap.innerHTML = '<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check"></i> Saved to DB</span>';
-            }
             const card = document.getElementById(`quiz-card-${idx}`);
             if (card) {
-              card.style.borderLeftColor = "#16a34a";
-              card.style.background = "#f0fdf4";
+              card.style.transition = 'all 0.35s ease';
+              card.style.opacity = '0';
+              card.style.transform = 'translateY(-10px)';
+              setTimeout(() => {
+                card.remove();
+                checkQuizPreviewRemaining();
+              }, 350);
             }
           });
-          updateQuizSelectedCount();
-          const statusSpan = document.getElementById("quiz-gen-status") || document.getElementById("pdfUploadStatus");
           if (statusSpan) {
             statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Successfully saved ${toSave.length} questions into database table course_quizzes!`;
           }

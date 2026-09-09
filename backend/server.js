@@ -2040,8 +2040,15 @@ app.post(['/api/admin/save-quiz-questions', '/api/admin/save-quiz'], async (req,
     const { courseTitle, questions } = req.body;
     let questionsList = questions;
     if (!questionsList && req.body.question) questionsList = [req.body.question];
-    if (!Array.isArray(questionsList) || questionsList.length === 0) {
-        return res.status(400).json({ error: 'No quiz questions provided to save.' });
+    if (!questionsList) questionsList = [];
+    if (!Array.isArray(questionsList)) questionsList = [questionsList];
+    if (questionsList.length === 0) {
+        return res.json({
+            success: true,
+            message: '0 questions provided. Operation accepted.',
+            count: 0,
+            saved: []
+        });
     }
 
     const cleanTitle = (courseTitle || questionsList[0]?.course_title || 'MoSPI Competency Course').trim();
@@ -2271,10 +2278,16 @@ app.post('/api/admin/parse-syllabus', async (req, res) => {
 
 // Commit Reviewed Courses to Supabase Master Database
 app.post(['/api/admin/save-extracted-courses', '/api/admin/save-courses'], async (req, res) => {
-    let rawCourses = req.body.courses || req.body.course;
-    if (!rawCourses) return res.status(400).json({ error: 'No courses provided to save.' });
+    let rawCourses = req.body.courses || req.body.course || [];
     if (!Array.isArray(rawCourses)) rawCourses = [rawCourses];
-    if (rawCourses.length === 0) return res.status(400).json({ error: 'Empty courses array.' });
+    if (rawCourses.length === 0) {
+        return res.json({
+            success: true,
+            message: '0 courses provided. Operation accepted.',
+            count: 0,
+            courses: []
+        });
+    }
 
     try {
         const rowsToInsert = rawCourses.map((c, idx) => {
