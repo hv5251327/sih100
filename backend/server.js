@@ -2003,7 +2003,11 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
 
     try {
         // 1. Generate Psychometric MCQs via LangChain PromptTemplate Pipeline (with Groq API key)
-        const generatedQuestions = await runLangChainMCQPipeline(cleanTitle, documentText, count, diff, groqApiKey);
+        let generatedQuestions = await runLangChainMCQPipeline(cleanTitle, documentText, count, diff, groqApiKey);
+
+        if (!generatedQuestions || generatedQuestions.length === 0) {
+            generatedQuestions = await generateMCQsFromDocumentAI(cleanTitle, documentText, count, diff);
+        }
 
         if (!generatedQuestions || generatedQuestions.length === 0) {
             throw new Error('Could not synthesize questions from provided document.');
@@ -2020,7 +2024,7 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
 
             let safeIndex = typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < safeOptions.length 
                 ? q.correct_index 
-                : 0;
+                : (typeof q.correctIndex === 'number' && q.correctIndex >= 0 && q.correctIndex < safeOptions.length ? q.correctIndex : 0);
 
             return {
                 course_title: cleanTitle,
@@ -2073,15 +2077,19 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
             console.warn('DB error during quiz insertion:', dbErr.message);
         }
 
+        const finalQuizList = insertedRows.length > 0 ? insertedRows : rowsToInsert;
+
         return res.json({ 
             success: true,
-            message: `Successfully synthesized and stored ${rowsToInsert.length} assessment questions in course_quizzes database table!`, 
+            message: `Successfully synthesized and stored ${finalQuizList.length} assessment questions in course_quizzes database table!`, 
             course_title: cleanTitle,
             saved_to_db: savedInDB,
-            total_generated: rowsToInsert.length,
+            count: finalQuizList.length,
+            total_generated: finalQuizList.length,
             requested_count: count,
-            is_max_possible: rowsToInsert.length < count,
-            questions: insertedRows.length > 0 ? insertedRows : rowsToInsert 
+            is_max_possible: finalQuizList.length < count,
+            questions: finalQuizList,
+            quiz: finalQuizList
         });
     } catch (err) {
         return res.status(500).json({ error: err.message || 'Quiz synthesis failed.' });

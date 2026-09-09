@@ -64,7 +64,8 @@ async function callFastLLM(promptText, customGroqKey = null) {
                         model: model,
                         prompt: `${sysPrompt}\n\n${promptText}`,
                         stream: false
-                    })
+                    }),
+                    signal: AbortSignal.timeout(6000)
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -94,7 +95,8 @@ async function callFastLLM(promptText, customGroqKey = null) {
                             { role: 'user', content: promptText }
                         ],
                         temperature: 0.1
-                    })
+                    }),
+                    signal: AbortSignal.timeout(6000)
                 });
                 if (res.ok) {
                     const data = await res.json();
