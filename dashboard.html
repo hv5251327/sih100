@@ -1457,36 +1457,60 @@
       }
     });
 
-        async function loadCompetencies() {
-      let s = 75, t = 68, g = 82, l = 70;
+    async function loadCompetencies() {
+      let s = 65, t = 60, g = 65, l = 60;
 
-      // 1. Check local saved scores first
+      // 1. Check logged-in user profile competency object first
+      if (currentUser) {
+        if (currentUser.competency) {
+          s = currentUser.competency.statistical_score ?? currentUser.competency.stat ?? s;
+          t = currentUser.competency.technical_score ?? currentUser.competency.tech ?? t;
+          g = currentUser.competency.governance_score ?? currentUser.competency.gov ?? g;
+          l = currentUser.competency.leadership_score ?? currentUser.competency.lead ?? l;
+        } else if (currentUser.competency_scores) {
+          s = currentUser.competency_scores.statistical_score ?? currentUser.competency_scores.stat ?? s;
+          t = currentUser.competency_scores.technical_score ?? currentUser.competency_scores.tech ?? t;
+          g = currentUser.competency_scores.governance_score ?? currentUser.competency_scores.gov ?? g;
+          l = currentUser.competency_scores.leadership_score ?? currentUser.competency_scores.lead ?? l;
+        }
+      }
+
+      // 2. Check local/session saved competency scores
       if (currentUser && currentUser.email) {
-        const savedScores = localStorage.getItem('mospi_competency_scores_' + currentUser.email.toLowerCase());
+        const savedScores = localStorage.getItem('mospi_competency_scores_' + currentUser.email.toLowerCase()) || sessionStorage.getItem('mospi_competency_scores_' + currentUser.email.toLowerCase());
         if (savedScores) {
           try {
             const parsed = JSON.parse(savedScores);
-            s = parsed.statistical_score ?? s;
-            t = parsed.technical_score ?? t;
-            g = parsed.governance_score ?? g;
-            l = parsed.leadership_score ?? l;
+            s = parsed.statistical_score ?? parsed.stat ?? s;
+            t = parsed.technical_score ?? parsed.tech ?? t;
+            g = parsed.governance_score ?? parsed.gov ?? g;
+            l = parsed.leadership_score ?? parsed.lead ?? l;
           } catch(e) {}
         }
       }
 
+      // 3. Fetch from backend API
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
-        const res = await fetch(`${API_URL}/api/competencies/${currentUser.email}`, { signal: controller.signal });
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch(`${API_URL}/api/competencies/${encodeURIComponent(currentUser.email)}`, { signal: controller.signal });
         clearTimeout(timeoutId);
 
         if (res.ok) {
           const data = await res.json();
-          if (data && typeof data.statistical_score === 'number') {
+          if (data && typeof data.statistical_score === 'number' && (data.statistical_score > 0 || data.technical_score > 0 || data.governance_score > 0 || data.leadership_score > 0)) {
             s = data.statistical_score;
-            t = data.technical_score || t;
-            g = data.governance_score || g;
-            l = data.leadership_score || l;
+            t = data.technical_score ?? t;
+            g = data.governance_score ?? g;
+            l = data.leadership_score ?? l;
+
+            const updatedComp = { statistical_score: s, technical_score: t, governance_score: g, leadership_score: l, overall_score: Math.round((s + t + g + l) / 4) };
+            if (currentUser) {
+              currentUser.competency = updatedComp;
+              currentUser.competency_scores = updatedComp;
+              try { localStorage.setItem('mospi_user', JSON.stringify(currentUser)); } catch (e) {}
+            }
+            try { localStorage.setItem('mospi_competency_scores_' + currentUser.email.toLowerCase(), JSON.stringify(updatedComp)); } catch (e) {}
           }
         }
       } catch (e) {

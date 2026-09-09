@@ -1357,7 +1357,15 @@ async function evaluateOfficerCompetencyWithGrokAI(officerData = {}) {
     const cleanDept = (department || 'NAD').toUpperCase();
     const cleanDeptName = department_name || DEPARTMENT_NAMES_MAP[cleanDept] || cleanDept;
 
-    const sysPrompt = "You are the Apex MoSPI & NSSTA Competency Evaluation AI powered by Grok. You analyze newly registered officers to determine their baseline knowledge across statistical, technical, digital governance, and administrative leadership competencies. Return ONLY a valid JSON object without markdown.";
+    // Format detailed question-by-question evidence across each pillar for the LLM
+    let quizAnswersSummary = "";
+    if (Array.isArray(quiz_results.answers) && quiz_results.answers.length > 0) {
+        quizAnswersSummary = quiz_results.answers.map((a, i) => 
+            `  * Q${i+1} [Pillar: ${(a.pillar || 'stat').toUpperCase()} - ${a.competency || 'Domain'}]: "${a.question}" -> Officer Answer: "${a.selected_option || 'Selected'}" | Result: ${a.is_correct ? 'CORRECT (100%)' : 'INCORRECT (0%)'}`
+        ).join('\n');
+    }
+
+    const sysPrompt = "You are the Apex MoSPI & NSSTA Competency Evaluation AI powered by Grok. You analyze newly registered officers to determine their exact baseline knowledge across statistical, technical, digital governance, and administrative leadership competencies. Return ONLY a valid JSON object without markdown.";
 
     const prompt = `Perform an immediate competency evaluation for the following newly registering MoSPI officer:
 - Officer Name: ${name}
@@ -1371,10 +1379,16 @@ async function evaluateOfficerCompetencyWithGrokAI(officerData = {}) {
   * Digital Government: ${selfGov}%
   * Behavioural Leadership & Public Administration: ${selfLead}%
 - Objective Department Baseline Quiz Results:
-  * Score: ${quizScore}% (${quizCorrect}/${quizTotal} correct answers)
+  * Overall Score: ${quizScore}% (${quizCorrect}/${quizTotal} correct answers)
+${quizAnswersSummary ? `- Detailed Question Answers:\n${quizAnswersSummary}` : ''}
 
 Task:
-1. Calibrate the exact proficiency percentage (20 to 100) for each of the 4 competency pillars combining self-evaluation (60%) and objective quiz performance (40%).
+1. Calibrate the exact proficiency percentage (20 to 100) individually for EACH of the 4 competency pillars:
+   - statistical_score: Statistical Methods & Sampling
+   - technical_score: Technical & Microdata Analysis Tools
+   - governance_score: Digital Government
+   - leadership_score: Behavioural Leadership & Public Administration
+   Weigh their self-evaluation (60%) with objective evidence from the quiz questions targeting each pillar (40%).
 2. Determine their overall competency score and proficiency tier (Novice / Practitioner / Advanced Specialist / Apex Leader).
 3. Provide a 2-3 sentence executive diagnostic summary of what they know and their current readiness.
 4. List key demonstrated strengths and specific skill deficits / gap areas.
@@ -1428,11 +1442,29 @@ Return STRICT JSON in this structure:
         console.warn('Grok AI officer evaluation note:', err.message);
     }
 
-    // High-precision mathematical & domain fallback calibration
-    const calStat = Math.min(100, Math.max(20, Math.round(selfStat * 0.6 + quizScore * 0.4)));
-    const calTech = Math.min(100, Math.max(20, Math.round(selfTech * 0.6 + quizScore * 0.4)));
-    const calGov = Math.min(100, Math.max(20, Math.round(selfGov * 0.6 + quizScore * 0.4)));
-    const calLead = Math.min(100, Math.max(20, Math.round(selfLead * 0.6 + quizScore * 0.4)));
+    // High-precision mathematical & domain fallback calibration with pillar-specific quiz breakdown
+    const pillarScores = { stat: [], tech: [], gov: [], lead: [] };
+    if (Array.isArray(quiz_results.answers) && quiz_results.answers.length > 0) {
+        quiz_results.answers.forEach(ans => {
+            const p = (ans.pillar || '').toLowerCase();
+            const isCorr = ans.is_correct ? 100 : 0;
+            if (p.includes('stat')) pillarScores.stat.push(isCorr);
+            else if (p.includes('tech')) pillarScores.tech.push(isCorr);
+            else if (p.includes('gov')) pillarScores.gov.push(isCorr);
+            else if (p.includes('lead')) pillarScores.lead.push(isCorr);
+        });
+    }
+
+    const getPillarQuizAvg = (arr) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : quizScore;
+    const statQuizPct = getPillarQuizAvg(pillarScores.stat);
+    const techQuizPct = getPillarQuizAvg(pillarScores.tech);
+    const govQuizPct = getPillarQuizAvg(pillarScores.gov);
+    const leadQuizPct = getPillarQuizAvg(pillarScores.lead);
+
+    const calStat = Math.min(100, Math.max(20, Math.round(selfStat * 0.6 + statQuizPct * 0.4)));
+    const calTech = Math.min(100, Math.max(20, Math.round(selfTech * 0.6 + techQuizPct * 0.4)));
+    const calGov = Math.min(100, Math.max(20, Math.round(selfGov * 0.6 + govQuizPct * 0.4)));
+    const calLead = Math.min(100, Math.max(20, Math.round(selfLead * 0.6 + leadQuizPct * 0.4)));
     const overall = Math.round((calStat + calTech + calGov + calLead) / 4);
 
     let tier = "Practitioner";

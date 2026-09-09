@@ -539,6 +539,10 @@
                     </div>
                 </div>
 
+                <div id="grokDiagSummary" style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:0.82rem; color:#166534; text-align:left; line-height:1.45;">
+                    <i class="fa-solid fa-brain fa-spin" style="color:#059669;"></i> <strong>Grok AI Competency Calibration:</strong> Synthesizing deep evaluation against MoSPI NSSTA benchmarks...
+                </div>
+
                 <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px 14px; margin-bottom:18px; font-size:0.82rem; color:#1e3a8a;">
                     <i class="fa-solid fa-route"></i> Your personalized 3-stage learning roadmap and gap analysis have been initialized in the MoSPI Competency Engine.
                 </div>
@@ -859,12 +863,19 @@
                 return;
             }
 
-            // 1. Calculate objective quiz score
+            // 1. Calculate objective quiz score and detailed question-by-question evidence
             let correctCount = 0;
-            baselineQuestions.forEach((q, idx) => {
-                if (userQuizAnswers[idx] === q.correct_index) {
-                    correctCount++;
-                }
+            const answers = baselineQuestions.map((q, idx) => {
+                const isCorrect = (userQuizAnswers[idx] === q.correct_index);
+                if (isCorrect) correctCount++;
+                return {
+                    question: q.question,
+                    competency: q.competency || 'Competency Domain',
+                    pillar: q.pillar || (idx === 0 ? 'stat' : (idx === 1 ? 'tech' : (idx === 2 ? 'gov' : (idx === 3 ? 'lead' : 'stat')))),
+                    selected_option: q.options ? (q.options[userQuizAnswers[idx]] || '') : '',
+                    correct_option: q.options ? (q.options[q.correct_index] || '') : '',
+                    is_correct: isCorrect
+                };
             });
 
             const quizPercentage = Math.round((correctCount / Math.max(1, baselineQuestions.length)) * 100);
@@ -875,11 +886,28 @@
             const self_gov = parseInt(document.getElementById('diag_gov')?.value || '65', 10);
             const self_lead = parseInt(document.getElementById('diag_lead')?.value || '60', 10);
 
-            // 3. Calibrate: 60% Self-Evaluation + 40% Objective Quiz Performance
-            const calibrated_stat = Math.min(100, Math.max(20, Math.round(self_stat * 0.6 + quizPercentage * 0.4)));
-            const calibrated_tech = Math.min(100, Math.max(20, Math.round(self_tech * 0.6 + quizPercentage * 0.4)));
-            const calibrated_gov = Math.min(100, Math.max(20, Math.round(self_gov * 0.6 + quizPercentage * 0.4)));
-            const calibrated_lead = Math.min(100, Math.max(20, Math.round(self_lead * 0.6 + quizPercentage * 0.4)));
+            // 3. Compute Pillar-Specific Objective Quiz Accuracy
+            const pillarScores = { stat: [], tech: [], gov: [], lead: [] };
+            answers.forEach(ans => {
+                const p = (ans.pillar || '').toLowerCase();
+                const scoreVal = ans.is_correct ? 100 : 0;
+                if (p.includes('stat')) pillarScores.stat.push(scoreVal);
+                else if (p.includes('tech')) pillarScores.tech.push(scoreVal);
+                else if (p.includes('gov')) pillarScores.gov.push(scoreVal);
+                else if (p.includes('lead')) pillarScores.lead.push(scoreVal);
+            });
+
+            const getPillarQuizAvg = (arr) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : quizPercentage;
+            const statQuizPct = getPillarQuizAvg(pillarScores.stat);
+            const techQuizPct = getPillarQuizAvg(pillarScores.tech);
+            const govQuizPct = getPillarQuizAvg(pillarScores.gov);
+            const leadQuizPct = getPillarQuizAvg(pillarScores.lead);
+
+            // 4. Initial High-Precision Calibration: 60% Self-Evaluation + 40% Objective Pillar Quiz Validation
+            const calibrated_stat = Math.min(100, Math.max(20, Math.round(self_stat * 0.6 + statQuizPct * 0.4)));
+            const calibrated_tech = Math.min(100, Math.max(20, Math.round(self_tech * 0.6 + techQuizPct * 0.4)));
+            const calibrated_gov = Math.min(100, Math.max(20, Math.round(self_gov * 0.6 + govQuizPct * 0.4)));
+            const calibrated_lead = Math.min(100, Math.max(20, Math.round(self_lead * 0.6 + leadQuizPct * 0.4)));
             const overall_score = Math.round((calibrated_stat + calibrated_tech + calibrated_gov + calibrated_lead) / 4);
 
             finalCalibratedScores = {
@@ -893,7 +921,7 @@
                 quiz_total: baselineQuestions.length
             };
 
-            // 4. Update Step 3 Display
+            // 5. Update Step 3 Display
             document.getElementById('resStatVal').textContent = `${calibrated_stat}%`;
             document.getElementById('resStatBar').style.width = `${calibrated_stat}%`;
 
@@ -911,7 +939,7 @@
             document.getElementById('modalStep2').style.display = 'none';
             document.getElementById('modalStep3').style.display = 'block';
 
-            // 5. Asynchronously invoke Grok AI Evaluation & Redis Persistence
+            // 6. Invoke Grok AI / LLM Deep Evaluation & Persistence
             try {
                 const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
                     ? 'http://localhost:5000'
@@ -927,14 +955,47 @@
                         department: pendingRegistrationData?.department,
                         designation: pendingRegistrationData?.designation,
                         self_ratings: { stat: self_stat, tech: self_tech, gov: self_gov, lead: self_lead },
-                        quiz_results: { score: quizPercentage, correct: correctCount, total: baselineQuestions.length }
+                        quiz_results: { 
+                            score: quizPercentage, 
+                            correct: correctCount, 
+                            total: baselineQuestions.length,
+                            answers: answers
+                        }
                     })
                 }).then(res => res.json()).then(data => {
                     if (data && data.evaluation) {
                         const evalData = data.evaluation;
+                        const eStat = Number(evalData.statistical_score || calibrated_stat);
+                        const eTech = Number(evalData.technical_score || calibrated_tech);
+                        const eGov = Number(evalData.governance_score || calibrated_gov);
+                        const eLead = Number(evalData.leadership_score || calibrated_lead);
+                        const eOverall = Number(evalData.overall_score || Math.round((eStat + eTech + eGov + eLead) / 4));
+
+                        finalCalibratedScores = {
+                            stat: eStat,
+                            tech: eTech,
+                            gov: eGov,
+                            lead: eLead,
+                            overall_score: eOverall,
+                            quiz_score: quizPercentage,
+                            quiz_correct: correctCount,
+                            quiz_total: baselineQuestions.length,
+                            evaluation: evalData
+                        };
+
+                        // Live update Step 3 display with Grok AI calibrated scores
+                        if (document.getElementById('resStatVal')) document.getElementById('resStatVal').textContent = `${eStat}%`;
+                        if (document.getElementById('resStatBar')) document.getElementById('resStatBar').style.width = `${eStat}%`;
+                        if (document.getElementById('resTechVal')) document.getElementById('resTechVal').textContent = `${eTech}%`;
+                        if (document.getElementById('resTechBar')) document.getElementById('resTechBar').style.width = `${eTech}%`;
+                        if (document.getElementById('resGovVal')) document.getElementById('resGovVal').textContent = `${eGov}%`;
+                        if (document.getElementById('resGovBar')) document.getElementById('resGovBar').style.width = `${eGov}%`;
+                        if (document.getElementById('resLeadVal')) document.getElementById('resLeadVal').textContent = `${eLead}%`;
+                        if (document.getElementById('resLeadBar')) document.getElementById('resLeadBar').style.width = `${eLead}%`;
+
                         const summaryElem = document.getElementById('grokDiagSummary');
                         if (summaryElem && evalData.diagnostic_summary) {
-                            summaryElem.innerHTML = `<strong>${evalData.proficiency_tier || 'Practitioner'}:</strong> ${evalData.diagnostic_summary}`;
+                            summaryElem.innerHTML = `<i class="fa-solid fa-brain" style="color:#059669;"></i> <strong>Grok AI (${evalData.proficiency_tier || 'Practitioner'}):</strong> ${evalData.diagnostic_summary}`;
                         }
                     }
                 }).catch(() => {});
@@ -945,6 +1006,14 @@
             if (!pendingRegistrationData) return;
             const { name, email, password, cadre, department, designation } = pendingRegistrationData;
             const scores = finalCalibratedScores || { stat: 65, tech: 60, gov: 65, lead: 60, overall_score: 63 };
+
+            const compScores = {
+                statistical_score: scores.stat,
+                technical_score: scores.tech,
+                governance_score: scores.gov,
+                leadership_score: scores.lead,
+                overall_score: scores.overall_score || Math.round((scores.stat + scores.tech + scores.gov + scores.lead) / 4)
+            };
 
             const btn = document.getElementById('btnEnterDashboard');
             if (btn) {
@@ -959,13 +1028,8 @@
                 cadre: cadre,
                 department: department,
                 designation: designation,
-                competency: {
-                    statistical_score: scores.stat,
-                    technical_score: scores.tech,
-                    governance_score: scores.gov,
-                    leadership_score: scores.lead,
-                    overall_score: scores.overall_score
-                },
+                competency: compScores,
+                competency_scores: compScores,
                 baseline_quiz: {
                     completed: true,
                     score: scores.quiz_score || 80,
@@ -981,6 +1045,8 @@
             try {
                 localStorage.setItem('mospi_user', JSON.stringify(authUser));
                 sessionStorage.setItem('mospi_user', JSON.stringify(authUser));
+                localStorage.setItem('mospi_competency_scores_' + email.toLowerCase(), JSON.stringify(compScores));
+                sessionStorage.setItem('mospi_competency_scores_' + email.toLowerCase(), JSON.stringify(compScores));
             } catch (e) {}
 
             // Direct Supabase database insertion for live sync
@@ -1016,11 +1082,11 @@
                     },
                     body: JSON.stringify({
                         user_email: email,
-                        statistical_score: scores.stat,
-                        technical_score: scores.tech,
-                        governance_score: scores.gov,
-                        leadership_score: scores.lead,
-                        overall_score: scores.overall_score
+                        statistical_score: compScores.statistical_score,
+                        technical_score: compScores.technical_score,
+                        governance_score: compScores.governance_score,
+                        leadership_score: compScores.leadership_score,
+                        overall_score: compScores.overall_score
                     })
                 });
             } catch (e) {
@@ -1034,7 +1100,7 @@
                 await fetch(`${API_URL}/api/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password, cadre, department, designation, scores })
+                    body: JSON.stringify({ name, email, password, cadre, department, designation, scores: compScores })
                 }).catch(() => {});
             } catch (e) {}
 

@@ -2408,6 +2408,35 @@ async function getOfficerCompletedCourses(cleanEmail) {
 }
 
 async function recalculateCompetencies(cleanEmail) {
+    if (!cleanEmail) return { statistical_score: 50, technical_score: 50, governance_score: 50, leadership_score: 50, overall_score: 50 };
+
+    // 1. Fetch baseline/current competency record from memory, Redis, or Supabase
+    let baseComp = memoryCompetencies[cleanEmail];
+    if (!baseComp) {
+        try {
+            const cached = await redisCache.get(`mospi:officer:competency:${cleanEmail}`);
+            if (cached && typeof cached.statistical_score === 'number') {
+                baseComp = cached;
+                memoryCompetencies[cleanEmail] = cached;
+            }
+        } catch (e) {}
+    }
+    if (!baseComp && supabase) {
+        try {
+            const { data: dbComp } = await supabase.from('officer_competencies').select('*').eq('user_email', cleanEmail).maybeSingle();
+            if (dbComp && typeof dbComp.statistical_score === 'number') {
+                baseComp = dbComp;
+                memoryCompetencies[cleanEmail] = dbComp;
+            }
+        } catch (e) {}
+    }
+
+    // Default baseline if officer has no prior record
+    const baseStat = (baseComp && typeof baseComp.statistical_score === 'number') ? baseComp.statistical_score : 65;
+    const baseTech = (baseComp && typeof baseComp.technical_score === 'number') ? baseComp.technical_score : 60;
+    const baseGov = (baseComp && typeof baseComp.governance_score === 'number') ? baseComp.governance_score : 65;
+    const baseLead = (baseComp && typeof baseComp.leadership_score === 'number') ? baseComp.leadership_score : 60;
+
     // Map completed courses to their actual quiz/certificate scores
     const completedScores = new Map();
 
@@ -2442,6 +2471,20 @@ async function recalculateCompetencies(cleanEmail) {
             completedScores.set(norm, 100);
         });
     } catch (e) {}
+
+    // If user has not completed any new courses yet, preserve their evaluated baseline competency scores!
+    if (completedScores.size === 0) {
+        const result = {
+            user_email: cleanEmail,
+            statistical_score: baseStat,
+            technical_score: baseTech,
+            governance_score: baseGov,
+            leadership_score: baseLead,
+            overall_score: Math.round((baseStat + baseTech + baseGov + baseLead) / 4)
+        };
+        memoryCompetencies[cleanEmail] = result;
+        return result;
+    }
 
     let { data: allCourses } = await supabase.from('master_courses').select('id, title, domain, is_general_mandatory');
     if (!allCourses || allCourses.length === 0) allCourses = [];
@@ -2480,10 +2523,10 @@ async function recalculateCompetencies(cleanEmail) {
         }
     });
 
-    const statScore = Math.min(100, Math.round(statEarned));
-    const techScore = Math.min(100, Math.round(techEarned));
-    const govScore = Math.min(100, Math.round(govEarned));
-    const leadScore = Math.min(100, Math.round(leadEarned));
+    const statScore = Math.min(100, Math.round(baseStat + statEarned));
+    const techScore = Math.min(100, Math.round(baseTech + techEarned));
+    const govScore = Math.min(100, Math.round(baseGov + govEarned));
+    const leadScore = Math.min(100, Math.round(baseLead + leadEarned));
     const overallScore = Math.min(100, Math.round((statScore + techScore + govScore + leadScore) / 4));
 
     const result = {
@@ -2498,22 +2541,8 @@ async function recalculateCompetencies(cleanEmail) {
     memoryCompetencies[cleanEmail] = result;
 
     try {
-        const { data: existing } = await supabase.from('officer_competencies').select('id').eq('user_email', cleanEmail);
-        if (existing && existing.length > 0) {
-            await supabase.from('officer_competencies').update({
-                statistical_score: statScore,
-                technical_score: techScore,
-                governance_score: govScore,
-                leadership_score: leadScore,
-                overall_score: overallScore,
-                updated_at: new Date().toISOString()
-            }).eq('user_email', cleanEmail);
-        } else {
-            let nextId = 50;
-            const { data: maxIdRow } = await supabase.from('officer_competencies').select('id').order('id', { ascending: false }).limit(1);
-            if (maxIdRow && maxIdRow[0] && maxIdRow[0].id) nextId = maxIdRow[0].id + 1;
-            await supabase.from('officer_competencies').insert([{
-                id: nextId,
+        if (supabase) {
+            await supabase.from('officer_competencies').upsert({
                 user_email: cleanEmail,
                 statistical_score: statScore,
                 technical_score: techScore,
@@ -2521,7 +2550,7 @@ async function recalculateCompetencies(cleanEmail) {
                 leadership_score: leadScore,
                 overall_score: overallScore,
                 updated_at: new Date().toISOString()
-            }]);
+            }, { onConflict: 'user_email' });
         }
     } catch (e) {
         console.error('DB Competencies Persistence Catch:', e.message);
@@ -3146,8 +3175,18 @@ app.post(['/api/assessment/evaluate-officer', '/api/officer/competency-check', '
             quiz_results: quiz_results || { score: 80, correct: 4, total: 5 }
         });
 
-        // 3. Immediately store Grok evaluation and personalized roadmap in Redis
+        // 3. Immediately store Grok evaluation and personalized roadmap in Redis & memory
         if (cleanEmail) {
+            const compObj = {
+                user_email: cleanEmail,
+                statistical_score: evaluation.statistical_score,
+                technical_score: evaluation.technical_score,
+                governance_score: evaluation.governance_score,
+                leadership_score: evaluation.leadership_score,
+                overall_score: evaluation.overall_score,
+                updated_at: new Date().toISOString()
+            };
+            memoryCompetencies[cleanEmail] = compObj;
             await redisCache.set(redisOfficerKey, evaluation, 86400);
             await redisCache.set(`mospi:officer:roadmap:${cleanEmail}`, {
                 stage1: evaluation.stage_1_foundation_courses || [],
@@ -4275,15 +4314,53 @@ app.post('/api/auth/verify-otp', async (req, res) => {
 });
 
 app.post('/api/auth/register', async (req, res) => {
-    const { name, email, password, cadre, department, designation } = req.body;
+    const { name, email, password, cadre, department, designation, scores } = req.body;
     if (!email || !password || !name || !cadre || !department || !designation) {
         return res.status(400).json({ error: 'All fields are required.' });
     }
     const cleanEmail = email.trim().toLowerCase();
     try {
-        const { data, error } = await supabase.from('employees').insert([{ name: name.trim(), email: cleanEmail, password: password, cadre: cadre.trim(), department: department.trim(), designation: designation.trim() }]).select();
+        const { data, error } = await supabase.from('employees').upsert([{ name: name.trim(), email: cleanEmail, password: password, cadre: cadre.trim(), department: department.trim(), designation: designation.trim() }], { onConflict: 'email' }).select();
         if (error) return res.status(400).json({ error: error.message });
-        await supabase.from('officer_competencies').insert([{ user_email: cleanEmail, statistical_score: 0, technical_score: 0, governance_score: 0, leadership_score: 0 }]);
+
+        // Retrieve calibrated scores from registration or Redis cache or default
+        let statScore = 65, techScore = 60, govScore = 65, leadScore = 60;
+        if (scores && typeof scores === 'object') {
+            statScore = Number(scores.statistical_score ?? scores.stat ?? 65);
+            techScore = Number(scores.technical_score ?? scores.tech ?? 60);
+            govScore = Number(scores.governance_score ?? scores.gov ?? 65);
+            leadScore = Number(scores.leadership_score ?? scores.lead ?? 60);
+        } else {
+            const cached = await redisCache.get(`mospi:officer:competency:${cleanEmail}`);
+            if (cached && typeof cached.statistical_score === 'number') {
+                statScore = cached.statistical_score;
+                techScore = cached.technical_score;
+                govScore = cached.governance_score;
+                leadScore = cached.leadership_score;
+            }
+        }
+        const overallScore = Math.round((statScore + techScore + govScore + leadScore) / 4);
+
+        const compRecord = {
+            user_email: cleanEmail,
+            statistical_score: statScore,
+            technical_score: techScore,
+            governance_score: govScore,
+            leadership_score: leadScore,
+            overall_score: overallScore,
+            updated_at: new Date().toISOString()
+        };
+
+        memoryCompetencies[cleanEmail] = compRecord;
+        await redisCache.set(`mospi:officer:competency:${cleanEmail}`, compRecord, 86400);
+
+        try {
+            if (supabase) {
+                await supabase.from('officer_competencies').upsert(compRecord, { onConflict: 'user_email' });
+            }
+        } catch (e) {
+            console.warn('Supabase officer competency registration upsert note:', e.message);
+        }
         
         // Immediately architect and persist tailored courses for new officer in persistent database
         let { data: allCourses } = await supabase.from('master_courses').select('*').order('id');
@@ -4293,11 +4370,15 @@ app.post('/api/auth/register', async (req, res) => {
             department: department.trim(),
             designation: designation.trim(),
             cadre: cadre.trim(),
-            comp: { statistical_score: 50, technical_score: 50, governance_score: 50, leadership_score: 50 }
+            comp: compRecord
         });
         await persistOfficerRecommendations(cleanEmail, initialRecs, { cadre, designation, department });
 
-        return res.status(201).json({ message: 'Registered successfully and courses saved in DB!', user: data[0] });
+        return res.status(201).json({ 
+            message: 'Registered successfully and courses saved in DB!', 
+            user: data ? data[0] : { name, email: cleanEmail, department, designation, cadre },
+            competency: compRecord
+        });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
@@ -4360,18 +4441,22 @@ app.post('/api/auth/login', async (req, res) => {
 
         const { password: _, ...userProfile } = userRecord;
         const savedRecommendations = (await getSavedOfficerRecommendations(cleanEmail)) || [];
+        const officerComp = memoryCompetencies[cleanEmail] || (await recalculateCompetencies(cleanEmail));
 
-            return res.json({ 
-                message: 'Authentication successful', 
-                user: { 
-                    ...userProfile, 
-                    role: 'employee',
-                    session_token: sessionToken,
-                    session_expiry: sessionExpiry,
-                    login_timestamp: new Date().toISOString()
-                },
-                recommendations: savedRecommendations
-            });
+        return res.json({ 
+            message: 'Authentication successful', 
+            user: { 
+                ...userProfile, 
+                role: 'employee',
+                competency: officerComp,
+                competency_scores: officerComp,
+                session_token: sessionToken,
+                session_expiry: sessionExpiry,
+                login_timestamp: new Date().toISOString()
+            },
+            recommendations: savedRecommendations,
+            competency: officerComp
+        });
     } catch (err) {
         console.error('Login Error:', err);
         return res.status(500).json({ error: 'Login error' });

@@ -4833,5 +4833,178 @@
       "learning_stage": "Advanced Strategic",
       "match_score": 91
     }
+  ],
+  "test.officer.1788975063832@mospi.gov.in": [
+    {
+      "id": 6,
+      "course_code": "GEN-06",
+      "title": "Python & Pandas for Official Statistical Analysis & Data Wrangling",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Foundation",
+      "description": "Hands-on large microdata transformation, missing data treatment, and automated summaries in Python.",
+      "video_url": "https://www.youtube.com/embed/eWRfhZ9WAWQ",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 7,
+      "course_code": "GEN-07",
+      "title": "Relational SQL & Survey Microdata Validation Queries",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Foundation",
+      "description": "Data modeling, schema validation, and running complex analytical queries on PostgreSQL datasets.",
+      "video_url": "https://www.youtube.com/embed/HXV3zeRR3h4",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 5,
+      "course_code": "GEN-05",
+      "title": "Cybersecurity Best Practices & Government Cloud Security Standards",
+      "domain": "Digital Governance",
+      "difficulty_level": "Foundation",
+      "description": "Preventing data leakages, zero-trust network safety, and securing statistical endpoints in MoSPI.",
+      "video_url": "https://www.youtube.com/embed/inWWhr5tnEA",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 80,
+      "course_code": "IGOT-POSH-101",
+      "title": "Prevention of Sexual Harassment (POSH) at Workplace & Ethics in Public Administration",
+      "domain": "Behavioural & Managerial",
+      "difficulty_level": "Foundation",
+      "description": "Central Civil Services (Conduct) Rules, POSH Act 2013 legal mandates, Internal Complaints Committee (ICC) functions, and professional ethics in civil service.",
+      "video_url": "https://www.youtube.com/embed/gP9NfXGzN2U",
+      "is_general_mandatory": true,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Foundation",
+      "match_score": 90
+    },
+    {
+      "id": 9,
+      "course_code": "SPEC-NAD-01",
+      "title": "National Accounts Statistics (NAS): UN-SNA 2008 & GSDP Estimation",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Compiling Gross Value Added (GVA), Supply-Use Tables, and State Domestic Product.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "STATE_DES"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 52,
+      "course_code": "IGOT-NAD-201",
+      "title": "National Accounts Compilation & Gross Domestic Product (GDP) Estimation (SNA 2008)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Methodologies for compiling Gross Value Added (GVA), Supply and Use Tables (SUT), institutional sector accounts, sequence of accounts, and base year revisions following UN System of National Accounts (SNA 2008).",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 73,
+      "course_code": "IGOT-TECH-104",
+      "title": "Stata & SPSS for Survey Cross-Tabulation & Complex Panel Econometrics",
+      "domain": "Technical Competencies",
+      "difficulty_level": "Intermediate",
+      "description": "Survey weighting commands in Stata (svyset), panel fixed and random effect estimations, multi-dimensional cross-tabulations in SPSS, and output formatting.",
+      "video_url": "https://www.youtube.com/embed/_V8eKsto3Ug",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD",
+        "PSD",
+        "SSD"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 58,
+      "course_code": "IGOT-CYBER-301",
+      "title": "Government Cyber Security, ISO 27001 & MoSPI Data Classification",
+      "domain": "Digital Governance",
+      "difficulty_level": "Intermediate",
+      "description": "Securing statistical microdata assets, CERT-In cybersecurity directives, multi-factor authentication, endpoint hygiene, and security incident response protocols.",
+      "video_url": "https://www.youtube.com/embed/1Il5UUPrSNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 79,
+      "course_code": "IGOT-GOV-105",
+      "title": "Digital Public Infrastructure (DPI), India Stack & National Data Governance",
+      "domain": "Digital Governance",
+      "difficulty_level": "Intermediate",
+      "description": "Leveraging India Stack components (Aadhaar, DigiLocker, UPI, DEPA), National Data Governance Framework Policy (NDGFP), and cross-ministerial data sharing.",
+      "video_url": "https://www.youtube.com/embed/fW_c3-p9Vrk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Functional Core",
+      "match_score": 90
+    },
+    {
+      "id": 64,
+      "course_code": "SPEC-SUT-01",
+      "title": "Supply and Use Tables (SUT) & Input-Output Matrices for NAS",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Balancing supply at basic prices with uses at purchasers prices, trade/transport margins, and inter-industry Leontief multiplier analysis.",
+      "video_url": "https://www.youtube.com/embed/nK32aCq3mNk",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "NAD",
+        "ESD"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 90
+    },
+    {
+      "id": 18,
+      "course_code": "SPEC-STAT-01",
+      "title": "Time Series Econometrics & Seasonal Adjustments (X-13ARIMA-SEATS)",
+      "domain": "Statistical Competencies",
+      "difficulty_level": "Advanced",
+      "description": "Decomposing statistical seasonalities in monthly production, export, and price series.",
+      "video_url": "https://www.youtube.com/embed/PrhW8y2gP10",
+      "is_general_mandatory": false,
+      "target_departments": [
+        "ALL"
+      ],
+      "learning_stage": "Advanced Strategic",
+      "match_score": 90
+    }
   ]
 }
