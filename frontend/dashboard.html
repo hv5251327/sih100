@@ -1394,32 +1394,28 @@
         if (statusLabel) statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
       }
 
-      // 1. Fetch completed courses set first to guarantee exclusion
+      // 1. Fetch completed courses set to guarantee exclusion of ONLY approved/completed courses
       let completedSet = new Set();
       try {
         const progRes = await fetch(`${API_URL}/api/progress/${currentUser.email}`);
         if (progRes.ok) {
           const progData = await progRes.json();
-          const list = [...(progData.progress || []), ...(progData.certificates || [])];
-          list.forEach(p => {
-            if (p.course_title) completedSet.add(p.course_title.toLowerCase().trim());
+          // Passed quizzes and completed videos
+          (progData.progress || []).forEach(p => {
+            if (p.course_title && (p.quiz_passed || p.video_completed)) {
+              completedSet.add(p.course_title.toLowerCase().trim());
+            }
+          });
+          // ONLY APPROVED certificates count as completed (rejected & pending courses stay in recommended courses)
+          (progData.certificates || []).forEach(c => {
+            if (c.course_title && c.status === 'approved') {
+              completedSet.add(c.course_title.toLowerCase().trim());
+            }
           });
         }
       } catch (e) {}
 
-      // 2. Instant zero-latency render from saved database cache in localStorage
-      const cachedStr = localStorage.getItem('mospi_recommendations_' + (currentUser.email || '').toLowerCase());
-      if (cachedStr) {
-        try {
-          const parsed = JSON.parse(cachedStr);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            allRecommendedCourses = parsed.filter(c => !completedSet.has((c.title || '').toLowerCase().trim()));
-            statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
-            renderSimplifiedModules();
-          }
-        } catch(e) {}
-      }
-
+      // 2. Fetch fresh personalized recommendations from server
       try {
         const res = await fetch(`${API_URL}/api/recommendations`, {
           method: 'POST',
@@ -1434,16 +1430,27 @@
 
         const data = await res.json();
         if (data.courses && Array.isArray(data.courses) && data.courses.length > 0) {
+          localStorage.setItem('mospi_recommendations_' + (currentUser.email || '').toLowerCase(), JSON.stringify(data.courses));
           allRecommendedCourses = data.courses.filter(c => !completedSet.has((c.title || '').toLowerCase().trim()));
-          localStorage.setItem('mospi_recommendations_' + (currentUser.email || '').toLowerCase(), JSON.stringify(allRecommendedCourses));
-          statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
+          if (statusLabel) statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
           renderSimplifiedModules();
+          return;
         }
       } catch (err) {
         console.error("Failed to load recommendations:", err);
-        if (!allRecommendedCourses || allRecommendedCourses.length === 0) {
-          statusLabel.innerText = "Error loading courses.";
-        }
+      }
+
+      // 3. Fallback from cached recommendations
+      const cachedStr = localStorage.getItem('mospi_recommendations_' + (currentUser.email || '').toLowerCase());
+      if (cachedStr) {
+        try {
+          const parsed = JSON.parse(cachedStr);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            allRecommendedCourses = parsed.filter(c => !completedSet.has((c.title || '').toLowerCase().trim()));
+            if (statusLabel) statusLabel.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${allRecommendedCourses.length} Modules Recommended`;
+            renderSimplifiedModules();
+          }
+        } catch(e) {}
       }
     }
 

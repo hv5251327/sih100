@@ -3329,6 +3329,14 @@ app.post('/api/admin/certificates/review', async (req, res) => {
         } catch (e) {}
 
         await recalculateCompetencies(email);
+    } else if (status === 'rejected') {
+        // If rejected, ensure course is NOT marked as completed and remains available in officer's recommendations
+        const email = targetCert.user_email.toLowerCase();
+        memoryUserProgress = memoryUserProgress.filter(p => !(p.user_email === email && normalizeTitle(p.course_title) === normalizeTitle(targetCert.course_title)));
+        try {
+            await supabase.from('user_course_progress').delete().eq('user_email', email).eq('course_title', targetCert.course_title);
+        } catch (e) {}
+        await recalculateCompetencies(email);
     }
 
     return res.json({ message: `Certificate ${status} successfully!`, certificate: targetCert });
