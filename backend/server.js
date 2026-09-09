@@ -3228,19 +3228,32 @@ app.post(['/api/sandbox/run', '/api/code/execute', '/api/sandbox/execute'], asyn
         });
     }
 
-    // 2. Local Python execution if language is Python
+    // 2. Local Python execution with 5s timeout & infinite loop watchdog
     if (cleanLang === 'python' || cleanLang === 'py') {
         const filePath = path.join(tmpDir, `mospi_py_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.py`);
         try {
             fs.writeFileSync(filePath, cleanCode, 'utf-8');
-            return exec(`python "${filePath}"`, { timeout: 8000, maxBuffer: 1024 * 1024 }, async (err, stdout, stderr) => {
+            return exec(`python "${filePath}"`, { timeout: 5000, maxBuffer: 1024 * 1024 }, async (err, stdout, stderr) => {
                 try { fs.unlinkSync(filePath); } catch (e) {}
+                const duration = Date.now() - startTime;
+
+                if (err && (err.killed || err.signal === 'SIGTERM' || err.code === 'ETIMEDOUT' || duration >= 4900)) {
+                    return res.json({
+                        ok: false,
+                        stdout: stdout || '',
+                        stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
+                        code: 124,
+                        duration_ms: duration,
+                        engine: 'LOCAL_PYTHON_TIMEOUT_WATCHDOG'
+                    });
+                }
+
                 const result = {
                     ok: !err,
                     stdout: stdout || '',
                     stderr: stderr || (err ? err.message : ''),
                     code: err ? (err.code || 1) : 0,
-                    duration_ms: Date.now() - startTime,
+                    duration_ms: duration,
                     engine: 'LOCAL_PYTHON_V3'
                 };
                 if (result.ok) await redisCache.set(redisKey, result, 3600);
@@ -3251,19 +3264,32 @@ app.post(['/api/sandbox/run', '/api/code/execute', '/api/sandbox/execute'], asyn
         }
     }
 
-    // 3. Local Node.js / JavaScript execution
+    // 3. Local Node.js / JavaScript execution with 5s timeout & watchdog
     if (cleanLang === 'javascript' || cleanLang === 'js' || cleanLang === 'node') {
         const filePath = path.join(tmpDir, `mospi_js_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.js`);
         try {
             fs.writeFileSync(filePath, cleanCode, 'utf-8');
-            return exec(`node "${filePath}"`, { timeout: 8000, maxBuffer: 1024 * 1024 }, async (err, stdout, stderr) => {
+            return exec(`node "${filePath}"`, { timeout: 5000, maxBuffer: 1024 * 1024 }, async (err, stdout, stderr) => {
                 try { fs.unlinkSync(filePath); } catch (e) {}
+                const duration = Date.now() - startTime;
+
+                if (err && (err.killed || err.signal === 'SIGTERM' || err.code === 'ETIMEDOUT' || duration >= 4900)) {
+                    return res.json({
+                        ok: false,
+                        stdout: stdout || '',
+                        stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
+                        code: 124,
+                        duration_ms: duration,
+                        engine: 'LOCAL_NODE_TIMEOUT_WATCHDOG'
+                    });
+                }
+
                 const result = {
                     ok: !err,
                     stdout: stdout || '',
                     stderr: stderr || (err ? err.message : ''),
                     code: err ? (err.code || 1) : 0,
-                    duration_ms: Date.now() - startTime,
+                    duration_ms: duration,
                     engine: 'LOCAL_NODE_V8'
                 };
                 if (result.ok) await redisCache.set(redisKey, result, 3600);
@@ -3274,7 +3300,7 @@ app.post(['/api/sandbox/run', '/api/code/execute', '/api/sandbox/execute'], asyn
         }
     }
 
-    // 4. Local C / C++ GCC Compilation & Execution
+    // 4. Local C / C++ GCC Compilation & Execution with 5s watchdog
     if (cleanLang === 'c' || cleanLang === 'cpp' || cleanLang === 'c++') {
         const isCpp = cleanLang.includes('++') || cleanLang === 'cpp';
         const ext = isCpp ? '.cpp' : '.c';
@@ -3284,7 +3310,7 @@ app.post(['/api/sandbox/run', '/api/code/execute', '/api/sandbox/execute'], asyn
 
         try {
             fs.writeFileSync(srcPath, cleanCode, 'utf-8');
-            return exec(`${compiler} "${srcPath}" -o "${exePath}"`, { timeout: 6000 }, (compileErr, cStdout, cStderr) => {
+            return exec(`${compiler} "${srcPath}" -o "${exePath}"`, { timeout: 4000 }, (compileErr, cStdout, cStderr) => {
                 if (compileErr) {
                     try { fs.unlinkSync(srcPath); } catch (e) {}
                     return res.json({
@@ -3300,12 +3326,25 @@ app.post(['/api/sandbox/run', '/api/code/execute', '/api/sandbox/execute'], asyn
                 exec(`"${exePath}"`, { timeout: 5000 }, async (runErr, rStdout, rStderr) => {
                     try { fs.unlinkSync(srcPath); } catch (e) {}
                     try { fs.unlinkSync(exePath); } catch (e) {}
+                    const duration = Date.now() - startTime;
+
+                    if (runErr && (runErr.killed || runErr.signal === 'SIGTERM' || duration >= 4900)) {
+                        return res.json({
+                            ok: false,
+                            stdout: rStdout || '',
+                            stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
+                            code: 124,
+                            duration_ms: duration,
+                            engine: `LOCAL_${compiler.toUpperCase()}_TIMEOUT_WATCHDOG`
+                        });
+                    }
+
                     const result = {
                         ok: !runErr,
                         stdout: rStdout || '',
                         stderr: rStderr || (runErr ? runErr.message : ''),
                         code: runErr ? (runErr.code || 1) : 0,
-                        duration_ms: Date.now() - startTime,
+                        duration_ms: duration,
                         engine: `LOCAL_${compiler.toUpperCase()}_BINARY`
                     };
                     if (result.ok) await redisCache.set(redisKey, result, 3600);
@@ -4785,326 +4824,6 @@ app.get('/api/piston/runtimes', async (req, res) => {
     ];
     return res.json({ ok: true, runtimes: supportedRuntimes });
 });
-
-
-// ==========================================
-// 🚀 UNIVERSAL MULTI-LANGUAGE SANDBOX RUNNER
-// ==========================================
-app.post('/api/sandbox/run', async (req, res) => {
-    try {
-        const { language = 'python', code = '', stdin = '' } = req.body;
-        if (!code || typeof code !== 'string') {
-            return res.status(400).json({ error: 'Code is required' });
-        }
-
-        const lang = (language || 'python').toLowerCase().trim();
-        const startTime = Date.now();
-        const os = require('os');
-        const path = require('path');
-        const cp = require('child_process');
-
-        function findExe(candidates) {
-            for (const c of candidates) {
-                try {
-                    if (fs.existsSync(c)) return c;
-                } catch (e) {}
-            }
-            return candidates[candidates.length - 1];
-        }
-
-        // 1. Native High-Speed Python Execution
-        if (lang === 'python' || lang === 'py' || lang === 'python3') {
-            const pyProc = cp.spawn('python', ['-'], { timeout: 8000 });
-            let stdout = '';
-            let stderr = '';
-
-            pyProc.stdout.on('data', d => stdout += d.toString());
-            pyProc.stderr.on('data', d => stderr += d.toString());
-
-            pyProc.on('close', exitCode => {
-                return res.json({
-                    ok: exitCode === 0,
-                    language: 'Python',
-                    stdout: stdout || (exitCode === 0 ? '> Program executed with no console output.' : ''),
-                    stderr: stderr,
-                    code: exitCode,
-                    duration_ms: Date.now() - startTime
-                });
-            });
-
-            pyProc.on('error', err => {
-                return res.json({
-                    ok: false,
-                    language: 'Python',
-                    stdout: '',
-                    stderr: err.message,
-                    code: 1,
-                    duration_ms: Date.now() - startTime
-                });
-            });
-
-            try {
-                pyProc.stdin.write(code);
-                pyProc.stdin.end();
-            } catch (e) {}
-            return;
-        }
-
-        // 2. Native High-Speed JavaScript / TypeScript VM Execution
-        if (lang === 'javascript' || lang === 'js' || lang === 'typescript' || lang === 'ts' || lang === 'node') {
-            try {
-                let logs = [];
-                const context = {
-                    console: {
-                        log: (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')),
-                        info: (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')),
-                        warn: (...args) => logs.push('[WARN] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')),
-                        error: (...args) => logs.push('[ERROR] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '))
-                    },
-                    Math, Date, JSON, parseInt, parseFloat, Array, Object, String, Number, Boolean, Set, Map
-                };
-                let jsCode = code;
-                if (lang.includes('type') || lang === 'ts') {
-                    jsCode = code.replace(/interface\s+[\s\S]*?\{[\s\S]*?\}/g, '')
-                                 .replace(/type\s+[\s\S]*?;/g, '')
-                                 .replace(/:\s*[A-Za-z0-9_<>[\]]+(?=\s*[=;,)\{])/g, '');
-                }
-                const vm = require('vm');
-                const script = new vm.Script(jsCode);
-                script.runInNewContext(context, { timeout: 4000 });
-                return res.json({
-                    ok: true,
-                    language: lang.includes('type') || lang === 'ts' ? 'TypeScript' : 'JavaScript',
-                    stdout: logs.join('\n') || '> Program executed with no console output.',
-                    stderr: '',
-                    code: 0,
-                    duration_ms: Date.now() - startTime
-                });
-            } catch (jsErr) {
-                return res.json({
-                    ok: false,
-                    language: lang.includes('type') || lang === 'ts' ? 'TypeScript' : 'JavaScript',
-                    stdout: '',
-                    stderr: jsErr.message || String(jsErr),
-                    code: 1,
-                    duration_ms: Date.now() - startTime
-                });
-            }
-        }
-
-        // 3. C Native Execution (GCC)
-        if (lang === 'c') {
-            const gccBin = findExe(['C:\\msys64\\ucrt64\\bin\\gcc.exe', 'C:\\msys64\\mingw64\\bin\\gcc.exe', 'gcc']);
-            const tmpC = path.join(os.tmpdir(), `mospi_c_${Date.now()}_${Math.random().toString(36).slice(2)}.c`);
-            const tmpExe = tmpC.replace('.c', '.exe');
-            try {
-                fs.writeFileSync(tmpC, code, 'utf8');
-                cp.execSync(`"${gccBin}" "${tmpC}" -o "${tmpExe}"`, { timeout: 8000 });
-                const out = cp.execSync(`"${tmpExe}"`, { timeout: 4000, input: stdin }).toString();
-                try { fs.unlinkSync(tmpC); fs.unlinkSync(tmpExe); } catch (e) {}
-                return res.json({
-                    ok: true,
-                    language: 'C',
-                    stdout: out || '> Program completed with no output.',
-                    stderr: '',
-                    code: 0,
-                    duration_ms: Date.now() - startTime
-                });
-            } catch (cErr) {
-                try { if (fs.existsSync(tmpC)) fs.unlinkSync(tmpC); if (fs.existsSync(tmpExe)) fs.unlinkSync(tmpExe); } catch (e) {}
-                return res.json({
-                    ok: false,
-                    language: 'C',
-                    stdout: '',
-                    stderr: cErr.stderr ? cErr.stderr.toString() : cErr.message,
-                    code: 1,
-                    duration_ms: Date.now() - startTime
-                });
-            }
-        }
-
-        // 4. C++ Native Execution (G++)
-        if (lang === 'cpp' || lang === 'c++' || lang === 'g++') {
-            const gppBin = findExe(['C:\\msys64\\ucrt64\\bin\\g++.exe', 'C:\\msys64\\mingw64\\bin\\g++.exe', 'g++']);
-            const tmpCpp = path.join(os.tmpdir(), `mospi_cpp_${Date.now()}_${Math.random().toString(36).slice(2)}.cpp`);
-            const tmpExe = tmpCpp.replace('.cpp', '.exe');
-            try {
-                fs.writeFileSync(tmpCpp, code, 'utf8');
-                cp.execSync(`"${gppBin}" "${tmpCpp}" -o "${tmpExe}"`, { timeout: 8000 });
-                const out = cp.execSync(`"${tmpExe}"`, { timeout: 4000, input: stdin }).toString();
-                try { fs.unlinkSync(tmpCpp); fs.unlinkSync(tmpExe); } catch (e) {}
-                return res.json({
-                    ok: true,
-                    language: 'C++',
-                    stdout: out || '> Program completed with no output.',
-                    stderr: '',
-                    code: 0,
-                    duration_ms: Date.now() - startTime
-                });
-            } catch (cppErr) {
-                try { if (fs.existsSync(tmpCpp)) fs.unlinkSync(tmpCpp); if (fs.existsSync(tmpExe)) fs.unlinkSync(tmpExe); } catch (e) {}
-                return res.json({
-                    ok: false,
-                    language: 'C++',
-                    stdout: '',
-                    stderr: cppErr.stderr ? cppErr.stderr.toString() : cppErr.message,
-                    code: 1,
-                    duration_ms: Date.now() - startTime
-                });
-            }
-        }
-
-        // 5. SQLite / SQL Execution via Python sqlite3
-        if (lang === 'sqlite3' || lang === 'sql' || lang === 'sqlite') {
-            try {
-                const runnerScript = `
-import sqlite3, sys
-conn = sqlite3.connect(':memory:')
-c = conn.cursor()
-sql_script = """${code.replace(/"/g, '\\\"')}"""
-for statement in sql_script.split(';'):
-    stmt = statement.strip()
-    if not stmt: continue
-    try:
-        res = c.execute(stmt)
-        if stmt.upper().startswith('SELECT') or 'SELECT' in stmt.upper():
-            cols = [d[0] for d in res.description] if res.description else []
-            rows = res.fetchall()
-            if cols:
-                print(' | '.join(str(x) for x in cols))
-                print('-' * max(24, len(' | '.join(str(x) for x in cols))))
-                for r in rows:
-                    print(' | '.join(str(x) for x in r))
-                print()
-    except Exception as e:
-        print(f"SQL Error: {e}", file=sys.stderr)
-conn.commit()
-`;
-                const out = cp.execSync('python -', { input: runnerScript, timeout: 6000 }).toString();
-                return res.json({
-                    ok: true,
-                    language: 'SQL / SQLite',
-                    stdout: out.trim() || '> SQL statements executed successfully.',
-                    stderr: '',
-                    code: 0,
-                    duration_ms: Date.now() - startTime
-                });
-            } catch (sqlErr) {
-                return res.json({
-                    ok: false,
-                    language: 'SQL / SQLite',
-                    stdout: '',
-                    stderr: sqlErr.stderr ? sqlErr.stderr.toString() : sqlErr.message,
-                    code: 1,
-                    duration_ms: Date.now() - startTime
-                });
-            }
-        }
-
-        // 6. Bash Execution via Git Bash
-        if (lang === 'bash' || lang === 'sh' || lang === 'shell') {
-            const bashBin = findExe(['C:\\Program Files\\Git\\bin\\bash.exe', 'C:\\Program Files\\Git\\usr\\bin\\bash.exe', 'bash']);
-            try {
-                const tmpSh = path.join(os.tmpdir(), `mospi_sh_${Date.now()}.sh`);
-                fs.writeFileSync(tmpSh, code.replace(/\r\n/g, '\n'), 'utf8');
-                const out = cp.execSync(`"${bashBin}" "${tmpSh}"`, { timeout: 5000 }).toString();
-                try { fs.unlinkSync(tmpSh); } catch (e) {}
-                return res.json({
-                    ok: true,
-                    language: 'Bash',
-                    stdout: out || '> Bash script completed with no output.',
-                    stderr: '',
-                    code: 0,
-                    duration_ms: Date.now() - startTime
-                });
-            } catch (shErr) {
-                return res.json({
-                    ok: false,
-                    language: 'Bash',
-                    stdout: '',
-                    stderr: shErr.stderr ? shErr.stderr.toString() : shErr.message,
-                    code: 1,
-                    duration_ms: Date.now() - startTime
-                });
-            }
-        }
-
-        // 7. Dynamic Intelligent Execution for R, Java, Rust, Go, Julia, PHP, Ruby, Kotlin
-        let numbers = [];
-        const numMatch = code.match(/(?:c|vec!|listOf)?\s*[\(\[\{]([\d\s,\.\-]+)[\)\]\}]/);
-        if (numMatch && numMatch[1]) {
-            numbers = numMatch[1].split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
-        }
-        if (!numbers.length) {
-            numbers = [10, 20, 30, 40, 50];
-        }
-
-        const sum = numbers.reduce((a, b) => a + b, 0);
-        const avg = sum / numbers.length;
-        const numDisplay = '[' + numbers.join(', ') + ']';
-
-        let stdout = '';
-        switch (lang) {
-            case 'rscript':
-            case 'r':
-                const mean = avg.toFixed(4);
-                const variance = numbers.length > 1 ? numbers.reduce((acc, v) => acc + Math.pow(v - avg, 2), 0) / (numbers.length - 1) : 0;
-                const sd = Math.sqrt(variance).toFixed(4);
-                const sorted = [...numbers].sort((a, b) => a - b);
-                const min = sorted[0];
-                const max = sorted[sorted.length - 1];
-                const med = sorted[Math.floor(sorted.length / 2)];
-                const q1 = sorted[Math.floor(sorted.length / 4)];
-                const q3 = sorted[Math.floor((3 * sorted.length) / 4)];
-                stdout = `[1] "Hello, Officer - R Sandbox is ready!"\nData Vector: ${numbers.join(' ')}\nMean: ${mean}\nStandard Deviation: ${sd}\nSummary Statistics:\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.\n  ${min.toFixed(1)}    ${q1.toFixed(1)}    ${med.toFixed(1)}    ${avg.toFixed(1)}    ${q3.toFixed(1)}   ${max.toFixed(1)}`;
-                break;
-
-            case 'java':
-                stdout = `=== Java Sandbox Console ===\nData Length: ${numbers.length}\nTotal Sum: ${sum}\nCalculated Average: ${avg.toFixed(1)}`;
-                break;
-
-            case 'rust':
-                stdout = `=== Rust Memory-Safe Sandbox ===\nNumbers: ${numDisplay}\nSum: ${sum}\nAverage: ${avg.toFixed(2)}`;
-                break;
-
-            case 'go':
-                stdout = `=== Go Microservice Sandbox ===\nElements: ${numDisplay}\nTotal Sum: ${sum}, Average: ${avg.toFixed(2)}`;
-                break;
-
-            case 'julia':
-                stdout = `=== Julia Scientific Computing Sandbox ===\nArray: ${numDisplay}\nSum: ${sum}\nMean: ${avg.toFixed(2)}`;
-                break;
-
-            case 'php':
-                stdout = `=== PHP Scripting Sandbox ===\nNumbers: ${numbers.join(', ')}\nTotal Sum: ${sum}\nCalculated Average: ${avg.toFixed(2)}`;
-                break;
-
-            case 'ruby':
-                stdout = `=== Ruby Sandbox ===\nNumbers: ${numDisplay}\nSum: ${sum}\nAverage: ${avg.toFixed(2)}`;
-                break;
-
-            case 'kotlin':
-                stdout = `=== Kotlin Sandbox ===\nList: ${numDisplay}\nSum: ${sum}\nAverage: ${avg.toFixed(2)}`;
-                break;
-
-            default:
-                stdout = `[${lang.toUpperCase()} Sandbox Kernel]\nProgram executed successfully with exit code 0.\nComputed Metrics: Total Sum = ${sum} | Arithmetic Mean = ${avg.toFixed(2)}`;
-        }
-
-        return res.json({
-            ok: true,
-            language: lang.toUpperCase(),
-            stdout: stdout,
-            stderr: '',
-            code: 0,
-            duration_ms: Date.now() - startTime
-        });
-
-    } catch (err) {
-        return res.status(500).json({ ok: false, error: err.message });
-    }
-});
-
 
 // ==========================================
 // 📚 SUPABASE COURSE & VIDEO SYNC ENGINE

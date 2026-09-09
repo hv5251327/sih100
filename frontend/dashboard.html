@@ -3566,59 +3566,157 @@ ORDER BY mean_stat_proficiency DESC;`;
 
     async function executeCodePayload(lang, code) {
       const startTime = Date.now();
-      const cleanLang = (lang || 'python').toLowerCase();
+      const cleanLang = (lang || 'python').toLowerCase().trim();
       const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
           ? 'http://localhost:5000'
           : 'https://sih100-backend.onrender.com';
 
-      // 1. Client-Side Instant Evaluation for JavaScript / TypeScript
+      // 1. Client-Side Safe Evaluation for JavaScript / TypeScript via Isolated Web Worker (with 5s Watchdog)
       if (cleanLang === 'javascript' || cleanLang === 'js' || cleanLang === 'node' || cleanLang === 'typescript' || cleanLang === 'ts') {
+        let jsCode = code;
+        if (cleanLang.includes('type') || cleanLang === 'ts') {
+          jsCode = code.replace(/interface\s+[\s\S]*?\{[\s\S]*?\}/g, '')
+                       .replace(/type\s+[\s\S]*?;/g, '')
+                       .replace(/:\s*[A-Za-z0-9_<>[\]]+(?=\s*[=;,)\{])/g, '');
+        }
+
         try {
-          const logs = [];
-          const formatArg = function(a) {
-            if (a === null) return 'null';
-            if (a === undefined) return 'undefined';
-            if (typeof a === 'object') {
-              try { return JSON.stringify(a, null, 2); } catch (e) { return String(a); }
+          return await new Promise((resolve) => {
+            const workerCode = `
+              const logs = [];
+              const formatArg = function(a) {
+                if (a === null) return 'null';
+                if (a === undefined) return 'undefined';
+                if (typeof a === 'object') {
+                  try { return JSON.stringify(a, null, 2); } catch (e) { return String(a); }
+                }
+                return String(a);
+              };
+              const customConsole = {
+                log: function() { logs.push(Array.from(arguments).map(formatArg).join(' ')); },
+                info: function() { logs.push(Array.from(arguments).map(formatArg).join(' ')); },
+                warn: function() { logs.push('[WARN] ' + Array.from(arguments).map(formatArg).join(' ')); },
+                error: function() { logs.push('[ERROR] ' + Array.from(arguments).map(formatArg).join(' ')); }
+              };
+
+              self.onmessage = async function(e) {
+                try {
+                  const runFn = new Function('console', 'return (async function(console) { ' + e.data.code + ' })(console);');
+                  const res = await runFn(customConsole);
+                  if (res !== undefined && res !== null && logs.length === 0) {
+                    logs.push(formatArg(res));
+                  }
+                  self.postMessage({ ok: true, stdout: logs.join('\\n'), stderr: '', code: 0 });
+                } catch (err) {
+                  self.postMessage({ ok: false, stdout: logs.join('\\n'), stderr: 'JavaScript Error: ' + err.message, code: 1 });
+                }
+              };
+            `;
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            const blobUrl = URL.createObjectURL(blob);
+            let worker = null;
+            let timer = null;
+            let resolved = false;
+
+            const cleanup = () => {
+              if (timer) clearTimeout(timer);
+              if (worker) {
+                try { worker.terminate(); } catch (e) {}
+                worker = null;
+              }
+              try { URL.revokeObjectURL(blobUrl); } catch (e) {}
+            };
+
+            try {
+              worker = new Worker(blobUrl);
+              timer = setTimeout(() => {
+                if (!resolved) {
+                  resolved = true;
+                  cleanup();
+                  resolve({
+                    ok: false,
+                    stdout: '',
+                    stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
+                    code: 124,
+                    duration_ms: Date.now() - startTime
+                  });
+                }
+              }, 5000);
+
+              worker.onmessage = (e) => {
+                if (!resolved) {
+                  resolved = true;
+                  const res = e.data || {};
+                  cleanup();
+                  resolve({
+                    ok: res.ok,
+                    stdout: res.stdout || '> Code executed successfully (no console output).',
+                    stderr: res.stderr || '',
+                    code: res.code !== undefined ? res.code : 0,
+                    duration_ms: Date.now() - startTime
+                  });
+                }
+              };
+
+              worker.onerror = (err) => {
+                if (!resolved) {
+                  resolved = true;
+                  cleanup();
+                  resolve({
+                    ok: false,
+                    stdout: '',
+                    stderr: 'JavaScript Error: ' + (err.message || 'Execution exception in worker'),
+                    code: 1,
+                    duration_ms: Date.now() - startTime
+                  });
+                }
+              };
+
+              worker.postMessage({ code: jsCode });
+            } catch (wErr) {
+              cleanup();
+              // Fallback to direct async execution if Web Workers are restricted in environment
+              try {
+                const logs = [];
+                const formatArg = function(a) {
+                  if (a === null) return 'null';
+                  if (a === undefined) return 'undefined';
+                  if (typeof a === 'object') {
+                    try { return JSON.stringify(a, null, 2); } catch (e) { return String(a); }
+                  }
+                  return String(a);
+                };
+                const customConsole = {
+                  log: function() { logs.push(Array.from(arguments).map(formatArg).join(' ')); },
+                  info: function() { logs.push(Array.from(arguments).map(formatArg).join(' ')); },
+                  warn: function() { logs.push('[WARN] ' + Array.from(arguments).map(formatArg).join(' ')); },
+                  error: function() { logs.push('[ERROR] ' + Array.from(arguments).map(formatArg).join(' ')); }
+                };
+                const runFn = new Function('console', `return (async function(console) { ${jsCode} })(console);`);
+                runFn(customConsole);
+                return resolve({
+                  ok: true,
+                  stdout: logs.join('\n') || '> Code executed successfully (no console output).',
+                  stderr: '',
+                  code: 0,
+                  duration_ms: Date.now() - startTime
+                });
+              } catch (jsErr) {
+                return resolve({
+                  ok: false,
+                  stdout: '',
+                  stderr: 'JavaScript Error: ' + jsErr.message,
+                  code: 1,
+                  duration_ms: Date.now() - startTime
+                });
+              }
             }
-            return String(a);
-          };
-          const customConsole = {
-            log: function() { logs.push(Array.from(arguments).map(formatArg).join(' ')); },
-            info: function() { logs.push(Array.from(arguments).map(formatArg).join(' ')); },
-            warn: function() { logs.push('[WARN] ' + Array.from(arguments).map(formatArg).join(' ')); },
-            error: function() { logs.push('[ERROR] ' + Array.from(arguments).map(formatArg).join(' ')); }
-          };
-
-          var jsCode = code;
-          if (cleanLang.includes('type') || cleanLang === 'ts') {
-            jsCode = code.replace(/interface\s+[\s\S]*?\{[\s\S]*?\}/g, '')
-                         .replace(/type\s+[\s\S]*?;/g, '')
-                         .replace(/:\s*[A-Za-z0-9_<>[\]]+(?=\s*[=;,)\{])/g, '');
-          }
-
-          var runFn = new Function('console', `return (async function(console) { ${jsCode} })(console);`);
-          var promiseResult = runFn(customConsole);
-          var returnedValue = null;
-          if (promiseResult && typeof promiseResult.then === 'function') {
-            returnedValue = await promiseResult;
-          }
-          if (returnedValue !== undefined && returnedValue !== null && logs.length === 0) {
-            logs.push(formatArg(returnedValue));
-          }
-
-          return {
-            ok: true,
-            stdout: logs.join('\n') || '> Code executed successfully (no console output).',
-            stderr: '',
-            code: 0,
-            duration_ms: Date.now() - startTime
-          };
-        } catch (jsErr) {
+          });
+        } catch (e) {
           return {
             ok: false,
             stdout: '',
-            stderr: 'JavaScript Error: ' + jsErr.message,
+            stderr: 'Execution Error: ' + e.message,
             code: 1,
             duration_ms: Date.now() - startTime
           };
@@ -3634,8 +3732,8 @@ ORDER BY mean_stat_proficiency DESC;`;
               return {
                 ok: !pyRes.isError,
                 stdout: pyRes.output || (pyRes.result !== undefined && pyRes.result !== null ? String(pyRes.result) : '> Python script executed with 0 output.'),
-                stderr: pyRes.isError ? (pyRes.output || 'Python execution failed') : '',
-                code: pyRes.isError ? 1 : 0,
+                stderr: pyRes.isError ? (pyRes.errorMsg || pyRes.output || 'Python execution failed') : '',
+                code: pyRes.isError ? (pyRes.errorMsg && pyRes.errorMsg.includes('Timed Out') ? 124 : 1) : 0,
                 duration_ms: pyRes.durationMs || (Date.now() - startTime)
               };
             }
@@ -3648,7 +3746,7 @@ ORDER BY mean_stat_proficiency DESC;`;
       // 3. Dispatch to Server Universal Sandbox Runner (Python, C, C++, R, SQL, Java, Bash, Rust, Go, etc.)
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(function() { controller.abort(); }, 12000);
+        const timeoutId = setTimeout(function() { controller.abort(); }, 8000);
 
         const res = await fetch(API_URL + '/api/sandbox/run', {
           method: 'POST',
@@ -3666,6 +3764,15 @@ ORDER BY mean_stat_proficiency DESC;`;
           };
         }
       } catch (netErr) {
+        if (netErr.name === 'AbortError') {
+          return {
+            ok: false,
+            stdout: '',
+            stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
+            code: 124,
+            duration_ms: Date.now() - startTime
+          };
+        }
         console.warn("Server sandbox runner note:", netErr.message);
       }
 

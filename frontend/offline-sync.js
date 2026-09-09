@@ -350,7 +350,10 @@ def harmonize_cpi_item_weights(item_weights, current_prices, base_prices):
     let errorMsg = null;
 
     try {
-      result = await py.runPythonAsync(pythonCode);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.')), 5000);
+      });
+      result = await Promise.race([py.runPythonAsync(pythonCode), timeoutPromise]);
     } catch (e) {
       isError = true;
       errorMsg = e.message;

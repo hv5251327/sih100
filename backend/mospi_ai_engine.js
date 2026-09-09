@@ -1504,7 +1504,7 @@ Return STRICT JSON in this structure:
  */
 async function executeCodeWithAIEngine(language, code) {
     const cleanLang = (language || 'python').toLowerCase();
-    const sysPrompt = "You are a precise, deterministic code execution sandbox runtime. Execute the provided code in the specified programming language exactly as its standard compiler or interpreter would. Return STRICTLY a valid JSON object without markdown: { \"stdout\": string, \"stderr\": string, \"code\": number }";
+    const sysPrompt = "You are a precise, deterministic code execution sandbox runtime with a 5.0 second execution watchdog. Execute the provided code in the specified programming language exactly as its standard compiler or interpreter would. If the code contains an infinite loop, non-terminating recursion, or would exceed a 5.0s timeout, return code 124 and stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.'. Return STRICTLY a valid JSON object without markdown: { \"stdout\": string, \"stderr\": string, \"code\": number }";
     const prompt = `Language: ${cleanLang}
 
 Source Code to execute:
@@ -1513,8 +1513,12 @@ ${code}
 \`\`\`
 
 Simulate the exact execution of this program.
-If the program compiles and runs successfully, return stdout with the printed output, stderr as empty string, and code as 0.
-If the program has a syntax or runtime error, return stderr with the descriptive error, stdout as empty string, and code as 1.
+1. If the code contains an infinite loop, non-terminating recursion, or exceeds timeout, stop and return:
+   stdout: ""
+   stderr: "⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time."
+   code: 124
+2. If the program compiles and runs successfully, return stdout with the printed output, stderr as empty string, and code as 0.
+3. If the program has a syntax or runtime error, return stderr with the descriptive error, stdout as empty string, and code as 1.
 
 Return ONLY a valid JSON object:
 {
@@ -1533,7 +1537,7 @@ Return ONLY a valid JSON object:
                     ok: (parsed.code === 0 && !parsed.stderr),
                     stdout: parsed.stdout,
                     stderr: parsed.stderr || '',
-                    code: typeof parsed.code === 'number' ? parsed.code : 0
+                    code: typeof parsed.code === 'number' ? parsed.code : (parsed.stderr ? 1 : 0)
                 };
             }
         }
