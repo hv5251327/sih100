@@ -841,6 +841,491 @@ Perform deep AST, mathematical weighting, and regulatory compliance scrutiny. Re
     };
 }
 
+// =========================================================================
+// 🎯 DEPARTMENT-ALIGNED 5-QUESTION BASELINE COMPETENCY QUIZ GENERATOR (OLLAMA)
+// =========================================================================
+
+const DEPARTMENT_NAMES_MAP = {
+    'NAD': 'National Accounts Division (NAD) — Macro Aggregates & GDP',
+    'ESD': 'Economic Statistics Division (ESD) — IIP & ASI',
+    'PSD': 'Price Statistics Division (PSD) — CPI & Inflation',
+    'SSD': 'Social Statistics Division (SSD) — SDG Metrics',
+    'FOD': 'Field Operations Division (FOD) — Primary Field Surveys',
+    'SDRD': 'Survey Design and Research Division (SDRD) — Sampling Design',
+    'DPD': 'Data Processing Division (DPD) — Validation & Tabulation',
+    'DIID': 'Data Informatics & Innovation Division (DIID) — Cloud & AI',
+    'NSSTA': 'National Statistical Systems Training Academy (NSSTA) — Training HQ',
+    'CAPD': 'Coordination & Publication Division (CAPD)',
+    'NSSO': 'National Sample Survey Office Secretariat (NSSO HQs)',
+    'IPMD': 'Infrastructure & Project Monitoring Division (IPMD)',
+    'SDG_LAB': 'Sustainable Development Goals (SDG) Unit / Data Innovation Lab',
+    'STATE_DES': 'State Directorate of Economics and Statistics (State DES)',
+    'DSO': 'District Statistical Office (DSO)',
+    'TALUK': 'State Sub-Divisional / Taluk Statistical Unit'
+};
+
+const DEPARTMENT_BASELINE_QUIZ_BANKS = {
+    'NAD': [
+        {
+            question: "Under System of National Accounts (SNA 2008), how is Gross Value Added (GVA) at basic prices derived from Gross Output?",
+            competency: "Statistical Methods & Sampling",
+            pillar: "stat",
+            options: [
+                "Gross Output at basic prices minus Intermediate Consumption at purchasers' prices",
+                "Gross Output plus Direct Taxes minus Subsidies on Products",
+                "Total Employee Compensation plus Net Exports",
+                "Net National Disposable Income minus Capital Depreciation"
+            ],
+            correct_index: 0,
+            explanation: "SNA 2008 defines GVA at basic prices as Gross Output at basic prices minus Intermediate Consumption at purchasers' prices."
+        },
+        {
+            question: "Which Python / Pandas operation is standard for computing Sectoral Gross Output aggregations across enterprise balance-sheet microdata?",
+            competency: "Technical Tools & Data Analysis",
+            pillar: "tech",
+            options: [
+                "df.groupby('nic_2digit')['gross_output'].agg(['sum', 'count', 'mean'])",
+                "df.drop_duplicates(subset=['enterprise_id']).sort_values('gva')",
+                "df.pivot_table(columns='state_code', fill_value=0).plot()",
+                "df.describe().transpose().to_dict()"
+            ],
+            correct_index: 0,
+            explanation: "df.groupby().agg() aggregates microdata across industrial classifications (NIC) to produce national sectoral totals."
+        },
+        {
+            question: "Under DPDP Act 2023 and official data dissemination protocols, what measure is mandatory before releasing enterprise microdata?",
+            competency: "Digital Governance & Data Privacy",
+            pillar: "gov",
+            options: [
+                "Apply k-anonymity (k >= 5) cell suppression and hash corporate tax identifiers (CIN/PAN)",
+                "Publish raw company revenue records without pseudonymization",
+                "Release unmasked audited balance sheets on public web portals",
+                "Exempt all corporate respondents from statutory confidentiality protections"
+            ],
+            correct_index: 0,
+            explanation: "DPDP Act 2023 requires de-identification, k-anonymity, and PII masking on public microdata releases."
+        },
+        {
+            question: "Under General Financial Rules (GFR 2017) and public administrative standards, what is required for procuring consulting services for National Accounts revision?",
+            competency: "Behavioural Leadership & Public Administration",
+            pillar: "lead",
+            options: [
+                "Follow Quality and Cost Based Selection (QCBS) through the Government e-Marketplace (GeM) / CPPP",
+                "Award direct single-source contracts without technical committee evaluation",
+                "Disregard statutory procurement thresholds and competitive bidding",
+                "Approve expenditures without financial concurrence from the Integrated Finance Division (IFD)"
+            ],
+            correct_index: 0,
+            explanation: "GFR 2017 mandates transparent competitive selection (e.g. QCBS on GeM) for high-value consultancy services."
+        },
+        {
+            question: "How is the Implicit Price Deflator (IPD) computed to convert Nominal GDP into Constant Price Real GDP?",
+            competency: "Department Domain Application",
+            pillar: "stat",
+            options: [
+                "(Nominal GDP / Real GDP) * 100",
+                "(Real GDP / Nominal GDP) * 100 + CPI",
+                "Base Year CPI multiplied by current year WPI",
+                "Simple unweighted average of agricultural and industrial index numbers"
+            ],
+            correct_index: 0,
+            explanation: "The Implicit Price Deflator is the ratio of Nominal GDP to Real GDP multiplied by 100, reflecting economy-wide inflation."
+        }
+    ],
+    'FOD': [
+        {
+            question: "In NSSO socio-economic household surveys, what constitutes the First Stage Unit (FSU) in the rural sampling frame?",
+            competency: "Statistical Methods & Sampling",
+            pillar: "stat",
+            options: [
+                "Census Village (or Panchayat Ward in designated areas)",
+                "Individual household dwelling unit",
+                "Administrative Tehsil headquarters",
+                "District Magistrate office jurisdiction"
+            ],
+            correct_index: 0,
+            explanation: "In NSSO multi-stage stratified sampling, census villages serve as FSUs in rural areas and UFS blocks in urban areas."
+        },
+        {
+            question: "When using Computer Assisted Personal Interviewing (CAPI) tablets, which automated validation rule prevents impossible age-to-education entries?",
+            competency: "Technical Tools & Data Analysis",
+            pillar: "tech",
+            options: [
+                "Range consistency and logical skip validation rules programmed in the survey schema",
+                "Disabling tablet internet access during field interviews",
+                "Manual paper cross-verification after returning to regional headquarters",
+                "Unrestricted numeric entry allowing negative age entries"
+            ],
+            correct_index: 0,
+            explanation: "CAPI software enforces range checks and logical routing conditions dynamically at the point of data capture."
+        },
+        {
+            question: "Under Section 9 of the Collection of Statistics Act, 2008, what legal obligation applies to field statistical officers regarding respondent answers?",
+            competency: "Digital Governance & Data Privacy",
+            pillar: "gov",
+            options: [
+                "Respondent answers are strictly confidential and cannot be used as evidence in non-statistical proceedings",
+                "Respondent answers must be shared publicly on local municipal notice boards",
+                "Field officers may sell survey rosters to private market researchers",
+                "Informants are required to waive all rights to data privacy"
+            ],
+            correct_index: 0,
+            explanation: "The Collection of Statistics Act 2008 guarantees statutory confidentiality for all informant responses."
+        },
+        {
+            question: "When an assigned sample household refuses to cooperate during a field survey, what is the correct supervisory procedure?",
+            competency: "Behavioural Leadership & Public Administration",
+            pillar: "lead",
+            options: [
+                "Attempt courteous persuasion explaining national utility; if still refusing, record 'Refusal' with reasons and follow substitution rules with SSO approval",
+                "Fabricate synthetic responses to complete the target quota on time",
+                "Impose arbitrary on-the-spot financial penalties on the household",
+                "Skip the sample unit without informing supervisory officers"
+            ],
+            correct_index: 0,
+            explanation: "Mission Karmayogi ethical standards dictate polite advocacy, formal recording of non-response, and adhering to official substitution protocols."
+        },
+        {
+            question: "What is the primary difference between Sampling Errors and Non-Sampling Errors in large-scale field operations?",
+            competency: "Department Domain Application",
+            pillar: "stat",
+            options: [
+                "Sampling errors arise from observing a subset; non-sampling errors arise from measurement, coverage, and reporting defects",
+                "Sampling errors only happen in urban surveys; non-sampling errors only happen in rural surveys",
+                "Non-sampling errors decrease to zero as sample size decreases",
+                "Sampling errors cannot be mathematically estimated using standard error formulas"
+            ],
+            correct_index: 0,
+            explanation: "Sampling errors stem from sample variance; non-sampling errors encompass interviewer bias, non-response, and recording mistakes."
+        }
+    ],
+    'ESD': [
+        {
+            question: "In the Index of Industrial Production (IIP), what formula is utilized to aggregate sector-level growth relative to base year weights?",
+            competency: "Statistical Methods & Sampling",
+            pillar: "stat",
+            options: [
+                "Laspeyres Base-Weighted Price / Volume Index Formula: I = (Sum(W_i * (Q_it / Q_i0))) / Sum(W_i)",
+                "Simple arithmetic mean of unweighted physical item counts",
+                "Harmonic mean of export tariffs",
+                "Geometric mean of corporate share prices"
+            ],
+            correct_index: 0,
+            explanation: "IIP compilation strictly leverages the Laspeyres base-weighted volume index formula."
+        },
+        {
+            question: "In Annual Survey of Industries (ASI) data processing using Python / SQL, how is Net Value Added (NVA) computed from GVA?",
+            competency: "Technical Tools & Data Analysis",
+            pillar: "tech",
+            options: [
+                "NVA = Gross Value Added (GVA) - Depreciation (Consumption of Fixed Capital)",
+                "NVA = Gross Output + Total Working Capital Loans",
+                "NVA = Intermediate Consumption / Total Number of Workers",
+                "NVA = Total Sales Revenue * Corporate Tax Rate"
+            ],
+            correct_index: 0,
+            explanation: "NVA represents GVA minus depreciation / consumption of fixed capital (CFC)."
+        },
+        {
+            question: "How does the National Industrial Classification (NIC-2008) standardize economic activities for industrial surveys?",
+            competency: "Digital Governance & Data Privacy",
+            pillar: "gov",
+            options: [
+                "Provides a 5-digit hierarchical taxonomy aligned with UN ISIC Rev. 4 for international comparability",
+                "Classifies factories by arbitrary alphabet letter tags",
+                "Restricts analysis only to public sector state-owned corporations",
+                "Merges manufacturing and agricultural activities into an unstructured single table"
+            ],
+            correct_index: 0,
+            explanation: "NIC-2008 provides a standardized 5-digit classification fully harmonious with UN ISIC Rev. 4."
+        },
+        {
+            question: "When auditing factory schedules in the ASI web portal, an investigator finds a mismatch between fuels consumed and physical electricity bills. What is the duty of the scrutinizing officer?",
+            competency: "Behavioural Leadership & Public Administration",
+            pillar: "lead",
+            options: [
+                "Issue a formal scrutiny query to the factory management for clarification and verify against ledger books before validation",
+                "Silently change the figures to match past year averages without confirmation",
+                "Reject the entire factory from the master frame without justification",
+                "Approve the discrepancy without raising a scrutiny note"
+            ],
+            correct_index: 0,
+            explanation: "Rigorous statistical scrutiny requires formal query logging, unit clarification, and documentary verification."
+        },
+        {
+            question: "Which sector in the ASI frame is surveyed on a 100% complete enumeration (Census) basis?",
+            competency: "Department Domain Application",
+            pillar: "stat",
+            options: [
+                "Establishments employing 100 or more workers (Census Sector)",
+                "All informal unorganized cottage workshops",
+                "Only closed or bankrupt industrial units",
+                "Private residential handloom workers"
+            ],
+            correct_index: 0,
+            explanation: "In ASI sampling frame, units with 100+ workers are surveyed on a complete Census basis."
+        }
+    ],
+    'PSD': [
+        {
+            question: "How are item-level weights derived for the Consumer Price Index (CPI-Rural / CPI-Urban / CPI-Combined)?",
+            competency: "Statistical Methods & Sampling",
+            pillar: "stat",
+            options: [
+                "From the Household Consumer Expenditure Survey (HCES) consumption expenditure share matrix",
+                "From corporate income tax revenues filed with CBDT",
+                "By equal weight allocation (1.0) to all items in the commodity basket",
+                "From foreign exchange reserve transaction values"
+            ],
+            correct_index: 0,
+            explanation: "CPI commodity basket weights are directly derived from HCES household consumption expenditure proportions."
+        },
+        {
+            question: "Which formula is employed by MoSPI for compiling the All-India Monthly Headline Inflation rate from CPI indices?",
+            competency: "Technical Tools & Data Analysis",
+            pillar: "tech",
+            options: [
+                "Year-on-Year Inflation (%) = ((CPI_current_month - CPI_same_month_prev_year) / CPI_same_month_prev_year) * 100",
+                "Month-on-Month Difference * Bank Repo Rate",
+                "Logarithmic sum of daily wholesale prices",
+                "Simple unweighted difference between maximum and minimum food prices"
+            ],
+            correct_index: 0,
+            explanation: "Headline inflation is compiled as the percentage change in the CPI of the current month over the corresponding month of the previous year."
+        },
+        {
+            question: "When collecting weekly retail prices from designated sample markets, what quality control protocol prevents price quotation fraud?",
+            competency: "Digital Governance & Data Privacy",
+            pillar: "gov",
+            options: [
+                "Geo-tagged timestamped mobile CAPI price collection with paradata audit trails and supervisor market inspection",
+                "Telephone calls to market shopkeepers without physical store verification",
+                "Downloading commercial e-commerce discounts without standardized specification matching",
+                "Accepting estimated verbal quotations without product brand matching"
+            ],
+            correct_index: 0,
+            explanation: "Geo-tagged CAPI paradata and physical price supervisor checks ensure quotation authenticity and consistency."
+        },
+        {
+            question: "How should an officer handle missing price quotations when a designated seasonal fruit disappears from the market during off-season months?",
+            competency: "Behavioural Leadership & Public Administration",
+            pillar: "lead",
+            options: [
+                "Apply standard imputation rules (impute price change based on sub-group price index movement) as per MoSPI CPI Manual",
+                "Set the price to zero, which distorts the index downward",
+                "Arbitrarily multiply last year's price by 10x",
+                "Delete the item category permanently from the national basket"
+            ],
+            correct_index: 0,
+            explanation: "The official CPI manual specifies sub-group imputation rules for temporary missing and seasonal commodity quotations."
+        },
+        {
+            question: "What is Core Inflation in official price statistics reporting?",
+            competency: "Department Domain Application",
+            pillar: "stat",
+            options: [
+                "Headline CPI inflation excluding volatile Food & Beverages and Fuel & Light categories",
+                "Inflation calculated exclusively for luxury imported electronics",
+                "Wholesale price inflation minus agricultural production",
+                "The lowest inflation rate recorded among Indian states"
+            ],
+            correct_index: 0,
+            explanation: "Core inflation excludes volatile food and energy/fuel prices to reflect underlying trend inflation."
+        }
+    ],
+    'SDRD': [
+        {
+            question: "In complex socio-economic surveys, what is Probability Proportional to Size (PPS) sampling?",
+            competency: "Statistical Methods & Sampling",
+            pillar: "stat",
+            options: [
+                "A sampling technique where selection probability of an FSU is directly proportional to its measure of size (e.g. census population)",
+                "Giving every village an equal uniform chance regardless of population",
+                "Sampling units based purely on convenient road accessibility",
+                "Selecting only the largest 5 metro cities in every state"
+            ],
+            correct_index: 0,
+            explanation: "PPS sampling assigns selection chances proportional to auxiliary size measures (e.g. population) to minimize variance."
+        },
+        {
+            question: "Which statistical package/function in R is standard for computing design-based standard errors and Horvitz-Thompson weighted estimates?",
+            competency: "Technical Tools & Data Analysis",
+            pillar: "tech",
+            options: [
+                "library(survey); design <- svydesign(ids=~fsu, strata=~stratum, weights=~multiplier, data=df); svymean(~y, design)",
+                "lm(y ~ x, data=df)",
+                "summary(df$income)",
+                "t.test(df$sample1, df$sample2)"
+            ],
+            correct_index: 0,
+            explanation: "The R 'survey' package (`svydesign` & `svymean`) correctly handles complex stratification, clustering, and weights."
+        },
+        {
+            question: "What is the role of Post-Stratification Weight Calibration in survey research design?",
+            competency: "Digital Governance & Data Privacy",
+            pillar: "gov",
+            options: [
+                "Adjusting sample multipliers to ensure weighted sample totals match external statutory demographic benchmarks (e.g. Census totals)",
+                "Modifying questionnaire wording after fieldwork is completed",
+                "Dropping respondent answers that do not match survey hypotheses",
+                "Assigning arbitrary multipliers to achieve predetermined survey findings"
+            ],
+            correct_index: 0,
+            explanation: "Calibration adjusts initial design weights to match known external population totals, reducing non-response and sampling bias."
+        },
+        {
+            question: "How does the Jackknife Replicate Variance method estimate standard errors in complex multi-stage surveys?",
+            competency: "Behavioural Leadership & Public Administration",
+            pillar: "lead",
+            options: [
+                "By systematically omitting one PSU at a time from each stratum, recalculating the estimator, and summing squared deviations",
+                "By assuming standard simple random sampling without replacement (SRSWOR) formulas",
+                "By guessing confidence intervals without computational verification",
+                "By dividing total sample variance by number of survey officers"
+            ],
+            correct_index: 0,
+            explanation: "The Jackknife replication technique systematically drops one primary sampling unit at a time to robustly estimate sampling variance."
+        },
+        {
+            question: "What is the Relative Standard Error (RSE) benchmark enforced by MoSPI for reliable domain-level survey estimates?",
+            competency: "Department Domain Application",
+            pillar: "stat",
+            options: [
+                "RSE < 10% for reliable direct publication; estimates with RSE > 20% must be flagged with caution",
+                "RSE > 50% is required for all official national publications",
+                "RSE is only applicable to industrial factory censuses",
+                "RSE benchmarks have no relevance in survey methodology"
+            ],
+            correct_index: 0,
+            explanation: "MoSPI and international standards mandate RSE < 10% for high precision; higher RSE values indicate high sampling error."
+        }
+    ]
+};
+
+// General Default Fallback Bank for All Other Departments
+const GENERAL_MOSPI_BASELINE_QUIZ_BANK = [
+    {
+        question: "What is the fundamental role of inverse selection probability multipliers in official statistical compilation?",
+        competency: "Statistical Methods & Sampling",
+        pillar: "stat",
+        options: [
+            "To project sample survey observations up to unbiased national population totals",
+            "To penalize non-compliant survey investigators",
+            "To reduce survey fieldwork budget expenditures",
+            "To compress database file sizes on government servers"
+        ],
+        correct_index: 0,
+        explanation: "Sampling multipliers (inverse inclusion probabilities) allow unbiased estimation of population parameters from sample data."
+    },
+    {
+        question: "Which data manipulation tool is standard in MoSPI for processing multi-gigabyte survey unit record microdata?",
+        competency: "Technical Tools & Data Analysis",
+        pillar: "tech",
+        options: [
+            "Python (Pandas / Polars / PySpark) and Relational SQL Databases",
+            "Basic text editors without structured query capabilities",
+            "Manual paper calculation worksheets",
+            "Closed proprietary word processors"
+        ],
+        correct_index: 0,
+        explanation: "Modern official statistics relies on Python dataframes, R survey pipelines, and SQL databases for fast microdata processing."
+    },
+    {
+        question: "Under the Digital Personal Data Protection (DPDP) Act, 2023, what is the duty of government Data Fiduciaries handling citizen survey data?",
+        competency: "Digital Governance & Data Privacy",
+        pillar: "gov",
+        options: [
+            "Implement reasonable security safeguards, enforce purpose limitation, and prevent unauthorized PII disclosure",
+            "Monetize citizen survey records by auctioning them to private advertising firms",
+            "Store citizen identification numbers in publicly accessible unencrypted spreadsheets",
+            "Exempt all departmental databases from cybersecurity audits"
+        ],
+        correct_index: 0,
+        explanation: "DPDP Act 2023 mandates statutory data protection, purpose limitation, and strong security safeguards by Data Fiduciaries."
+    },
+    {
+        question: "Under Central Civil Services (Conduct) Rules and Mission Karmayogi principles, what standard of integrity is expected of statistical officers?",
+        competency: "Behavioural Leadership & Public Administration",
+        pillar: "lead",
+        options: [
+            "Maintain absolute integrity, objectivity, impartiality, and evidence-based decision making in all official duties",
+            "Alter survey reports to satisfy informal political preferences",
+            "Accept gifts and personal favors from audited industrial establishments",
+            "Refuse supervisory training and peer reviews"
+        ],
+        correct_index: 0,
+        explanation: "CCS Conduct Rules and Mission Karmayogi require unwavering professional integrity, objectivity, and public service ethos."
+    },
+    {
+        question: "How does the UN National Quality Assurance Framework (UN-NQAF) evaluate official statistics?",
+        competency: "Department Domain Application",
+        pillar: "stat",
+        options: [
+            "Across key dimensions: Relevance, Accuracy, Timeliness, Accessibility, Interpretability, and Coherence",
+            "Based solely on the printing design of annual report covers",
+            "By the total page count of departmental publications",
+            "By unverified social media opinion polls"
+        ],
+        correct_index: 0,
+        explanation: "UN-NQAF establishes systematic international quality dimensions including accuracy, timeliness, and coherence."
+    }
+];
+
+async function generateDepartmentBaselineQuizAI(deptCode = 'NAD', deptName = '') {
+    const cleanCode = (deptCode || 'NAD').toUpperCase().trim();
+    const cleanName = deptName || DEPARTMENT_NAMES_MAP[cleanCode] || cleanCode;
+
+    // 1. Try Ollama Cloud Engine / Multi-Provider Fast LLM
+    if (process.env.OLLAMA_API_KEY || process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY) {
+        const sysPrompt = "You are the Chief Psychometric Director at NSSTA / MoSPI. You generate rigorous, department-aligned 5-question baseline competency MCQs. Return strictly valid JSON array without markdown.";
+        const prompt = `Generate exactly 5 Multiple Choice Questions (MCQs) for an entry-level competency baseline calibration test for newly registered officers joining the ${cleanName} (${cleanCode}) department at the Ministry of Statistics and Programme Implementation (MoSPI).
+
+The 5 questions MUST assess these 5 specific dimensions:
+1. Question 1 (Pillar: Statistical Methods): Test a key statistical methodology, formula, indicator, or sampling concept relevant to ${cleanName} (e.g. GDP deflator, IIP weighting, NSSO sampling, CPI basket, index numbers, etc.).
+2. Question 2 (Pillar: Technical Tools): Test practical data processing or programming knowledge (e.g. Python Pandas, R survey analysis, SQL microdata aggregation, CAPI tablet validation) used for survey microdata.
+3. Question 3 (Pillar: Digital Governance & Data Privacy): Test knowledge of government data security, DPDP Act 2023, data classification, or official cybersecurity guidelines.
+4. Question 4 (Pillar: Behavioural Leadership & Public Administration): Test public administration standards, GFR 2017 procurement, POSH guidelines, or official conduct rules.
+5. Question 5 (Pillar: Department Domain Application): Test an operational task or standard workflow specific to ${cleanName}.
+
+Each question MUST have:
+- "question": Clear question string
+- "competency": Name of the competency (e.g., "Statistical Methods & Sampling", "Technical Tools & Data Analysis", "Digital Governance & DPDP Act", "Behavioural Leadership & Public Administration", "Department Domain Knowledge")
+- "pillar": one of ["stat", "tech", "gov", "lead", "stat"]
+- "options": Array of exactly 4 distinct strings (A, B, C, D)
+- "correct_index": 0-based integer index of the correct answer (0, 1, 2, or 3)
+- "explanation": 1-sentence rationale explaining the correct answer
+
+Return ONLY a valid JSON array of 5 objects without markdown:
+[
+  {
+    "question": "...",
+    "competency": "Statistical Methods & Sampling",
+    "pillar": "stat",
+    "options": ["A", "B", "C", "D"],
+    "correct_index": 0,
+    "explanation": "..."
+  }
+]`;
+
+        try {
+            const rawRes = await generateMoSPIAIResponse(prompt, sysPrompt, true);
+            if (rawRes) {
+                const cleaned = rawRes.replace(/```json/gi, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(cleaned);
+                if (Array.isArray(parsed) && parsed.length >= 5) {
+                    return parsed.slice(0, 5).map(q => jumbleMCQ(q));
+                }
+            }
+        } catch (llmErr) {
+            console.warn(`Ollama/LLM department baseline quiz note for ${cleanCode}:`, llmErr.message);
+        }
+    }
+
+    // 2. Fallback to Pre-Constructed Rigorous Department Banks
+    const fallbackBank = DEPARTMENT_BASELINE_QUIZ_BANKS[cleanCode] || GENERAL_MOSPI_BASELINE_QUIZ_BANK;
+    return fallbackBank.map(q => jumbleMCQ(q));
+}
+
 module.exports = {
     MOSPI_MASTER_KNOWLEDGE_BASE,
     generateMoSPIAIResponse,
@@ -849,5 +1334,7 @@ module.exports = {
     generateMCQsFromDocumentAI,
     generateCourseCurriculumAI,
     generateOfficerDossierData,
-    evaluateOfficerArtifactAI
+    evaluateOfficerArtifactAI,
+    generateDepartmentBaselineQuizAI,
+    DEPARTMENT_NAMES_MAP
 };

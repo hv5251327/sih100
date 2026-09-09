@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        #google_translate_element { display: none !important; }
+        .goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
+
         .form-group select {
             width: 100%;
             padding: 12px 14px;
@@ -30,6 +34,46 @@
             border-color: var(--primary, #1e3a8a);
             box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
         }
+
+        .quiz-opt-card {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .quiz-opt-card:hover {
+            border-color: #0284c7;
+            background: #f0f9ff;
+        }
+        .quiz-opt-card.selected {
+            border-color: #0284c7;
+            background: #e0f2fe;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+        }
+        .quiz-opt-letter {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .quiz-opt-card.selected .quiz-opt-letter {
+            background: #0284c7;
+            color: #ffffff;
+        }
+
         @media (max-width: 600px) {
             .center-body { padding: 0.8rem; }
             .login-card { padding: 1.5rem 1.1rem !important; border-radius: 12px; }
@@ -39,9 +83,40 @@
             .btn-submit { padding: 12px; font-size: 0.9rem; min-height: 44px; }
         }
     </style>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body class="center-body">
+    <div id="google_translate_element" style="display:none;"></div>
+
     <div class="login-card" style="max-width: 580px; width: 100%;">
+        
+        <!-- Bhashini Page Translator Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <div class="bhashini-dropdown-wrapper" style="display:flex; align-items:center; gap:6px; background:#eff6ff; border:1px solid #bfdbfe; padding:4px 10px; border-radius:8px;">
+                <i class="fa-solid fa-language" style="color:#1e3a8a; font-size:0.95rem;"></i>
+                <select class="bhashini-select-custom" onchange="triggerBhashiniTranslate(this.value)" style="border:none; background:transparent; font-size:0.82rem; font-weight:700; color:#1e3a8a; outline:none; cursor:pointer;">
+                    <option value="en">🌐 English</option>
+                    <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+                    <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+                    <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+                    <option value="bn">🇮🇳 বাংলা (Bengali)</option>
+                    <option value="gu">🇮🇳 ગુજરાતી (Gujarati)</option>
+                    <option value="mr">🇮🇳 मराठी (Marathi)</option>
+                    <option value="kn">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+                    <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
+                    <option value="or">🇮🇳 ଓଡ଼ିଆ (Odia)</option>
+                    <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                </select>
+            </div>
+            <span style="font-size:0.75rem; color:#64748b; font-weight:700;"><i class="fa-solid fa-shield-halved" style="color:#0284c7;"></i> Official MoSPI Portal</span>
+        </div>
+
         <div class="icon-box"><i class="fa-solid fa-user-plus"></i></div>
         <h2>MoSPI Competency Portal</h2>
         <p class="subtitle">Employee Registration</p>
@@ -154,81 +229,248 @@
 
 
     <!-- AI-Powered Diagnostic Baseline & Skill-Gap Assessment Modal -->
-    <div id="diagnosticModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.88); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px); padding:20px;">
-        <div style="background:#ffffff; border-radius:12px; max-width:650px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); border:1px solid #e2e8f0; padding:26px;">
-            <div style="display:flex; align-items:center; gap:12px; border-bottom:1px solid #e2e8f0; padding-bottom:14px; margin-bottom:18px;">
-                <div style="background:linear-gradient(135deg, #1e3a8a, #0284c7); color:#fff; width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.25rem;"><i class="fa-solid fa-brain"></i></div>
-                <div>
-                    <h3 style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:0;">AI Diagnostic Competency Assessment</h3>
-                    <p style="font-size:0.78rem; color:#64748b; margin:0;">MoSPI / NSSTA Baseline Skill-Gap Calibration</p>
+    <div id="diagnosticModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.88); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px); padding:16px;">
+        <div style="background:#ffffff; border-radius:14px; max-width:680px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35); border:1px solid #e2e8f0; padding:24px;">
+            
+            <!-- Modal Header with Bhashini Page Translator Dropdown -->
+            <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e2e8f0; padding-bottom:14px; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="background:linear-gradient(135deg, #1e3a8a, #0284c7); color:#fff; width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.25rem;"><i class="fa-solid fa-brain"></i></div>
+                    <div>
+                        <h3 style="font-size:1.1rem; font-weight:800; color:#1e293b; margin:0;">AI Diagnostic Competency Baseline</h3>
+                        <p style="font-size:0.75rem; color:#64748b; margin:0;">MoSPI / NSSTA 4-Pillar Baseline & Department Calibration</p>
+                    </div>
+                </div>
+
+                <!-- Bhashini Page Translator Dropdown for Modal -->
+                <div style="display:flex; align-items:center; gap:6px; background:#eff6ff; border:1px solid #bfdbfe; padding:4px 8px; border-radius:8px;">
+                    <i class="fa-solid fa-language" style="color:#1e3a8a; font-size:0.85rem;"></i>
+                    <select class="bhashini-select-custom" onchange="triggerBhashiniTranslate(this.value)" style="border:none; background:transparent; font-size:0.78rem; font-weight:700; color:#1e3a8a; outline:none; cursor:pointer;">
+                        <option value="en">🌐 English</option>
+                        <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+                        <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+                        <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+                        <option value="bn">🇮🇳 বাংলা (Bengali)</option>
+                        <option value="gu">🇮🇳 ગુજરાતી (Gujarati)</option>
+                        <option value="mr">🇮🇳 मराठी (Marathi)</option>
+                        <option value="kn">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+                        <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
+                        <option value="or">🇮🇳 ଓଡ଼ିଆ (Odia)</option>
+                        <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                    </select>
                 </div>
             </div>
 
-            <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px; margin-bottom:18px; font-size:0.8rem; color:#0369a1; line-height:1.5;">
-                <i class="fa-solid fa-circle-info" style="color:#0284c7;"></i> Welcome, Officer! To personalize your 3-stage learning roadmap and identify your competency deficits, please answer this 4-pillar diagnostic self-assessment.
+            <!-- STEP 1: SELF-RATING COMPETENCY ASSESSMENT -->
+            <div id="modalStep1" style="display:block;">
+                <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px; margin-bottom:16px; font-size:0.82rem; color:#0369a1; line-height:1.5;">
+                    <i class="fa-solid fa-circle-info" style="color:#0284c7;"></i> <strong>Step 1 of 2:</strong> Self-rate your proficiency across the 4 foundational MoSPI competency pillars. Next, a short 5-question department diagnostic will calibrate your score.
+                </div>
+
+                <form id="diagnosticForm" onsubmit="event.preventDefault(); goToStep2Quiz();" style="display:flex; flex-direction:column; gap:14px;">
+                    <!-- Pillar 1: Statistical Methods -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <label style="font-weight:700; font-size:0.85rem; color:#1e3a8a; margin:0;">
+                                <i class="fa-solid fa-chart-pie"></i> 1. Statistical Methods & Sampling
+                            </label>
+                            <button type="button" onclick="speakText('Statistical Methods and Sampling: What is your current practical experience with official survey sampling, National Accounts, or index numbers?')" style="background:transparent; border:none; color:#0284c7; cursor:pointer; font-size:0.8rem;" title="Listen with Bhashini TTS">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                        </div>
+                        <p style="font-size:0.76rem; color:#475569; margin:0 0 8px 0;">What is your current practical experience with official survey sampling, National Accounts (SNA), or index numbers?</p>
+                        <select id="diag_stat" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem; background:#fff;">
+                            <option value="90">Advanced — Regularly compile GVA/GDP, design stratified multi-stage frames, or compute deflators</option>
+                            <option value="65" selected>Intermediate — Familiar with NSS weighting, CPI baskets, and survey paradata auditing</option>
+                            <option value="40">Basic — Conceptual understanding of statistical indicators and descriptive summaries</option>
+                            <option value="20">Novice / Need Training — New to official statistics methodologies</option>
+                        </select>
+                    </div>
+
+                    <!-- Pillar 2: Technical Tools -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <label style="font-weight:700; font-size:0.85rem; color:#0284c7; margin:0;">
+                                <i class="fa-solid fa-laptop-code"></i> 2. Technical & Data Analysis Tools
+                            </label>
+                            <button type="button" onclick="speakText('Technical and Data Analysis Tools: Which data processing and analytical tools do you actively use for survey microdata?')" style="background:transparent; border:none; color:#0284c7; cursor:pointer; font-size:0.8rem;" title="Listen with Bhashini TTS">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                        </div>
+                        <p style="font-size:0.76rem; color:#475569; margin:0 0 8px 0;">Which data processing and analytical tools do you actively use for survey microdata?</p>
+                        <select id="diag_tech" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem; background:#fff;">
+                            <option value="85">Advanced Programming — Python (Pandas/NumPy), R survey models, or complex SQL queries</option>
+                            <option value="60" selected>Intermediate Tools — Stata / SPSS / SAS panel econometrics or CAPI tablet validation</option>
+                            <option value="40">Basic Tools — Spreadsheets, basic formula-based calculations, and standard tabulations</option>
+                            <option value="20">Novice / Need Training — Require foundational training in Python, R, and relational SQL</option>
+                        </select>
+                    </div>
+
+                    <!-- Pillar 3: Digital Governance -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <label style="font-weight:700; font-size:0.85rem; color:#15803d; margin:0;">
+                                <i class="fa-solid fa-shield-halved"></i> 3. Digital Governance & Data Privacy
+                            </label>
+                            <button type="button" onclick="speakText('Digital Governance and Data Privacy: What is your familiarity with government data protection laws and cybersecurity protocols?')" style="background:transparent; border:none; color:#15803d; cursor:pointer; font-size:0.8rem;" title="Listen with Bhashini TTS">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                        </div>
+                        <p style="font-size:0.76rem; color:#475569; margin:0 0 8px 0;">What is your familiarity with government data protection laws and cybersecurity protocols?</p>
+                        <select id="diag_gov" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem; background:#fff;">
+                            <option value="85">Thorough — Active compliance with DPDP Act 2023, k-anonymity, and CERT-In guidelines</option>
+                            <option value="65" selected>Moderate — Aware of e-Office, PKI digital signatures, and official classification</option>
+                            <option value="40">Basic — General awareness of government IT and security policies</option>
+                            <option value="20">Novice / Need Training — Need comprehensive guidance on DPDP Act 2023 mandates</option>
+                        </select>
+                    </div>
+
+                    <!-- Pillar 4: Behavioural & Leadership -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <label style="font-weight:700; font-size:0.85rem; color:#b45309; margin:0;">
+                                <i class="fa-solid fa-users-gear"></i> 4. Behavioural, Leadership & Public Administration
+                            </label>
+                            <button type="button" onclick="speakText('Behavioural, Leadership and Public Administration: What is your background in administrative decision-making, project monitoring, and civil service ethics?')" style="background:transparent; border:none; color:#b45309; cursor:pointer; font-size:0.8rem;" title="Listen with Bhashini TTS">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                        </div>
+                        <p style="font-size:0.76rem; color:#475569; margin:0 0 8px 0;">What is your background in administrative decision-making, project monitoring, and civil service ethics?</p>
+                        <select id="diag_lead" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem; background:#fff;">
+                            <option value="85">Executive / Senior — Drafting Cabinet notes, OCMS project monitoring, policy formulation</option>
+                            <option value="60" selected>Operational / Team Lead — Supervisory field inspection, POSH/GFR compliance, team coordination</option>
+                            <option value="40">Foundational — Participating in office workflows and standard administrative procedures</option>
+                            <option value="20">Entry Level — Orientation to civil services conduct rules and public administration</option>
+                        </select>
+                    </div>
+
+                    <button type="button" onclick="goToStep2Quiz()" class="btn-submit" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); padding:12px; font-size:0.95rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; margin-top:6px;">
+                        <span>Proceed to 5-Question Diagnostic Quiz</span> <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </form>
             </div>
 
-            <form id="diagnosticForm" onsubmit="submitDiagnosticAssessment(event)" style="display:flex; flex-direction:column; gap:18px;">
-                <!-- Pillar 1: Statistical Methods -->
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
-                    <label style="font-weight:700; font-size:0.85rem; color:#1e3a8a; display:block; margin-bottom:6px;">
-                        <i class="fa-solid fa-chart-pie"></i> 1. Statistical Methods & Sampling
-                    </label>
-                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">What is your current practical experience with official survey sampling, National Accounts (SNA), or index numbers?</p>
-                    <select id="diag_stat" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
-                        <option value="90">Advanced — Regularly compile GVA/GDP, design stratified multi-stage frames, or compute deflators</option>
-                        <option value="65" selected>Intermediate — Familiar with NSS weighting, CPI baskets, and survey paradata auditing</option>
-                        <option value="40">Basic — Conceptual understanding of statistical indicators and descriptive summaries</option>
-                        <option value="20">Novice / Need Training — New to official statistics methodologies</option>
-                    </select>
+            <!-- STEP 2: 5-QUESTION DEPARTMENT BASELINE QUIZ -->
+            <div id="modalStep2" style="display:none;">
+                <!-- Loading State -->
+                <div id="quizLoadingState" style="text-align:center; padding:40px 20px;">
+                    <div style="font-size:2.2rem; color:#0284c7; margin-bottom:14px;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                    <h4 style="font-size:1.05rem; font-weight:700; color:#1e293b; margin-bottom:6px;">Loading Department Baseline Quiz...</h4>
+                    <p style="font-size:0.8rem; color:#64748b;">Fetching 5 validated questions from database and AI engine aligned with your division.</p>
                 </div>
 
-                <!-- Pillar 2: Technical Tools -->
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
-                    <label style="font-weight:700; font-size:0.85rem; color:#0284c7; display:block; margin-bottom:6px;">
-                        <i class="fa-solid fa-laptop-code"></i> 2. Technical & Data Analysis Tools
-                    </label>
-                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">Which data processing and analytical tools do you actively use for survey microdata?</p>
-                    <select id="diag_tech" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
-                        <option value="85">Advanced Programming — Python (Pandas/NumPy), R survey models, or complex SQL queries</option>
-                        <option value="60" selected>Intermediate Tools — Stata / SPSS / SAS panel econometrics or CAPI tablet validation</option>
-                        <option value="40">Basic Tools — Spreadsheets, basic formula-based calculations, and standard tabulations</option>
-                        <option value="20">Novice / Need Training — Require foundational training in Python, R, and relational SQL</option>
-                    </select>
+                <!-- Active Quiz State -->
+                <div id="quizContentState" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                        <span id="quizDeptBadge" style="background:#e0f2fe; color:#0369a1; font-weight:700; font-size:0.75rem; padding:4px 10px; border-radius:12px; border:1px solid #bae6fd;">
+                            <i class="fa-solid fa-building-columns"></i> Department Baseline
+                        </span>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span id="quizPillarBadge" style="background:#f1f5f9; color:#475569; font-weight:700; font-size:0.72rem; padding:4px 8px; border-radius:6px; border:1px solid #cbd5e1;">
+                                Statistical Pillar
+                            </span>
+                            <button type="button" onclick="speakCurrentQuestion()" style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e3a8a; border-radius:6px; padding:4px 8px; font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;" title="Read aloud with Bhashini Voice TTS">
+                                <i class="fa-solid fa-volume-high"></i> Listen
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar & Counter -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:#64748b; font-weight:700; margin-bottom:4px;">
+                        <span>Question <strong id="currentQNum" style="color:#0284c7;">1</strong> of 5</span>
+                        <span id="quizProgressPercent">20%</span>
+                    </div>
+                    <div style="background:#e2e8f0; border-radius:10px; height:6px; width:100%; margin-bottom:16px; overflow:hidden;">
+                        <div id="quizProgressBar" style="width:20%; background:linear-gradient(90deg, #1e3a8a, #0284c7); height:100%; border-radius:10px; transition:width 0.3s ease;"></div>
+                    </div>
+
+                    <!-- Question Container -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:14px;">
+                        <h4 id="quizQuestionText" style="font-size:0.95rem; font-weight:700; color:#1e293b; margin:0 0 14px 0; line-height:1.5;">
+                            Question loading...
+                        </h4>
+                        <div id="quizOptionsContainer" style="display:flex; flex-direction:column; gap:10px;">
+                            <!-- Option cards dynamically rendered -->
+                        </div>
+                    </div>
+
+                    <!-- Navigation Actions -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+                        <button type="button" onclick="goToStep1SelfRate()" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; padding:10px 16px; border-radius:8px; font-size:0.85rem; font-weight:700; cursor:pointer;">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </button>
+
+                        <button type="button" id="btnNextQuiz" onclick="nextQuizQuestion()" class="btn-submit" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); padding:10px 20px; font-size:0.9rem; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; width:auto;">
+                            <span>Next Question</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+
+                        <button type="button" id="btnSubmitQuiz" onclick="submitBaselineQuiz()" class="btn-submit" style="display:none; background:linear-gradient(135deg, #059669, #10b981); padding:10px 20px; font-size:0.9rem; font-weight:700; align-items:center; gap:6px; cursor:pointer; width:auto;">
+                            <i class="fa-solid fa-check-circle"></i> <span>Submit & Calibrate Profile</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: CALIBRATED PROFILE & ROADMAP GENERATED -->
+            <div id="modalStep3" style="display:none; text-align:center; padding:10px 0;">
+                <div style="background:#ecfdf5; color:#059669; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.6rem; margin:0 auto 12px; border:2px solid #a7f3d0;">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h3 style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:0 0 4px 0;">Baseline Assessment Complete!</h3>
+                <p style="font-size:0.8rem; color:#64748b; margin:0 0 16px 0;">Your profile has been calibrated combining self-evaluation (60%) and 5-question baseline quiz validation (40%).</p>
+
+                <!-- Calibrated Pillar Cards Grid -->
+                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; text-align:left; margin-bottom:18px;">
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-size:0.75rem; font-weight:700; color:#1e3a8a;"><i class="fa-solid fa-chart-pie"></i> Statistical Methods</span>
+                            <span id="resStatVal" style="font-size:0.85rem; font-weight:800; color:#1e3a8a;">65%</span>
+                        </div>
+                        <div style="background:#e2e8f0; border-radius:10px; height:5px; width:100%;">
+                            <div id="resStatBar" style="width:65%; background:#1e3a8a; height:100%; border-radius:10px;"></div>
+                        </div>
+                    </div>
+
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-size:0.75rem; font-weight:700; color:#0284c7;"><i class="fa-solid fa-laptop-code"></i> Technical Tools</span>
+                            <span id="resTechVal" style="font-size:0.85rem; font-weight:800; color:#0284c7;">60%</span>
+                        </div>
+                        <div style="background:#e2e8f0; border-radius:10px; height:5px; width:100%;">
+                            <div id="resTechBar" style="width:60%; background:#0284c7; height:100%; border-radius:10px;"></div>
+                        </div>
+                    </div>
+
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-size:0.75rem; font-weight:700; color:#15803d;"><i class="fa-solid fa-shield-halved"></i> Digital Governance</span>
+                            <span id="resGovVal" style="font-size:0.85rem; font-weight:800; color:#15803d;">65%</span>
+                        </div>
+                        <div style="background:#e2e8f0; border-radius:10px; height:5px; width:100%;">
+                            <div id="resGovBar" style="width:65%; background:#15803d; height:100%; border-radius:10px;"></div>
+                        </div>
+                    </div>
+
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-size:0.75rem; font-weight:700; color:#b45309;"><i class="fa-solid fa-users-gear"></i> Leadership & Admin</span>
+                            <span id="resLeadVal" style="font-size:0.85rem; font-weight:800; color:#b45309;">60%</span>
+                        </div>
+                        <div style="background:#e2e8f0; border-radius:10px; height:5px; width:100%;">
+                            <div id="resLeadBar" style="width:60%; background:#b45309; height:100%; border-radius:10px;"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Pillar 3: Digital Governance -->
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
-                    <label style="font-weight:700; font-size:0.85rem; color:#15803d; display:block; margin-bottom:6px;">
-                        <i class="fa-solid fa-shield-halved"></i> 3. Digital Governance & Data Privacy
-                    </label>
-                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">What is your familiarity with government data protection laws and cybersecurity protocols?</p>
-                    <select id="diag_gov" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
-                        <option value="85">Thorough — Active compliance with DPDP Act 2023, k-anonymity, and CERT-In guidelines</option>
-                        <option value="65" selected>Moderate — Aware of e-Office, PKI digital signatures, and official classification</option>
-                        <option value="40">Basic — General awareness of government IT and security policies</option>
-                        <option value="20">Novice / Need Training — Need comprehensive guidance on DPDP Act 2023 mandates</option>
-                    </select>
+                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px 14px; margin-bottom:18px; font-size:0.82rem; color:#1e3a8a;">
+                    <i class="fa-solid fa-route"></i> Your personalized 3-stage learning roadmap and gap analysis have been initialized in the MoSPI Competency Engine.
                 </div>
 
-                <!-- Pillar 4: Behavioural & Leadership -->
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
-                    <label style="font-weight:700; font-size:0.85rem; color:#b45309; display:block; margin-bottom:6px;">
-                        <i class="fa-solid fa-users-gear"></i> 4. Behavioural, Leadership & Public Administration
-                    </label>
-                    <p style="font-size:0.78rem; color:#475569; margin-bottom:10px;">What is your background in administrative decision-making, project monitoring, and civil service ethics?</p>
-                    <select id="diag_lead" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.82rem;">
-                        <option value="85">Executive / Senior — Drafting Cabinet notes, OCMS project monitoring, policy formulation</option>
-                        <option value="60" selected>Operational / Team Lead — Supervisory field inspection, POSH/GFR compliance, team coordination</option>
-                        <option value="40">Foundational — Participating in office workflows and standard administrative procedures</option>
-                        <option value="20">Entry Level — Orientation to civil services conduct rules and public administration</option>
-                    </select>
-                </div>
-
-                <button type="button" onclick="submitDiagnosticAssessment(event)" id="diagSubmitBtn" class="btn-submit" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); padding:12px; font-size:0.95rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
-                    <i class="fa-solid fa-chart-line"></i> Calibrate Competencies & Generate Roadmap
+                <button type="button" id="btnEnterDashboard" onclick="finishRegistrationFinal()" class="btn-submit" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); padding:12px; font-size:0.95rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
+                    <span>Enter Officer Dashboard</span> <i class="fa-solid fa-arrow-right"></i>
                 </button>
-            </form>
+            </div>
+
         </div>
     </div>
 
@@ -276,6 +518,58 @@
             ]
         };
 
+        const DEPARTMENT_NAMES = {
+            "NAD": "National Accounts Division (NAD)",
+            "ESD": "Economic Statistics Division (ESD)",
+            "PSD": "Price Statistics Division (PSD)",
+            "SSD": "Social Statistics Division (SSD)",
+            "FOD": "Field Operations Division (FOD)",
+            "SDRD": "Survey Design and Research Division (SDRD)",
+            "DPD": "Data Processing Division (DPD)",
+            "DIID": "Data Informatics & Innovation Division (DIID)",
+            "NSSTA": "National Statistical Systems Training Academy (NSSTA)",
+            "CAPD": "Coordination & Publication Division (CAPD)",
+            "NSSO": "National Sample Survey Office (NSSO)",
+            "IPMD": "Infrastructure & Project Monitoring Division (IPMD)",
+            "SDG_LAB": "Sustainable Development Goals (SDG) Unit",
+            "STATE_DES": "State Directorate of Economics and Statistics",
+            "DSO": "District Statistical Office (DSO)",
+            "TALUK": "Sub-Divisional Statistical Unit"
+        };
+
+        function triggerBhashiniTranslate(langCode) {
+            const combo = document.querySelector('.goog-te-combo');
+            if (combo) {
+                combo.value = langCode;
+                combo.dispatchEvent(new Event('change'));
+            }
+        }
+
+        function speakText(text) {
+            if (!text) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.rate = 0.95;
+                const combo = document.querySelector('.goog-te-combo');
+                const langCode = combo?.value || 'en';
+                const langMap = {
+                    'hi': 'hi-IN',
+                    'te': 'te-IN',
+                    'ta': 'ta-IN',
+                    'bn': 'bn-IN',
+                    'gu': 'gu-IN',
+                    'mr': 'mr-IN',
+                    'kn': 'kn-IN',
+                    'ml': 'ml-IN',
+                    'pa': 'pa-IN',
+                    'en': 'en-IN'
+                };
+                utter.lang = langMap[langCode] || 'en-IN';
+                window.speechSynthesis.speak(utter);
+            }
+        }
+
         function renderDesignationsDropdown() {
             const desigSelect = document.getElementById('regDesignation');
             if (!desigSelect) return;
@@ -298,10 +592,14 @@
         }
 
         function handleDeptChange() {
-            // Keep clean dropdown without modifying designation choices
+            // Dropdown preserved cleanly
         }
 
         let pendingRegistrationData = null;
+        let baselineQuestions = [];
+        let currentQuestionIndex = 0;
+        let userQuizAnswers = {};
+        let finalCalibratedScores = null;
 
         function submitRegistration() {
             const name = document.getElementById('regName')?.value?.trim();
@@ -318,35 +616,235 @@
 
             pendingRegistrationData = { name, email, password, cadre, department, designation };
             
-            // Open Diagnostic Baseline Assessment Modal
+            // Open Diagnostic Baseline Assessment Modal Step 1
             const modal = document.getElementById('diagnosticModal');
             if (modal) {
                 modal.style.display = 'flex';
+                goToStep1SelfRate();
             } else {
-                finishRegistration({ stat: 65, tech: 60, gov: 65, lead: 60 });
+                finishRegistrationFinal();
             }
         }
 
-        async function submitDiagnosticAssessment(e) {
-            if (e) e.preventDefault();
-            const stat = parseInt(document.getElementById('diag_stat')?.value || '65', 10);
-            const tech = parseInt(document.getElementById('diag_tech')?.value || '60', 10);
-            const gov = parseInt(document.getElementById('diag_gov')?.value || '65', 10);
-            const lead = parseInt(document.getElementById('diag_lead')?.value || '60', 10);
-
-            const btn = document.getElementById('diagSubmitBtn');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving Registration & Calibrating...';
-            }
-
-            await finishRegistration({ stat, tech, gov, lead });
+        function goToStep1SelfRate() {
+            document.getElementById('modalStep1').style.display = 'block';
+            document.getElementById('modalStep2').style.display = 'none';
+            document.getElementById('modalStep3').style.display = 'none';
         }
 
-        async function finishRegistration(scores) {
+        async function goToStep2Quiz() {
+            document.getElementById('modalStep1').style.display = 'none';
+            document.getElementById('modalStep2').style.display = 'block';
+            document.getElementById('modalStep3').style.display = 'none';
+
+            document.getElementById('quizLoadingState').style.display = 'block';
+            document.getElementById('quizContentState').style.display = 'none';
+
+            const dept = pendingRegistrationData?.department || 'NAD';
+            const deptName = DEPARTMENT_NAMES[dept] || dept;
+
+            const deptBadge = document.getElementById('quizDeptBadge');
+            if (deptBadge) deptBadge.innerHTML = `<i class="fa-solid fa-building-columns"></i> ${deptName}`;
+
+            await fetchDepartmentBaselineQuiz(dept);
+
+            document.getElementById('quizLoadingState').style.display = 'none';
+            document.getElementById('quizContentState').style.display = 'block';
+
+            currentQuestionIndex = 0;
+            userQuizAnswers = {};
+            renderQuizQuestion();
+        }
+
+        async function fetchDepartmentBaselineQuiz(dept) {
+            const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? 'http://localhost:5000'
+                : 'https://sih100-backend.onrender.com';
+
+            try {
+                const res = await fetch(`${API_URL}/api/assessment/baseline-quiz?dept=${encodeURIComponent(dept)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.questions && data.questions.length >= 5) {
+                        baselineQuestions = data.questions.slice(0, 5);
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn("Backend baseline fetch failed, using curated department questions:", e);
+            }
+
+            // High-reliability department fallback bank
+            const fallbackBank = {
+                "NAD": [
+                    { question: "Under System of National Accounts (SNA 2008), how is Gross Value Added (GVA) at basic prices derived from Gross Output?", competency: "National Accounts Compilation", pillar: "stat", options: ["Gross Output minus Intermediate Consumption", "Gross Output plus Subsidies minus Taxes", "Gross Output minus Net Factor Income from Abroad", "Gross Output minus Depreciation"], correct_index: 0 },
+                    { question: "Which analytical tool or library is standard for econometrics and SNA time-series deflator adjustments?", competency: "Technical Microdata Analysis", pillar: "tech", options: ["Python (Pandas / Statsmodels)", "Plain Notepad editor", "Static HTML table", "Basic Calculator"], correct_index: 0 },
+                    { question: "Under DPDP Act 2023, what safeguard is mandatory before publishing aggregate national account tables?", competency: "Data Privacy & Governance", pillar: "gov", options: ["Cell suppression / k-anonymity for single-enterprise microdata", "Public disclosure of enterprise GSTIN", "Unrestricted raw SQL database access", "None required"], correct_index: 0 },
+                    { question: "When preparing an urgent National Income Release Note for the Cabinet, what is the primary leadership priority?", competency: "Executive Communication & Administration", pillar: "lead", options: ["Cross-verifying revision policy and ensuring methodological consistency", "Delaying until all state DES complete final annual accounts", "Publishing unvalidated preliminary numbers without metadata", "Restricting release strictly to internal circulars"], correct_index: 0 },
+                    { question: "How does the Double Deflation method calculate Real GVA in manufacturing?", competency: "Macroeconomic Deflation Methods", pillar: "stat", options: ["Deflating gross output by output PPI and inputs by input PPI", "Deflating only gross output by single CPI", "Deflating nominal GDP by international USD exchange rate", "Subtracting WPI directly from nominal GVA"], correct_index: 0 }
+                ],
+                "FOD": [
+                    { question: "In NSS multi-stage stratified survey sampling, what constitutes the First Stage Unit (FSU)?", competency: "Survey Sampling & Paradata", pillar: "stat", options: ["Census Villages in Rural and UFS Blocks in Urban sectors", "Individual households in sample villages", "State Administrative Headquarters", "Gram Panchayat Office"], correct_index: 0 },
+                    { question: "What tablet-based field survey tool is used across NSSO field divisions for real-time validation?", competency: "CAPI & Digital Field Instruments", pillar: "tech", options: ["Computer Assisted Personal Interviewing (CAPI / eSankhyiki)", "Manual physical questionnaires with postal dispatch", "Social media surveys", "Unchecked Google Forms"], correct_index: 0 },
+                    { question: "Under DPDP Act 2023, what is required before capturing biometric or sensitive household information in field surveys?", competency: "Field Data Protection", pillar: "gov", options: ["Informed consent & adherence to purpose limitation", "Public sharing of informant names in village notices", "Selling aggregated survey numbers to private agencies", "No protocol necessary"], correct_index: 0 },
+                    { question: "During field survey inspections, an investigator reports high non-response in a selected hamlet. How should the supervisor respond?", competency: "Field Operations Leadership", pillar: "lead", options: ["Conduct concurrent re-survey & apply standard NSS replacement rules", "Arbitrarily substitute with any accessible household nearby", "Drop the hamlet without recording field paradata", "Fabricate responses based on past surveys"], correct_index: 0 },
+                    { question: "What is the primary role of Listing Schedules in household sample surveys?", competency: "Sample Frame Construction", pillar: "stat", options: ["Creating an updated frame of households for Second Stage Stratification (SSS)", "Directly calculating national unemployment rates", "Auditing village financial accounts", "Distributing identity cards to respondents"], correct_index: 0 }
+                ],
+                "ESD": [
+                    { question: "What is the standard base year weighting formulation used in India's Index of Industrial Production (IIP)?", competency: "Industrial Production & Laspeyres Index", pillar: "stat", options: ["Laspeyres' Weighted Arithmetic Mean formula", "Simple unweighted geometric mean", "Paasche's current year weighted index", "Fisher's ideal geometric formula"], correct_index: 0 },
+                    { question: "In Annual Survey of Industries (ASI) processing, how are Factory sector units stratified into Census and Sample sectors?", competency: "ASI Stratification", pillar: "tech", options: ["Factories with 100+ workers in Census sector; remaining in Sample sector", "All registered factories are 100% surveyed in Census", "Arbitrary random lottery allocation", "Classification based solely on state capital distance"], correct_index: 0 },
+                    { question: "Under the Collection of Statistics Act 2008, what is the legal mandate for industrial units regarding ASI returns?", competency: "Statutory Statistical Compliance", pillar: "gov", options: ["Mandatory statutory obligation with confidentiality protection", "Optional voluntary participation without penalty", "Exclusive disclosure of proprietary patents", "Public display of private tax filings"], correct_index: 0 },
+                    { question: "When anomalous growth is reported in capital goods manufacturing in IIP, what is the best administrative action?", competency: "Analytical Leadership", pillar: "lead", options: ["Audit item-level production returns with source agencies before index release", "Suppress the IIP series indefinitely", "Publish unverified numbers without division remarks", "Change the base year immediately"], correct_index: 0 },
+                    { question: "What does National Industrial Classification (NIC-2008) 2-digit vs 5-digit code represent?", competency: "Industrial Classification Standards", pillar: "stat", options: ["2-digit represents Division; 5-digit represents detailed Sub-Class", "2-digit is state code; 5-digit is factory registration number", "2-digit is commodity weight; 5-digit is factory PIN code", "They are identical classification layers"], correct_index: 0 }
+                ]
+            };
+
+            baselineQuestions = fallbackBank[dept] || fallbackBank["NAD"];
+        }
+
+        function renderQuizQuestion() {
+            if (!baselineQuestions || baselineQuestions.length === 0) return;
+            const q = baselineQuestions[currentQuestionIndex];
+            if (!q) return;
+
+            // Question counter & progress bar
+            const qNum = currentQuestionIndex + 1;
+            const totalQ = baselineQuestions.length;
+            const progressPercent = Math.round((qNum / totalQ) * 100);
+
+            document.getElementById('currentQNum').textContent = qNum;
+            document.getElementById('quizProgressPercent').textContent = `${progressPercent}%`;
+            document.getElementById('quizProgressBar').style.width = `${progressPercent}%`;
+
+            // Competency Pillar Badge
+            const pillarBadge = document.getElementById('quizPillarBadge');
+            if (pillarBadge) {
+                const pillarName = q.competency || (q.pillar === 'stat' ? 'Statistical Methods' : (q.pillar === 'tech' ? 'Technical Tools' : (q.pillar === 'gov' ? 'Digital Governance' : 'Leadership & Administration')));
+                pillarBadge.textContent = `Pillar: ${pillarName}`;
+            }
+
+            // Question text
+            document.getElementById('quizQuestionText').textContent = q.question;
+
+            // Options container
+            const container = document.getElementById('quizOptionsContainer');
+            container.innerHTML = '';
+
+            const letters = ['A', 'B', 'C', 'D'];
+            const selectedOpt = userQuizAnswers[currentQuestionIndex];
+
+            (q.options || []).forEach((opt, idx) => {
+                const card = document.createElement('div');
+                card.className = `quiz-opt-card ${selectedOpt === idx ? 'selected' : ''}`;
+                card.onclick = () => selectQuizOption(idx);
+                card.innerHTML = `
+                    <div class="quiz-opt-letter">${letters[idx] || (idx + 1)}</div>
+                    <div style="font-size:0.86rem; color:#1e293b; line-height:1.4; flex:1;">${opt}</div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Toggle Next vs Submit button
+            const isLast = (currentQuestionIndex === totalQ - 1);
+            document.getElementById('btnNextQuiz').style.display = isLast ? 'none' : 'flex';
+            document.getElementById('btnSubmitQuiz').style.display = isLast ? 'flex' : 'none';
+        }
+
+        function selectQuizOption(idx) {
+            userQuizAnswers[currentQuestionIndex] = idx;
+            renderQuizQuestion();
+        }
+
+        function speakCurrentQuestion() {
+            const q = baselineQuestions[currentQuestionIndex];
+            if (!q) return;
+            let text = `${q.question}. `;
+            (q.options || []).forEach((opt, idx) => {
+                text += `Option ${String.fromCharCode(65 + idx)}: ${opt}. `;
+            });
+            speakText(text);
+        }
+
+        function nextQuizQuestion() {
+            if (userQuizAnswers[currentQuestionIndex] === undefined) {
+                alert('Please select an option before proceeding to the next question.');
+                return;
+            }
+            if (currentQuestionIndex < baselineQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderQuizQuestion();
+            }
+        }
+
+        function submitBaselineQuiz() {
+            if (userQuizAnswers[currentQuestionIndex] === undefined) {
+                alert('Please select an option to submit your diagnostic assessment.');
+                return;
+            }
+
+            // 1. Calculate objective quiz score
+            let correctCount = 0;
+            baselineQuestions.forEach((q, idx) => {
+                if (userQuizAnswers[idx] === q.correct_index) {
+                    correctCount++;
+                }
+            });
+
+            const quizPercentage = Math.round((correctCount / Math.max(1, baselineQuestions.length)) * 100);
+
+            // 2. Retrieve Self-Evaluations from Step 1
+            const self_stat = parseInt(document.getElementById('diag_stat')?.value || '65', 10);
+            const self_tech = parseInt(document.getElementById('diag_tech')?.value || '60', 10);
+            const self_gov = parseInt(document.getElementById('diag_gov')?.value || '65', 10);
+            const self_lead = parseInt(document.getElementById('diag_lead')?.value || '60', 10);
+
+            // 3. Calibrate: 60% Self-Evaluation + 40% Objective Quiz Performance
+            const calibrated_stat = Math.min(100, Math.max(20, Math.round(self_stat * 0.6 + quizPercentage * 0.4)));
+            const calibrated_tech = Math.min(100, Math.max(20, Math.round(self_tech * 0.6 + quizPercentage * 0.4)));
+            const calibrated_gov = Math.min(100, Math.max(20, Math.round(self_gov * 0.6 + quizPercentage * 0.4)));
+            const calibrated_lead = Math.min(100, Math.max(20, Math.round(self_lead * 0.6 + quizPercentage * 0.4)));
+            const overall_score = Math.round((calibrated_stat + calibrated_tech + calibrated_gov + calibrated_lead) / 4);
+
+            finalCalibratedScores = {
+                stat: calibrated_stat,
+                tech: calibrated_tech,
+                gov: calibrated_gov,
+                lead: calibrated_lead,
+                overall_score: overall_score,
+                quiz_score: quizPercentage,
+                quiz_correct: correctCount,
+                quiz_total: baselineQuestions.length
+            };
+
+            // 4. Update Step 3 Display
+            document.getElementById('resStatVal').textContent = `${calibrated_stat}%`;
+            document.getElementById('resStatBar').style.width = `${calibrated_stat}%`;
+
+            document.getElementById('resTechVal').textContent = `${calibrated_tech}%`;
+            document.getElementById('resTechBar').style.width = `${calibrated_tech}%`;
+
+            document.getElementById('resGovVal').textContent = `${calibrated_gov}%`;
+            document.getElementById('resGovBar').style.width = `${calibrated_gov}%`;
+
+            document.getElementById('resLeadVal').textContent = `${calibrated_lead}%`;
+            document.getElementById('resLeadBar').style.width = `${calibrated_lead}%`;
+
+            // Transition to Step 3
+            document.getElementById('modalStep1').style.display = 'none';
+            document.getElementById('modalStep2').style.display = 'none';
+            document.getElementById('modalStep3').style.display = 'block';
+        }
+
+        async function finishRegistrationFinal() {
             if (!pendingRegistrationData) return;
             const { name, email, password, cadre, department, designation } = pendingRegistrationData;
-            const overall_score = Math.round((scores.stat + scores.tech + scores.gov + scores.lead) / 4);
+            const scores = finalCalibratedScores || { stat: 65, tech: 60, gov: 65, lead: 60, overall_score: 63 };
+
+            const btn = document.getElementById('btnEnterDashboard');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Initializing Competency Dashboard...';
+            }
 
             const authUser = {
                 name: name,
@@ -360,7 +858,14 @@
                     technical_score: scores.tech,
                     governance_score: scores.gov,
                     leadership_score: scores.lead,
-                    overall_score: overall_score
+                    overall_score: scores.overall_score
+                },
+                baseline_quiz: {
+                    completed: true,
+                    score: scores.quiz_score || 80,
+                    correct: scores.quiz_correct || 4,
+                    total: scores.quiz_total || 5,
+                    timestamp: new Date().toISOString()
                 },
                 session_token: 'GOV-AUTH-TOKEN-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now(),
                 session_expiry: new Date(Date.now() + 86400000 * 7).toISOString(),
@@ -372,7 +877,7 @@
                 sessionStorage.setItem('mospi_user', JSON.stringify(authUser));
             } catch (e) {}
 
-            // Direct Supabase insertion for live real-time registry sync
+            // Direct Supabase database insertion for live sync
             const SUPABASE_REST = 'https://ccdrahlnsfrncsqaiumt.supabase.co/rest/v1';
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjZHJhaGxuc2ZybmNzcWFpdW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDEzMDAsImV4cCI6MjEwMzU3NzMwMH0.O3sAoWJuLWKeJCenkiUjen3FfLnNahUu7nKbpQ1t6Fo';
 
@@ -409,7 +914,7 @@
                         technical_score: scores.tech,
                         governance_score: scores.gov,
                         leadership_score: scores.lead,
-                        overall_score: overall_score
+                        overall_score: scores.overall_score
                     })
                 });
             } catch (e) {
@@ -431,7 +936,13 @@
         }
 
         window.submitRegistration = submitRegistration;
-        window.submitDiagnosticAssessment = submitDiagnosticAssessment;
+        window.goToStep1SelfRate = goToStep1SelfRate;
+        window.goToStep2Quiz = goToStep2Quiz;
+        window.nextQuizQuestion = nextQuizQuestion;
+        window.selectQuizOption = selectQuizOption;
+        window.speakCurrentQuestion = speakCurrentQuestion;
+        window.submitBaselineQuiz = submitBaselineQuiz;
+        window.finishRegistrationFinal = finishRegistrationFinal;
 
         document.addEventListener('DOMContentLoaded', async () => {
             renderDesignationsDropdown();

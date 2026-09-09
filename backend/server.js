@@ -10,7 +10,9 @@ const {
     generateMCQsFromDocumentAI,
     generateCourseCurriculumAI,
     generateOfficerDossierData,
-    evaluateOfficerArtifactAI
+    evaluateOfficerArtifactAI,
+    generateDepartmentBaselineQuizAI,
+    DEPARTMENT_NAMES_MAP
 } = require('./mospi_ai_engine');
 const fs = require('fs');
 const path = require('path');
@@ -24,6 +26,19 @@ app.use(express.json({ limit: '50mb' }));
 // Persistent Database Cache for Officer Personalized Recommendations
 const RECOMMENDATIONS_FILE = path.join(__dirname, 'data', 'officer_recommendations.json');
 let memoryOfficerRecommendations = {};
+
+// Persistent Database Disk Cache for Department Baseline Assessment Quizzes
+const BASELINE_QUIZZES_FILE = path.join(__dirname, 'data', 'baseline_quizzes.json');
+let memoryBaselineQuizzes = {};
+
+try {
+    if (fs.existsSync(BASELINE_QUIZZES_FILE)) {
+        const raw = fs.readFileSync(BASELINE_QUIZZES_FILE, 'utf-8');
+        memoryBaselineQuizzes = JSON.parse(raw);
+    }
+} catch (e) {
+    console.warn("Could not load baseline quizzes file:", e.message);
+}
 
 try {
     if (fs.existsSync(RECOMMENDATIONS_FILE)) {
@@ -2933,6 +2948,117 @@ app.post(['/api/generate-quiz', '/api/ai/generate-quiz', '/api/quiz/generate'], 
         return res.json({
             source: "SYSTEM_FALLBACK_CODEX",
             quiz: fallback.map(q => jumbleQuestionOptions(q))
+        });
+    }
+});
+
+// =========================================================================
+// 🎯 NEW OFFICER ONBOARDING: DEPARTMENT-ALIGNED 5-QUESTION BASELINE QUIZ
+// =========================================================================
+app.all(['/api/assessment/baseline-quiz', '/api/quiz/baseline', '/api/assessment/department-quiz'], async (req, res) => {
+    const rawDept = (req.query.department || req.query.dept || req.body.department || req.body.dept || 'NAD').toString().trim();
+    const dept = rawDept.toUpperCase();
+    const deptName = DEPARTMENT_NAMES_MAP[dept] || rawDept || 'MoSPI Department';
+    const courseTitle = `Baseline Assessment - ${dept}`;
+
+    try {
+        // 1. Try fetching from Supabase database `course_quizzes` table
+        let dbQuestions = [];
+        if (supabase) {
+            try {
+                const { data: matched } = await supabase
+                    .from('course_quizzes')
+                    .select('*')
+                    .eq('course_title', courseTitle);
+                if (matched && matched.length >= 5) {
+                    dbQuestions = matched.slice(0, 5);
+                }
+            } catch (dbErr) {
+                console.warn('Supabase baseline fetch note:', dbErr.message);
+            }
+        }
+
+        if (dbQuestions && dbQuestions.length >= 5) {
+            return res.json({
+                success: true,
+                source: "DATABASE_PERSISTED",
+                department: dept,
+                department_name: deptName,
+                questions: dbQuestions.map((q, idx) => ({
+                    id: q.id || (idx + 1),
+                    question: q.question,
+                    competency: q.competency || (idx === 0 ? "Statistical Methods & Sampling" : (idx === 1 ? "Technical Tools & Data Analysis" : (idx === 2 ? "Digital Governance & DPDP Act" : (idx === 3 ? "Behavioural Leadership & Public Administration" : "Department Domain Application")))),
+                    pillar: q.pillar || (idx === 0 ? "stat" : (idx === 1 ? "tech" : (idx === 2 ? "gov" : (idx === 3 ? "lead" : "stat")))),
+                    options: q.options,
+                    correct_index: q.correct_index !== undefined ? q.correct_index : 0,
+                    explanation: q.explanation || "Official NSSTA competency evaluation baseline standard."
+                }))
+            });
+        }
+
+        // 2. Check local memory/disk cache
+        if (memoryBaselineQuizzes[dept] && Array.isArray(memoryBaselineQuizzes[dept]) && memoryBaselineQuizzes[dept].length >= 5) {
+            return res.json({
+                success: true,
+                source: "DISK_CACHE_PERSISTED",
+                department: dept,
+                department_name: deptName,
+                questions: memoryBaselineQuizzes[dept]
+            });
+        }
+
+        // 3. Generate 5-Question Psychometric Baseline via Ollama / Fast LLM Engine
+        const generated = await generateDepartmentBaselineQuizAI(dept, deptName);
+        const questionsList = (Array.isArray(generated) ? generated : []).slice(0, 5);
+
+        // 4. Dual-persist to local cache and Supabase DB
+        memoryBaselineQuizzes[dept] = questionsList;
+        try {
+            if (!fs.existsSync(path.join(__dirname, 'data'))) {
+                fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true });
+            }
+            fs.writeFileSync(BASELINE_QUIZZES_FILE, JSON.stringify(memoryBaselineQuizzes, null, 2), 'utf-8');
+        } catch (e) {}
+
+        if (supabase && questionsList.length > 0) {
+            try {
+                let nextStartId = 600;
+                const { data: maxRow } = await supabase.from('course_quizzes').select('id').order('id', { ascending: false }).limit(1);
+                if (maxRow && maxRow[0] && typeof maxRow[0].id === 'number') nextStartId = maxRow[0].id + 1;
+
+                const rowsToInsert = questionsList.map((q, idx) => ({
+                    id: nextStartId + idx,
+                    course_title: courseTitle,
+                    question: q.question,
+                    options: q.options,
+                    correct_index: q.correct_index !== undefined ? q.correct_index : 0,
+                    source_document: `Baseline Competency Assessment for ${deptName}`
+                }));
+
+                await supabase.from('course_quizzes').insert(rowsToInsert).select().catch(async () => {
+                    await supabase.from('course_quizzes').insert(rowsToInsert.map(({id, ...rest}) => rest));
+                });
+            } catch (saveErr) {
+                console.warn('Supabase baseline persist note:', saveErr.message);
+            }
+        }
+
+        return res.json({
+            success: true,
+            source: "AI_OLLAMA_SYNTHESIZED_NSSTA",
+            department: dept,
+            department_name: deptName,
+            questions: questionsList
+        });
+    } catch (err) {
+        console.error("Baseline quiz endpoint exception:", err);
+        const fallback = await generateDepartmentBaselineQuizAI(dept, deptName);
+        return res.json({
+            success: true,
+            source: "FALLBACK_CODEX",
+            department: dept,
+            department_name: deptName,
+            questions: fallback
         });
     }
 });
