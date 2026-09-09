@@ -644,7 +644,7 @@
             <label><i class="fa-solid fa-file-lines"></i> Extracted Syllabus Content (Auto-filled from PDF or paste directly)</label>
             <textarea id="syllabusText" rows="5" placeholder="Upload a syllabus PDF above or paste circular topics here..." required></textarea>
           </div>
-          <button type="submit" class="btn-action" id="btn-syllabus-submit" style="margin-top:12px; background:linear-gradient(135deg, #d97706, #b45309);"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract and Save Courses</button>
+          <button type="submit" class="btn-action" id="btn-syllabus-submit" style="margin-top:12px; background:linear-gradient(135deg, #d97706, #b45309);"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract & Review Courses</button>
         </form>
         <div id="syllabus-status" style="font-size:0.88rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
         <div id="syllabus-preview-box" style="display:none; margin-top:12px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:18px; "></div>
@@ -763,7 +763,7 @@
             <label><i class="fa-solid fa-file-lines"></i> Document Content</label>
             <textarea id="quizDocText" rows="4" placeholder="Upload a PDF above or paste training text here..." required></textarea>
           </div>
-          <button type="submit" class="btn-action" id="btn-quiz-synth" style="background:linear-gradient(135deg, #e11d48, #be123c); font-weight:800; margin-top:12px;"><i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Store MCQs in Database</button>
+          <button type="submit" class="btn-action" id="btn-quiz-synth" style="background:linear-gradient(135deg, #e11d48, #be123c); font-weight:800; margin-top:12px;"><i class="fa-solid fa-brain"></i> Generate MCQs for Review</button>
         </form>
         <div id="quiz-gen-status" style="font-size:0.88rem; font-weight:700; color:var(--success); margin-top:8px;"></div>
         <div id="quiz-preview-box" style="display:none; margin-top:12px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:18px; "></div>
@@ -1357,7 +1357,7 @@
         select.innerHTML = '<option value="">-- Choose Target Course from DB --</option>';
         masterCoursesList.forEach(c => {
           const opt = document.createElement("option");
-          opt.value = c.id || c.title;
+          opt.value = c.title || c.id;
           opt.innerText = c.title + ' (' + (c.learning_stage || c.domain || 'Core') + ')';
           select.appendChild(opt);
         });
@@ -1804,6 +1804,220 @@
       }
     }
 
+    window.extractedPreviewCourses = [];
+    window.addedCourseIndices = new Set();
+
+    function renderExtractedCoursesReview(courses) {
+      window.extractedPreviewCourses = courses || [];
+      window.addedCourseIndices = new Set();
+      const resultBox = document.getElementById("syllabus-preview-box") || document.getElementById("syllabusResult");
+      if (!resultBox) return;
+
+      if (courses.length === 0) {
+        resultBox.innerHTML = '<div style="color:var(--danger); font-weight:700;">No courses could be extracted. Please ensure the syllabus text contains adequate curriculum details.</div>';
+        return;
+      }
+
+      resultBox.style.display = "block";
+      resultBox.innerHTML = `
+        <div style="background:#ffffff; border:1px solid #fed7aa; border-radius:10px; padding:16px; margin-bottom:14px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h3 style="margin:0; font-size:1.02rem; font-weight:800; color:#9a3412; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-list-check"></i> ${courses.length} Accredited Courses Generated from Syllabus
+              </h3>
+              <p style="margin:4px 0 0 0; font-size:0.82rem; color:#64748b;">
+                Review each course extracted by LangChain AI. Choose whether to add each course individually, or select multiple and add all to the Master DB.
+              </p>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <label style="display:flex; align-items:center; gap:6px; font-size:0.84rem; font-weight:700; color:#334155; cursor:pointer; background:#f8fafc; padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1;">
+                <input type="checkbox" id="syllabus-select-all" checked onchange="toggleAllSyllabusCheckboxes(this.checked)">
+                Select All
+              </label>
+              <button id="btn-save-selected-courses" onclick="saveSelectedExtractedCourses()" class="btn-action" style="background:#16a34a; color:#fff; padding:8px 16px; font-size:0.86rem; border-radius:8px; border:none; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-plus-circle"></i> Add Selected (<span id="syllabus-selected-count">${courses.length}</span>) to Master DB
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="syllabus-course-cards-list" style="display:flex; flex-direction:column; gap:12px;">
+          ${courses.map((c, idx) => `
+            <div id="syllabus-card-${idx}" style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #d97706; padding:14px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:all 0.2s;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                <div style="display:flex; align-items:flex-start; gap:12px; flex:1;">
+                  <input type="checkbox" id="syllabus-cb-${idx}" checked onchange="updateSyllabusSelectedCount()" style="margin-top:4px; width:18px; height:18px; cursor:pointer;">
+                  <div style="flex:1;">
+                    <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
+                      <span style="background:#fef3c7; color:#9a3412; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; font-family:monospace;">${c.course_code || `NSSTA-MOD-${101 + idx}`}</span>
+                      <strong style="color:#0f172a; font-size:0.96rem;">${c.title}</strong>
+                      <span style="background:#e0f2fe; color:#0369a1; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px;">${c.learning_stage || c.difficulty_level || 'Intermediate'}</span>
+                      <span style="background:#f1f5f9; color:#475569; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:4px;">${c.domain || 'Statistical Competencies'}</span>
+                    </div>
+                    <p style="color:#475569; font-size:0.83rem; margin:8px 0 6px 0; line-height:1.4;">${c.description}</p>
+                    <div style="font-size:0.75rem; color:#64748b; display:flex; flex-wrap:wrap; gap:12px;">
+                      <span><strong>Division:</strong> ${Array.isArray(c.target_departments) ? c.target_departments.join(', ') : (c.target_department || 'Universal')}</span>
+                      <span><strong>Cadre:</strong> ${Array.isArray(c.target_cadres) ? c.target_cadres.join(', ') : (c.target_cadre || 'All Cadres')}</span>
+                      <span><strong>Designation:</strong> ${Array.isArray(c.target_designations) ? c.target_designations.join(', ') : (c.target_designation || 'All Designations')}</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="syllabus-action-wrap-${idx}" style="min-width:140px; text-align:right;">
+                  <button id="btn-save-course-${idx}" onclick="saveSingleExtractedCourse(${idx})" class="btn-action" style="background:#0284c7; color:#ffffff; padding:6px 14px; font-size:0.8rem; border-radius:6px; border:none; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                    <i class="fa-solid fa-plus"></i> Add Course
+                  </button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function toggleAllSyllabusCheckboxes(checked) {
+      (window.extractedPreviewCourses || []).forEach((_, idx) => {
+        if (!window.addedCourseIndices.has(idx)) {
+          const cb = document.getElementById(`syllabus-cb-${idx}`);
+          if (cb) cb.checked = checked;
+        }
+      });
+      updateSyllabusSelectedCount();
+    }
+
+    function updateSyllabusSelectedCount() {
+      let count = 0;
+      (window.extractedPreviewCourses || []).forEach((_, idx) => {
+        if (!window.addedCourseIndices.has(idx)) {
+          const cb = document.getElementById(`syllabus-cb-${idx}`);
+          if (cb && cb.checked) count++;
+        }
+      });
+      const countEl = document.getElementById("syllabus-selected-count");
+      if (countEl) countEl.innerText = count;
+      const bulkBtn = document.getElementById("btn-save-selected-courses");
+      if (bulkBtn) bulkBtn.disabled = count === 0;
+    }
+
+    async function saveSingleExtractedCourse(idx) {
+      const course = window.extractedPreviewCourses[idx];
+      if (!course) return;
+
+      const btn = document.getElementById(`btn-save-course-${idx}`);
+      const cb = document.getElementById(`syllabus-cb-${idx}`);
+      const card = document.getElementById(`syllabus-card-${idx}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/save-extracted-courses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courses: [course] })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          window.addedCourseIndices.add(idx);
+          if (cb) {
+            cb.checked = false;
+            cb.disabled = true;
+          }
+          const actionWrap = document.getElementById(`syllabus-action-wrap-${idx}`);
+          if (actionWrap) {
+            actionWrap.innerHTML = '<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check"></i> Added to DB</span>';
+          }
+          if (card) {
+            card.style.borderLeftColor = "#16a34a";
+            card.style.background = "#f0fdf4";
+          }
+          updateSyllabusSelectedCount();
+          await loadCoursesDropdown();
+        } else {
+          alert("Failed to save course: " + (data.error || 'Server error'));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Course';
+          }
+        }
+      } catch (e) {
+        alert("Network error: " + e.message);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Course';
+        }
+      }
+    }
+
+    async function saveSelectedExtractedCourses() {
+      const toSave = [];
+      const indices = [];
+      (window.extractedPreviewCourses || []).forEach((c, idx) => {
+        if (!window.addedCourseIndices.has(idx)) {
+          const cb = document.getElementById(`syllabus-cb-${idx}`);
+          if (cb && cb.checked) {
+            toSave.push(c);
+            indices.push(idx);
+          }
+        }
+      });
+
+      if (toSave.length === 0) {
+        alert("Please select at least one course to add.");
+        return;
+      }
+
+      const bulkBtn = document.getElementById("btn-save-selected-courses");
+      if (bulkBtn) {
+        bulkBtn.disabled = true;
+        bulkBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding ' + toSave.length + ' Courses to DB...';
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/save-extracted-courses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courses: toSave })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          indices.forEach(idx => {
+            window.addedCourseIndices.add(idx);
+            const cb = document.getElementById(`syllabus-cb-${idx}`);
+            if (cb) {
+              cb.checked = false;
+              cb.disabled = true;
+            }
+            const actionWrap = document.getElementById(`syllabus-action-wrap-${idx}`);
+            if (actionWrap) {
+              actionWrap.innerHTML = '<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check"></i> Added to DB</span>';
+            }
+            const card = document.getElementById(`syllabus-card-${idx}`);
+            if (card) {
+              card.style.borderLeftColor = "#16a34a";
+              card.style.background = "#f0fdf4";
+            }
+          });
+          updateSyllabusSelectedCount();
+          const statusSpan = document.getElementById("syllabus-status") || document.getElementById("syllabusFileStatus");
+          if (statusSpan) {
+            statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Successfully saved ${toSave.length} courses to Master Database!`;
+          }
+          await loadCoursesDropdown();
+        } else {
+          alert("Error saving courses: " + (data.error || 'Server error'));
+        }
+      } catch (e) {
+        alert("Network error: " + e.message);
+      } finally {
+        if (bulkBtn) {
+          bulkBtn.disabled = false;
+          bulkBtn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Add Selected (' + (document.getElementById("syllabus-selected-count")?.innerText || '0') + ') to Master DB';
+        }
+      }
+    }
+
     async function handleSyllabusSubmit(e) {
       e.preventDefault();
       const textarea = document.getElementById("syllabusText") || document.getElementById("syllabusRawText");
@@ -1822,11 +2036,11 @@
 
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Parsing with LangChain AI...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Extracting with LangChain AI...';
       }
       if (resultBox) {
         resultBox.style.display = "block";
-        resultBox.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem; color:#0284c7;"></i><p style="margin-top:10px; font-weight:700;">Deconstructing syllabus into accredited MoSPI courses via LangChain...</p></div>';
+        resultBox.innerHTML = '<div style="text-align:center; padding:24px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem; color:#d97706;"></i><p style="margin-top:10px; font-weight:700;">Deconstructing syllabus into accredited MoSPI courses via LangChain...</p></div>';
       }
 
       try {
@@ -1838,41 +2052,17 @@
         const data = await res.json();
         const courses = data.courses || data.modules || [];
         if (courses.length > 0) {
-          if (statusSpan) statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Successfully extracted and saved ${courses.length} courses!`;
-          if (resultBox) {
-            resultBox.innerHTML = `
-              <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:12px; border-radius:8px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-                <i class="fa-solid fa-circle-check" style="font-size:1.1rem;"></i> Successfully generated and saved ${courses.length} courses into Master DB!
-              </div>
-              <div style="display:flex; flex-direction:column; gap:10px;">
-                ${courses.map(c => `
-                  <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
-                      <strong style="color:#0f172a; font-size:0.92rem;">${c.title}</strong>
-                      <span style="background:#e0f2fe; color:#0369a1; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; white-space:nowrap;">${c.learning_stage || c.difficulty_level || 'Functional Core'}</span>
-                    </div>
-                    <p style="color:#475569; font-size:0.8rem; margin:6px 0;">${c.description}</p>
-                    <div style="font-size:0.74rem; color:#64748b; display:flex; flex-wrap:wrap; gap:12px;">
-                      <span><strong>Domain:</strong> ${c.domain || 'Statistical Competencies'}</span>
-                      <span><strong>Target Division:</strong> ${Array.isArray(c.target_departments) ? c.target_departments.join(', ') : (c.target_department || defaultDivision)}</span>
-                      <span><strong>Target Cadre:</strong> ${Array.isArray(c.target_cadres) ? c.target_cadres.join(', ') : (c.target_cadre || targetCadre)}</span>
-                      <span><strong>Target Designation:</strong> ${Array.isArray(c.target_designations) ? c.target_designations.join(', ') : (c.target_designation || targetDesignation)}</span>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            `;
-          }
-          await loadCoursesDropdown();
+          if (statusSpan) statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Extracted ${courses.length} courses for review.`;
+          renderExtractedCoursesReview(courses);
         } else {
-          if (resultBox) resultBox.innerHTML = '<div style="color:var(--danger); font-weight:700;">Failed to extract courses. Please try providing more detailed curriculum text.</div>';
+          if (resultBox) resultBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">${data.error || 'Failed to extract courses. Please try providing more detailed curriculum text.'}</div>`;
         }
       } catch (err) {
         if (resultBox) resultBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">Error: ${err.message}</div>`;
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Extract and Save Courses';
+          btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Extract & Review Courses';
         }
       }
     }
@@ -1980,6 +2170,227 @@
       }
     }
 
+    window.generatedPreviewQuizzes = { courseTitle: '', questions: [] };
+    window.addedQuizIndices = new Set();
+
+    function renderGeneratedQuizReview(courseTitle, questions) {
+      window.generatedPreviewQuizzes = { courseTitle, questions: questions || [] };
+      window.addedQuizIndices = new Set();
+      const resultBox = document.getElementById("quiz-preview-box") || document.getElementById("docQuizResult");
+      if (!resultBox) return;
+
+      if (!questions || questions.length === 0) {
+        resultBox.innerHTML = '<div style="color:var(--danger); font-weight:700;">Could not generate questions. Ensure text contains sufficient factual material.</div>';
+        return;
+      }
+
+      resultBox.style.display = "block";
+      resultBox.innerHTML = `
+        <div style="background:#ffffff; border:1px solid #fecdd3; border-radius:10px; padding:16px; margin-bottom:14px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h3 style="margin:0; font-size:1.02rem; font-weight:800; color:#be123c; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-clipboard-question"></i> ${questions.length} Questions Synthesized for "${courseTitle}"
+              </h3>
+              <p style="margin:4px 0 0 0; font-size:0.82rem; color:#64748b;">
+                Review each question, options, and correct answer below. Choose whether to add each question individually, or approve and add selected questions to the database.
+              </p>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <label style="display:flex; align-items:center; gap:6px; font-size:0.84rem; font-weight:700; color:#334155; cursor:pointer; background:#f8fafc; padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1;">
+                <input type="checkbox" id="quiz-select-all" checked onchange="toggleAllQuizCheckboxes(this.checked)">
+                Select All
+              </label>
+              <button id="btn-save-selected-quiz" onclick="saveSelectedQuizQuestions()" class="btn-action" style="background:#16a34a; color:#fff; padding:8px 16px; font-size:0.86rem; border-radius:8px; border:none; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-circle-check"></i> Approve & Add Selected (<span id="quiz-selected-count">${questions.length}</span>) to DB
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="quiz-questions-cards-list" style="display:flex; flex-direction:column; gap:12px;">
+          ${questions.map((q, idx) => {
+            const correctIdx = typeof q.correct_index === 'number' ? q.correct_index : (typeof q.correctIndex === 'number' ? q.correctIndex : 0);
+            return `
+              <div id="quiz-card-${idx}" style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #e11d48; padding:14px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:all 0.2s;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                  <div style="display:flex; align-items:flex-start; gap:12px; flex:1;">
+                    <input type="checkbox" id="quiz-cb-${idx}" checked onchange="updateQuizSelectedCount()" style="margin-top:4px; width:18px; height:18px; cursor:pointer;">
+                    <div style="flex:1;">
+                      <strong style="color:#0f172a; font-size:0.92rem; display:block; margin-bottom:10px;">Q${idx + 1}. ${q.question}</strong>
+                      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:8px; margin-bottom:8px;">
+                        ${(q.options || []).map((opt, optIdx) => {
+                          const isCorrect = optIdx === correctIdx;
+                          return `
+                            <div style="padding:8px 12px; border-radius:6px; font-size:0.82rem; border:1px solid ${isCorrect ? '#86efac' : '#e2e8f0'}; background:${isCorrect ? '#f0fdf4' : '#f8fafc'}; color:${isCorrect ? '#15803d' : '#334155'}; font-weight:${isCorrect ? '700' : '500'}; display:flex; justify-content:space-between; align-items:center;">
+                              <span><strong>${String.fromCharCode(65 + optIdx)}.</strong> ${opt}</span>
+                              ${isCorrect ? '<span style="font-size:0.72rem; background:#dcfce7; color:#15803d; padding:2px 6px; border-radius:4px; font-weight:800;"><i class="fa-solid fa-check"></i> Correct</span>' : ''}
+                            </div>
+                          `;
+                        }).join('')}
+                      </div>
+                    </div>
+                  </div>
+                  <div id="quiz-action-wrap-${idx}" style="min-width:130px; text-align:right;">
+                    <button id="btn-save-quiz-${idx}" onclick="saveSingleQuizQuestion(${idx})" class="btn-action" style="background:#0284c7; color:#ffffff; padding:6px 14px; font-size:0.8rem; border-radius:6px; border:none; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                      <i class="fa-solid fa-plus"></i> Add Question
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function toggleAllQuizCheckboxes(checked) {
+      (window.generatedPreviewQuizzes.questions || []).forEach((_, idx) => {
+        if (!window.addedQuizIndices.has(idx)) {
+          const cb = document.getElementById(`quiz-cb-${idx}`);
+          if (cb) cb.checked = checked;
+        }
+      });
+      updateQuizSelectedCount();
+    }
+
+    function updateQuizSelectedCount() {
+      let count = 0;
+      (window.generatedPreviewQuizzes.questions || []).forEach((_, idx) => {
+        if (!window.addedQuizIndices.has(idx)) {
+          const cb = document.getElementById(`quiz-cb-${idx}`);
+          if (cb && cb.checked) count++;
+        }
+      });
+      const countEl = document.getElementById("quiz-selected-count");
+      if (countEl) countEl.innerText = count;
+      const bulkBtn = document.getElementById("btn-save-selected-quiz");
+      if (bulkBtn) bulkBtn.disabled = count === 0;
+    }
+
+    async function saveSingleQuizQuestion(idx) {
+      const question = window.generatedPreviewQuizzes.questions[idx];
+      if (!question) return;
+
+      const btn = document.getElementById(`btn-save-quiz-${idx}`);
+      const cb = document.getElementById(`quiz-cb-${idx}`);
+      const card = document.getElementById(`quiz-card-${idx}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/save-quiz-questions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            courseTitle: window.generatedPreviewQuizzes.courseTitle,
+            questions: [question] 
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          window.addedQuizIndices.add(idx);
+          if (cb) {
+            cb.checked = false;
+            cb.disabled = true;
+          }
+          const actionWrap = document.getElementById(`quiz-action-wrap-${idx}`);
+          if (actionWrap) {
+            actionWrap.innerHTML = '<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check"></i> Saved to DB</span>';
+          }
+          if (card) {
+            card.style.borderLeftColor = "#16a34a";
+            card.style.background = "#f0fdf4";
+          }
+          updateQuizSelectedCount();
+        } else {
+          alert("Failed to save question: " + (data.error || 'Server error'));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Question';
+          }
+        }
+      } catch (e) {
+        alert("Network error: " + e.message);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Question';
+        }
+      }
+    }
+
+    async function saveSelectedQuizQuestions() {
+      const toSave = [];
+      const indices = [];
+      (window.generatedPreviewQuizzes.questions || []).forEach((q, idx) => {
+        if (!window.addedQuizIndices.has(idx)) {
+          const cb = document.getElementById(`quiz-cb-${idx}`);
+          if (cb && cb.checked) {
+            toSave.push(q);
+            indices.push(idx);
+          }
+        }
+      });
+
+      if (toSave.length === 0) {
+        alert("Please select at least one question to add.");
+        return;
+      }
+
+      const bulkBtn = document.getElementById("btn-save-selected-quiz");
+      if (bulkBtn) {
+        bulkBtn.disabled = true;
+        bulkBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving ' + toSave.length + ' Questions to DB...';
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/save-quiz-questions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            courseTitle: window.generatedPreviewQuizzes.courseTitle,
+            questions: toSave 
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          indices.forEach(idx => {
+            window.addedQuizIndices.add(idx);
+            const cb = document.getElementById(`quiz-cb-${idx}`);
+            if (cb) {
+              cb.checked = false;
+              cb.disabled = true;
+            }
+            const actionWrap = document.getElementById(`quiz-action-wrap-${idx}`);
+            if (actionWrap) {
+              actionWrap.innerHTML = '<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:0.78rem; font-weight:800; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check"></i> Saved to DB</span>';
+            }
+            const card = document.getElementById(`quiz-card-${idx}`);
+            if (card) {
+              card.style.borderLeftColor = "#16a34a";
+              card.style.background = "#f0fdf4";
+            }
+          });
+          updateQuizSelectedCount();
+          const statusSpan = document.getElementById("quiz-gen-status") || document.getElementById("pdfUploadStatus");
+          if (statusSpan) {
+            statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Successfully saved ${toSave.length} questions into database table course_quizzes!`;
+          }
+        } else {
+          alert("Error saving quiz questions: " + (data.error || 'Server error'));
+        }
+      } catch (e) {
+        alert("Network error: " + e.message);
+      } finally {
+        if (bulkBtn) {
+          bulkBtn.disabled = false;
+          bulkBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Approve & Add Selected (' + (document.getElementById("quiz-selected-count")?.innerText || '0') + ') to DB';
+        }
+      }
+    }
+
     async function handleDocQuiz(e) {
       e.preventDefault();
       const courseTitle = document.getElementById("quizCourseSelect")?.value;
@@ -1988,6 +2399,7 @@
       const difficulty = (document.getElementById("quizDifficulty"))?.value || "Intermediate";
       const resultBox = document.getElementById("quiz-preview-box") || document.getElementById("docQuizResult");
       const btn = document.getElementById("btn-quiz-synth") || document.getElementById("btn-doc-quiz");
+      const statusSpan = document.getElementById("quiz-gen-status") || document.getElementById("pdfUploadStatus");
 
       if (!courseTitle) {
         alert("Please select a target course from the Master DB.");
@@ -2004,7 +2416,7 @@
       }
       if (resultBox) {
         resultBox.style.display = "block";
-        resultBox.innerHTML = '<div style="text-align:center; padding:15px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem; color:#0284c7;"></i><p style="margin-top:8px;">Analyzing document paragraphs & synthesizing validated questions...</p></div>';
+        resultBox.innerHTML = '<div style="text-align:center; padding:24px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem; color:#e11d48;"></i><p style="margin-top:10px; font-weight:700;">Analyzing document paragraphs & synthesizing validated questions...</p></div>';
       }
 
       try {
@@ -2016,24 +2428,8 @@
         const data = await res.json();
         const quizList = (Array.isArray(data.quiz) && data.quiz.length > 0) ? data.quiz : ((Array.isArray(data.questions) && data.questions.length > 0) ? data.questions : []);
         if (quizList.length > 0 && resultBox) {
-          resultBox.innerHTML = `
-            <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:12px; border-radius:8px; font-weight:700; margin-bottom:12px;">
-              <i class="fa-solid fa-circle-check"></i> Generated and stored ${data.count || data.total_generated || quizList.length} MCQs for "${courseTitle}" in database!
-            </div>
-            ${quizList.map((q, idx) => `
-              <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:8px;">
-                <strong style="color:#0f172a; font-size:0.88rem;">Q${idx + 1}: ${q.question}</strong>
-                <div style="margin-top:6px; font-size:0.8rem; color:#475569; display:grid; grid-template-columns:1fr 1fr; gap:4px;">
-                  ${(q.options || []).map(opt => `
-                    <span style="background:#f8fafc; padding:4px 8px; border-radius:4px; border:1px solid #e2e8f0;">${opt}</span>
-                  `).join('')}
-                </div>
-                <div style="margin-top:6px; font-size:0.75rem; color:#15803d; font-weight:700;">
-                  Correct Answer: ${q.answer || (q.options ? q.options[q.correct_index ?? q.correctIndex ?? 0] : 'Option A')}
-                </div>
-              </div>
-            `).join('')}
-          `;
+          if (statusSpan) statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Synthesized ${quizList.length} questions for review.`;
+          renderGeneratedQuizReview(courseTitle, quizList);
         } else if (resultBox) {
           resultBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">${data.error || 'Could not generate questions. Ensure text contains sufficient factual material.'}</div>`;
         }
@@ -2042,7 +2438,7 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Store';
+          btn.innerHTML = '<i class="fa-solid fa-brain"></i> Generate MCQs for Review';
         }
       }
     }

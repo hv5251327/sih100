@@ -1972,7 +1972,7 @@ app.get('/api/admin/officers-analytics', async (req, res) => {
     }
 });
 
-// Auto MCQ Question Generator from PDF & Text (LangChain & Groq/LLM Engine)
+// Auto MCQ Question Generator from PDF & Text (LangChain & Groq/LLM Engine) - Synthesize for Review
 app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], async (req, res) => {
     const { courseTitle, documentText, numQuestions, difficulty, groqApiKey } = req.body;
     if (!courseTitle || !documentText) {
@@ -1995,8 +1995,59 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
             throw new Error('Could not synthesize questions from provided document.');
         }
 
-        // 2. Format rows for Supabase Database `course_quizzes` table
-        const rowsToInsert = generatedQuestions.map(q => {
+        // 2. Format rows for UI review (clean options, correct answers, and text)
+        const formattedQuestions = generatedQuestions.map((q, idx) => {
+            let safeOptions = Array.isArray(q.options) && q.options.length >= 2 
+                ? q.options.map(o => String(o).replace(/^[\(\[]?[A-Da-d1-4][\.\)\]\:\-]\s*/, '').trim()).filter(Boolean)
+                : ["Option A", "Option B", "Option C", "Option D"];
+            
+            while (safeOptions.length < 4) safeOptions.push('Standard official verification protocol');
+            if (safeOptions.length > 4) safeOptions = safeOptions.slice(0, 4);
+
+            let safeIndex = typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < safeOptions.length 
+                ? q.correct_index 
+                : (typeof q.correctIndex === 'number' && q.correctIndex >= 0 && q.correctIndex < safeOptions.length ? q.correctIndex : 0);
+
+            return {
+                id: idx + 1,
+                course_title: cleanTitle,
+                question: String(q.question || `Assessment question on ${cleanTitle}`).trim(),
+                options: safeOptions,
+                correct_index: safeIndex,
+                source_document: 'Admin Uploaded Training Material PDF / Auto MCQ Generator'
+            };
+        });
+
+        return res.json({ 
+            success: true,
+            message: `Successfully synthesized ${formattedQuestions.length} assessment questions for review!`, 
+            course_title: cleanTitle,
+            saved_to_db: false,
+            count: formattedQuestions.length,
+            total_generated: formattedQuestions.length,
+            requested_count: count,
+            is_max_possible: formattedQuestions.length < count,
+            questions: formattedQuestions,
+            quiz: formattedQuestions
+        });
+    } catch (err) {
+        return res.status(500).json({ error: err.message || 'Quiz synthesis failed.' });
+    }
+});
+
+// Commit Reviewed Quiz Questions to Supabase Database
+app.post(['/api/admin/save-quiz-questions', '/api/admin/save-quiz'], async (req, res) => {
+    const { courseTitle, questions } = req.body;
+    let questionsList = questions;
+    if (!questionsList && req.body.question) questionsList = [req.body.question];
+    if (!Array.isArray(questionsList) || questionsList.length === 0) {
+        return res.status(400).json({ error: 'No quiz questions provided to save.' });
+    }
+
+    const cleanTitle = (courseTitle || questionsList[0]?.course_title || 'MoSPI Competency Course').trim();
+
+    try {
+        const rowsToInsert = questionsList.map(q => {
             let safeOptions = Array.isArray(q.options) && q.options.length >= 2 
                 ? q.options.map(o => String(o).replace(/^[\(\[]?[A-Da-d1-4][\.\)\]\:\-]\s*/, '').trim()).filter(Boolean)
                 : ["Option A", "Option B", "Option C", "Option D"];
@@ -2013,16 +2064,12 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
                 question: String(q.question || `Assessment question on ${cleanTitle}`).trim(),
                 options: safeOptions,
                 correct_index: safeIndex,
-                source_document: 'Admin Uploaded Training Material PDF / Auto MCQ Generator'
+                source_document: q.source_document || 'Admin Uploaded Training Material PDF / Auto MCQ Generator'
             };
         });
 
-        // 3. Insert directly into Supabase database table `course_quizzes` with conflict-proof sequential IDs
-        let savedInDB = false;
-        let insertedRows = [];
+        let nextStartId = 500;
         try {
-            // Find current highest ID to prevent sequence primary key collision
-            let nextStartId = 500;
             const { data: maxRow } = await supabase
                 .from('course_quizzes')
                 .select('id')
@@ -2032,49 +2079,36 @@ app.post(['/api/admin/generate-quiz-from-doc', '/api/quiz/generate-from-pdf'], a
             if (maxRow && maxRow.length > 0 && typeof maxRow[0].id === 'number') {
                 nextStartId = maxRow[0].id + 1;
             }
+        } catch (e) {}
 
-            const rowsWithId = rowsToInsert.map((r, idx) => ({
-                id: nextStartId + idx,
-                ...r
-            }));
+        const rowsWithId = rowsToInsert.map((r, idx) => ({
+            id: nextStartId + idx,
+            ...r
+        }));
 
-            const { data: inserted, error: quizErr } = await supabase
-                .from('course_quizzes')
-                .insert(rowsWithId)
-                .select();
+        let insertedRows = [];
+        const { data: inserted, error: quizErr } = await supabase
+            .from('course_quizzes')
+            .insert(rowsWithId)
+            .select();
 
-            if (!quizErr && inserted && inserted.length > 0) {
-                savedInDB = true;
-                insertedRows = inserted;
-            } else if (quizErr) {
-                console.warn('Supabase quiz insert note with explicit ID:', quizErr.message);
-                // Fallback attempt without explicit id
-                const { data: retryInsert } = await supabase.from('course_quizzes').insert(rowsToInsert).select();
-                if (retryInsert && retryInsert.length > 0) {
-                    savedInDB = true;
-                    insertedRows = retryInsert;
-                }
-            }
-        } catch (dbErr) {
-            console.warn('DB error during quiz insertion:', dbErr.message);
+        if (!quizErr && inserted && inserted.length > 0) {
+            insertedRows = inserted;
+        } else if (quizErr) {
+            console.warn('Supabase quiz insert note with explicit ID:', quizErr.message);
+            const { data: retryInsert, error: retryErr } = await supabase.from('course_quizzes').insert(rowsToInsert).select();
+            if (retryErr) return res.status(500).json({ error: retryErr.message });
+            insertedRows = retryInsert || rowsToInsert;
         }
 
-        const finalQuizList = insertedRows.length > 0 ? insertedRows : rowsToInsert;
-
-        return res.json({ 
+        return res.json({
             success: true,
-            message: `Successfully synthesized and stored ${finalQuizList.length} assessment questions in course_quizzes database table!`, 
-            course_title: cleanTitle,
-            saved_to_db: savedInDB,
-            count: finalQuizList.length,
-            total_generated: finalQuizList.length,
-            requested_count: count,
-            is_max_possible: finalQuizList.length < count,
-            questions: finalQuizList,
-            quiz: finalQuizList
+            message: `Successfully saved ${insertedRows.length} question(s) for "${cleanTitle}" to the database!`,
+            count: insertedRows.length,
+            saved: insertedRows
         });
     } catch (err) {
-        return res.status(500).json({ error: err.message || 'Quiz synthesis failed.' });
+        return res.status(500).json({ error: err.message || 'Failed to save quiz questions.' });
     }
 });
 
@@ -2160,7 +2194,7 @@ Return ONLY valid JSON (do NOT include title):
     }
 });
 
-// PDF Syllabus Parser & Intelligent Course Ingestion (LangChain & Ollama gpt-oss:20b Pipeline)
+// PDF Syllabus Parser & Intelligent Course Ingestion - Extracts Courses for Review
 app.post('/api/admin/parse-syllabus', async (req, res) => {
     const { syllabusText, defaultDivision, targetCadre, targetDesignation } = req.body;
     if (!syllabusText) return res.status(400).json({ error: 'Syllabus text is required.' });
@@ -2177,7 +2211,7 @@ app.post('/api/admin/parse-syllabus', async (req, res) => {
             throw new Error('Could not parse courses from provided syllabus.');
         }
 
-        const rowsToInsert = extractedModules.map((m, idx) => {
+        const candidateCourses = extractedModules.map((m, idx) => {
             const cleanTitle = (m.title || `NSSTA Module ${idx + 1}`).trim();
             let domain = m.domain || 'Statistical Competencies';
             const validDomains = ['Statistical Competencies', 'Technical Competencies', 'Digital Governance', 'Behavioural & Managerial'];
@@ -2208,13 +2242,58 @@ app.post('/api/admin/parse-syllabus', async (req, res) => {
             const uniqueCode = `${baseCode}-${Date.now().toString(36).slice(-3).toUpperCase()}${Math.floor(10 + Math.random() * 90)}`;
 
             return {
+                id: idx + 1,
                 course_code: uniqueCode,
                 title: cleanTitle,
                 domain: domain,
                 difficulty_level: diff,
+                learning_stage: diff,
                 description: fullDesc,
                 video_url: 'https://portal.igotkarmayogi.gov.in',
                 is_general_mandatory: typeof m.is_general_mandatory === 'boolean' ? m.is_general_mandatory : (domain === 'Digital Governance' && diff === 'Foundation'),
+                target_departments: depts,
+                target_cadres: cadres,
+                target_designations: desigs
+            };
+        });
+
+        return res.json({ 
+            success: true,
+            message: `Successfully analyzed syllabus with LangChain! Found ${candidateCourses.length} accredited courses ready for review.`, 
+            count: candidateCourses.length,
+            modules: candidateCourses,
+            courses: candidateCourses 
+        });
+    } catch (err) {
+        return res.status(500).json({ error: 'Failed to extract syllabus courses: ' + err.message });
+    }
+});
+
+// Commit Reviewed Courses to Supabase Master Database
+app.post(['/api/admin/save-extracted-courses', '/api/admin/save-courses'], async (req, res) => {
+    let rawCourses = req.body.courses || req.body.course;
+    if (!rawCourses) return res.status(400).json({ error: 'No courses provided to save.' });
+    if (!Array.isArray(rawCourses)) rawCourses = [rawCourses];
+    if (rawCourses.length === 0) return res.status(400).json({ error: 'Empty courses array.' });
+
+    try {
+        const rowsToInsert = rawCourses.map((c, idx) => {
+            const cleanTitle = (c.title || `Accredited Course ${idx + 1}`).trim();
+            let domain = c.domain || 'Statistical Competencies';
+            let diff = c.difficulty_level || c.learning_stage || 'Intermediate';
+            const cleanDesc = c.description || `Practical competency training module.`;
+            const depts = Array.isArray(c.target_departments) ? c.target_departments : [c.target_departments || 'ALL'];
+            const baseCode = String(c.course_code || `NSSTA-MOD-${100 + idx}`).replace(/[^A-Za-z0-9\-_]/g, '');
+            const uniqueCode = `${baseCode}-${Date.now().toString(36).slice(-3).toUpperCase()}${Math.floor(10 + Math.random() * 90)}`;
+
+            return {
+                course_code: uniqueCode,
+                title: cleanTitle,
+                domain: domain,
+                difficulty_level: diff,
+                description: cleanDesc,
+                video_url: c.video_url || 'https://portal.igotkarmayogi.gov.in',
+                is_general_mandatory: typeof c.is_general_mandatory === 'boolean' ? c.is_general_mandatory : false,
                 target_departments: depts
             };
         });
@@ -2228,9 +2307,8 @@ app.post('/api/admin/parse-syllabus', async (req, res) => {
         const rowsWithId = rowsToInsert.map((r, idx) => ({ id: nextStartId + idx, ...r }));
         let inserted = null;
         const { data: dbInserted, error: insErr } = await supabase.from('master_courses').insert(rowsWithId).select();
-        
         if (insErr) {
-            console.warn("Retrying syllabus insert without explicit IDs:", insErr.message);
+            console.warn("Retrying courses insert without explicit IDs:", insErr.message);
             const { data: retryInserted, error: retryErr } = await supabase.from('master_courses').insert(rowsToInsert).select();
             if (retryErr) return res.status(500).json({ error: retryErr.message });
             inserted = retryInserted;
@@ -2238,22 +2316,14 @@ app.post('/api/admin/parse-syllabus', async (req, res) => {
             inserted = dbInserted;
         }
 
-        // Return rich modules with cadre & designation info to the UI
-        const returnModules = (inserted || rowsToInsert).map((row, idx) => ({
-            ...row,
-            target_cadres: extractedModules[idx]?.target_cadres || [targetCadre || 'ALL'],
-            target_designations: extractedModules[idx]?.target_designations || [targetDesignation || 'ALL']
-        }));
-
-        return res.json({ 
+        return res.json({
             success: true,
-            message: `Successfully analyzed syllabus with LangChain and saved ${rowsToInsert.length} accredited courses into master_courses table!`, 
-            count: rowsToInsert.length,
-            modules: returnModules,
-            courses: returnModules 
+            message: `Successfully saved ${inserted?.length || rowsToInsert.length} course(s) to Master Database!`,
+            count: inserted?.length || rowsToInsert.length,
+            courses: inserted || rowsToInsert
         });
     } catch (err) {
-        return res.status(500).json({ error: 'Failed to extract syllabus courses: ' + err.message });
+        return res.status(500).json({ error: err.message || 'Failed to save courses.' });
     }
 });
 

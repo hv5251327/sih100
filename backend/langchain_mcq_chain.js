@@ -45,39 +45,11 @@ STRICT GENERATION INSTRUCTIONS:
 });
 
 // 2. Multi-Provider Fast LLM Runner (Ollama, Groq, Gemini, OpenAI, Grok)
-async function callFastLLM(promptText, customGroqKey = null) {
-    const sysPrompt = "You are the Senior Psychometric Assessment Specialist at NSSTA, MoSPI. Return strictly a valid JSON array of questions without markdown formatting.";
+async function callFastLLM(promptText, customGroqKey = null, systemPrompt = null) {
+    const sysPrompt = systemPrompt || "You are an expert AI curriculum and psychometric assessment architect at NSSTA, Ministry of Statistics and Programme Implementation (MoSPI). Return strictly valid JSON without markdown formatting.";
     const activeGroqKey = customGroqKey || GROQ_API_KEY || process.env.GROQ_API_KEY;
 
-    // 1. Ollama Cloud Engine (Primary - gpt-oss:20b / deepseek-v4-flash:0731)
-    if (OLLAMA_API_KEY) {
-        const ollamaModels = ['gpt-oss:20b', 'deepseek-v4-flash:0731', 'nemotron-3-nano:30b', 'gemma4:31b'];
-        for (const model of ollamaModels) {
-            try {
-                const res = await fetch('https://api.ollama.com/api/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${OLLAMA_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: model,
-                        prompt: `${sysPrompt}\n\n${promptText}`,
-                        stream: false
-                    }),
-                    signal: AbortSignal.timeout(6000)
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.response) {
-                        return data.response.replace(/```json/gi, '').replace(/```/g, '').trim();
-                    }
-                }
-            } catch (e) {}
-        }
-    }
-
-    // 2. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
+    // 1. Groq Cloud Engine (Ultra-Fast Llama-3.3-70B / Mixtral)
     if (activeGroqKey) {
         const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
         for (const model of groqModels) {
@@ -107,7 +79,7 @@ async function callFastLLM(promptText, customGroqKey = null) {
         }
     }
 
-    // 3. Google Gemini API Engine (Gemini 1.5 Flash)
+    // 2. Google Gemini API Engine (Gemini 1.5 Flash)
     if (GEMINI_API_KEY) {
         try {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
@@ -131,7 +103,7 @@ async function callFastLLM(promptText, customGroqKey = null) {
         } catch (e) {}
     }
 
-    // 4. OpenAI Engine (GPT-4o-mini)
+    // 3. OpenAI Engine (GPT-4o-mini)
     if (OPENAI_API_KEY) {
         try {
             const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -158,116 +130,79 @@ async function callFastLLM(promptText, customGroqKey = null) {
         } catch (e) {}
     }
 
-    // 4. Ollama AI Engine
+    // 4. Ollama Cloud Engine
     if (OLLAMA_API_KEY) {
-        const endpoints = [
-            `${OLLAMA_BASE_URL}/chat/completions`,
-            'https://api.ollama.ai/v1/chat/completions',
-            'http://localhost:11434/v1/chat/completions'
-        ];
-        for (const ep of endpoints) {
+        const ollamaModels = ['gpt-oss:20b', 'deepseek-v4-flash:0731', 'nemotron-3-nano:30b', 'gemma4:31b'];
+        for (const model of ollamaModels) {
             try {
-                const res = await fetch(ep, {
+                const res = await fetch('https://api.ollama.com/api/generate', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${OLLAMA_API_KEY}`
+                        'Authorization': `Bearer ${OLLAMA_API_KEY}`,
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'llama3.2',
-                        messages: [
-                            { role: 'system', content: sysPrompt },
-                            { role: 'user', content: promptText }
-                        ],
-                        temperature: 0.1
+                        model: model,
+                        prompt: `${sysPrompt}\n\n${promptText}`,
+                        stream: false
                     }),
                     signal: AbortSignal.timeout(6000)
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    const text = data?.choices?.[0]?.message?.content;
-                    if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    if (data && data.response) {
+                        return data.response.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    }
                 }
             } catch (e) {}
         }
     }
 
-    // 5. xAI Grok Engine
-    if (GROK_API_KEY) {
-        try {
-            const res = await fetch('https://api.x.ai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GROK_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: 'grok-beta',
-                    messages: [
-                        { role: 'system', content: sysPrompt },
-                        { role: 'user', content: promptText }
-                    ],
-                    temperature: 0.1
-                }),
-                signal: AbortSignal.timeout(6000)
-            });
-            if (res.ok) {
-                const data = await res.json();
-                const text = data?.choices?.[0]?.message?.content;
-                if (text) return text.replace(/```json/gi, '').replace(/```/g, '').trim();
-            }
-        } catch (e) {}
-    }
-
     return null;
 }
 
-// 3. Option Shuffler & Jumbling Engine (Fisher-Yates)
-function jumbleMCQ(q) {
-    let opts = Array.isArray(q.options) && q.options.length >= 2
-        ? q.options.map(o => String(o).replace(/^[\(\[]?[A-Da-d1-4][\.\)\]\:\-]\s*/, '').trim()).filter(Boolean)
-        : ["Option A", "Option B", "Option C", "Option D"];
-    while (opts.length < 4) opts.push("Standard official verification protocol");
-    if (opts.length > 4) opts = opts.slice(0, 4);
+// 3. MCQ Option Randomizer & Index Synchronizer
+function jumbleMCQ(mcq) {
+    if (!mcq || !Array.isArray(mcq.options) || mcq.options.length < 2) return mcq;
 
-    let rawIdx = typeof q.correct_index === 'number' && q.correct_index >= 0 && q.correct_index < opts.length 
-        ? q.correct_index 
-        : (typeof q.correctIndex === 'number' ? q.correctIndex : 0);
+    const rawOpts = mcq.options.map(o => String(o).replace(/^[\(\[]?[A-Da-d1-4][\.\)\]\:\-]\s*/, '').trim()).filter(Boolean);
+    const correctVal = rawOpts[mcq.correct_index] !== undefined ? rawOpts[mcq.correct_index] : rawOpts[0];
 
-    const items = opts.map((text, idx) => ({ text, isCorrect: idx === rawIdx }));
-
-    // Fisher-Yates random shuffle
-    for (let i = items.length - 1; i > 0; i--) {
+    const indexed = rawOpts.map((opt, i) => ({ opt, isCorrect: i === mcq.correct_index || opt === correctVal }));
+    
+    // Fisher-Yates shuffle
+    for (let i = indexed.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [items[i], items[j]] = [items[j], items[i]];
+        [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
     }
 
-    const shuffledOpts = items.map(it => it.text);
-    const newCorrectIdx = items.findIndex(it => it.isCorrect);
+    const shuffledOpts = indexed.map(item => item.opt);
+    const newCorrectIdx = indexed.findIndex(item => item.isCorrect);
 
     return {
-        question: String(q.question || 'Assessment question').trim(),
+        question: mcq.question,
         options: shuffledOpts,
         correct_index: newCorrectIdx >= 0 ? newCorrectIdx : 0,
-        explanation: q.explanation || 'Accredited methodology rationale.',
-        chain_type: q.chain_type || 'LangChain_MCQ_Pipeline'
+        explanation: mcq.explanation || 'Validated against official NSSTA standard training curriculum.',
+        chain_type: mcq.chain_type || 'LangChain_MCQ_Pipeline'
     };
 }
 
-// 4. LangChain Execution Pipeline
+// 4. LangChain MCQ Extraction Pipeline
 async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions = 6, difficulty = 'Intermediate', customGroqKey = null) {
-    const cleanDoc = (documentText || '').slice(0, 28000).trim();
-    const count = parseInt(numQuestions) || 6;
+    const cleanDoc = (documentText || '').slice(0, 25000).trim();
+    if (!cleanDoc) return [];
 
     try {
         const formattedPrompt = await mcqGenerationPromptTemplate.format({
-            course_title: courseTitle,
+            course_title: courseTitle || 'MoSPI Statistical Competency Assessment',
             document_text: cleanDoc,
-            num_questions: count,
+            num_questions: numQuestions,
             difficulty: difficulty
         });
 
-        const rawOutput = await callFastLLM(formattedPrompt, customGroqKey);
+        const mcqSysPrompt = "You are the Senior Psychometric Assessment Specialist at NSSTA, MoSPI. Return strictly a valid JSON array of questions without markdown formatting.";
+        const rawOutput = await callFastLLM(formattedPrompt, customGroqKey, mcqSysPrompt);
 
         if (rawOutput) {
             const match = rawOutput.match(/\[[\s\S]*\]/);
@@ -275,79 +210,87 @@ async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions =
                 const parsed = JSON.parse(match[0]);
                 if (Array.isArray(parsed) && parsed.length > 0) {
                     return parsed.map(q => jumbleMCQ({
-                        ...q,
-                        question: String(q.question || `Assessment question on ${courseTitle}`).trim(),
-                        explanation: q.explanation || `Derived from accredited training documentation for ${courseTitle}.`,
-                        chain_type: 'LangChain_PromptTemplate_Inference_Chain'
+                        question: q.question,
+                        options: q.options,
+                        correct_index: typeof q.correct_index === 'number' ? q.correct_index : 0,
+                        explanation: q.explanation || `Derived directly from ${courseTitle} curriculum.`,
+                        chain_type: 'LangChain_PromptTemplate_Chain'
                     }));
                 }
             }
         }
     } catch (err) {
-        console.warn('LangChain pipeline execution note:', err.message);
+        console.warn('LangChain MCQ pipeline note:', err.message);
     }
 
-    // High-Precision Structured MCQ Synthesis Fallback
+    // High Quality Domain-Grounded Fallback
+    return generateStructuredDomainMCQs(courseTitle, cleanDoc, numQuestions, difficulty);
+}
+
+function generateStructuredDomainMCQs(courseTitle, documentText, count = 6, difficulty = 'Intermediate') {
+    const cleanTitle = courseTitle || 'Official Statistics';
+    const textSnippets = (documentText || '').split(/[.\n]+/).map(s => s.trim()).filter(s => s.length > 25);
+
     const concepts = [
         {
-            q: `Under official MoSPI guidelines for ${courseTitle}, what is the primary regulatory or methodological benchmark?`,
+            q: `In the context of "${cleanTitle}", what is the primary operational objective mandated by MoSPI standards?`,
             opts: [
-                "Strict compliance with national official statistics standards and respondent confidentiality",
-                "Informal convenience sampling without supervisor verification",
-                "Complete exemption from quality assurance frameworks",
-                "Manual paper ledger recording without digital audit trails"
+                `Ensuring standardized data reliability, compliance, and methodological precision in official statistics`,
+                `Discontinuing multi-stage survey stratification in favor of unweighted simple random sampling`,
+                `Restricting microdata dissemination strictly to manual paper registry entries`,
+                `Exempting central sector statistical estimates from national auditing frameworks`
             ],
-            exp: "MoSPI mandates compliance with UN-NQAF and statutory confidentiality under the Collection of Statistics Act."
+            exp: `MoSPI operational guidelines mandate strict data reliability, compliance, and methodological rigor for ${cleanTitle}.`
         },
         {
-            q: `Which computational workflow is standard practice when processing microdata for ${courseTitle}?`,
+            q: `When processing survey data and official aggregates for "${cleanTitle}", which procedure ensures analytical validity?`,
             opts: [
-                "Applying multi-stage multiplier weights and inverse probability adjustments",
-                "Direct unweighted arithmetic summation across disparate clusters",
-                "Selective exclusion of divergent strata without documented justification",
-                "Disregarding non-response weighting calibrations"
+                `Applying post-stratification sampling multipliers and non-sampling error calibration`,
+                `Removing all outlier survey schedules without documented scrutiny logs`,
+                `Using uncalibrated proxy variables without base year deflation adjustments`,
+                `Bypassing secondary verification audits to accelerate publication timelines`
             ],
-            exp: "Official sample surveys require SDRD calibrated sampling weights for unbiased population estimates."
+            exp: `Multiplier application and error calibration are foundational statistical standards for official datasets.`
         },
         {
-            q: `How does the Digital Personal Data Protection (DPDP) Act 2023 impact microdata releases in ${courseTitle}?`,
+            q: `Under official governance protocols applicable to "${cleanTitle}", how is respondent data confidentiality maintained?`,
             opts: [
-                "Enforces k-anonymity (k >= 5) cell suppression on quasi-identifiers",
-                "Permits unrestricted public dissemination of direct PII",
-                "Allows commercial disclosure without respondent consent",
-                "Eliminates data fiduciary audit logs"
+                `Enforcing DPDP Act 2023 compliance, statistical disclosure control (SDC), and k-anonymity protocols`,
+                `Publishing full unmasked personally identifiable respondent records on public open-access dashboards`,
+                `Storing raw survey schedules without encrypted access controls or access audit trails`,
+                `Transferring unit-level microdata across public servers without PKI encryption`
             ],
-            exp: "DPDP Act 2023 mandates statistical cell masking to prevent respondent re-identification."
+            exp: `The Digital Personal Data Protection (DPDP) Act 2023 and SDC protocols mandate respondent privacy protection.`
         },
         {
-            q: `What is the primary role of supervisory field scrutiny in ${courseTitle}?`,
+            q: `For quality auditing and supervisory inspection in "${cleanTitle}", what constitutes standard administrative verification?`,
             opts: [
-                "Validating schedule paradata consistency, boundary verification, and error reconciliation",
-                "Overriding respondent answers based on personal assumptions",
-                "Eliminating field inspection logs",
-                "Bypassing CAPI tablet validation constraints"
+                `Conducting multi-tier scrutiny, back-check field re-interviews, and validation check rules in CAPI software`,
+                `Accepting uninspected field schedules without supervisory spot checks or consistency tests`,
+                `Delegating all primary data audits solely to non-statistical administrative staff`,
+                `Omitting item non-response imputation formulas during aggregate table generation`
             ],
-            exp: "Field supervision ensures data fidelity and paradata integrity under NSSO FOD operating protocols."
+            exp: `Multi-tier supervisory inspection and CAPI validation rules ensure data integrity in field operations.`
         },
         {
-            q: `When compiling macro aggregates for ${courseTitle}, which SNA 2008 balancing principle is mandatory?`,
+            q: `How do NSSTA and iGOT Karmayogi competency frameworks structure learning pathways for "${cleanTitle}"?`,
             opts: [
-                "Supply-Use Table (SUT) product-level reconciliation at basic and purchasers prices",
-                "Ignoring intermediate consumption in value added calculations",
-                "Sole reliance on unadjusted baseline historical trends",
-                "Treating trade and transport margins as production subsidies"
+                `Through progressive competency stages (Foundation, Functional Core, Advanced Strategic) with verified assessments`,
+                `By replacing all technical statistical learning with purely non-accredited informal orientation`,
+                `By restricting digital training access exclusively to senior administrative officers`,
+                `Through unverified attendance markers without psychometric evaluation metrics`
             ],
-            exp: "SNA 2008 requires symmetric Supply and Use Table balancing for robust GVA/GDP estimation."
+            exp: `Mission Karmayogi and NSSTA utilize structured competency levels (Foundation, Core, Strategic) for official capacity building.`
         },
         {
-            q: `How does competency development in ${courseTitle} empower civil statistical officers?`,
+            q: `What is the key deliverable when submitting finalized statistical outputs for "${cleanTitle}"?`,
             opts: [
-                "Equips officers with validated analytical pipelines for evidence-based policy formulation",
-                "Replaces standard administrative operating procedures with undocumented practices",
-                "Reduces institutional transparency in data dissemination",
-                "Eliminates the requirement for continuous professional development"
+                `A comprehensive statistical report accompanied by standard error estimates, metadata documentation, and methodology notes`,
+                `Raw unweighted summary totals without standard error bounds or metadata definitions`,
+                `A verbal overview without formal documentation or data verification logs`,
+                `Aggregated indices without referencing the official base year or weighting diagram`
             ],
-            exp: "Continuous capacity building under Mission Karmayogi institutionalizes competency-based governance."
+            exp: `Accredited MoSPI statistical dissemination requires standard error estimates, complete metadata, and methodology documentation.`
         }
     ];
 
@@ -362,10 +305,9 @@ async function runLangChainMCQPipeline(courseTitle, documentText, numQuestions =
 
 // 5. LangChain Prompt Template for Syllabus Parsing & Intelligent Course Architecture
 const syllabusIngestionPromptTemplate = new PromptTemplate({
-    template: `You are the Chief Curriculum Architect and Principal Director of Training at the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics and Programme Implementation (MoSPI), Government of India.
-
-Deeply analyze the following official NSSTA Training Syllabus / Circular / Presentation.
-Extract and architect 4 to 8 accredited standalone training courses mapped to official MoSPI competency pillars, targeted cadres, and designations.
+    template: `You are the Chief Curriculum Architect at NSSTA, Ministry of Statistics and Programme Implementation (MoSPI), Government of India.
+Deeply analyze the following training syllabus / circular / lecture material.
+Extract and architect 3 to 6 distinct, accredited standalone training courses mapped to official MoSPI competency pillars.
 
 SYLLABUS / TRAINING CONTENT:
 """
@@ -378,17 +320,17 @@ TARGETING METADATA:
 - Target Designation: "{designation}"
 
 STRICT CURRICULUM ARCHITECTURE RULES:
-1. Ground every course strictly in the actual topics, statistical methodologies, and governance mandates present in the document.
+1. Extract REAL, SPECIFIC, and COMPREHENSIVE courses directly derived from the topics, methodology, and domains in the text.
 2. Structure each course with:
-   - "course_code": Official course code (e.g. "NSSTA-SDRD-101", "NSSTA-FOD-202", "NSSTA-NAD-301", "NSSTA-DG-105").
-   - "title": Clear, professional, accredited course title.
-   - "domain": Must be exactly one of: "Statistical Competencies", "Technical Competencies", "Digital Governance", "Behavioural & Managerial".
-   - "difficulty_level": Must be exactly one of: "Foundation", "Intermediate", "Advanced".
+   - "course_code": e.g. "NSSTA-101", "NSSTA-102"
+   - "title": Professional, specific course title
+   - "domain": Exactly one of: "Statistical Competencies", "Technical Competencies", "Digital Governance", "Behavioural & Managerial"
+   - "difficulty_level": Exactly one of: "Foundation", "Intermediate", "Advanced"
    - "description": 2-sentence summary detailing practical operational competencies acquired.
-   - "target_departments": Array of department codes (e.g. ["SDRD"], ["NAD", "ESD"], ["FOD"], ["Data Governance"], or ["ALL"]).
-   - "target_cadres": Array of targeted officer cadres (e.g. ["Indian Statistical Service (ISS)"], ["Subordinate Statistical Service (SSS)"], or ["ALL"]).
-   - "target_designations": Array of targeted designations (e.g. ["Senior Statistical Officer", "Junior Statistical Officer", "Assistant Director", "Deputy Director"], or ["ALL"]).
-   - "is_general_mandatory": Boolean (true if mandatory for all officers in the division).
+   - "target_departments": Array of department codes
+   - "target_cadres": Array of targeted officer cadres
+   - "target_designations": Array of targeted designations
+   - "is_general_mandatory": Boolean
 
 {format_instructions}`,
     inputVariables: ["syllabus_text", "division", "cadre", "designation"],
@@ -396,14 +338,14 @@ STRICT CURRICULUM ARCHITECTURE RULES:
         format_instructions: `Return ONLY a valid JSON array of objects without markdown:
 [
   {
-    "course_code": "NSSTA-SDRD-201",
-    "title": "Multistage Sampling Multiplier Estimation & Inverse Probability Weighting",
+    "course_code": "NSSTA-MOD-101",
+    "title": "Specific Course Title",
     "domain": "Statistical Competencies",
     "difficulty_level": "Intermediate",
-    "description": "Comprehensive practical training on computing stratum inverse probabilities and non-response calibration for PLFS and HCES.",
-    "target_departments": ["SDRD"],
-    "target_cadres": ["Indian Statistical Service (ISS)", "Subordinate Statistical Service (SSS)"],
-    "target_designations": ["Senior Statistical Officer", "Assistant Director"],
+    "description": "Comprehensive practical operational competencies acquired...",
+    "target_departments": ["ALL"],
+    "target_cadres": ["ALL"],
+    "target_designations": ["ALL"],
     "is_general_mandatory": false
   }
 ]`
@@ -413,8 +355,8 @@ STRICT CURRICULUM ARCHITECTURE RULES:
 function parseSyllabusStructuredFallback(syllabusText, defaultDivision = 'ALL', targetCadre = 'ALL', targetDesignation = 'ALL') {
     const rawLines = (syllabusText || '')
         .split(/[\r\n]+/)
-        .map(l => l.trim().replace(/^[\*\-\#\d\.\)\s]+/, '').trim())
-        .filter(l => l.length > 10 && l.length < 150 && !/^(page|unit|module|chapter|table|figure|\d+$)/i.test(l));
+        .map(l => l.trim().replace(/^[\*\-\#\d\.\)\:\s]+/, '').trim())
+        .filter(l => l.length > 8 && l.length < 120 && !/^(page|unit|module|chapter|table|figure|\d+$)/i.test(l));
 
     const uniqueLines = [...new Set(rawLines)];
     const courses = [];
@@ -422,21 +364,21 @@ function parseSyllabusStructuredFallback(syllabusText, defaultDivision = 'ALL', 
     const domains = ['Statistical Competencies', 'Technical Competencies', 'Digital Governance', 'Behavioural & Managerial'];
     const diffs = ['Foundation', 'Intermediate', 'Advanced'];
 
-    for (let i = 0; i < Math.min(uniqueLines.length, 6); i++) {
+    for (let i = 0; i < Math.min(uniqueLines.length, 5); i++) {
         const topic = uniqueLines[i];
         const domain = domains[i % domains.length];
         const diff = diffs[i % diffs.length];
 
         courses.push({
-            course_code: `NSSTA-${(defaultDivision !== 'ALL' ? defaultDivision : 'MOSPI')}-${100 + i}`,
-            title: topic.length < 50 ? `${topic} — Masterclass` : topic,
+            course_code: `NSSTA-${(defaultDivision !== 'ALL' ? defaultDivision : 'MOSPI')}-${101 + i}`,
+            title: topic.length < 40 ? `${topic} Competency Masterclass` : topic,
             domain: domain,
             difficulty_level: diff,
-            description: `Accredited practical competency course covering ${topic} for ${defaultDivision} officers.`,
+            description: `Comprehensive practical competency training covering ${topic} for ${defaultDivision !== 'ALL' ? defaultDivision : 'MoSPI'} officers.`,
             target_departments: [defaultDivision || 'ALL'],
             target_cadres: [targetCadre || 'ALL'],
             target_designations: [targetDesignation || 'ALL'],
-            is_general_mandatory: domain === 'Digital Governance' && diff === 'Foundation',
+            is_general_mandatory: false,
             video_url: 'https://portal.igotkarmayogi.gov.in',
             chain_type: 'LangChain_Structured_Syllabus_Fallback'
         });
@@ -445,7 +387,7 @@ function parseSyllabusStructuredFallback(syllabusText, defaultDivision = 'ALL', 
     if (courses.length === 0) {
         courses.push({
             course_code: `NSSTA-${(defaultDivision !== 'ALL' ? defaultDivision : 'MOSPI')}-101`,
-            title: `Operational Competencies in ${defaultDivision !== 'ALL' ? defaultDivision : 'MoSPI Official Statistics'}`,
+            title: `Operational Competencies in ${defaultDivision !== 'ALL' ? defaultDivision : 'Official Statistics'}`,
             domain: 'Statistical Competencies',
             difficulty_level: 'Intermediate',
             description: `Comprehensive operational training module designed for ${targetCadre !== 'ALL' ? targetCadre : 'MoSPI officers'}.`,
@@ -472,7 +414,8 @@ async function runLangChainSyllabusPipeline(syllabusText, defaultDivision = 'ALL
             designation: targetDesignation || 'ALL'
         });
 
-        const rawOutput = await callFastLLM(formattedPrompt);
+        const syllabusSysPrompt = "You are the Chief Curriculum Architect at NSSTA, MoSPI. Extract and architect accredited standalone competency courses from the provided training syllabus. Return strictly a valid JSON array of objects without markdown.";
+        const rawOutput = await callFastLLM(formattedPrompt, null, syllabusSysPrompt);
 
         if (rawOutput) {
             const match = rawOutput.match(/\[[\s\S]*\]/);
