@@ -368,6 +368,154 @@
       .modal-backdrop { padding: 8px; }
       .modal-box { padding: 16px 14px; max-width: 100%; border-radius: 10px; }
     }
+
+    /* ===================================================
+       📱 SANDBOX TOUCH & MOBILE OPTIMIZATIONS
+       =================================================== */
+    .sandbox-controls-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sandbox-select-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 200px;
+    }
+    .sandbox-quick-keys {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 8px 10px;
+      background: #0b1120;
+      border-bottom: 1px solid #334155;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+    }
+    .sandbox-quick-keys::-webkit-scrollbar {
+      height: 4px;
+    }
+    .sandbox-quick-keys::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    .quick-key-btn {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 5px 11px;
+      font-family: 'Fira Code', Consolas, monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: background 0.12s, color 0.12s, transform 0.1s;
+      min-height: 34px;
+      min-width: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .quick-key-btn:active, .quick-key-btn:hover {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #38bdf8;
+      transform: scale(0.96);
+    }
+    .sandbox-actions-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .sandbox-controls-row {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 10px;
+      }
+      .sandbox-select-group {
+        width: 100% !important;
+        min-width: 100% !important;
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 4px;
+      }
+      #sandboxLangSelect, #simDatasetSelect {
+        min-width: 100% !important;
+        width: 100% !important;
+        font-size: 0.9rem !important;
+        padding: 10px 12px !important;
+        min-height: 44px !important;
+      }
+      .sandbox-fullscreen-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px !important;
+        min-height: 42px;
+      }
+      .sandbox-actions-row {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px !important;
+      }
+      #btn-run-simulation {
+        grid-column: 1 / -1;
+        width: 100% !important;
+        justify-content: center;
+        min-height: 46px !important;
+        font-size: 0.95rem !important;
+      }
+      .sandbox-actions-row .btn-action {
+        width: 100% !important;
+        justify-content: center;
+        min-height: 42px !important;
+        font-size: 0.82rem !important;
+        padding: 8px 10px !important;
+      }
+      #simCodeEditor, #codelab-editor {
+        font-size: 14px !important;
+        min-height: 220px !important;
+        line-height: 1.5 !important;
+      }
+      #sim-terminal-output, #codelab-output {
+        font-size: 0.82rem !important;
+        max-height: 220px !important;
+      }
+      
+      /* Codelab Modal edge-to-edge on small screens */
+      #codelab-modal {
+        padding: 0 !important;
+      }
+      #codelab-modal .modal-box {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        padding: 12px !important;
+        margin: 0 !important;
+        border: none !important;
+      }
+      #codelab-preset-select {
+        width: 100% !important;
+        min-width: 100% !important;
+        min-height: 40px;
+        font-size: 0.88rem !important;
+      }
+    }
   
     /* ===================================================
        🏢 EMPLOYEE SIDEBAR NAVIGATION STYLING
@@ -788,10 +936,10 @@
       </p>
 
       <!-- Clean Controls Bar with 1 Fullscreen Button, Language & Dataset -->
-      <div style="display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+      <div class="sandbox-controls-row">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex:1;">
           <!-- Language Selector (15 Languages) -->
-          <div style="display:flex; align-items:center; gap:6px;">
+          <div class="sandbox-select-group">
             <label style="font-size:0.82rem; font-weight:700; color:#334155;"><i class="fa-solid fa-code" style="color:#0284c7;"></i> Language:</label>
             <select id="sandboxLangSelect" onchange="onSandboxLanguageChange(this.value)" style="padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.84rem; font-weight:700; background:#fff; color:#0f172a; cursor:pointer; min-width:200px;">
               <option value="python" selected>Python 3 (Data Science & Logic)</option>
@@ -813,7 +961,7 @@
           </div>
 
           <!-- Dataset Selector (Default: None) -->
-          <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:240px;">
+          <div class="sandbox-select-group" style="min-width:240px;">
             <label style="font-size:0.82rem; font-weight:700; color:#334155;"><i class="fa-solid fa-database" style="color:#0f766e;"></i> Dataset:</label>
             <select id="simDatasetSelect" onchange="onDatasetChange(this.value)" style="padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.84rem; font-weight:700; width:100%; background:#fff; color:#0f172a; cursor:pointer;">
               <option value="none" selected>None (Blank / Custom Script)</option>
@@ -825,24 +973,53 @@
         </div>
 
         <!-- Single Top Fullscreen Button -->
-        <button type="button" onclick="openCodeLabModal('Interactive Sandbox')" style="background:#f8fafc; border:1px solid #cbd5e1; color:#1e293b; font-size:0.82rem; font-weight:700; padding:8px 14px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px;" title="Open in Fullscreen IDE Mode">
-          <i class="fa-solid fa-expand" style="color:#0284c7;"></i> Fullscreen
+        <button type="button" onclick="openCodeLabModal('Interactive Sandbox')" class="sandbox-fullscreen-btn" style="background:#f8fafc; border:1px solid #cbd5e1; color:#1e293b; font-size:0.82rem; font-weight:700; padding:8px 14px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px;" title="Open in Fullscreen IDE Mode">
+          <i class="fa-solid fa-expand" style="color:#0284c7;"></i> Fullscreen IDE
         </button>
       </div>
 
       <!-- Large Code Editor Area -->
-      <div style="background:#0f172a; border-radius:10px; padding:16px; color:#e2e8f0; font-family:'Fira Code', monospace; font-size:0.86rem; margin-bottom:12px; border:1px solid #334155; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px; margin-bottom:12px;">
+      <div style="background:#0f172a; border-radius:10px; padding:0; color:#e2e8f0; font-family:'Fira Code', monospace; font-size:0.86rem; margin-bottom:12px; border:1px solid #334155; box-shadow:0 4px 12px rgba(0,0,0,0.15); overflow:hidden;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding:10px 14px; background:#0b1120;">
           <span style="color:#38bdf8; font-weight:700; display:flex; align-items:center; gap:8px;">
             <i class="fa-solid fa-terminal"></i> In-Browser Sandbox Kernel
             <span id="sandboxLangBadge" style="background:#0369a1; color:#fff; font-size:0.72rem; padding:2px 8px; border-radius:4px;">PYTHON 3</span>
           </span>
+          <span style="font-size:0.72rem; color:#64748b;"><i class="fa-solid fa-mobile-screen-button"></i> Mobile Ready</span>
         </div>
-        <textarea id="simCodeEditor" rows="12" style="width:100%; min-height:260px; background:transparent; color:#38bdf8; border:none; outline:none; font-family:'Fira Code', Consolas, monospace; font-size:0.88rem; resize:vertical; line-height:1.55; box-sizing:border-box;" placeholder="Write any code here..."></textarea>
+
+        <!-- Mobile Quick-Input Helper Bar (Quick-Symbol Keyboard) -->
+        <div class="sandbox-quick-keys">
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('Tab', 'simCodeEditor')" title="Insert 4 Spaces">Tab</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol(':', 'simCodeEditor')">:</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('(', 'simCodeEditor')">(</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol(')', 'simCodeEditor')">)</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('[', 'simCodeEditor')">[</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol(']', 'simCodeEditor')">]</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('{', 'simCodeEditor')">{</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('}', 'simCodeEditor')">}</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('&quot;', 'simCodeEditor')">"</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('\'', 'simCodeEditor')">'</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('=', 'simCodeEditor')">=</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('&lt;', 'simCodeEditor')">&lt;</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('&gt;', 'simCodeEditor')">&gt;</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('_', 'simCodeEditor')">_</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('#', 'simCodeEditor')">#</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('+', 'simCodeEditor')">+</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('-', 'simCodeEditor')">-</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('*', 'simCodeEditor')">*</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('/', 'simCodeEditor')">/</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('.', 'simCodeEditor')">.</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol(',', 'simCodeEditor')">,</button>
+        </div>
+
+        <div style="padding:12px 14px;">
+          <textarea id="simCodeEditor" rows="12" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text" style="width:100%; min-height:260px; background:transparent; color:#38bdf8; border:none; outline:none; font-family:'Fira Code', Consolas, monospace; font-size:0.9rem; resize:vertical; line-height:1.55; box-sizing:border-box; tab-size:4;" placeholder="Write any code here..."></textarea>
+        </div>
       </div>
 
       <!-- Action Buttons -->
-      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;">
+      <div class="sandbox-actions-row">
         <button type="button" onclick="executeMicrodataSimulation()" id="btn-run-simulation" class="btn-action" style="background:#0284c7; color:#fff; padding:10px 22px; font-size:0.88rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
           <i class="fa-solid fa-play"></i> Run Code
         </button>
@@ -858,7 +1035,10 @@
       <div id="sim-result-box" style="background:#0f172a; border-radius:10px; border:1px solid #334155; overflow:hidden; font-family:'Fira Code', Consolas, monospace; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
         <div style="background:#1e293b; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; font-size:0.75rem; color:#94a3b8;">
           <span><i class="fa-solid fa-terminal" style="color:#38bdf8;"></i> Terminal Console</span>
-          <span id="output-meta-badge" style="color:#94a3b8;"><i class="fa-regular fa-clock"></i> 0ms</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button type="button" onclick="copySandboxOutput('sim-terminal-output')" style="background:transparent; border:none; color:#38bdf8; font-size:0.75rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border-radius:4px;" title="Copy Output"><i class="fa-regular fa-copy"></i> Copy</button>
+            <span id="output-meta-badge" style="color:#94a3b8;"><i class="fa-regular fa-clock"></i> 0ms</span>
+          </div>
         </div>
         <div style="padding:14px 16px; font-size:0.86rem; color:#f8fafc; line-height:1.55; max-height:280px; overflow-y:auto;">
           <pre id="sim-terminal-output" style="margin:0; white-space:pre-wrap; word-break:break-word; color:#38bdf8; font-family:inherit;">> Ready. Write code above and click 'Run Code' to execute.</pre>
@@ -1113,14 +1293,41 @@
           <span><i class="fa-solid fa-code" style="color:#38bdf8;"></i> <strong id="codelab-kernel-label" style="color:#e2e8f0;">Editor (main.py)</strong></span>
           <span style="color:#4ade80;"><i class="fa-solid fa-circle-check"></i> Ready</span>
         </div>
-        <textarea id="codelab-editor" rows="12" style="width:100%; flex:1; min-height:220px; background:#1e293b; color:#38bdf8; font-family:'Fira Code', Consolas, monospace; font-size:0.88rem; padding:12px; border:none; outline:none; resize:vertical; box-sizing:border-box; line-height:1.5;"></textarea>
+        <!-- Mobile Quick-Input Helper Bar in Modal -->
+        <div class="sandbox-quick-keys" style="background:#0b1120; border-top:1px solid #334155;">
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('Tab', 'codelab-editor')" title="Insert 4 Spaces">Tab</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol(':', 'codelab-editor')">:</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('(', 'codelab-editor')">(</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol(')', 'codelab-editor')">)</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('[', 'codelab-editor')">[</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol(']', 'codelab-editor')">]</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('{', 'codelab-editor')">{</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('}', 'codelab-editor')">}</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('&quot;', 'codelab-editor')">"</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('\'', 'codelab-editor')">'</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('=', 'codelab-editor')">=</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('&lt;', 'codelab-editor')">&lt;</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('&gt;', 'codelab-editor')">&gt;</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('_', 'codelab-editor')">_</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('#', 'codelab-editor')">#</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('+', 'codelab-editor')">+</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('-', 'codelab-editor')">-</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('*', 'codelab-editor')">*</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('/', 'codelab-editor')">/</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol('.', 'codelab-editor')">.</button>
+          <button type="button" class="quick-key-btn" onclick="insertSandboxSymbol(',', 'codelab-editor')">,</button>
+        </div>
+        <textarea id="codelab-editor" rows="12" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text" style="width:100%; flex:1; min-height:220px; background:#1e293b; color:#38bdf8; font-family:'Fira Code', Consolas, monospace; font-size:0.88rem; padding:12px; border:none; outline:none; resize:vertical; box-sizing:border-box; line-height:1.5; tab-size:4;"></textarea>
       </div>
 
       <!-- Execution Terminal Output -->
       <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:12px; font-family:'Fira Code', Consolas, monospace; font-size:0.82rem; min-height:110px; max-height:180px; overflow-y:auto; color:#38bdf8;">
-        <div style="font-weight:700; color:#64748b; margin-bottom:4px; font-size:0.72rem; display:flex; justify-content:space-between;">
+        <div style="font-weight:700; color:#64748b; margin-bottom:4px; font-size:0.72rem; display:flex; justify-content:space-between; align-items:center;">
           <span><i class="fa-solid fa-terminal"></i> OUTPUT CONSOLE:</span>
-          <span id="codelab-meta-badge" style="color:#94a3b8;">0ms</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" onclick="copySandboxOutput('codelab-output')" style="background:transparent; border:none; color:#38bdf8; font-size:0.72rem; cursor:pointer; display:inline-flex; align-items:center; gap:3px; padding:2px 5px;" title="Copy Output"><i class="fa-regular fa-copy"></i> Copy</button>
+            <span id="codelab-meta-badge" style="color:#94a3b8;">0ms</span>
+          </div>
         </div>
         <pre id="codelab-output" style="margin:0; white-space:pre-wrap; font-family:inherit; color:#38bdf8;">> Ready. Click 'Run Code' to execute.</pre>
       </div>
@@ -1226,8 +1433,11 @@
         if (document.getElementById("disp-officer-desig")) document.getElementById("disp-officer-desig").innerText = currentUser.designation || 'N/A';
 
         // 2. Initialize Sandbox Editor with Piston Starter Template
-        if (typeof switchSandboxLanguage === 'function') {
+        if (typeof onSandboxLanguageChange === 'function') {
           onSandboxLanguageChange('python');
+        }
+        if (typeof setupSandboxTabKey === 'function') {
+          setupSandboxTabKey('simCodeEditor');
         }
 
         // 2b. Immediately download/pre-warm the Python Sandbox in background
@@ -3171,6 +3381,60 @@ ORDER BY mean_stat_proficiency DESC;`;
       if (badge) badge.innerText = 'Cleared';
     }
 
+    function insertSandboxSymbol(sym, targetId) {
+      const editor = document.getElementById(targetId || 'simCodeEditor');
+      if (!editor) return;
+      
+      const start = editor.selectionStart !== undefined ? editor.selectionStart : editor.value.length;
+      const end = editor.selectionEnd !== undefined ? editor.selectionEnd : editor.value.length;
+      const val = editor.value;
+      
+      let insertText = sym;
+      if (sym === 'Tab') {
+        insertText = '    ';
+      }
+      
+      editor.value = val.substring(0, start) + insertText + val.substring(end);
+      const newPos = start + insertText.length;
+      editor.focus();
+      if (typeof editor.setSelectionRange === 'function') {
+        editor.setSelectionRange(newPos, newPos);
+      }
+    }
+
+    function copySandboxOutput(targetId) {
+      const el = document.getElementById(targetId || 'sim-terminal-output');
+      if (!el) return;
+      const text = el.innerText || el.textContent || '';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          const badge = document.getElementById(targetId === 'codelab-output' ? 'codelab-meta-badge' : 'output-meta-badge');
+          if (badge) {
+            const orig = badge.innerHTML;
+            badge.innerHTML = '<span style="color:#4ade80;"><i class="fa-solid fa-check"></i> Copied!</span>';
+            setTimeout(function() { badge.innerHTML = orig; }, 2000);
+          }
+        }).catch(function() {
+          // Fallback
+        });
+      }
+    }
+
+    function setupSandboxTabKey(editorId) {
+      const editor = document.getElementById(editorId);
+      if (!editor || editor.dataset.tabSetup) return;
+      editor.dataset.tabSetup = 'true';
+      editor.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const start = this.selectionStart;
+          const end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 4;
+        }
+      });
+    }
+
     function openCodeLabModal(titleEnc) {
       const title = decodeURIComponent(titleEnc || 'Interactive Sandbox');
       const modalTitle = document.getElementById("codelab-modal-title");
@@ -3188,6 +3452,8 @@ ORDER BY mean_stat_proficiency DESC;`;
       if (modalLang) modalLang.value = mainLang;
       if (modalEditor) modalEditor.value = mainCode || (BASIC_PROGRAMMING_TEMPLATES[mainLang] || BASIC_PROGRAMMING_TEMPLATES['python']);
       if (modalKernel) modalKernel.innerText = 'main.' + (mainLang === 'python' ? 'py' : (mainLang === 'javascript' ? 'js' : mainLang));
+
+      setupSandboxTabKey('codelab-editor');
 
       const modal = document.getElementById("codelab-modal");
       if (modal) {
