@@ -2746,30 +2746,61 @@ app.post(['/api/generate-quiz', '/api/ai/generate-quiz', '/api/quiz/generate'], 
     const { courseTitle, domain, difficulty } = req.body;
     const cleanTitle = (courseTitle || '').trim();
     try {
-        // 1. Try exact match from course_quizzes in DB
-        let { data: storedQuiz } = await supabase
-            .from('course_quizzes')
-            .select('*')
-            .eq('course_title', cleanTitle);
-
-        // 2. Try ilike match if not found
-        if (!storedQuiz || storedQuiz.length === 0) {
-            const { data: ilikeMatch } = await supabase
+        let storedQuiz = [];
+        if (supabase) {
+            // 1. Try exact or ilike match from course_quizzes in DB
+            const { data: exactMatch } = await supabase
                 .from('course_quizzes')
                 .select('*')
-                .ilike('course_title', `%${cleanTitle}%`);
-            storedQuiz = ilikeMatch;
-        }
+                .ilike('course_title', cleanTitle);
+            if (exactMatch && exactMatch.length > 0) storedQuiz = exactMatch;
 
-        // 3. Try fuzzy match with the primary words of the course title
-        if (!storedQuiz || storedQuiz.length === 0) {
-            const words = cleanTitle.split(/[\s,()&-]+/).filter(w => w.length > 3);
-            if (words.length > 0) {
-                const { data: wordMatch } = await supabase
+            // 2. Try substring match if not found
+            if (!storedQuiz || storedQuiz.length === 0) {
+                const { data: ilikeMatch } = await supabase
                     .from('course_quizzes')
                     .select('*')
-                    .ilike('course_title', `%${words[0]}%`);
-                storedQuiz = wordMatch;
+                    .ilike('course_title', `%${cleanTitle}%`);
+                if (ilikeMatch && ilikeMatch.length > 0) storedQuiz = ilikeMatch;
+            }
+
+            // 3. Try inverse substring and multi-keyword overlap search across question bank
+            if (!storedQuiz || storedQuiz.length === 0) {
+                const { data: allQuizzes } = await supabase
+                    .from('course_quizzes')
+                    .select('*')
+                    .limit(1000);
+                if (allQuizzes && allQuizzes.length > 0) {
+                    const normTarget = cleanTitle.toLowerCase();
+                    const stopWords = new Set(['and', 'for', 'the', 'with', 'from', 'into', 'under', 'act', 'code', 'data', 'using', 'towards']);
+                    const targetKeywords = normTarget.split(/[\s,()&-]+/).filter(w => w.length > 3 && !stopWords.has(w));
+                    
+                    const titles = [...new Set(allQuizzes.map(q => q.course_title))];
+                    let bestTitle = '';
+                    let maxOverlap = 0;
+
+                    titles.forEach(t => {
+                        const normT = (t || '').toLowerCase();
+                        if (normTarget.includes(normT) || normT.includes(normTarget)) {
+                            if (normT.length > maxOverlap) {
+                                maxOverlap = 999;
+                                bestTitle = t;
+                            }
+                        } else {
+                            const tWords = new Set(normT.split(/[\s,()&-]+/).filter(w => w.length > 3 && !stopWords.has(w)));
+                            let overlap = 0;
+                            targetKeywords.forEach(k => { if (tWords.has(k)) overlap++; });
+                            if (overlap > maxOverlap && overlap >= 2) {
+                                maxOverlap = overlap;
+                                bestTitle = t;
+                            }
+                        }
+                    });
+
+                    if (bestTitle) {
+                        storedQuiz = allQuizzes.filter(q => q.course_title === bestTitle);
+                    }
+                }
             }
         }
 
@@ -2797,6 +2828,7 @@ app.post(['/api/generate-quiz', '/api/ai/generate-quiz', '/api/quiz/generate'], 
             quiz: (Array.isArray(aiQuestions) ? aiQuestions : []).map(q => jumbleQuestionOptions(q))
         });
     } catch (err) {
+        console.warn('Quiz generation endpoint exception:', err.message);
         const fallback = await generateQuizQuestionsAI(cleanTitle);
         return res.json({
             source: "SYSTEM_FALLBACK_CODEX",

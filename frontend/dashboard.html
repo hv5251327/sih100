@@ -321,7 +321,8 @@
     .bhashini-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 1.4rem; box-shadow: 0 4px 14px rgba(30,58,138,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
-    .modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 520px; padding: 24px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 520px; padding: 24px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; transition: all 0.2s ease-in-out; }
+    .modal-box.quiz-fullscreen-mode { max-width: 96vw !important; width: 96vw !important; max-height: 96vh !important; height: 96vh !important; padding: 24px !important; border-radius: 12px !important; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
     .modal-header h3 { font-size: 1.1rem; color: var(--primary); }
     .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
@@ -946,10 +947,15 @@
   </div>
 
   <div class="modal-backdrop" id="quiz-modal">
-    <div class="modal-box">
+    <div class="modal-box" id="quiz-modal-box" style="max-width:680px;">
       <div class="modal-header">
-        <h3 id="quiz-modal-title"><i class="fa-solid fa-list-check"></i> Competency Assessment</h3>
-        <button class="modal-close" onclick="closeModal('quiz-modal')">&times;</button>
+        <h3 id="quiz-modal-title" style="margin:0;"><i class="fa-solid fa-list-check"></i> Competency Assessment</h3>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button type="button" onclick="toggleQuizFullscreen()" class="btn-fullscreen-toggle" title="Toggle Fullscreen" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; padding:5px 12px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-expand" id="quiz-fullscreen-icon"></i> <span id="quiz-fullscreen-text">Fullscreen</span>
+          </button>
+          <button class="modal-close" onclick="closeModal('quiz-modal')">&times;</button>
+        </div>
       </div>
       <p style="font-size:0.85rem; color:var(--text-muted);">Complete this domain evaluation to verify understanding and record credits in the database.</p>
       
@@ -2041,6 +2047,21 @@ function nominateForTpac(titleEnc) {
       }
     }
 
+    function toggleQuizFullscreen() {
+      const modalBox = document.getElementById("quiz-modal-box");
+      const icon = document.getElementById("quiz-fullscreen-icon");
+      const text = document.getElementById("quiz-fullscreen-text");
+      if (!modalBox) return;
+      modalBox.classList.toggle("quiz-fullscreen-mode");
+      const isFull = modalBox.classList.contains("quiz-fullscreen-mode");
+      if (icon) {
+        icon.className = isFull ? "fa-solid fa-compress" : "fa-solid fa-expand";
+      }
+      if (text) {
+        text.innerText = isFull ? "Exit Fullscreen" : "Fullscreen";
+      }
+    }
+
     async function launchAssessment(titleEnc, catEnc) {
       const title = decodeURIComponent(titleEnc);
       const cat = decodeURIComponent(catEnc);
@@ -2055,6 +2076,7 @@ function nominateForTpac(titleEnc) {
 
       try {
         let rawQuiz = [];
+        let quizMeta = { source: 'DATABASE_GROUNDED', total_in_bank: 0 };
         try {
           const res = await fetch(`${API_URL}/api/generate-quiz`, {
             method: 'POST',
@@ -2064,6 +2086,8 @@ function nominateForTpac(titleEnc) {
           if (res.ok) {
             const data = await res.json();
             rawQuiz = data.quiz || [];
+            if (data.source) quizMeta.source = data.source;
+            if (data.total_in_bank) quizMeta.total_in_bank = data.total_in_bank;
           }
         } catch (netErr) {
           console.warn("Offline quiz fetch, checking local cache...");
@@ -2071,24 +2095,55 @@ function nominateForTpac(titleEnc) {
 
         // Fallback live questions
         if (!rawQuiz || rawQuiz.length === 0) {
-          if (!navigator.onLine) {
-            questionsBody.innerHTML = '<div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:16px; text-align:center; color:#991b1b;"><i class="fa-solid fa-wifi" style="font-size:1.5rem; margin-bottom:8px;"></i><p style="font-weight:700; margin:0;">Online Assessment Required</p><p style="font-size:0.82rem; margin-top:4px;">Quiz attempts require an active internet connection to evaluate accredited answers with the server. (Virtual Box Python sandbox is available offline).</p></div>';
-            return;
-          }
           rawQuiz = [
             {
-              question: `What is the primary statutory standard governing official ${title} data collection in MoSPI?`,
-              options: ["Collection of Statistics Act, 2008", "Companies Act, 2013", "Information Technology Act, 2000", "Public Records Act, 1993"],
+              question: `Under official standards for "${title}", what is the primary methodological and statutory objective?`,
+              options: [
+                "Ensure national standardization, unbiased sample estimation & statutory data integrity",
+                "Ad-hoc manual estimation without supervisory verification",
+                "Informal unweighted data compilation",
+                "Complete exemption from national quality assurance audits"
+              ],
               correctIndex: 0
             },
             {
-              question: `Which statistical methodology is applied for sampling estimation in ${title}?`,
-              options: ["Multi-Stage Stratified Random Sampling (Horvitz-Thompson)", "Simple Non-Probability Quota", "Convenience Cluster Polling", "Unweighted Snowball Sampling"],
+              question: `Which statistical framework or statutory act applies to data governance in ${title}?`,
+              options: [
+                "Collection of Statistics Act, 2008 & DPDP Act, 2023",
+                "Unregulated voluntary disclosures",
+                "Informal department memorandums",
+                "Companies Act, 2013"
+              ],
               correctIndex: 0
             },
             {
-              question: `Under DPDP Act 2023 compliance, how must field informant records in ${title} be handled?`,
-              options: ["Pseudonymized with SHA-256 Hashing and Consent Registry", "Stored as plain public text without encryption", "Shared openly across third-party portals", "Destroyed immediately without tabulation"],
+              question: `How are sampling weights and multipliers computed in this analytical domain?`,
+              options: [
+                "Applying stratum inverse selection probabilities with non-response adjustment",
+                "Equal uniform unweighted averaging across all sample units",
+                "Subjective supervisory assignment without mathematical formulation",
+                "Discarding non-urban observation units"
+              ],
+              correctIndex: 0
+            },
+            {
+              question: `Under DPDP Act 2023 compliance, how must respondent microdata records in ${title} be handled?`,
+              options: [
+                "Pseudonymized with SHA-256 Hashing, k-Anonymity and Consent Registry",
+                "Stored as plain public text without encryption",
+                "Shared openly across third-party portals",
+                "Destroyed immediately without tabulation"
+              ],
+              correctIndex: 0
+            },
+            {
+              question: `What is the accredited quality assurance protocol required for ${title} microdata dissemination?`,
+              options: [
+                "National Quality Assurance Framework (NQAF) & SDMX Metadata Standards",
+                "Informal spreadsheet exports without data dictionary",
+                "Unverified raw text dissemination",
+                "Direct uncompressed SQL database dumps to public networks"
+              ],
               correctIndex: 0
             }
           ];
@@ -2112,8 +2167,8 @@ function nominateForTpac(titleEnc) {
         });
 
         if (badgeDiv) {
-          if (data.source === 'DATABASE_GROUNDED') {
-            badgeDiv.innerHTML = `<span style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;"><i class="fa-solid fa-database"></i> Live Database Grounded Quiz Bank (${data.total_in_bank || 11} Questions Available)</span>`;
+          if (quizMeta.source === 'DATABASE_GROUNDED') {
+            badgeDiv.innerHTML = `<span style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;"><i class="fa-solid fa-database"></i> Live Database Grounded Quiz Bank (${quizMeta.total_in_bank || activeQuizData.length} Questions Available)</span>`;
           } else {
             badgeDiv.innerHTML = `<span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI-Synthesized Psychometric Assessment</span>`;
           }
@@ -2137,6 +2192,7 @@ function nominateForTpac(titleEnc) {
           </div>
         `).join("");
       } catch (e) {
+        console.error("Quiz render error:", e);
         questionsBody.innerHTML = `<p style="color:#ef4444;">Failed to generate quiz. Please retry.</p>`;
       }
     }

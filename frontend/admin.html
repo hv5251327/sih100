@@ -1734,15 +1734,21 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      const statusSpan = document.getElementById("pdfUploadStatus");
-      const textarea = document.getElementById("rawDocumentText");
+      const statusSpan = document.getElementById("quiz-gen-status") || document.getElementById("pdfUploadStatus");
+      const textarea = document.getElementById("quizDocText") || document.getElementById("rawDocumentText");
 
-      if (file.type !== "application/pdf") {
-        alert("Please upload a PDF document (.pdf).");
+      if (file.type !== "application/pdf" && !file.name.endsWith('.pdf')) {
+        // If text/json/csv file, read as text directly
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (textarea) textarea.value = e.target.result;
+          if (statusSpan) statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Loaded file (${e.target.result.length} chars)`;
+        };
+        reader.readAsText(file);
         return;
       }
 
-      statusSpan.innerText = "Extracting text from PDF via PDF.js...";
+      if (statusSpan) statusSpan.innerText = "Extracting text from PDF via PDF.js...";
       try {
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -1755,22 +1761,22 @@
           fullText += pageText + "\n\n";
         }
 
-        textarea.value = fullText.trim();
-        statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Extracted ${pdf.numPages} pages (${fullText.length} chars)`;
+        if (textarea) textarea.value = fullText.trim();
+        if (statusSpan) statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Extracted ${pdf.numPages} pages (${fullText.length} chars)`;
       } catch (err) {
         console.error(err);
-        statusSpan.innerText = "Failed to parse PDF. Please copy-paste text directly.";
+        if (statusSpan) statusSpan.innerText = "Failed to parse PDF. Please copy-paste text directly.";
       }
     }
 
     async function handleDocQuiz(e) {
       e.preventDefault();
-      const courseTitle = document.getElementById("quizCourseSelect").value;
-      const documentText = document.getElementById("rawDocumentText").value.trim();
-      const numQuestions = document.getElementById("numQuestions").value;
-      const difficulty = document.getElementById("quizDifficulty").value;
-      const resultBox = document.getElementById("docQuizResult");
-      const btn = document.getElementById("btn-doc-quiz");
+      const courseTitle = document.getElementById("quizCourseSelect")?.value;
+      const documentText = (document.getElementById("quizDocText") || document.getElementById("rawDocumentText"))?.value?.trim();
+      const numQuestions = (document.getElementById("quizQuestionCount") || document.getElementById("numQuestions"))?.value || 6;
+      const difficulty = (document.getElementById("quizDifficulty"))?.value || "Intermediate";
+      const resultBox = document.getElementById("quiz-preview-box") || document.getElementById("docQuizResult");
+      const btn = document.getElementById("btn-quiz-synth") || document.getElementById("btn-doc-quiz");
 
       if (!courseTitle) {
         alert("Please select a target course from the Master DB.");
@@ -1781,10 +1787,14 @@
         return;
       }
 
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating MCQs via AI...';
-      resultBox.style.display = "block";
-      resultBox.innerHTML = '<div style="text-align:center; padding:15px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem; color:#0284c7;"></i><p style="margin-top:8px;">Analyzing document paragraphs & synthesizing validated questions...</p></div>';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating MCQs via AI...';
+      }
+      if (resultBox) {
+        resultBox.style.display = "block";
+        resultBox.innerHTML = '<div style="text-align:center; padding:15px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem; color:#0284c7;"></i><p style="margin-top:8px;">Analyzing document paragraphs & synthesizing validated questions...</p></div>';
+      }
 
       try {
         const res = await fetch(`${API_URL}/api/admin/generate-quiz-from-doc`, {
@@ -1793,10 +1803,10 @@
           body: JSON.stringify({ courseTitle, documentText, numQuestions, difficulty })
         });
         const data = await res.json();
-        if (data.quiz && data.quiz.length > 0) {
+        if (data.quiz && data.quiz.length > 0 && resultBox) {
           resultBox.innerHTML = `
             <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:12px; border-radius:8px; font-weight:700; margin-bottom:12px;">
-              <i class="fa-solid fa-circle-check"></i> Generated and linked ${data.count} MCQs to "${courseTitle}"!
+              <i class="fa-solid fa-circle-check"></i> Generated and stored ${data.count || data.quiz.length} MCQs for "${courseTitle}" in database!
             </div>
             ${data.quiz.map((q, idx) => `
               <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:8px;">
@@ -1807,19 +1817,21 @@
                   `).join('')}
                 </div>
                 <div style="margin-top:6px; font-size:0.75rem; color:#15803d; font-weight:700;">
-                  Correct Answer: ${q.answer}
+                  Correct Answer: ${q.answer || (q.options ? q.options[q.correct_index || 0] : 'Option A')}
                 </div>
               </div>
             `).join('')}
           `;
-        } else {
+        } else if (resultBox) {
           resultBox.innerHTML = '<div style="color:var(--danger); font-weight:700;">Could not generate questions. Ensure text contains sufficient factual material.</div>';
         }
       } catch (err) {
-        resultBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">Error: ${err.message}</div>`;
+        if (resultBox) resultBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">Error: ${err.message}</div>`;
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Synthesize and Store';
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Synthesize & Store';
+        }
       }
     }
 
