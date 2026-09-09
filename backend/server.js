@@ -1673,97 +1673,79 @@ app.post(['/api/admin/skill-forecast', '/api/analytics/skill-forecast'], async (
         const avgLead = evaluatedCount ? Math.round(totalLead / evaluatedCount) : 48;
         const meanOverall = Math.round((avgStat + avgTech + avgGov + avgLead) / 4);
 
-        // 6. Generate Domain-Specific Predictive Forecast Vectors
+        // 6. Generate Domain-Specific Predictive Forecast Vectors (Streamlined Concise Format - 3/4 Length)
         const forecasts = [
             {
                 id: 'FCAST-01',
-                domain: 'Technical & Machine Learning Automation',
-                title: `AI/ML & Python Survey Microdata Quality Automation (${targetDept === 'ALL' ? 'Ministry-Wide' : targetDept})`,
+                domain: 'Technical & AI/ML Automation',
+                title: `AI/ML & Python Survey Automation (${targetDept === 'ALL' ? 'Ministry-Wide' : targetDept})`,
                 priority: 'CRITICAL PRIORITY',
                 badge_bg: '#fee2e2',
                 badge_color: '#b91c1c',
                 border_color: '#ef4444',
-                risk_level: 'High Alert (45% Deficit)',
-                deficit_pct: `${Math.max(15, 100 - avgTech)}% Skill Gap`,
+                risk_level: 'High Alert',
+                deficit_pct: `${Math.max(15, 100 - avgTech)}% Gap`,
                 current_proficiency: `${avgTech}%`,
                 target_proficiency: '85%',
                 projected_officers_at_risk: Math.max(1, Math.round(totalOfficers * 0.62)),
                 forecast_timeline: targetHorizon,
-                emerging_driver: 'CAPI real-time sync, electronic error audits, and Big Data census tabulation.',
-                recommended_nssta_cohort: 'TPAC Cohort 2026-T1: Python & Machine Learning for Official Statistics Automation',
-                action: 'Mandate automated Python/R & CAPI Microdata certification batch on iGOT Karmayogi with virtual sandbox labs.'
+                emerging_driver: 'CAPI electronic audits & big data census tabulation.',
+                recommended_nssta_cohort: 'TPAC Cohort 2026-T1: Python & ML Automation',
+                action: 'Mandate Python & CAPI microdata certification batch on iGOT Karmayogi.'
             },
             {
                 id: 'FCAST-02',
-                domain: 'Macroeconomic & National Accounts (SNA 2008)',
-                title: `SNA 2008 Modernization & Supply-Use Tables (SUT) Matrix Balancing`,
+                domain: 'National Accounts (SNA 2008)',
+                title: `SNA 2008 & Supply-Use Tables (SUT) Modernization`,
                 priority: 'HIGH PRIORITY',
                 badge_bg: '#fef3c7',
                 badge_color: '#b45309',
                 border_color: '#f59e0b',
-                risk_level: 'Elevated Risk (35% Deficit)',
-                deficit_pct: `${Math.max(15, 100 - avgStat)}% Skill Gap`,
+                risk_level: 'Elevated Risk',
+                deficit_pct: `${Math.max(15, 100 - avgStat)}% Gap`,
                 current_proficiency: `${avgStat}%`,
                 target_proficiency: '80%',
                 projected_officers_at_risk: Math.max(1, Math.round(totalOfficers * 0.48)),
                 forecast_timeline: targetHorizon,
-                emerging_driver: 'Upcoming National Base Year Revision (2011-12 series update) and FISIM reallocation.',
-                recommended_nssta_cohort: 'TPAC Cohort 2026-S1: System of National Accounts & Supply-Use Matrix Modernization',
-                action: 'Deploy specialized iGOT & NSSTA curriculum for GVA at basic prices, chain volume measures, and input-output balancing.'
+                emerging_driver: 'National Base Year Revision (2011-12 series update).',
+                recommended_nssta_cohort: 'TPAC Cohort 2026-S1: SNA & SUT Matrix Modernization',
+                action: 'Deploy specialized iGOT & NSSTA curriculum for GVA and chain volume balancing.'
             },
             {
                 id: 'FCAST-03',
-                domain: 'Geospatial Analytics & Field Sampling',
-                title: `Geospatial GIS & Remote Sensing Spatial Stratification (FOD / SDRD / State DES)`,
+                domain: 'Geospatial & Field Sampling',
+                title: `GIS & Satellite Frame Stratification (FOD / DES)`,
                 priority: 'HIGH PRIORITY',
                 badge_bg: '#fef3c7',
                 badge_color: '#b45309',
                 border_color: '#f59e0b',
-                risk_level: 'Emerging Requirement',
-                deficit_pct: '42% Skill Gap',
+                risk_level: 'Emerging Area',
+                deficit_pct: '42% Gap',
                 current_proficiency: `${Math.min(avgTech, 45)}%`,
                 target_proficiency: '80%',
                 projected_officers_at_risk: Math.max(1, Math.round(totalOfficers * 0.52)),
                 forecast_timeline: targetHorizon,
-                emerging_driver: 'Integration of ISRO Bhuvan satellite imagery with Urban Frame Survey (UFS) blocks.',
-                recommended_nssta_cohort: 'TPAC Cohort 2026-T3: Geospatial Information Systems (GIS) & Remote Sensing Sampling',
-                action: 'Schedule hands-on QGIS & GeoPandas district polygon modeling workshops at NSSTA Greater Noida.'
+                emerging_driver: 'ISRO Bhuvan satellite integration with UFS survey blocks.',
+                recommended_nssta_cohort: 'TPAC Cohort 2026-T3: GIS & Remote Sensing Sampling',
+                action: 'Conduct hands-on QGIS & GeoPandas modeling workshops at NSSTA.'
             },
             {
                 id: 'FCAST-04',
-                domain: 'Digital Governance & Statutory Compliance',
-                title: `DPDP Act 2023 Microdata k-Anonymity & Respondent Consent Architectures`,
+                domain: 'Digital Governance & Privacy',
+                title: `DPDP Act 2023 Microdata Privacy & Anonymity`,
                 priority: 'MODERATE PRIORITY',
                 badge_bg: '#e0f2fe',
                 badge_color: '#0369a1',
                 border_color: '#0284c7',
-                risk_level: 'Mandatory Compliance',
-                deficit_pct: `${Math.max(10, 100 - avgGov)}% Skill Gap`,
+                risk_level: 'Statutory Compliance',
+                deficit_pct: `${Math.max(10, 100 - avgGov)}% Gap`,
                 current_proficiency: `${avgGov}%`,
                 target_proficiency: '90%',
                 projected_officers_at_risk: Math.max(1, Math.round(totalOfficers * 0.35)),
                 forecast_timeline: targetHorizon,
-                emerging_driver: 'Statutory enforcement of Data Fiduciary rules under Digital Personal Data Protection Act 2023.',
-                recommended_nssta_cohort: 'TPAC Cohort 2026-G1: Digital Governance, DPDP Act 2023 & Cybersecurity Standards',
-                action: 'Auto-enroll all active officers in the 3-Stage DPDP Act 2023 compliance pathway before next survey release.'
-            },
-            {
-                id: 'FCAST-05',
-                domain: 'Environmental-Economic Accounting (SEEA)',
-                title: `SEEA Ecosystem Accounting, Carbon Stock & Natural Capital Valuation (SSD)`,
-                priority: 'MODERATE PRIORITY',
-                badge_bg: '#f0fdf4',
-                badge_color: '#15803d',
-                border_color: '#22c55e',
-                risk_level: 'Forward-Looking Frontier',
-                deficit_pct: '50% Skill Gap',
-                current_proficiency: `${Math.min(avgStat, 40)}%`,
-                target_proficiency: '75%',
-                projected_officers_at_risk: Math.max(1, Math.round(totalOfficers * 0.30)),
-                forecast_timeline: targetHorizon,
-                emerging_driver: 'UN mandate for System of Environmental-Economic Accounting (SEEA-EA) integration in national accounts.',
-                recommended_nssta_cohort: 'TPAC Cohort 2026-S3: System of Environmental-Economic Accounting (SEEA) & Carbon Stocks',
-                action: 'Organize inter-ministerial masterclasses with Ministry of Environment, Forest and Climate Change (MoEFCC).'
+                emerging_driver: 'Statutory Data Fiduciary rules under DPDP Act 2023.',
+                recommended_nssta_cohort: 'TPAC Cohort 2026-G1: DPDP Act & Cybersecurity',
+                action: 'Enroll active officers in the 3-Stage DPDP 2023 compliance pathway.'
             }
         ];
 
@@ -2103,22 +2085,22 @@ app.post('/api/admin/draft-course', async (req, res) => {
 
     try {
         const uniqueCode = 'MOD-' + Date.now().toString().slice(-6);
-        let courseTitle = `${topic} (${department || 'Universal'})`;
-        let courseDesc = `Practical operational training on ${topic} for ${department || 'ALL'} officers.`;
+        const courseTitle = topic.trim(); // Preserve exact user-entered course name
+        let courseDesc = `Practical operational competency training on ${courseTitle} for ${department || 'ALL'} officers.`;
         let courseDiff = 'Intermediate';
 
-        const prompt = `Generate title and 2-sentence description for a MoSPI course.
-Department: ${department}
+        const prompt = `You are a MoSPI civil service training curriculum specialist. Given the exact course title below, generate a concise, practical 2-sentence description and appropriate difficulty level for government officers.
+
+Course Title: "${courseTitle}"
+Department: ${department || 'ALL'}
 Cadre: ${cadre || 'All Cadres'}
 Designation: ${designation || 'All Officers'}
-Domain: ${domain}
-Topic: ${topic}
+Domain: ${domain || 'Statistical Competencies'}
 
-Return ONLY JSON:
+Return ONLY valid JSON (do NOT include title):
 {
-  "title": "${topic} (${department})",
-  "description": "2-sentence practical operational purpose",
-  "difficulty_level": "Intermediate"
+  "description": "2-sentence practical operational purpose and core competencies covered.",
+  "difficulty_level": "Foundation or Intermediate or Advanced"
 }`;
 
         const rawJson = await generateAIResponse(prompt);
@@ -2127,16 +2109,19 @@ Return ONLY JSON:
                 const match = rawJson.match(/\{[\s\S]*\}/);
                 if (match) {
                     const parsed = JSON.parse(match[0]);
-                    courseTitle = parsed.title || courseTitle;
-                    courseDesc = parsed.description || courseDesc;
-                    courseDiff = parsed.difficulty_level || courseDiff;
+                    if (parsed.description && typeof parsed.description === 'string') {
+                        courseDesc = parsed.description.trim();
+                    }
+                    if (parsed.difficulty_level && typeof parsed.difficulty_level === 'string') {
+                        courseDiff = parsed.difficulty_level.trim();
+                    }
                 }
             } catch (e) {}
         }
 
         const newRow = {
             course_code: uniqueCode,
-            title: courseTitle,
+            title: courseTitle, // Exact course name preserved
             domain: domain || 'Statistical Competencies',
             difficulty_level: courseDiff || 'Intermediate',
             description: `${courseDesc} [Target: ${cadre || 'ALL'} | ${designation || 'ALL'}]`,

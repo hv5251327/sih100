@@ -2709,41 +2709,33 @@
         if (document.getElementById("f-horizon")) document.getElementById("f-horizon").innerText = data.horizon || horizon;
 
         if (forecasts.length === 0) {
-          container.innerHTML = `<div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:16px; border-radius:10px; font-size:0.88rem; font-weight:700;"><i class="fa-solid fa-circle-check"></i> All officers in ${dept} (${cadre}) meet target competency readiness benchmarks for ${horizon}.</div>`;
+          container.innerHTML = `<div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:12px; border-radius:8px; font-size:0.86rem; font-weight:700;"><i class="fa-solid fa-circle-check"></i> All officers in ${dept} (${cadre}) meet target competency readiness benchmarks for ${horizon}.</div>`;
         } else {
           container.innerHTML = forecasts.map(f => {
             const curNum = parseInt(f.current_proficiency) || 35;
-            const targetNum = parseInt(f.target_proficiency) || 80;
             return `
-              <div style="background:#ffffff; border:1px solid var(--border-light); border-left:5px solid ${f.border_color || '#0284c7'}; padding:16px 18px; border-radius:10px; font-size:0.86rem; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px;">
+              <div style="background:#ffffff; border:1px solid var(--border-light); border-left:4px solid ${f.border_color || '#0284c7'}; padding:12px 14px; border-radius:8px; font-size:0.83rem; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;">
                   <div>
-                    <span style="font-size:0.72rem; font-weight:800; color:#0284c7; text-transform:uppercase;">${f.domain}</span>
-                    <h4 style="font-size:0.96rem; font-weight:800; color:#0f172a; margin-top:2px;">${f.title}</h4>
+                    <span style="font-size:0.7rem; font-weight:800; color:#0284c7; text-transform:uppercase;">${f.domain}</span>
+                    <h4 style="font-size:0.9rem; font-weight:800; color:#0f172a; margin:0;">${f.title}</h4>
                   </div>
-                  <span style="background:${f.badge_bg || '#fee2e2'}; color:${f.badge_color || '#b91c1c'}; font-size:0.74rem; font-weight:800; padding:4px 10px; border-radius:6px; white-space:nowrap;">${f.priority}</span>
+                  <span style="background:${f.badge_bg || '#fee2e2'}; color:${f.badge_color || '#b91c1c'}; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:4px; white-space:nowrap;">${f.priority}</span>
                 </div>
 
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; margin:10px 0; font-size:0.8rem;">
-                  <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-weight:700;">
-                    <span style="color:#64748b;">Current Readiness: <strong style="color:#0f172a;">${f.current_proficiency || '35%'}</strong></span>
-                    <span style="color:#64748b;">Target Benchmark: <strong style="color:#15803d;">${f.target_proficiency || '80%'}</strong></span>
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:6px 10px; margin:6px 0; font-size:0.77rem;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:700;">
+                    <span style="color:#64748b;">Readiness: <strong style="color:#0f172a;">${f.current_proficiency || '35%'}</strong> (Target: <strong style="color:#15803d;">${f.target_proficiency || '80%'}</strong>)</span>
+                    <span style="color:#b91c1c;"><i class="fa-solid fa-users-viewfinder"></i> ${f.projected_officers_at_risk || 8} At Risk</span>
                   </div>
-                  <div style="width:100%; height:7px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
-                    <div style="width:${curNum}%; height:100%; background:${f.border_color || '#0284c7'}; border-radius:4px;"></div>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; margin-top:8px; color:#475569; font-size:0.76rem;">
-                    <span><i class="fa-solid fa-users-viewfinder"></i> Projected at Risk: <strong style="color:#b91c1c;">${f.projected_officers_at_risk || 8} Officers</strong></span>
-                    <span><i class="fa-solid fa-clock"></i> Target Horizon: <strong>${f.forecast_timeline || horizon}</strong></span>
+                  <div style="width:100%; height:5px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                    <div style="width:${curNum}%; height:100%; background:${f.border_color || '#0284c7'}; border-radius:3px;"></div>
                   </div>
                 </div>
 
-                <div style="font-size:0.8rem; color:#334155; margin-bottom:10px;">
-                  <strong style="color:#0f766e;"><i class="fa-solid fa-lightbulb"></i> Emerging Driver:</strong> ${f.emerging_driver || 'Transition to modernized official statistics methodologies.'}
-                </div>
-
-                <div style="border-top:1px dashed #e2e8f0; padding-top:10px;">
-                  <span style="font-size:0.76rem; color:var(--text-muted);"><i class="fa-solid fa-circle-arrow-right" style="color:var(--primary);"></i> ${f.action}</span>
+                <div style="font-size:0.77rem; color:#475569; display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px; margin-top:6px;">
+                  <span><strong style="color:#0f766e;"><i class="fa-solid fa-lightbulb"></i> Driver:</strong> ${f.emerging_driver || 'Transition to modernized official statistics methodologies.'}</span>
+                  <span><i class="fa-solid fa-circle-arrow-right" style="color:var(--primary);"></i> ${f.action}</span>
                 </div>
               </div>
             `;
