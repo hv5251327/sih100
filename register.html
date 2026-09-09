@@ -151,44 +151,7 @@
             <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
     </div>
 
-    <!-- Supabase Two-Factor Email OTP Verification Modal -->
-    <div id="otpModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.88); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px); padding:20px;">
-        <div style="background:#ffffff; border-radius:14px; max-width:500px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35); border:1px solid #e2e8f0; padding:28px; text-align:center;">
-            <div style="background:linear-gradient(135deg, #1e3a8a, #0284c7); color:#fff; width:52px; height:52px; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:12px;">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <h3 style="font-size:1.25rem; font-weight:800; color:#1e293b; margin:0 0 6px;">Supabase OTP Verification</h3>
-            <p style="font-size:0.82rem; color:#64748b; margin:0 0 16px;">Two-factor authentication for official government registration</p>
 
-            <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px; margin-bottom:16px; font-size:0.82rem; color:#0369a1; text-align:left; line-height:1.5;">
-                <i class="fa-solid fa-envelope-circle-check" style="color:#0284c7;"></i> Verification code sent for: <strong id="otpTargetEmail" style="color:#0f172a;"></strong>
-            </div>
-
-            <!-- Email Delivery Notification -->
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; margin-bottom:18px; font-size:0.82rem; color:#475569; display:flex; align-items:center; gap:10px; text-align:left;">
-                <i class="fa-solid fa-envelope-open-text" style="color:#0284c7; font-size:1.25rem; flex-shrink:0;"></i>
-                <span>Please check your email inbox and enter the 6-digit verification OTP code sent to your email to complete registration.</span>
-            </div>
-
-            <form id="otpVerifyForm" onsubmit="event.preventDefault(); verifyRegistrationOtp();">
-                <div style="margin-bottom:16px; text-align:left;">
-                    <label style="font-weight:700; font-size:0.85rem; color:#334155; display:block; margin-bottom:8px; text-align:center;">Enter 6-Digit OTP Code</label>
-                    <input type="text" id="regOtpInput" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="&bull; &bull; &bull; &bull; &bull; &bull;" required style="font-size:1.6rem; letter-spacing:10px; text-align:center; font-weight:800; padding:10px; border:2px solid #94a3b8; border-radius:8px; width:100%; color:#1e3a8a; outline:none;">
-                </div>
-
-                <div id="otpStatusMsg" style="font-size:0.82rem; min-height:22px; margin-bottom:12px; font-weight:700;"></div>
-
-                <button type="submit" id="btnVerifyOtp" class="btn-submit" style="background:linear-gradient(135deg, #1e3a8a, #0284c7); padding:12px; font-size:0.95rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; width:100%; margin-top:0;">
-                    <i class="fa-solid fa-circle-check"></i> Verify OTP & Proceed
-                </button>
-            </form>
-
-            <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#64748b;">
-                <span id="otpCountdown">Resend in 45s</span>
-                <button type="button" id="btnResendOtp" onclick="resendRegistrationOtp()" style="background:none; border:none; color:#0284c7; font-weight:700; cursor:pointer; text-decoration:underline;" disabled>Resend OTP</button>
-            </div>
-        </div>
-    </div>
 
     <!-- AI-Powered Diagnostic Baseline & Skill-Gap Assessment Modal -->
     <div id="diagnosticModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.88); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px); padding:20px;">
@@ -339,9 +302,8 @@
         }
 
         let pendingRegistrationData = null;
-        let resendTimerInterval = null;
 
-        async function submitRegistration() {
+        function submitRegistration() {
             const name = document.getElementById('regName')?.value?.trim();
             const email = document.getElementById('regEmail')?.value?.trim()?.toLowerCase();
             const password = document.getElementById('regPassword')?.value;
@@ -355,144 +317,13 @@
             }
 
             pendingRegistrationData = { name, email, password, cadre, department, designation };
-            try {
-                sessionStorage.setItem('pendingRegistrationData', JSON.stringify(pendingRegistrationData));
-            } catch (e) {}
             
-            // Initiate Supabase Two-Factor OTP Verification Step
-            await initiateOtpVerification();
-        }
-
-        async function initiateOtpVerification() {
-            const email = pendingRegistrationData.email;
-            const name = pendingRegistrationData.name;
-            const targetEmailEl = document.getElementById('otpTargetEmail');
-            const statusMsgEl = document.getElementById('otpStatusMsg');
-            const otpInput = document.getElementById('regOtpInput');
-            const btnVerify = document.getElementById('btnVerifyOtp');
-
-            if (targetEmailEl) targetEmailEl.innerText = email;
-            if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#0284c7;"><i class="fa-solid fa-spinner fa-spin"></i> Sending 6-digit verification code to your email...</span>`;
-            if (otpInput) {
-                otpInput.value = '';
-                setTimeout(() => otpInput.focus(), 250);
-            }
-            if (btnVerify) {
-                btnVerify.disabled = false;
-                btnVerify.innerHTML = `<i class="fa-solid fa-circle-check"></i> Verify OTP & Proceed`;
-            }
-
-            const otpModal = document.getElementById('otpModal');
-            if (otpModal) otpModal.style.display = 'flex';
-
-            // Start countdown timer for resend
-            startOtpResendCountdown(45);
-
-            // Fetch OTP dispatch from backend / Supabase
-            try {
-                const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                    ? 'http://localhost:5000'
-                    : 'https://sih100-backend.onrender.com';
-                const res = await fetch(`${API_URL}/api/auth/send-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, name })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    if (data.rateLimited && data.fallbackCode) {
-                        if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#b45309;"><i class="fa-solid fa-triangle-exclamation"></i> Supabase free email quota reached (3/hr). Test PIN: <strong style="background:#fef3c7; padding:2px 6px; border-radius:4px; letter-spacing:2px; font-family:monospace; color:#92400e;">${data.fallbackCode}</strong></span>`;
-                    } else {
-                        if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-circle-check"></i> Verification code sent to <strong>${email}</strong>. Please enter the 6-digit code.</span>`;
-                    }
-                } else {
-                    if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#b45309;"><i class="fa-solid fa-triangle-exclamation"></i> ${data.error || 'Could not send email automatically. Please check your network.'}</span>`;
-                }
-            } catch (e) {
-                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-envelope"></i> Verification code sent! Please check your email inbox to enter your 6-digit code.</span>`;
-            }
-        }
-
-        function startOtpResendCountdown(seconds) {
-            clearInterval(resendTimerInterval);
-            let timeLeft = seconds;
-            const countdownEl = document.getElementById('otpCountdown');
-            const resendBtn = document.getElementById('btnResendOtp');
-            if (resendBtn) resendBtn.disabled = true;
-
-            resendTimerInterval = setInterval(() => {
-                timeLeft--;
-                if (countdownEl) countdownEl.innerText = `Resend in ${timeLeft}s`;
-                if (timeLeft <= 0) {
-                    clearInterval(resendTimerInterval);
-                    if (countdownEl) countdownEl.innerText = 'Didn\'t receive code?';
-                    if (resendBtn) resendBtn.disabled = false;
-                }
-            }, 1000);
-        }
-
-        async function resendRegistrationOtp() {
-            if (!pendingRegistrationData) return;
-            await initiateOtpVerification();
-        }
-
-        async function verifyRegistrationOtp() {
-            const inputVal = document.getElementById('regOtpInput')?.value?.trim();
-            const statusMsgEl = document.getElementById('otpStatusMsg');
-            const btnVerify = document.getElementById('btnVerifyOtp');
-
-            if (!inputVal || inputVal.length < 6) {
-                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> Please enter the full 6-digit OTP code received in your email.</span>`;
-                return;
-            }
-
-            if (btnVerify) {
-                btnVerify.disabled = true;
-                btnVerify.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...`;
-            }
-
-            let isValid = false;
-            let errMsg = 'Invalid OTP code. Please check your email and retry.';
-            try {
-                const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                    ? 'http://localhost:5000'
-                    : 'https://sih100-backend.onrender.com';
-                const res = await fetch(`${API_URL}/api/auth/verify-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: pendingRegistrationData.email, otp: inputVal })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    isValid = true;
-                } else {
-                    if (data.error) errMsg = data.error;
-                }
-            } catch (e) {
-                // Network failure
-                errMsg = 'Network error connecting to verification service. Please retry.';
-            }
-
-            if (isValid) {
-                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-circle-check"></i> OTP Authenticated! Proceeding to competency calibration...</span>`;
-                setTimeout(() => {
-                    const otpModal = document.getElementById('otpModal');
-                    if (otpModal) otpModal.style.display = 'none';
-
-                    // Open Diagnostic Baseline Assessment Modal
-                    const diagModal = document.getElementById('diagnosticModal');
-                    if (diagModal) {
-                        diagModal.style.display = 'flex';
-                    } else {
-                        finishRegistration({ stat: 65, tech: 60, gov: 65, lead: 60 });
-                    }
-                }, 600);
+            // Open Diagnostic Baseline Assessment Modal
+            const modal = document.getElementById('diagnosticModal');
+            if (modal) {
+                modal.style.display = 'flex';
             } else {
-                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#ef4444;"><i class="fa-solid fa-circle-xmark"></i> ${errMsg}</span>`;
-                if (btnVerify) {
-                    btnVerify.disabled = false;
-                    btnVerify.innerHTML = `<i class="fa-solid fa-circle-check"></i> Verify OTP & Proceed`;
-                }
+                finishRegistration({ stat: 65, tech: 60, gov: 65, lead: 60 });
             }
         }
 
@@ -600,28 +431,10 @@
         }
 
         window.submitRegistration = submitRegistration;
-        window.verifyRegistrationOtp = verifyRegistrationOtp;
-        window.resendRegistrationOtp = resendRegistrationOtp;
         window.submitDiagnosticAssessment = submitDiagnosticAssessment;
 
         document.addEventListener('DOMContentLoaded', async () => {
             renderDesignationsDropdown();
-
-            // Auto-verify if user clicked the Supabase magic link in their email
-            const urlHash = window.location.hash || '';
-            const urlSearch = window.location.search || '';
-            if (urlHash.includes('access_token=') || urlHash.includes('type=magiclink') || urlHash.includes('type=signup') || urlSearch.includes('code=')) {
-                try {
-                    const saved = sessionStorage.getItem('pendingRegistrationData');
-                    if (saved) {
-                        pendingRegistrationData = JSON.parse(saved);
-                    }
-                } catch(e) {}
-                const otpModal = document.getElementById('otpModal');
-                if (otpModal) otpModal.style.display = 'none';
-                const diagModal = document.getElementById('diagnosticModal');
-                if (diagModal) diagModal.style.display = 'flex';
-            }
 
             try {
                 const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
