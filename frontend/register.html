@@ -355,6 +355,9 @@
             }
 
             pendingRegistrationData = { name, email, password, cadre, department, designation };
+            try {
+                sessionStorage.setItem('pendingRegistrationData', JSON.stringify(pendingRegistrationData));
+            } catch (e) {}
             
             // Initiate Supabase Two-Factor OTP Verification Step
             await initiateOtpVerification();
@@ -599,6 +602,23 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             renderDesignationsDropdown();
+
+            // Auto-verify if user clicked the Supabase magic link in their email
+            const urlHash = window.location.hash || '';
+            const urlSearch = window.location.search || '';
+            if (urlHash.includes('access_token=') || urlHash.includes('type=magiclink') || urlHash.includes('type=signup') || urlSearch.includes('code=')) {
+                try {
+                    const saved = sessionStorage.getItem('pendingRegistrationData');
+                    if (saved) {
+                        pendingRegistrationData = JSON.parse(saved);
+                    }
+                } catch(e) {}
+                const otpModal = document.getElementById('otpModal');
+                if (otpModal) otpModal.style.display = 'none';
+                const diagModal = document.getElementById('diagnosticModal');
+                if (diagModal) diagModal.style.display = 'flex';
+            }
+
             try {
                 const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://sih100-backend.onrender.com';
                 const res = await fetch(`${API_URL}/api/metadata`);
