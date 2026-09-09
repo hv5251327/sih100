@@ -462,6 +462,15 @@
                     </div>
                 </div>
 
+                <div id="grokInsightsBanner" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:0.8rem; color:#334155; text-align:left;">
+                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px; font-weight:700; color:#1e3a8a;">
+                        <i class="fa-solid fa-bolt" style="color:#0284c7;"></i> Grok AI & Redis Competency Diagnostics:
+                    </div>
+                    <div id="grokDiagSummary" style="font-size:0.77rem; color:#475569; line-height:1.4;">
+                        Calibrated profile cached in Redis. Officer ready for personalized 3-stage MoSPI roadmap.
+                    </div>
+                </div>
+
                 <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px 14px; margin-bottom:18px; font-size:0.82rem; color:#1e3a8a;">
                     <i class="fa-solid fa-route"></i> Your personalized 3-stage learning roadmap and gap analysis have been initialized in the MoSPI Competency Engine.
                 </div>
@@ -833,6 +842,35 @@
             document.getElementById('modalStep1').style.display = 'none';
             document.getElementById('modalStep2').style.display = 'none';
             document.getElementById('modalStep3').style.display = 'block';
+
+            // 5. Asynchronously invoke Grok AI Evaluation & Redis Persistence
+            try {
+                const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                    ? 'http://localhost:5000'
+                    : 'https://sih100-backend.onrender.com';
+                
+                fetch(`${API_URL}/api/assessment/evaluate-officer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: pendingRegistrationData?.name,
+                        email: pendingRegistrationData?.email,
+                        cadre: pendingRegistrationData?.cadre,
+                        department: pendingRegistrationData?.department,
+                        designation: pendingRegistrationData?.designation,
+                        self_ratings: { stat: self_stat, tech: self_tech, gov: self_gov, lead: self_lead },
+                        quiz_results: { score: quizPercentage, correct: correctCount, total: baselineQuestions.length }
+                    })
+                }).then(res => res.json()).then(data => {
+                    if (data && data.evaluation) {
+                        const evalData = data.evaluation;
+                        const summaryElem = document.getElementById('grokDiagSummary');
+                        if (summaryElem && evalData.diagnostic_summary) {
+                            summaryElem.innerHTML = `<strong>${evalData.proficiency_tier || 'Practitioner'}:</strong> ${evalData.diagnostic_summary}`;
+                        }
+                    }
+                }).catch(() => {});
+            } catch (e) {}
         }
 
         async function finishRegistrationFinal() {

@@ -12,15 +12,23 @@ const {
     generateOfficerDossierData,
     evaluateOfficerArtifactAI,
     generateDepartmentBaselineQuizAI,
+    evaluateOfficerCompetencyWithGrokAI,
     DEPARTMENT_NAMES_MAP
 } = require('./mospi_ai_engine');
+const { redisCache } = require('./redis_client');
 const fs = require('fs');
 const path = require('path');
 const { runLangChainMCQPipeline, runLangChainSyllabusPipeline } = require('./langchain_mcq_chain');
 const { evaluateLangChainRecommendations } = require('./langchain_recommendation_chain');
 
 const app = express();
-app.use(cors());
+const corsOptions = {
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'apikey', 'Prefer']
+};
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 
 // Persistent Database Cache for Officer Personalized Recommendations
@@ -2860,7 +2868,18 @@ function jumbleQuestionOptions(questionObj) {
 app.post(['/api/generate-quiz', '/api/ai/generate-quiz', '/api/quiz/generate'], async (req, res) => {
     const { courseTitle, domain, difficulty } = req.body;
     const cleanTitle = (courseTitle || '').trim();
+    const redisQuizKey = `mospi:quiz:course:${encodeURIComponent(cleanTitle.toLowerCase())}`;
+
     try {
+        // 1. Check Redis High-Speed Cache First
+        const cachedInRedis = await redisCache.get(redisQuizKey);
+        if (cachedInRedis && Array.isArray(cachedInRedis.quiz) && cachedInRedis.quiz.length > 0) {
+            return res.json({
+                ...cachedInRedis,
+                source: "REDIS_CACHE_FAST"
+            });
+        }
+
         let storedQuiz = [];
         if (supabase) {
             // 1. Try exact or ilike match from course_quizzes in DB
@@ -2922,7 +2941,7 @@ app.post(['/api/generate-quiz', '/api/ai/generate-quiz', '/api/quiz/generate'], 
         if (storedQuiz && storedQuiz.length > 0) {
             // Shuffle questions and jumble answer options randomly
             const shuffled = storedQuiz.sort(() => 0.5 - Math.random()).slice(0, 5);
-            return res.json({ 
+            const responsePayload = { 
                 source: "DATABASE_GROUNDED",
                 course_title: cleanTitle,
                 total_in_bank: storedQuiz.length,
@@ -2931,17 +2950,23 @@ app.post(['/api/generate-quiz', '/api/ai/generate-quiz', '/api/quiz/generate'], 
                     options: q.options, 
                     correctIndex: q.correct_index 
                 })) 
-            });
+            };
+            // Immediately cache in Redis for rapid subsequent loads
+            await redisCache.set(redisQuizKey, responsePayload, 86400);
+            return res.json(responsePayload);
         }
 
         // 4. Upgraded Psychometric AI Generation Engine (NSSTA Standards)
         const aiQuestions = await generateQuizQuestionsAI(cleanTitle, domain || 'Statistical Competencies', difficulty || 'Intermediate');
-
-        return res.json({
+        const responsePayload = {
             source: "AI_SYNTHESIZED_NSSTA",
             course_title: cleanTitle,
             quiz: (Array.isArray(aiQuestions) ? aiQuestions : []).map(q => jumbleQuestionOptions(q))
-        });
+        };
+        // Immediately cache in Redis for 24 hours
+        await redisCache.set(redisQuizKey, responsePayload, 86400);
+
+        return res.json(responsePayload);
     } catch (err) {
         console.warn('Quiz generation endpoint exception:', err.message);
         const fallback = await generateQuizQuestionsAI(cleanTitle);
@@ -2953,16 +2978,29 @@ app.post(['/api/generate-quiz', '/api/ai/generate-quiz', '/api/quiz/generate'], 
 });
 
 // =========================================================================
-// 🎯 NEW OFFICER ONBOARDING: DEPARTMENT-ALIGNED 5-QUESTION BASELINE QUIZ
+// 🎯 NEW OFFICER ONBOARDING: DEPARTMENT-ALIGNED 5-QUESTION BASELINE QUIZ (REDIS-OPTIMIZED)
 // =========================================================================
 app.all(['/api/assessment/baseline-quiz', '/api/quiz/baseline', '/api/assessment/department-quiz'], async (req, res) => {
     const rawDept = (req.query.department || req.query.dept || req.body.department || req.body.dept || 'NAD').toString().trim();
     const dept = rawDept.toUpperCase();
     const deptName = DEPARTMENT_NAMES_MAP[dept] || rawDept || 'MoSPI Department';
     const courseTitle = `Baseline Assessment - ${dept}`;
+    const redisDeptKey = `mospi:quiz:baseline:${dept}`;
 
     try {
-        // 1. Try fetching from Supabase database `course_quizzes` table
+        // 1. Check Redis Cache First (Instant Zero-Latency Fetch)
+        const cachedFromRedis = await redisCache.get(redisDeptKey);
+        if (cachedFromRedis && Array.isArray(cachedFromRedis) && cachedFromRedis.length >= 5) {
+            return res.json({
+                success: true,
+                source: "REDIS_CACHE_FAST",
+                department: dept,
+                department_name: deptName,
+                questions: cachedFromRedis
+            });
+        }
+
+        // 2. Try fetching from Supabase database `course_quizzes` table
         let dbQuestions = [];
         if (supabase) {
             try {
@@ -2979,25 +3017,30 @@ app.all(['/api/assessment/baseline-quiz', '/api/quiz/baseline', '/api/assessment
         }
 
         if (dbQuestions && dbQuestions.length >= 5) {
+            const formatted = dbQuestions.map((q, idx) => ({
+                id: q.id || (idx + 1),
+                question: q.question,
+                competency: q.competency || (idx === 0 ? "Statistical Methods & Sampling" : (idx === 1 ? "Technical Tools & Data Analysis" : (idx === 2 ? "Digital Governance & DPDP Act" : (idx === 3 ? "Behavioural Leadership & Public Administration" : "Department Domain Application")))),
+                pillar: q.pillar || (idx === 0 ? "stat" : (idx === 1 ? "tech" : (idx === 2 ? "gov" : (idx === 3 ? "lead" : "stat")))),
+                options: q.options,
+                correct_index: q.correct_index !== undefined ? q.correct_index : 0,
+                explanation: q.explanation || "Official NSSTA competency evaluation baseline standard."
+            }));
+            // Immediately store in Redis for subsequent rapid loads
+            await redisCache.set(redisDeptKey, formatted, 86400);
+
             return res.json({
                 success: true,
                 source: "DATABASE_PERSISTED",
                 department: dept,
                 department_name: deptName,
-                questions: dbQuestions.map((q, idx) => ({
-                    id: q.id || (idx + 1),
-                    question: q.question,
-                    competency: q.competency || (idx === 0 ? "Statistical Methods & Sampling" : (idx === 1 ? "Technical Tools & Data Analysis" : (idx === 2 ? "Digital Governance & DPDP Act" : (idx === 3 ? "Behavioural Leadership & Public Administration" : "Department Domain Application")))),
-                    pillar: q.pillar || (idx === 0 ? "stat" : (idx === 1 ? "tech" : (idx === 2 ? "gov" : (idx === 3 ? "lead" : "stat")))),
-                    options: q.options,
-                    correct_index: q.correct_index !== undefined ? q.correct_index : 0,
-                    explanation: q.explanation || "Official NSSTA competency evaluation baseline standard."
-                }))
+                questions: formatted
             });
         }
 
-        // 2. Check local memory/disk cache
+        // 3. Check local memory/disk cache
         if (memoryBaselineQuizzes[dept] && Array.isArray(memoryBaselineQuizzes[dept]) && memoryBaselineQuizzes[dept].length >= 5) {
+            await redisCache.set(redisDeptKey, memoryBaselineQuizzes[dept], 86400);
             return res.json({
                 success: true,
                 source: "DISK_CACHE_PERSISTED",
@@ -3007,11 +3050,12 @@ app.all(['/api/assessment/baseline-quiz', '/api/quiz/baseline', '/api/assessment
             });
         }
 
-        // 3. Generate 5-Question Psychometric Baseline via Ollama / Fast LLM Engine
+        // 4. Generate 5-Question Psychometric Baseline via Ollama / Grok / Fast LLM Engine
         const generated = await generateDepartmentBaselineQuizAI(dept, deptName);
         const questionsList = (Array.isArray(generated) ? generated : []).slice(0, 5);
 
-        // 4. Dual-persist to local cache and Supabase DB
+        // 5. Triple-persist to Redis, local disk cache, and Supabase DB
+        await redisCache.set(redisDeptKey, questionsList, 86400);
         memoryBaselineQuizzes[dept] = questionsList;
         try {
             if (!fs.existsSync(path.join(__dirname, 'data'))) {
@@ -3061,6 +3105,92 @@ app.all(['/api/assessment/baseline-quiz', '/api/quiz/baseline', '/api/assessment
             questions: fallback
         });
     }
+});
+
+// =========================================================================
+// 🎯 GROK AI & REDIS: IMMEDIATE OFFICER COMPETENCY EVALUATION & DIAGNOSTIC
+// =========================================================================
+app.post(['/api/assessment/evaluate-officer', '/api/officer/competency-check', '/api/auth/register-diagnostic'], async (req, res) => {
+    const { name, email, cadre, department, designation, self_ratings, quiz_results } = req.body;
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const dept = (department || 'NAD').toUpperCase();
+    const deptName = DEPARTMENT_NAMES_MAP[dept] || department || 'National Accounts Division';
+    const redisOfficerKey = `mospi:officer:competency:${cleanEmail || 'anonymous'}`;
+
+    try {
+        // 1. Check Redis Cache for existing analysis
+        if (cleanEmail) {
+            const cachedEvaluation = await redisCache.get(redisOfficerKey);
+            if (cachedEvaluation && typeof cachedEvaluation.overall_score === 'number') {
+                return res.json({
+                    success: true,
+                    source: "REDIS_CACHE_FAST",
+                    officer: { name, email: cleanEmail, department: dept, designation },
+                    evaluation: cachedEvaluation
+                });
+            }
+        }
+
+        // 2. Perform deep Grok AI analysis on officer knowledge
+        const evaluation = await evaluateOfficerCompetencyWithGrokAI({
+            name: name || 'Officer',
+            email: cleanEmail,
+            cadre: cadre || 'Indian Statistical Service (ISS)',
+            department: dept,
+            department_name: deptName,
+            designation: designation || 'Statistical Officer',
+            self_ratings: self_ratings || { stat: 65, tech: 60, gov: 65, lead: 60 },
+            quiz_results: quiz_results || { score: 80, correct: 4, total: 5 }
+        });
+
+        // 3. Immediately store Grok evaluation and personalized roadmap in Redis
+        if (cleanEmail) {
+            await redisCache.set(redisOfficerKey, evaluation, 86400);
+            await redisCache.set(`mospi:officer:roadmap:${cleanEmail}`, {
+                stage1: evaluation.stage_1_foundation_courses || [],
+                stage2: evaluation.stage_2_functional_core_courses || [],
+                stage3: evaluation.stage_3_advanced_strategic_courses || []
+            }, 86400);
+        }
+
+        // 4. Dual-persist to Supabase officer_competencies table
+        if (supabase && cleanEmail) {
+            try {
+                await supabase.from('officer_competencies').upsert({
+                    user_email: cleanEmail,
+                    statistical_score: evaluation.statistical_score,
+                    technical_score: evaluation.technical_score,
+                    governance_score: evaluation.governance_score,
+                    leadership_score: evaluation.leadership_score,
+                    overall_score: evaluation.overall_score,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_email' });
+            } catch (dbErr) {
+                console.warn('Supabase officer competency upsert note:', dbErr.message);
+            }
+        }
+
+        return res.json({
+            success: true,
+            source: "GROK_AI_SYNTHESIZED",
+            officer: { name, email: cleanEmail, department: dept, designation },
+            evaluation: evaluation
+        });
+    } catch (err) {
+        console.error("Grok competency evaluation error:", err);
+        return res.status(500).json({ error: "Failed to evaluate officer competency: " + err.message });
+    }
+});
+
+// =========================================================================
+// ⚡ REDIS & CACHE MONITORING STATUS ENDPOINT
+// =========================================================================
+app.get(['/api/redis/status', '/api/cache/status'], (req, res) => {
+    return res.json({
+        success: true,
+        cache: redisCache.getStatus(),
+        timestamp: new Date().toISOString()
+    });
 });
 
 // --- AUTONOMOUS AI COURSE CURRICULUM MAKER ---
