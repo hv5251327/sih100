@@ -1289,7 +1289,7 @@ The 5 questions MUST assess these 5 specific dimensions:
 
 Each question MUST have:
 - "question": Clear question string
-- "competency": Name of the competency (e.g., "Statistical Methods & Sampling", "Technical Tools & Data Analysis", "Digital Governance & DPDP Act", "Behavioural Leadership & Public Administration", "Department Domain Knowledge")
+- "competency": Name of the competency (e.g., "Statistical Methods & Sampling", "Technical Tools & Data Analysis", "Digital Government", "Behavioural Leadership & Public Administration", "Department Domain Knowledge")
 - "pillar": one of ["stat", "tech", "gov", "lead", "stat"]
 - "options": Array of exactly 4 distinct strings (A, B, C, D)
 - "correct_index": 0-based integer index of the correct answer (0, 1, 2, or 3)
@@ -1368,7 +1368,7 @@ async function evaluateOfficerCompetencyWithGrokAI(officerData = {}) {
 - Self-Evaluated Ratings:
   * Statistical Methods & Sampling: ${selfStat}%
   * Technical & Microdata Analysis Tools: ${selfTech}%
-  * Digital Governance & DPDP Act 2023: ${selfGov}%
+  * Digital Government: ${selfGov}%
   * Behavioural Leadership & Public Administration: ${selfLead}%
 - Objective Department Baseline Quiz Results:
   * Score: ${quizScore}% (${quizCorrect}/${quizTotal} correct answers)

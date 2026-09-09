@@ -1821,7 +1821,7 @@ app.get('/api/officer/forecast/:email', async (req, res) => {
                     recommendation: 'Complete Supply-Use Tables and Multi-Stage Stratified Sampling Frame modules.'
                 },
                 {
-                    area: 'Digital Governance & DPDP Act 2023',
+                    area: 'Digital Government',
                     gap_pct: Math.max(0, 80 - (comp.governance_score || 0)),
                     recommendation: 'Complete mandatory DPDP Act 2023 and Cybersecurity Best Practices compliance verification.'
                 }
@@ -3023,7 +3023,7 @@ app.all(['/api/assessment/baseline-quiz', '/api/quiz/baseline', '/api/assessment
             const formatted = dbQuestions.map((q, idx) => ({
                 id: q.id || (idx + 1),
                 question: q.question,
-                competency: q.competency || (idx === 0 ? "Statistical Methods & Sampling" : (idx === 1 ? "Technical Tools & Data Analysis" : (idx === 2 ? "Digital Governance & DPDP Act" : (idx === 3 ? "Behavioural Leadership & Public Administration" : "Department Domain Application")))),
+                competency: q.competency || (idx === 0 ? "Statistical Methods & Sampling" : (idx === 1 ? "Technical Tools & Data Analysis" : (idx === 2 ? "Digital Government" : (idx === 3 ? "Behavioural Leadership & Public Administration" : "Department Domain Application")))),
                 pillar: q.pillar || (idx === 0 ? "stat" : (idx === 1 ? "tech" : (idx === 2 ? "gov" : (idx === 3 ? "lead" : "stat")))),
                 options: q.options,
                 correct_index: q.correct_index !== undefined ? q.correct_index : 0,
@@ -3555,7 +3555,7 @@ CRITICAL INSTRUCTIONS:
         // 5. Score Calculation Query
         if (msgLower.includes('score') || msgLower.includes('percent') || msgLower.includes('calculate') || msgLower.includes('point') || msgLower.includes('gap') || msgLower.includes('deficit') || msgLower.includes('marks')) {
             return res.json({
-                reply: `📈 **How Competency Scores Are Calculated:**\nYour proficiency is calculated dynamically across 4 pillars based on evaluation scores and curriculum capacity requirements:\n• **Statistical Methods:** ${comp.statistical_score}% (Target: 6 core modules)\n• **Technical & Analytical Tools:** ${comp.technical_score}% (Target: 4 core modules)\n• **Digital Governance & DPDP:** ${comp.governance_score}% (Target: 3 core modules)\n• **Leadership & Management:** ${comp.leadership_score}% (Target: 3 core modules)\nEach passed quiz or approved certificate increases the corresponding pillar score proportionally.`
+                reply: `📈 **How Competency Scores Are Calculated:**\nYour proficiency is calculated dynamically across 4 pillars based on evaluation scores and curriculum capacity requirements:\n• **Statistical Methods:** ${comp.statistical_score}% (Target: 6 core modules)\n• **Technical & Analytical Tools:** ${comp.technical_score}% (Target: 4 core modules)\n• **Digital Government:** ${comp.governance_score}% (Target: 3 core modules)\n• **Leadership & Management:** ${comp.leadership_score}% (Target: 3 core modules)\nEach passed quiz or approved certificate increases the corresponding pillar score proportionally.`
             });
         }
 
@@ -4573,7 +4573,7 @@ app.get('/api/admin/training-effectiveness', async (req, res) => {
             pillar_skill_gains: [
                 { pillar: "Statistical Methodologies", baseline: 54, post_training: 89, gain: 35 },
                 { pillar: "Technical Tools (Python/R/GIS)", baseline: 46, post_training: 84, gain: 38 },
-                { pillar: "Digital Governance & DPDP", baseline: 62, post_training: 94, gain: 32 },
+                { pillar: "Digital Government", baseline: 62, post_training: 94, gain: 32 },
                 { pillar: "Behavioural & Leadership", baseline: 58, post_training: 88, gain: 30 }
             ],
             predictive_workforce_forecast: [
