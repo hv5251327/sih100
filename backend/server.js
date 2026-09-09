@@ -3597,7 +3597,87 @@ app.post('/api/progress/save', async (req, res) => {
 });
 
 // --- SUPABASE TWO-FACTOR REGISTRATION OTP ENDPOINTS ---
+const nodemailer = require('nodemailer');
 const memoryOtpCodes = {};
+
+// Create nodemailer transporter if SMTP credentials exist in environment
+let mailTransporter = null;
+if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    mailTransporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+        }
+    });
+}
+
+async function sendOtpEmail(recipientEmail, recipientName, otpCode) {
+    const subject = `Your Verification Code: ${otpCode} - Smart Skill Intelligence`;
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #1e3a8a; margin: 0;">Smart Skill Intelligence</h2>
+                <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Competency & Skill Intelligence Platform</p>
+            </div>
+            <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                <p style="font-size: 15px; color: #1e293b; margin: 0 0 10px;">Dear ${recipientName || 'Officer'},</p>
+                <p style="font-size: 14px; color: #475569; margin: 0 0 16px;">
+                    Thank you for registering on Smart Skill Intelligence. To complete your account verification, please enter the one-time password (OTP) below:
+                </p>
+                <div style="text-align: center; margin: 24px 0;">
+                    <span style="display: inline-block; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #1e3a8a; background: #e0f2fe; padding: 12px 28px; border-radius: 8px; border: 2px dashed #0284c7; font-family: monospace;">
+                        ${otpCode}
+                    </span>
+                </div>
+                <p style="font-size: 13px; color: #64748b; margin: 16px 0 0; text-align: center;">
+                    This OTP is valid for <strong>10 minutes</strong>. Please do not share this code with anyone.
+                </p>
+            </div>
+            <div style="font-size: 12px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+                If you did not request this verification, please ignore this email.<br/>
+                &copy; ${new Date().getFullYear()} Smart Skill Intelligence Platform. All rights reserved.
+            </div>
+        </div>
+    `;
+
+    // 1. Try Nodemailer if SMTP configured
+    if (mailTransporter) {
+        try {
+            await mailTransporter.sendMail({
+                from: process.env.EMAIL_FROM || `"Smart Skill Intelligence" <${process.env.SMTP_USER}>`,
+                to: recipientEmail,
+                subject: subject,
+                html: htmlContent
+            });
+            console.log(`[AUTH] OTP email sent successfully via SMTP to ${recipientEmail}`);
+            return true;
+        } catch (mailErr) {
+            console.warn(`[AUTH] SMTP dispatch warning:`, mailErr.message);
+        }
+    }
+
+    // 2. Dispatch via Supabase Native Auth Email Service
+    try {
+        const { data, error } = await supabase.auth.signInWithOtp({
+            email: recipientEmail,
+            options: {
+                data: { otp_code: otpCode, officer_name: recipientName }
+            }
+        });
+        if (error) {
+            console.warn(`[AUTH] Supabase Auth email notice:`, error.message);
+        } else {
+            console.log(`[AUTH] OTP dispatched via Supabase Auth to ${recipientEmail}`);
+        }
+    } catch (e) {
+        console.warn(`[AUTH] Supabase dispatch exception:`, e.message);
+    }
+
+    return true;
+}
 
 app.post('/api/auth/send-otp', async (req, res) => {
     const { email, name } = req.body;
@@ -3612,16 +3692,16 @@ app.post('/api/auth/send-otp', async (req, res) => {
         createdAt: new Date().toISOString()
     };
 
-    // Attempt Supabase native OTP dispatch in background
-    try {
-        await supabase.auth.signInWithOtp({ email: cleanEmail }).catch(() => {});
-    } catch (e) {}
+    console.log(`[AUTH] Generated OTP for ${cleanEmail}: ${code}`);
 
+    // Send the OTP via Email to the user
+    await sendOtpEmail(cleanEmail, name, code);
+
+    // Return response WITHOUT the plain OTP code so it is NEVER exposed directly to employee side
     return res.json({
         success: true,
-        message: `OTP successfully generated and sent to ${cleanEmail}`,
-        email: cleanEmail,
-        otp: code // Returned for testing & simulated NIC gateway presentation
+        message: `OTP has been sent to ${cleanEmail}. Please check your email inbox to verify.`,
+        email: cleanEmail
     });
 });
 
@@ -3641,15 +3721,15 @@ app.post('/api/auth/verify-otp', async (req, res) => {
         return res.status(400).json({ success: false, error: 'OTP has expired. Please request a new verification code.' });
     }
 
-    if (record.code !== cleanOtp && cleanOtp !== '123456') {
-        return res.status(400).json({ success: false, error: 'Incorrect OTP code. Please enter the valid 6-digit security PIN.' });
+    if (record.code !== cleanOtp) {
+        return res.status(400).json({ success: false, error: 'Incorrect OTP code. Please enter the valid 6-digit verification code sent to your email.' });
     }
 
     // Successfully verified
     delete memoryOtpCodes[cleanEmail];
     return res.json({
         success: true,
-        message: 'OTP verified successfully! Government identity authenticated via Supabase.'
+        message: 'OTP verified successfully! Identity authenticated.'
     });
 });
 

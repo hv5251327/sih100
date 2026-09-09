@@ -164,10 +164,10 @@
                 <i class="fa-solid fa-envelope-circle-check" style="color:#0284c7;"></i> Verification code sent for: <strong id="otpTargetEmail" style="color:#0f172a;"></strong>
             </div>
 
-            <!-- Demo / Simulated Gateway Hint Badge -->
-            <div id="otpHintBox" style="background:#fef3c7; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; margin-bottom:18px; font-size:0.82rem; color:#92400e; display:flex; align-items:center; justify-content:space-between;">
-                <span><i class="fa-solid fa-key"></i> Security Code:</span>
-                <span id="demoOtpBadge" style="font-size:1.15rem; font-weight:800; font-family:monospace; letter-spacing:3px; background:#ffffff; color:#b45309; padding:3px 10px; border-radius:6px; border:1px solid #fcd34d;"></span>
+            <!-- Email Delivery Notification -->
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; margin-bottom:18px; font-size:0.82rem; color:#475569; display:flex; align-items:center; gap:10px; text-align:left;">
+                <i class="fa-solid fa-envelope-open-text" style="color:#0284c7; font-size:1.25rem; flex-shrink:0;"></i>
+                <span>Please check your email inbox and enter the 6-digit verification OTP code sent to your email to complete registration.</span>
             </div>
 
             <form id="otpVerifyForm" onsubmit="event.preventDefault(); verifyRegistrationOtp();">
@@ -339,7 +339,6 @@
         }
 
         let pendingRegistrationData = null;
-        let activeOtpCode = null;
         let resendTimerInterval = null;
 
         async function submitRegistration() {
@@ -365,15 +364,19 @@
             const email = pendingRegistrationData.email;
             const name = pendingRegistrationData.name;
             const targetEmailEl = document.getElementById('otpTargetEmail');
-            const demoBadgeEl = document.getElementById('demoOtpBadge');
             const statusMsgEl = document.getElementById('otpStatusMsg');
             const otpInput = document.getElementById('regOtpInput');
+            const btnVerify = document.getElementById('btnVerifyOtp');
 
             if (targetEmailEl) targetEmailEl.innerText = email;
-            if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#0284c7;"><i class="fa-solid fa-spinner fa-spin"></i> Generating 6-digit verification code via Supabase...</span>`;
+            if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#0284c7;"><i class="fa-solid fa-spinner fa-spin"></i> Sending 6-digit verification code to your email...</span>`;
             if (otpInput) {
                 otpInput.value = '';
                 setTimeout(() => otpInput.focus(), 250);
+            }
+            if (btnVerify) {
+                btnVerify.disabled = false;
+                btnVerify.innerHTML = `<i class="fa-solid fa-circle-check"></i> Verify OTP & Proceed`;
             }
 
             const otpModal = document.getElementById('otpModal');
@@ -382,7 +385,7 @@
             // Start countdown timer for resend
             startOtpResendCountdown(45);
 
-            // Fetch OTP from backend / Supabase
+            // Fetch OTP dispatch from backend / Supabase
             try {
                 const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
                     ? 'http://localhost:5000'
@@ -393,16 +396,13 @@
                     body: JSON.stringify({ email, name })
                 });
                 const data = await res.json();
-                if (data.otp) {
-                    activeOtpCode = data.otp;
-                    if (demoBadgeEl) demoBadgeEl.innerText = data.otp;
+                if (data.success) {
+                    if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-circle-check"></i> Verification code sent to <strong>${email}</strong>. Please enter the 6-digit code.</span>`;
+                } else {
+                    if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#b45309;"><i class="fa-solid fa-triangle-exclamation"></i> ${data.error || 'Could not send email automatically. Please check your network.'}</span>`;
                 }
-                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-circle-check"></i> Code sent! Enter the 6-digit security PIN to verify.</span>`;
             } catch (e) {
-                // Client-side fallback generator for offline verification
-                activeOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-                if (demoBadgeEl) demoBadgeEl.innerText = activeOtpCode;
-                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-circle-check"></i> Code generated! Enter PIN to proceed.</span>`;
+                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-envelope"></i> Verification code sent! Please check your email inbox to enter your 6-digit code.</span>`;
             }
         }
 
@@ -435,16 +435,17 @@
             const btnVerify = document.getElementById('btnVerifyOtp');
 
             if (!inputVal || inputVal.length < 6) {
-                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> Please enter full 6-digit OTP code.</span>`;
+                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> Please enter the full 6-digit OTP code received in your email.</span>`;
                 return;
             }
 
             if (btnVerify) {
                 btnVerify.disabled = true;
-                btnVerify.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Verifying with Supabase...`;
+                btnVerify.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...`;
             }
 
             let isValid = false;
+            let errMsg = 'Invalid OTP code. Please check your email and retry.';
             try {
                 const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
                     ? 'http://localhost:5000'
@@ -457,17 +458,16 @@
                 const data = await res.json();
                 if (data.success) {
                     isValid = true;
-                } else if (inputVal === activeOtpCode || inputVal === '123456') {
-                    isValid = true;
+                } else {
+                    if (data.error) errMsg = data.error;
                 }
             } catch (e) {
-                if (inputVal === activeOtpCode || inputVal === '123456') {
-                    isValid = true;
-                }
+                // Network failure
+                errMsg = 'Network error connecting to verification service. Please retry.';
             }
 
             if (isValid) {
-                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-circle-check"></i> OTP Authenticated! Calibrating profile...</span>`;
+                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-circle-check"></i> OTP Authenticated! Proceeding to competency calibration...</span>`;
                 setTimeout(() => {
                     const otpModal = document.getElementById('otpModal');
                     if (otpModal) otpModal.style.display = 'none';
@@ -481,7 +481,7 @@
                     }
                 }, 600);
             } else {
-                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#ef4444;"><i class="fa-solid fa-circle-xmark"></i> Invalid OTP code. Please check and retry.</span>`;
+                if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#ef4444;"><i class="fa-solid fa-circle-xmark"></i> ${errMsg}</span>`;
                 if (btnVerify) {
                     btnVerify.disabled = false;
                     btnVerify.innerHTML = `<i class="fa-solid fa-circle-check"></i> Verify OTP & Proceed`;
