@@ -1,0 +1,64 @@
+{
+  "NAD": [
+    {
+      "question": "Under System of National Accounts (SNA 2008), how is Gross Value Added (GVA) at basic prices derived from Gross Output?",
+      "options": [
+        "Total Employee Compensation plus Net Exports",
+        "Net National Disposable Income minus Capital Depreciation",
+        "Gross Output at basic prices minus Intermediate Consumption at purchasers' prices",
+        "Gross Output plus Direct Taxes minus Subsidies on Products"
+      ],
+      "correct_index": 2,
+      "correctIndex": 2,
+      "explanation": "SNA 2008 defines GVA at basic prices as Gross Output at basic prices minus Intermediate Consumption at purchasers' prices."
+    },
+    {
+      "question": "Which Python / Pandas operation is standard for computing Sectoral Gross Output aggregations across enterprise balance-sheet microdata?",
+      "options": [
+        "df.groupby('nic_2digit')['gross_output'].agg(['sum', 'count', 'mean'])",
+        "df.describe().transpose().to_dict()",
+        "df.pivot_table(columns='state_code', fill_value=0).plot()",
+        "df.drop_duplicates(subset=['enterprise_id']).sort_values('gva')"
+      ],
+      "correct_index": 0,
+      "correctIndex": 0,
+      "explanation": "df.groupby().agg() aggregates microdata across industrial classifications (NIC) to produce national sectoral totals."
+    },
+    {
+      "question": "Under DPDP Act 2023 and official data dissemination protocols, what measure is mandatory before releasing enterprise microdata?",
+      "options": [
+        "Apply k-anonymity (k >= 5) cell suppression and hash corporate tax identifiers (CIN/PAN)",
+        "Exempt all corporate respondents from statutory confidentiality protections",
+        "Release unmasked audited balance sheets on public web portals",
+        "Publish raw company revenue records without pseudonymization"
+      ],
+      "correct_index": 0,
+      "correctIndex": 0,
+      "explanation": "DPDP Act 2023 requires de-identification, k-anonymity, and PII masking on public microdata releases."
+    },
+    {
+      "question": "Under General Financial Rules (GFR 2017) and public administrative standards, what is required for procuring consulting services for National Accounts revision?",
+      "options": [
+        "Disregard statutory procurement thresholds and competitive bidding",
+        "Follow Quality and Cost Based Selection (QCBS) through the Government e-Marketplace (GeM) / CPPP",
+        "Award direct single-source contracts without technical committee evaluation",
+        "Approve expenditures without financial concurrence from the Integrated Finance Division (IFD)"
+      ],
+      "correct_index": 1,
+      "correctIndex": 1,
+      "explanation": "GFR 2017 mandates transparent competitive selection (e.g. QCBS on GeM) for high-value consultancy services."
+    },
+    {
+      "question": "How is the Implicit Price Deflator (IPD) computed to convert Nominal GDP into Constant Price Real GDP?",
+      "options": [
+        "(Real GDP / Nominal GDP) * 100 + CPI",
+        "Simple unweighted average of agricultural and industrial index numbers",
+        "Base Year CPI multiplied by current year WPI",
+        "(Nominal GDP / Real GDP) * 100"
+      ],
+      "correct_index": 3,
+      "correctIndex": 3,
+      "explanation": "The Implicit Price Deflator is the ratio of Nominal GDP to Real GDP multiplied by 100, reflecting economy-wide inflation."
+    }
+  ]
+}
