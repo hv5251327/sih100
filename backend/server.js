@@ -3966,34 +3966,9 @@ const DEFAULT_IGOT_PROFILES = {
         officer_name: 'Dr. Sunita Sharma',
         cadre: 'Indian Statistical Service (ISS)',
         department: 'NAD',
-        total_learning_hours: 48,
-        igot_badges: ['Karmayogi Bronze Scholar', 'Digital Governance Master', 'Public Procurement Specialist'],
-        completed_courses: [
-            {
-                title: 'General Financial Rules (GFR 2017) & Public Procurement via GeM',
-                score: 95,
-                completed_at: '2025-10-15T11:00:00.000Z',
-                provider: 'iGOT Karmayogi / DoPT'
-            },
-            {
-                title: 'Cybersecurity Best Practices & Government Cloud Security Standards',
-                score: 92,
-                completed_at: '2025-11-20T14:30:00.000Z',
-                provider: 'iGOT Karmayogi / MeitY'
-            },
-            {
-                title: 'Swachhata Hi Seva & e-Office Records Lifecycle Management',
-                score: 88,
-                completed_at: '2026-01-10T09:15:00.000Z',
-                provider: 'iGOT Karmayogi / DARPG'
-            },
-            {
-                title: 'Civil Defence, First Aid & Disaster Risk Mitigation Protocols',
-                score: 90,
-                completed_at: '2026-02-05T16:00:00.000Z',
-                provider: 'iGOT Karmayogi / MHA'
-            }
-        ]
+        total_learning_hours: 0,
+        igot_badges: ['Karmayogi Learner', 'Digital Governance Foundation'],
+        completed_courses: []
     }
 };
 
@@ -4009,28 +3984,9 @@ function getOrCreateIgotProfile(email, name, cadre, dept) {
         officer_name: name || 'MoSPI Officer',
         cadre: cadre || 'Indian Statistical Service (ISS)',
         department: dept || 'NAD',
-        total_learning_hours: 36 + (hash % 20),
-        igot_badges: ['Karmayogi Certified Learner', 'Digital Governance Foundation'],
-        completed_courses: [
-            {
-                title: 'General Financial Rules (GFR 2017) & Public Procurement via GeM',
-                score: 94,
-                completed_at: '2025-11-10T10:00:00.000Z',
-                provider: 'iGOT Karmayogi / DoPT'
-            },
-            {
-                title: 'Cybersecurity Best Practices & Government Cloud Security Standards',
-                score: 90,
-                completed_at: '2025-12-18T15:30:00.000Z',
-                provider: 'iGOT Karmayogi / MeitY'
-            },
-            {
-                title: 'Swachhata Hi Seva & e-Office Records Lifecycle Management',
-                score: 88,
-                completed_at: '2026-01-22T09:00:00.000Z',
-                provider: 'iGOT Karmayogi / DARPG'
-            }
-        ]
+        total_learning_hours: 0,
+        igot_badges: ['Karmayogi Certified Learner'],
+        completed_courses: []
     };
 }
 
