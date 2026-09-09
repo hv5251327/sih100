@@ -1362,6 +1362,29 @@
           select.appendChild(opt);
         });
       }
+
+      const recentEl = document.getElementById("recent-courses-list");
+      if (recentEl) {
+        const topRecent = masterCoursesList.slice(0, 5);
+        if (topRecent.length === 0) {
+          recentEl.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:10px;">No custom drafted courses yet.</div>';
+        } else {
+          recentEl.innerHTML = topRecent.map(c => `
+            <div style="background:#f8fafc; border:1px solid var(--border-light); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+              <div>
+                <div style="font-weight:700; color:var(--text-main); font-size:0.88rem;">${c.title}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px; display:flex; flex-wrap:wrap; gap:10px;">
+                  <span><i class="fa-solid fa-layer-group"></i> ${c.domain || 'Statistical'}</span>
+                  <span><i class="fa-solid fa-id-card-clip"></i> ${c.target_cadre || c.cadre || 'All Cadres'}</span>
+                  <span><i class="fa-solid fa-briefcase"></i> ${c.target_designation || c.designation || 'All Designations'}</span>
+                </div>
+              </div>
+              <span style="background:#e0f2fe; color:#0369a1; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:4px; white-space:nowrap;">${c.learning_stage || 'Core'}</span>
+            </div>
+          `).join('');
+        }
+      }
+
       renderCoursesCatalogTable(masterCoursesList);
     }
 
@@ -1566,42 +1589,161 @@
       }
     }
 
+    const OFFICIAL_CADRES = [
+      "Indian Statistical Service (ISS) — Group 'A' Central Service",
+      "Subordinate Statistical Service (SSS) — Group 'B' Central Service",
+      "State Directorate of Economics & Statistics (DES) Cadre"
+    ];
+
+    const ADMIN_CATEGORIZED_DESIGNATIONS = {
+      "Central Statistical Services (ISS & SSS Group 'A' & 'B')": [
+        "Director General (DG)",
+        "Additional Director General (ADG)",
+        "Deputy Director General (DDG)",
+        "Director / Joint Director",
+        "Director",
+        "Joint Director",
+        "Deputy Director / Assistant Director",
+        "Deputy Director",
+        "Assistant Director",
+        "Senior Statistical Officer (SSO)",
+        "Junior Statistical Officer (JSO)",
+        "ISS Probationer / Officer Trainee (NSSTA)"
+      ],
+      "Field Operations Division & Primary Cadres (FOD / NSSO)": [
+        "Deputy Director General (DDG / Regional Head)",
+        "Senior Statistical Officer (SSO / Field Supervisor)",
+        "Junior Statistical Officer (JSO / Field Investigator)",
+        "Primary Field Investigator / Enumerator",
+        "Statistical Compiler / Computer Operator"
+      ],
+      "State Directorate of Economics & Statistics (State DES & DSO)": [
+        "Director / Commissioner of Economics & Statistics (State Head)",
+        "Joint Director (DES)",
+        "Joint Director / Deputy Director (State DES)",
+        "District Statistical Officer (DSO)",
+        "Assistant Statistical Officer (ASO)",
+        "Assistant Statistical Officer / Statistical Officer (State)",
+        "Statistical Inspector / Research Assistant (DES)",
+        "Sub-Divisional / Taluk Statistical Officer"
+      ],
+      "Training Academy Faculty (NSSTA Greater Noida)": [
+        "Additional Director General (ADG / Head of Academy)",
+        "Director / Joint Director (Faculty)",
+        "Deputy Director / Assistant Director (Course Coordinator)"
+      ]
+    };
+
+    const OFFICIAL_DEPARTMENTS = [
+      { code: 'NAD', name: 'National Accounts Division (NAD) — Macro Aggregates & GDP' },
+      { code: 'ESD', name: 'Economic Statistics Division (ESD) — Index Numbers & IIP' },
+      { code: 'SSD', name: 'Social Statistics Division (SSD) — SDGs, Gender & Environment' },
+      { code: 'SDRD', name: 'Survey Design & Research Division (SDRD) — Sampling & Schedules' },
+      { code: 'FOD', name: 'Field Operations Division (FOD / NSSO) — Nationwide Field Surveys' },
+      { code: 'DQAD', name: 'Data Quality Assurance Division (DQAD) — Validation & Scrutiny' },
+      { code: 'DIID', name: 'Data Informatics & Innovation Division (DIID) — Big Data, AI & Cloud' },
+      { code: 'NSSTA', name: 'National Statistical Systems Training Academy (NSSTA) — Capacity Building' },
+      { code: 'CAPD', name: 'Coordination & Publication Division (CAPD) — Dissemination' },
+      { code: 'IPMD', name: 'Infrastructure & Project Monitoring Division (IPMD) — Central Infrastructure' },
+      { code: 'STATE_DES', name: 'State Directorate of Economics & Statistics (DES) — State Level Statistics' },
+      { code: 'DSO', name: 'District Statistical Offices (DSO) — Grassroots Data Collection' }
+    ];
+
+    function populateCadreDropdowns(cadreList = OFFICIAL_CADRES) {
+      const cadreSelects = [
+        { id: "syllabusCadre", default: "All Cadres (ISS & SSS)" },
+        { id: "draftCadre", default: "All Cadres" },
+        { id: "forecastCadreSelect", default: "All Cadres (ISS, SSS, DES)" }
+      ];
+      cadreSelects.forEach(cfg => {
+        const el = document.getElementById(cfg.id);
+        if (el) {
+          const currentVal = el.value || "ALL";
+          el.innerHTML = `<option value="ALL">${cfg.default}</option>`;
+          (cadreList || []).forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c;
+            opt.innerText = c;
+            el.appendChild(opt);
+          });
+          if (currentVal && currentVal !== "ALL") el.value = currentVal;
+        }
+      });
+    }
+
+    function populateDesignationDropdowns(categorizedMap = ADMIN_CATEGORIZED_DESIGNATIONS, flatList = null) {
+      const desigSelects = [
+        { id: "syllabusDesignation", default: "All Designations" },
+        { id: "draftDesignation", default: "All Designations" }
+      ];
+      desigSelects.forEach(cfg => {
+        const el = document.getElementById(cfg.id);
+        if (el) {
+          const currentVal = el.value || "ALL";
+          el.innerHTML = `<option value="ALL">${cfg.default}</option>`;
+          if (categorizedMap) {
+            Object.keys(categorizedMap).forEach(group => {
+              const optgroup = document.createElement('optgroup');
+              optgroup.label = group;
+              categorizedMap[group].forEach(desig => {
+                const opt = document.createElement('option');
+                opt.value = desig;
+                opt.innerText = desig;
+                optgroup.appendChild(opt);
+              });
+              el.appendChild(optgroup);
+            });
+          } else if (Array.isArray(flatList)) {
+            flatList.forEach(desig => {
+              const opt = document.createElement('option');
+              opt.value = desig;
+              opt.innerText = desig;
+              el.appendChild(opt);
+            });
+          }
+          if (currentVal && currentVal !== "ALL") el.value = currentVal;
+        }
+      });
+    }
+
+    function populateDepartmentDropdowns(deptList = OFFICIAL_DEPARTMENTS) {
+      const deptSelects = [
+        { id: "syllabusDept", default: "Universal (All MoSPI Officers)" },
+        { id: "draftDept", default: "Universal (All Divisions)" },
+        { id: "forecastDeptSelect", default: "All MoSPI Statistical Divisions (Comprehensive)" }
+      ];
+      deptSelects.forEach(cfg => {
+        const el = document.getElementById(cfg.id);
+        if (el) {
+          const currentVal = el.value || "ALL";
+          el.innerHTML = `<option value="ALL">${cfg.default}</option>`;
+          (deptList || []).forEach(d => {
+            const opt = document.createElement("option");
+            opt.value = d.code;
+            opt.innerText = `${d.name || d.code} (${d.code})`;
+            el.appendChild(opt);
+          });
+          if (currentVal && currentVal !== "ALL") el.value = currentVal;
+        }
+      });
+    }
+
     async function loadMetadataDropdowns() {
+      // 1. Instantly populate dropdowns with official data to avoid empty dropdowns
+      populateDepartmentDropdowns(OFFICIAL_DEPARTMENTS);
+      populateCadreDropdowns(OFFICIAL_CADRES);
+      populateDesignationDropdowns(ADMIN_CATEGORIZED_DESIGNATIONS);
+
       try {
         const res = await fetch(`${API_URL}/api/metadata`);
-        const data = await res.json();
-
-        const syllabusSelect = document.getElementById("syllabusDept");
-        if (syllabusSelect && data.departments) {
-          syllabusSelect.innerHTML = '<option value="ALL">Universal (All MoSPI Officers)</option>';
-          (data.departments || []).forEach(d => {
-            const opt = document.createElement("option");
-            opt.value = d.code;
-            opt.innerText = `${d.name} (${d.code})`;
-            syllabusSelect.appendChild(opt);
-          });
-        }
-
-        const draftDeptSelect = document.getElementById("draftDept");
-        if (draftDeptSelect && data.departments) {
-          draftDeptSelect.innerHTML = '<option value="ALL">Universal (All MoSPI)</option>';
-          (data.departments || []).forEach(d => {
-            const opt = document.createElement("option");
-            opt.value = d.code;
-            opt.innerText = `${d.name} (${d.code})`;
-            draftDeptSelect.appendChild(opt);
-          });
-        }
-
-        const forecastDeptSelect = document.getElementById("forecastDeptSelect");
-        if (forecastDeptSelect && data.departments) {
-          forecastDeptSelect.innerHTML = '<option value="ALL">All MoSPI Statistical Divisions (Comprehensive)</option>';
-          (data.departments || []).forEach(d => {
-            const opt = document.createElement("option");
-            opt.value = d.code;
-            opt.innerText = `${d.name} (${d.code})`;
-            forecastDeptSelect.appendChild(opt);
-          });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.departments && data.departments.length > 0) {
+            populateDepartmentDropdowns(data.departments);
+          }
+          if (data.cadres && data.cadres.length > 0) {
+            populateCadreDropdowns(data.cadres);
+          }
         }
       } catch (e) {
         console.warn("Metadata load fallback active:", e);
@@ -1625,16 +1767,21 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      const btn = document.getElementById("btn-parse-syllabus");
-      const statusSpan = document.getElementById("syllabusFileStatus");
-      const textarea = document.getElementById("syllabusRawText");
+      const btn = document.getElementById("btn-syllabus-submit") || document.getElementById("btn-parse-syllabus");
+      const statusSpan = document.getElementById("syllabus-status") || document.getElementById("syllabusFileStatus");
+      const textarea = document.getElementById("syllabusText") || document.getElementById("syllabusRawText");
 
-      if (file.type !== "application/pdf") {
-        alert("Please upload a PDF document (.pdf).");
+      if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== "application/pdf") {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          if (textarea) textarea.value = evt.target.result;
+          if (statusSpan) statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Loaded file (${evt.target.result.length} characters)`;
+        };
+        reader.readAsText(file);
         return;
       }
 
-      statusSpan.innerText = "Extracting text via PDF parser...";
+      if (statusSpan) statusSpan.innerText = "Extracting text from PDF via PDF.js parser...";
       try {
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -1647,32 +1794,38 @@
           fullText += pageText + "\n\n";
         }
 
-        textarea.value = fullText.trim();
-        statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Extracted ${pdf.numPages} pages (${fullText.length} chars)`;
+        if (textarea) textarea.value = fullText.trim();
+        if (statusSpan) statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Extracted ${pdf.numPages} pages (${fullText.length} characters)`;
       } catch (err) {
         console.error(err);
-        statusSpan.innerText = "PDF parsing failed. Please copy-paste text.";
+        if (statusSpan) statusSpan.innerText = "PDF parsing failed. Please copy-paste text directly.";
       }
     }
 
     async function handleSyllabusSubmit(e) {
       e.preventDefault();
-      const syllabusText = document.getElementById("syllabusRawText").value.trim();
-      const defaultDivision = document.getElementById("syllabusDept").value;
-      const targetCadre = document.getElementById("syllabusCadre").value;
-      const targetDesignation = document.getElementById("syllabusDesignation").value;
-      const resultBox = document.getElementById("syllabusResult");
-      const btn = document.getElementById("btn-parse-syllabus");
+      const textarea = document.getElementById("syllabusText") || document.getElementById("syllabusRawText");
+      const syllabusText = textarea ? textarea.value.trim() : "";
+      const defaultDivision = (document.getElementById("syllabusDept") && document.getElementById("syllabusDept").value) || "ALL";
+      const targetCadre = (document.getElementById("syllabusCadre") && document.getElementById("syllabusCadre").value) || "ALL";
+      const targetDesignation = (document.getElementById("syllabusDesignation") && document.getElementById("syllabusDesignation").value) || "ALL";
+      const resultBox = document.getElementById("syllabus-preview-box") || document.getElementById("syllabusResult");
+      const statusSpan = document.getElementById("syllabus-status") || document.getElementById("syllabusFileStatus");
+      const btn = document.getElementById("btn-syllabus-submit") || document.getElementById("btn-parse-syllabus");
 
       if (!syllabusText) {
-        alert("Please upload a PDF syllabus or paste the syllabus text first.");
+        alert("Please upload a PDF syllabus/circular or paste syllabus text first.");
         return;
       }
 
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Parsing with AI...';
-      resultBox.style.display = "block";
-      resultBox.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem; color:#0284c7;"></i><p style="margin-top:10px; font-weight:700;">Deconstructing syllabus into NSSTA micro-modules...</p></div>';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Parsing with LangChain AI...';
+      }
+      if (resultBox) {
+        resultBox.style.display = "block";
+        resultBox.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem; color:#0284c7;"></i><p style="margin-top:10px; font-weight:700;">Deconstructing syllabus into accredited MoSPI courses via LangChain...</p></div>';
+      }
 
       try {
         const res = await fetch(`${API_URL}/api/admin/parse-syllabus`, {
@@ -1681,33 +1834,44 @@
           body: JSON.stringify({ syllabusText, defaultDivision, targetCadre, targetDesignation })
         });
         const data = await res.json();
-        if (data.courses && data.courses.length > 0) {
-          resultBox.innerHTML = `
-            <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:12px; border-radius:8px; font-weight:700; margin-bottom:12px;">
-              <i class="fa-solid fa-circle-check"></i> Successfully generated and saved ${data.count} courses into Master DB!
-            </div>
-            ${data.courses.map(c => `
-              <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:8px;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                  <strong style="color:#0f172a; font-size:0.92rem;">${c.title}</strong>
-                  <span style="background:#e0f2fe; color:#0369a1; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px;">${c.learning_stage}</span>
-                </div>
-                <p style="color:#475569; font-size:0.8rem; margin:6px 0;">${c.description}</p>
-                <div style="font-size:0.74rem; color:#64748b;">
-                  <span><strong>Domain:</strong> ${c.domain}</span> | <span><strong>Target:</strong> ${c.target_cadre} - ${c.target_department}</span>
-                </div>
+        const courses = data.courses || data.modules || [];
+        if (courses.length > 0) {
+          if (statusSpan) statusSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Successfully extracted and saved ${courses.length} courses!`;
+          if (resultBox) {
+            resultBox.innerHTML = `
+              <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:12px; border-radius:8px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-circle-check" style="font-size:1.1rem;"></i> Successfully generated and saved ${courses.length} courses into Master DB!
               </div>
-            `).join('')}
-          `;
-          loadCoursesDropdown();
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                ${courses.map(c => `
+                  <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                      <strong style="color:#0f172a; font-size:0.92rem;">${c.title}</strong>
+                      <span style="background:#e0f2fe; color:#0369a1; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; white-space:nowrap;">${c.learning_stage || c.difficulty_level || 'Functional Core'}</span>
+                    </div>
+                    <p style="color:#475569; font-size:0.8rem; margin:6px 0;">${c.description}</p>
+                    <div style="font-size:0.74rem; color:#64748b; display:flex; flex-wrap:wrap; gap:12px;">
+                      <span><strong>Domain:</strong> ${c.domain || 'Statistical Competencies'}</span>
+                      <span><strong>Target Division:</strong> ${Array.isArray(c.target_departments) ? c.target_departments.join(', ') : (c.target_department || defaultDivision)}</span>
+                      <span><strong>Target Cadre:</strong> ${Array.isArray(c.target_cadres) ? c.target_cadres.join(', ') : (c.target_cadre || targetCadre)}</span>
+                      <span><strong>Target Designation:</strong> ${Array.isArray(c.target_designations) ? c.target_designations.join(', ') : (c.target_designation || targetDesignation)}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            `;
+          }
+          await loadCoursesDropdown();
         } else {
-          resultBox.innerHTML = '<div style="color:var(--danger); font-weight:700;">Failed to parse syllabus. Try providing a more detailed curriculum text.</div>';
+          if (resultBox) resultBox.innerHTML = '<div style="color:var(--danger); font-weight:700;">Failed to extract courses. Please try providing more detailed curriculum text.</div>';
         }
       } catch (err) {
-        resultBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">Error: ${err.message}</div>`;
+        if (resultBox) resultBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">Error: ${err.message}</div>`;
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Extract and Save Courses';
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Extract and Save Courses';
+        }
       }
     }
 
@@ -1719,17 +1883,21 @@
       const designation = document.getElementById("draftDesignation").value;
       const domain = document.getElementById("draftDomain").value;
       const btn = document.getElementById("btn-draft-submit");
-      const resultBox = document.getElementById("draftResult");
+      const statusBox = document.getElementById("draft-status") || document.getElementById("draftResult");
 
       if (!topic) {
         alert("Please enter a course topic.");
         return;
       }
 
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating Course...';
-      resultBox.style.display = "block";
-      resultBox.innerHTML = '<div style="text-align:center; padding:15px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem; color:#0284c7;"></i><p style="margin-top:8px;">Structuring curriculum and learning milestones...</p></div>';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating Course...';
+      }
+      if (statusBox) {
+        statusBox.style.display = "block";
+        statusBox.innerHTML = '<div style="text-align:center; padding:15px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem; color:#0284c7;"></i><p style="margin-top:8px;">Structuring curriculum and learning milestones...</p></div>';
+      }
 
       try {
         const res = await fetch(`${API_URL}/api/admin/draft-course`, {
@@ -1739,26 +1907,35 @@
         });
         const data = await res.json();
         if (data.course) {
-          resultBox.innerHTML = `
-            <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:12px; border-radius:8px; font-weight:700; margin-bottom:8px;">
-              <i class="fa-solid fa-circle-check"></i> Course successfully drafted and added to Master DB!
-            </div>
-            <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:8px;">
-              <strong style="color:#0f172a; font-size:0.95rem;">${data.course.title}</strong>
-              <p style="color:#475569; font-size:0.82rem; margin:6px 0;">${data.course.description}</p>
-              <div style="font-size:0.75rem; color:#64748b;">
-                <strong>Stage:</strong> ${data.course.learning_stage} | <strong>Domain:</strong> ${data.course.domain}
+          if (statusBox) {
+            statusBox.innerHTML = `
+              <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; padding:12px; border-radius:8px; font-weight:700; margin-bottom:8px;">
+                <i class="fa-solid fa-circle-check"></i> Course successfully drafted and added to Master DB!
               </div>
-            </div>
-          `;
+              <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:8px;">
+                <strong style="color:#0f172a; font-size:0.95rem;">${data.course.title}</strong>
+                <p style="color:#475569; font-size:0.82rem; margin:6px 0;">${data.course.description}</p>
+                <div style="font-size:0.75rem; color:#64748b; display:flex; flex-wrap:wrap; gap:10px;">
+                  <span><strong>Stage:</strong> ${data.course.learning_stage}</span>
+                  <span><strong>Domain:</strong> ${data.course.domain}</span>
+                  <span><strong>Cadre:</strong> ${data.course.target_cadre || cadre}</span>
+                  <span><strong>Designation:</strong> ${data.course.target_designation || designation}</span>
+                </div>
+              </div>
+            `;
+          }
           document.getElementById("draftTopic").value = "";
-          loadCoursesDropdown();
+          await loadCoursesDropdown();
+        } else {
+          if (statusBox) statusBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">Error: ${data.error || 'Failed to draft course'}</div>`;
         }
       } catch (err) {
-        resultBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">Error: ${err.message}</div>`;
+        if (statusBox) statusBox.innerHTML = `<div style="color:var(--danger); font-weight:700;">Error: ${err.message}</div>`;
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Save this Course';
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-database"></i> Save this Course';
+        }
       }
     }
 

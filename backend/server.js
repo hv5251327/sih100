@@ -2139,7 +2139,7 @@ Return ONLY JSON:
             title: courseTitle,
             domain: domain || 'Statistical Competencies',
             difficulty_level: courseDiff || 'Intermediate',
-            description: courseDesc,
+            description: `${courseDesc} [Target: ${cadre || 'ALL'} | ${designation || 'ALL'}]`,
             video_url: 'https://portal.igotkarmayogi.gov.in',
             is_general_mandatory: false,
             target_departments: [department || 'ALL']
@@ -2163,7 +2163,13 @@ Return ONLY JSON:
             saved = dbSaved;
         }
 
-        return res.json({ message: `Course "${(saved || newRow).title}" successfully added to master_courses!`, course: saved || newRow });
+        const outCourse = {
+            ...(saved || newRow),
+            target_cadre: cadre || 'ALL',
+            target_designation: designation || 'ALL'
+        };
+
+        return res.json({ message: `Course "${outCourse.title}" successfully added to master_courses!`, course: outCourse });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
@@ -2255,8 +2261,11 @@ app.post('/api/admin/parse-syllabus', async (req, res) => {
         }));
 
         return res.json({ 
-            message: `Successfully analyzed syllabus with LangChain & Ollama and saved ${rowsToInsert.length} accredited courses into master_courses table!`, 
-            modules: returnModules 
+            success: true,
+            message: `Successfully analyzed syllabus with LangChain and saved ${rowsToInsert.length} accredited courses into master_courses table!`, 
+            count: rowsToInsert.length,
+            modules: returnModules,
+            courses: returnModules 
         });
     } catch (err) {
         return res.status(500).json({ error: 'Failed to extract syllabus courses: ' + err.message });
