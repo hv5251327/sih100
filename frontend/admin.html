@@ -1560,11 +1560,13 @@
             <td style="font-size:0.8rem; color:var(--text-muted);">${c.issue_date || '2026-08-15'}</td>
             <td>
               <div style="display:flex; gap:6px; align-items:center;">
-                <button onclick="openAdminCertModal('${encodeURIComponent(JSON.stringify(c))}')" class="btn-action" style="padding:4px 8px; font-size:0.75rem; background:#0284c7;"><i class="fa-solid fa-eye"></i> View</button>
                 ${isPending ? `
+                  <button onclick="openAdminCertModal('${encodeURIComponent(JSON.stringify(c))}')" class="btn-action" style="padding:4px 8px; font-size:0.75rem; background:#0284c7;"><i class="fa-solid fa-eye"></i> View</button>
                   <button onclick="reviewCertificate('${c.id}', 'approved')" class="btn-action" style="padding:4px 8px; font-size:0.75rem; background:var(--success);"><i class="fa-solid fa-check"></i></button>
                   <button onclick="reviewCertificate('${c.id}', 'rejected')" class="btn-action" style="padding:4px 8px; font-size:0.75rem; background:var(--danger);"><i class="fa-solid fa-xmark"></i></button>
-                ` : ''}
+                ` : `
+                  <span style="font-size:0.76rem; color:var(--text-muted); font-weight:700; padding:4px 8px; background:#f1f5f9; border-radius:4px;"><i class="fa-solid fa-lock"></i> Processed</span>
+                `}
               </div>
             </td>
           </tr>
