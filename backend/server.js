@@ -16,7 +16,7 @@ const {
     executeCodeWithAIEngine,
     DEPARTMENT_NAMES_MAP
 } = require('./mospi_ai_engine');
-const { redisCache } = require('./redis_client');
+const { redisCache, sandboxQueue } = require('./redis_client');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -3197,7 +3197,18 @@ app.get(['/api/redis/status', '/api/cache/status'], (req, res) => {
 });
 
 // =========================================================================
-// ⚡ UNIVERSAL SANDBOX RUNNER: LOCAL NATIVE & DETERMINISTIC AI EXECUTION
+// ⚡ REDIS SANDBOX EXECUTION QUEUE STATUS ENDPOINT
+// =========================================================================
+app.get(['/api/sandbox/queue/status', '/api/sandbox/queue'], async (req, res) => {
+    return res.json({
+        success: true,
+        queue: await sandboxQueue.getQueueStatus(),
+        timestamp: new Date().toISOString()
+    });
+});
+
+// =========================================================================
+// ⚡ UNIVERSAL SANDBOX RUNNER: LOCAL NATIVE, REDIS QUEUING & DETERMINISTIC AI EXECUTION
 // =========================================================================
 app.post(['/api/sandbox/run', '/api/code/execute', '/api/sandbox/execute'], async (req, res) => {
     const { language, code, dataset } = req.body;
@@ -3228,145 +3239,177 @@ app.post(['/api/sandbox/run', '/api/code/execute', '/api/sandbox/execute'], asyn
         });
     }
 
-    // 2. Local Python execution with 5s timeout & infinite loop watchdog
-    if (cleanLang === 'python' || cleanLang === 'py') {
-        const filePath = path.join(tmpDir, `mospi_py_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.py`);
-        try {
-            fs.writeFileSync(filePath, cleanCode, 'utf-8');
-            return exec(`python "${filePath}"`, { timeout: 5000, maxBuffer: 1024 * 1024 }, async (err, stdout, stderr) => {
-                try { fs.unlinkSync(filePath); } catch (e) {}
-                const duration = Date.now() - startTime;
+    // 2. Queue & execute via Redis Concurrency Engine
+    try {
+        const queuedResult = await sandboxQueue.enqueueAndExecute({ language: cleanLang }, async () => {
+            // A. Local Python execution with 5s timeout & infinite loop watchdog
+            if (cleanLang === 'python' || cleanLang === 'py') {
+                return new Promise((resolve) => {
+                    const filePath = path.join(tmpDir, `mospi_py_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.py`);
+                    try {
+                        fs.writeFileSync(filePath, cleanCode, 'utf-8');
+                        exec(`python "${filePath}"`, { timeout: 5000, maxBuffer: 1024 * 1024 }, async (err, stdout, stderr) => {
+                            try { fs.unlinkSync(filePath); } catch (e) {}
+                            const duration = Date.now() - startTime;
 
-                if (err && (err.killed || err.signal === 'SIGTERM' || err.code === 'ETIMEDOUT' || duration >= 4900)) {
-                    return res.json({
-                        ok: false,
-                        stdout: stdout || '',
-                        stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
-                        code: 124,
-                        duration_ms: duration,
-                        engine: 'LOCAL_PYTHON_TIMEOUT_WATCHDOG'
-                    });
-                }
+                            if (err && (err.killed || err.signal === 'SIGTERM' || err.code === 'ETIMEDOUT' || duration >= 4900)) {
+                                return resolve({
+                                    ok: false,
+                                    stdout: stdout || '',
+                                    stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
+                                    code: 124,
+                                    duration_ms: duration,
+                                    engine: 'LOCAL_PYTHON_TIMEOUT_WATCHDOG'
+                                });
+                            }
 
-                const result = {
-                    ok: !err,
-                    stdout: stdout || '',
-                    stderr: stderr || (err ? err.message : ''),
-                    code: err ? (err.code || 1) : 0,
-                    duration_ms: duration,
-                    engine: 'LOCAL_PYTHON_V3'
-                };
-                if (result.ok) await redisCache.set(redisKey, result, 3600);
-                return res.json(result);
-            });
-        } catch (e) {
-            try { fs.unlinkSync(filePath); } catch (e2) {}
-        }
-    }
-
-    // 3. Local Node.js / JavaScript execution with 5s timeout & watchdog
-    if (cleanLang === 'javascript' || cleanLang === 'js' || cleanLang === 'node') {
-        const filePath = path.join(tmpDir, `mospi_js_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.js`);
-        try {
-            fs.writeFileSync(filePath, cleanCode, 'utf-8');
-            return exec(`node "${filePath}"`, { timeout: 5000, maxBuffer: 1024 * 1024 }, async (err, stdout, stderr) => {
-                try { fs.unlinkSync(filePath); } catch (e) {}
-                const duration = Date.now() - startTime;
-
-                if (err && (err.killed || err.signal === 'SIGTERM' || err.code === 'ETIMEDOUT' || duration >= 4900)) {
-                    return res.json({
-                        ok: false,
-                        stdout: stdout || '',
-                        stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
-                        code: 124,
-                        duration_ms: duration,
-                        engine: 'LOCAL_NODE_TIMEOUT_WATCHDOG'
-                    });
-                }
-
-                const result = {
-                    ok: !err,
-                    stdout: stdout || '',
-                    stderr: stderr || (err ? err.message : ''),
-                    code: err ? (err.code || 1) : 0,
-                    duration_ms: duration,
-                    engine: 'LOCAL_NODE_V8'
-                };
-                if (result.ok) await redisCache.set(redisKey, result, 3600);
-                return res.json(result);
-            });
-        } catch (e) {
-            try { fs.unlinkSync(filePath); } catch (e2) {}
-        }
-    }
-
-    // 4. Local C / C++ GCC Compilation & Execution with 5s watchdog
-    if (cleanLang === 'c' || cleanLang === 'cpp' || cleanLang === 'c++') {
-        const isCpp = cleanLang.includes('++') || cleanLang === 'cpp';
-        const ext = isCpp ? '.cpp' : '.c';
-        const srcPath = path.join(tmpDir, `mospi_c_${Date.now()}_${Math.random().toString(36).substring(2, 6)}${ext}`);
-        const exePath = path.join(tmpDir, `mospi_c_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.exe`);
-        const compiler = isCpp ? 'g++' : 'gcc';
-
-        try {
-            fs.writeFileSync(srcPath, cleanCode, 'utf-8');
-            return exec(`${compiler} "${srcPath}" -o "${exePath}"`, { timeout: 4000 }, (compileErr, cStdout, cStderr) => {
-                if (compileErr) {
-                    try { fs.unlinkSync(srcPath); } catch (e) {}
-                    return res.json({
-                        ok: false,
-                        stdout: '',
-                        stderr: `Compilation Error:\n${cStderr || compileErr.message}`,
-                        code: 1,
-                        duration_ms: Date.now() - startTime,
-                        engine: `LOCAL_${compiler.toUpperCase()}_COMPILER`
-                    });
-                }
-
-                exec(`"${exePath}"`, { timeout: 5000 }, async (runErr, rStdout, rStderr) => {
-                    try { fs.unlinkSync(srcPath); } catch (e) {}
-                    try { fs.unlinkSync(exePath); } catch (e) {}
-                    const duration = Date.now() - startTime;
-
-                    if (runErr && (runErr.killed || runErr.signal === 'SIGTERM' || duration >= 4900)) {
-                        return res.json({
+                            const result = {
+                                ok: !err,
+                                stdout: stdout || '',
+                                stderr: stderr || (err ? err.message : ''),
+                                code: err ? (err.code || 1) : 0,
+                                duration_ms: duration,
+                                engine: 'LOCAL_PYTHON_V3'
+                            };
+                            if (result.ok) await redisCache.set(redisKey, result, 3600);
+                            return resolve(result);
+                        });
+                    } catch (e) {
+                        try { fs.unlinkSync(filePath); } catch (e2) {}
+                        resolve({
                             ok: false,
-                            stdout: rStdout || '',
-                            stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
-                            code: 124,
-                            duration_ms: duration,
-                            engine: `LOCAL_${compiler.toUpperCase()}_TIMEOUT_WATCHDOG`
+                            stdout: '',
+                            stderr: e.message,
+                            code: 1,
+                            duration_ms: Date.now() - startTime
                         });
                     }
-
-                    const result = {
-                        ok: !runErr,
-                        stdout: rStdout || '',
-                        stderr: rStderr || (runErr ? runErr.message : ''),
-                        code: runErr ? (runErr.code || 1) : 0,
-                        duration_ms: duration,
-                        engine: `LOCAL_${compiler.toUpperCase()}_BINARY`
-                    };
-                    if (result.ok) await redisCache.set(redisKey, result, 3600);
-                    return res.json(result);
                 });
-            });
-        } catch (e) {
-            try { fs.unlinkSync(srcPath); } catch (e2) {}
-            try { fs.unlinkSync(exePath); } catch (e2) {}
-        }
-    }
+            }
 
-    // 5. Universal AI Execution Engine for R, Rust, Go, Java, Bash, Julia, PHP, Kotlin, SQLite
-    try {
-        const aiResult = await executeCodeWithAIEngine(cleanLang, cleanCode);
-        const responsePayload = {
-            ...aiResult,
-            duration_ms: Date.now() - startTime,
-            engine: 'AI_UNIVERSAL_RUNTIME'
-        };
-        if (responsePayload.ok) await redisCache.set(redisKey, responsePayload, 3600);
-        return res.json(responsePayload);
+            // B. Local Node.js / JavaScript execution with 5s timeout & watchdog
+            if (cleanLang === 'javascript' || cleanLang === 'js' || cleanLang === 'node') {
+                return new Promise((resolve) => {
+                    const filePath = path.join(tmpDir, `mospi_js_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.js`);
+                    try {
+                        fs.writeFileSync(filePath, cleanCode, 'utf-8');
+                        exec(`node "${filePath}"`, { timeout: 5000, maxBuffer: 1024 * 1024 }, async (err, stdout, stderr) => {
+                            try { fs.unlinkSync(filePath); } catch (e) {}
+                            const duration = Date.now() - startTime;
+
+                            if (err && (err.killed || err.signal === 'SIGTERM' || err.code === 'ETIMEDOUT' || duration >= 4900)) {
+                                return resolve({
+                                    ok: false,
+                                    stdout: stdout || '',
+                                    stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
+                                    code: 124,
+                                    duration_ms: duration,
+                                    engine: 'LOCAL_NODE_TIMEOUT_WATCHDOG'
+                                });
+                            }
+
+                            const result = {
+                                ok: !err,
+                                stdout: stdout || '',
+                                stderr: stderr || (err ? err.message : ''),
+                                code: err ? (err.code || 1) : 0,
+                                duration_ms: duration,
+                                engine: 'LOCAL_NODE_V8'
+                            };
+                            if (result.ok) await redisCache.set(redisKey, result, 3600);
+                            return resolve(result);
+                        });
+                    } catch (e) {
+                        try { fs.unlinkSync(filePath); } catch (e2) {}
+                        resolve({
+                            ok: false,
+                            stdout: '',
+                            stderr: e.message,
+                            code: 1,
+                            duration_ms: Date.now() - startTime
+                        });
+                    }
+                });
+            }
+
+            // C. Local C / C++ GCC Compilation & Execution with 5s watchdog
+            if (cleanLang === 'c' || cleanLang === 'cpp' || cleanLang === 'c++') {
+                return new Promise((resolve) => {
+                    const isCpp = cleanLang.includes('++') || cleanLang === 'cpp';
+                    const ext = isCpp ? '.cpp' : '.c';
+                    const srcPath = path.join(tmpDir, `mospi_c_${Date.now()}_${Math.random().toString(36).substring(2, 6)}${ext}`);
+                    const exePath = path.join(tmpDir, `mospi_c_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.exe`);
+                    const compiler = isCpp ? 'g++' : 'gcc';
+
+                    try {
+                        fs.writeFileSync(srcPath, cleanCode, 'utf-8');
+                        exec(`${compiler} "${srcPath}" -o "${exePath}"`, { timeout: 4000 }, (compileErr, cStdout, cStderr) => {
+                            if (compileErr) {
+                                try { fs.unlinkSync(srcPath); } catch (e) {}
+                                return resolve({
+                                    ok: false,
+                                    stdout: '',
+                                    stderr: `Compilation Error:\n${cStderr || compileErr.message}`,
+                                    code: 1,
+                                    duration_ms: Date.now() - startTime,
+                                    engine: `LOCAL_${compiler.toUpperCase()}_COMPILER`
+                                });
+                            }
+
+                            exec(`"${exePath}"`, { timeout: 5000 }, async (runErr, rStdout, rStderr) => {
+                                try { fs.unlinkSync(srcPath); } catch (e) {}
+                                try { fs.unlinkSync(exePath); } catch (e) {}
+                                const duration = Date.now() - startTime;
+
+                                if (runErr && (runErr.killed || runErr.signal === 'SIGTERM' || duration >= 4900)) {
+                                    return resolve({
+                                        ok: false,
+                                        stdout: rStdout || '',
+                                        stderr: '⚠️ Execution Timed Out (5.0s): Program stopped due to an infinite loop or excessive computation time.',
+                                        code: 124,
+                                        duration_ms: duration,
+                                        engine: `LOCAL_${compiler.toUpperCase()}_TIMEOUT_WATCHDOG`
+                                    });
+                                }
+
+                                const result = {
+                                    ok: !runErr,
+                                    stdout: rStdout || '',
+                                    stderr: rStderr || (runErr ? runErr.message : ''),
+                                    code: runErr ? (runErr.code || 1) : 0,
+                                    duration_ms: duration,
+                                    engine: `LOCAL_${compiler.toUpperCase()}_BINARY`
+                                };
+                                if (result.ok) await redisCache.set(redisKey, result, 3600);
+                                return resolve(result);
+                            });
+                        });
+                    } catch (e) {
+                        try { fs.unlinkSync(srcPath); } catch (e2) {}
+                        try { fs.unlinkSync(exePath); } catch (e2) {}
+                        resolve({
+                            ok: false,
+                            stdout: '',
+                            stderr: e.message,
+                            code: 1,
+                            duration_ms: Date.now() - startTime
+                        });
+                    }
+                });
+            }
+
+            // D. Universal AI Execution Engine for R, Rust, Go, Java, Bash, Julia, PHP, Kotlin, SQLite
+            const aiResult = await executeCodeWithAIEngine(cleanLang, cleanCode);
+            const responsePayload = {
+                ...aiResult,
+                duration_ms: Date.now() - startTime,
+                engine: 'AI_UNIVERSAL_RUNTIME'
+            };
+            if (responsePayload.ok) await redisCache.set(redisKey, responsePayload, 3600);
+            return responsePayload;
+        });
+
+        return res.json(queuedResult);
     } catch (err) {
         return res.json({
             ok: false,
