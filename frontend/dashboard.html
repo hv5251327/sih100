@@ -2010,6 +2010,20 @@ function nominateForTpac(titleEnc) {
       try {
         const base64Data = await readFileAsBase64(file);
 
+        // Store locally for instant zero-loss retrieval across sessions and portals
+        try {
+          const certRecordLocal = {
+            userEmail: currentUser.email,
+            officerName: currentUser.name,
+            courseTitle: currentActiveCourse,
+            fileName: file.name,
+            fileData: base64Data,
+            date: new Date().toISOString()
+          };
+          localStorage.setItem(`mospi_cert_doc_${currentUser.email.toLowerCase()}_${encodeURIComponent(currentActiveCourse)}`, base64Data);
+          localStorage.setItem('mospi_latest_uploaded_cert', JSON.stringify(certRecordLocal));
+        } catch (storageErr) {}
+
         const res = await fetch(`${API_URL}/api/certificates/verify-ai`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

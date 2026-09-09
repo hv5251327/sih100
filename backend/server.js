@@ -3043,6 +3043,8 @@ CRITICAL INSTRUCTIONS:
 });
 
 // --- IN-MEMORY FALLBACK CACHES FOR CERTIFICATES & WORKSHOPS ---
+const UPLOADED_CERTS_FILE = path.join(__dirname, 'data', 'uploaded_certificates.json');
+
 let memoryCertificates = [
     {
         id: 1,
@@ -3065,6 +3067,29 @@ let memoryCertificates = [
         admin_remarks: null
     }
 ];
+
+try {
+    if (fs.existsSync(UPLOADED_CERTS_FILE)) {
+        const raw = fs.readFileSync(UPLOADED_CERTS_FILE, 'utf-8');
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            memoryCertificates = parsed;
+        }
+    }
+} catch (e) {
+    console.warn("Could not load uploaded certificates from disk:", e.message);
+}
+
+function persistCertificatesToDisk() {
+    try {
+        if (!fs.existsSync(path.join(__dirname, 'data'))) {
+            fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true });
+        }
+        fs.writeFileSync(UPLOADED_CERTS_FILE, JSON.stringify(memoryCertificates.slice(0, 100), null, 2), 'utf-8');
+    } catch (e) {
+        console.warn("Could not persist certificates to disk:", e.message);
+    }
+}
 
 let memoryWorkshops = [
     {
@@ -3218,6 +3243,7 @@ REPLY ONLY WITH A STRICT JSON OBJECT (NO markdown formatting):
     } catch (e) {}
 
     memoryCertificates.unshift(certRecord);
+    persistCertificatesToDisk();
 
     return res.json({
         success: true,
@@ -3254,6 +3280,7 @@ app.post('/api/certificates/submit', async (req, res) => {
     }
 
     memoryCertificates.unshift(savedRecord);
+    persistCertificatesToDisk();
     return res.json({ message: 'Certificate submitted successfully for administrative verification!', certificate: savedRecord });
 });
 
@@ -3272,6 +3299,7 @@ app.post('/api/admin/certificates/review', async (req, res) => {
     targetCert.status = status;
     targetCert.admin_remarks = adminRemarks || (status === 'approved' ? 'Verified by NSSTA Authority' : 'Incomplete documentation');
     targetCert.reviewed_at = new Date().toISOString();
+    persistCertificatesToDisk();
 
     try {
         await supabase.from('course_certificates').update({
