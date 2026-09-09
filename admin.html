@@ -422,7 +422,9 @@
       padding: 16px 20px;
     }
 
-    /* Responsive Design */
+    /* ===================================================
+       📱 COMPREHENSIVE MOBILE & TABLET RESPONSIVENESS
+       =================================================== */
     @media (max-width: 1024px) {
       .admin-layout { flex-direction: column; }
       .admin-sidebar {
@@ -435,20 +437,52 @@
         border-bottom: 1px solid var(--border-light);
         flex-direction: row;
         overflow-x: auto;
-        padding: 10px 14px;
+        padding: 8px 12px;
         gap: 6px;
+        background: #ffffff;
+        -webkit-overflow-scrolling: touch;
       }
       .sidebar-heading { display: none; }
       .sidebar-nav-item { padding: 8px 14px; white-space: nowrap; flex-shrink: 0; font-size: 0.82rem; }
-      .admin-main-content { padding: 20px 16px; gap: 24px; }
+      .admin-main-content { padding: 20px 14px 64px 14px; gap: 24px; }
       .panel { padding: 20px 18px; }
     }
-    @media (max-width: 600px) {
-      .navbar { padding: 0 16px; }
+
+    @media (max-width: 768px) {
+      .navbar { padding: 0 14px; }
+      .nav-brand { gap: 10px; }
+      .brand-icon { width: 36px; height: 36px; font-size: 1.1rem; }
       .brand-title { font-size: 0.95rem; }
       .brand-subtitle { display: none; }
-      .btn-action { width: 100%; min-height: 44px; font-size: 0.88rem; }
-      .panel-header { flex-direction: column; align-items: flex-start; }
+      .btn-nav-link, .logout-btn { padding: 6px 12px; font-size: 0.8rem; }
+      
+      .kpi-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .kpi-card { padding: 14px 16px; }
+      .kpi-val { font-size: 1.6rem; }
+      .kpi-icon-box { width: 44px; height: 44px; font-size: 1.2rem; }
+
+      .admin-section { padding: 20px 14px; margin-bottom: 24px; border-radius: 12px; }
+      .panel-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .panel-header-left { gap: 10px; }
+      .panel-icon-badge { width: 38px; height: 38px; font-size: 1rem; }
+      .panel-header h2 { font-size: 1.05rem; }
+
+      div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+      }
+
+      .btn-action { width: 100%; min-height: 42px; font-size: 0.86rem; }
+      
+      .modal-box { padding: 16px 14px !important; width: 96vw !important; max-width: 96vw !important; border-radius: 10px !important; }
+    }
+
+    @media (max-width: 480px) {
+      .kpi-row { grid-template-columns: 1fr; gap: 10px; }
+      .sidebar-nav-item { padding: 6px 10px; font-size: 0.78rem; gap: 6px; }
+      .sidebar-nav-item i { width: 16px; font-size: 0.85rem; }
+      .table-container { border-radius: 8px; }
+      table th, table td { padding: 9px 11px; font-size: 0.8rem; }
     }
   </style>
 </head>

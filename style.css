@@ -73,3 +73,54 @@ input { width: 100%; padding: 0.8rem 1rem; border: 1px solid #cbd5e1; border-rad
 .sector-list span { background: transparent; border: none; padding: 0; font-size: 0.85rem; color: #2563eb; font-weight: 500; }
 .sector-list .divider { color: #cbd5e1; font-weight: 300; font-size: 0.85rem; padding: 0 4px; }
 .sector-break { flex-basis: 100%; height: 0; }
+
+/* ===================================================
+   📱 RESPONSIVE MOBILE & TABLET MEDIA QUERIES
+   =================================================== */
+
+@media (max-width: 1024px) {
+  .hero-section { padding: 2.5rem 2rem; gap: 20px; }
+  .hero-content h1 { font-size: 2rem; }
+  .course-section { padding: 2.5rem 2rem; }
+  .navbar { padding: 0.8rem 1.5rem; }
+}
+
+@media (max-width: 860px) {
+  .top-nav { padding: 0.4rem 1rem; flex-direction: column; text-align: center; gap: 3px; font-size: 0.72rem; }
+  .navbar { padding: 0.75rem 1rem; flex-wrap: wrap; gap: 10px; }
+  .brand-icon { font-size: 1.6rem; }
+  .brand-text h2 { font-size: 1.1rem; }
+  
+  .nav-links { width: 100%; overflow-x: auto; white-space: nowrap; padding: 6px 0; gap: 1rem; -webkit-overflow-scrolling: touch; }
+  .auth-buttons { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; }
+  .auth-buttons .btn { flex: 1; min-width: 130px; text-align: center; justify-content: center; }
+
+  .hero-section { flex-direction: column; padding: 2rem 1.2rem; text-align: center; }
+  .hero-content h1 { font-size: 1.7rem; }
+  .social-icons { justify-content: center; }
+  .hero-card { width: 100%; max-width: 440px; padding: 1.8rem 1.4rem; }
+  .hero-card .counter { font-size: 2.4rem; }
+
+  .stats-ribbon { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 1.4rem 1rem; }
+  .stats-ribbon .stat-item:last-child { grid-column: span 2; }
+  
+  .course-section { padding: 2rem 1.2rem; }
+  .section-title { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .partner-section { padding: 2.5rem 1.2rem; }
+  .partner-icons { gap: 1.8rem; }
+  .login-card { padding: 2rem 1.4rem; border-radius: 12px; }
+}
+
+@media (max-width: 480px) {
+  .hero-content h1 { font-size: 1.45rem; }
+  .stats-ribbon { grid-template-columns: 1fr; gap: 12px; }
+  .stats-ribbon .stat-item:last-child { grid-column: auto; }
+  .stat-item { min-width: auto; }
+  .stat-item i { font-size: 1.25rem; }
+  .stat-item h3 { font-size: 1.15rem; }
+  .card-grid { grid-template-columns: 1fr; gap: 16px; }
+  .login-card { padding: 1.6rem 1rem; }
+  .btn { font-size: 0.8rem; padding: 0.5rem 0.8rem; }
+  .auth-buttons { flex-direction: column; }
+  .auth-buttons .btn { width: 100%; }
+}

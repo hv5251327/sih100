@@ -336,6 +336,7 @@
       .container { padding: 0 14px; margin: 16px auto; gap: 18px; }
       .dashboard-panel { padding: 16px; }
       .modules-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+      .bhashini-quiz-bar { flex-direction: column; align-items: stretch; gap: 10px; }
     }
 
     @media (max-width: 640px) {
@@ -357,12 +358,15 @@
       .module-actions { grid-template-columns: 1fr; gap: 8px; }
       .btn-action { padding: 10px 12px; font-size: 0.82rem; min-height: 40px; width: 100%; }
 
+      /* Sandbox Controls on Mobile */
+      #sandboxLangSelect, #simDatasetSelect { min-width: 100% !important; width: 100% !important; }
+
       .bhashini-widget { right: 12px; bottom: 12px; }
-      .bhashini-btn { width: 50px; height: 50px; font-size: 1.2rem; }
-      .bhashini-panel { width: calc(100vw - 24px); max-width: calc(100vw - 24px); max-height: 75vh; }
+      .bhashini-btn { width: 48px; height: 48px; font-size: 1.15rem; }
+      .bhashini-panel { width: calc(100vw - 20px); max-width: calc(100vw - 20px); max-height: 75vh; right: 10px; bottom: 68px; }
       
-      .modal-backdrop { padding: 10px; }
-      .modal-box { padding: 16px; max-width: 100%; border-radius: 10px; }
+      .modal-backdrop { padding: 8px; }
+      .modal-box { padding: 16px 14px; max-width: 100%; border-radius: 10px; }
     }
   
     /* ===================================================
