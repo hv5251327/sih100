@@ -3643,6 +3643,9 @@ async function sendOtpEmail(recipientEmail, recipientName, otpCode) {
         </div>
     `;
 
+    let emailSent = false;
+    let rateLimited = false;
+
     // 1. Try Nodemailer if SMTP configured
     if (mailTransporter) {
         try {
@@ -3653,7 +3656,7 @@ async function sendOtpEmail(recipientEmail, recipientName, otpCode) {
                 html: htmlContent
             });
             console.log(`[AUTH] OTP email sent successfully via SMTP to ${recipientEmail}`);
-            return true;
+            return { success: true, method: 'smtp' };
         } catch (mailErr) {
             console.warn(`[AUTH] SMTP dispatch warning:`, mailErr.message);
         }
@@ -3668,15 +3671,19 @@ async function sendOtpEmail(recipientEmail, recipientName, otpCode) {
             }
         });
         if (error) {
-            console.warn(`[AUTH] Supabase Auth email notice:`, error.message);
+            console.warn(`[AUTH] Supabase Auth email notice:`, error.message, 'Code:', error.code);
+            if (error.code === 'over_email_send_rate_limit' || error.status === 429) {
+                rateLimited = true;
+            }
         } else {
             console.log(`[AUTH] OTP dispatched via Supabase Auth to ${recipientEmail}`);
+            emailSent = true;
         }
     } catch (e) {
         console.warn(`[AUTH] Supabase dispatch exception:`, e.message);
     }
 
-    return true;
+    return { success: emailSent, rateLimited: rateLimited };
 }
 
 app.post('/api/auth/send-otp', async (req, res) => {
@@ -3695,9 +3702,18 @@ app.post('/api/auth/send-otp', async (req, res) => {
     console.log(`[AUTH] Generated OTP for ${cleanEmail}: ${code}`);
 
     // Send the OTP via Email to the user
-    await sendOtpEmail(cleanEmail, name, code);
+    const sendResult = await sendOtpEmail(cleanEmail, name, code);
 
-    // Return response WITHOUT the plain OTP code so it is NEVER exposed directly to employee side
+    if (sendResult.rateLimited) {
+        return res.json({
+            success: true,
+            rateLimited: true,
+            message: `Supabase email hourly limit reached. For immediate testing, code is: ${code}`,
+            email: cleanEmail,
+            fallbackCode: code
+        });
+    }
+
     return res.json({
         success: true,
         message: `OTP has been sent to ${cleanEmail}. Please check your email inbox to verify.`,

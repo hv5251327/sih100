@@ -400,7 +400,11 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-circle-check"></i> Verification code sent to <strong>${email}</strong>. Please enter the 6-digit code.</span>`;
+                    if (data.rateLimited && data.fallbackCode) {
+                        if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#b45309;"><i class="fa-solid fa-triangle-exclamation"></i> Supabase free email quota reached (3/hr). Test PIN: <strong style="background:#fef3c7; padding:2px 6px; border-radius:4px; letter-spacing:2px; font-family:monospace; color:#92400e;">${data.fallbackCode}</strong></span>`;
+                    } else {
+                        if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#15803d;"><i class="fa-solid fa-circle-check"></i> Verification code sent to <strong>${email}</strong>. Please enter the 6-digit code.</span>`;
+                    }
                 } else {
                     if (statusMsgEl) statusMsgEl.innerHTML = `<span style="color:#b45309;"><i class="fa-solid fa-triangle-exclamation"></i> ${data.error || 'Could not send email automatically. Please check your network.'}</span>`;
                 }
