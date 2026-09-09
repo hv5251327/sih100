@@ -646,10 +646,9 @@
     <div class="nav-controls">
 
       <!-- Offline-First PWA Connection Status -->
-      <div id="connectionStatusBadge" class="connection-badge online" onclick="openSyncModal()" title="Click to view offline queue & sync status">
+      <div id="connectionStatusBadge" class="connection-badge online" title="Network Connection Status">
         <span class="status-dot"></span>
         <span id="statusText">Online</span>
-        <span id="pendingBadgeCount" class="pending-count-pill" style="display:none;">0</span>
       </div>
       <div class="bhashini-dropdown-wrapper">
         <i class="fa-solid fa-language"></i>
@@ -838,7 +837,6 @@
             <i class="fa-solid fa-terminal"></i> In-Browser Sandbox Kernel
             <span id="sandboxLangBadge" style="background:#0369a1; color:#fff; font-size:0.72rem; padding:2px 8px; border-radius:4px;">PYTHON 3</span>
           </span>
-          <span id="pyKernelStatus" style="color:#4ade80; font-size:0.76rem;"><i class="fa-solid fa-circle-check"></i> Kernel Ready</span>
         </div>
         <textarea id="simCodeEditor" rows="12" style="width:100%; min-height:260px; background:transparent; color:#38bdf8; border:none; outline:none; font-family:'Fira Code', Consolas, monospace; font-size:0.88rem; resize:vertical; line-height:1.55; box-sizing:border-box;" placeholder="Write any code here..."></textarea>
       </div>
@@ -2799,15 +2797,8 @@ function nominateForTpac(titleEnc) {
     function preloadPyodideOnDemand() {
       if (isPyodidePreloaded || !window.MoSPIOffline) return;
       isPyodidePreloaded = true;
-      const statusEl = document.getElementById('pyKernelStatus');
-      if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color:#38bdf8;"></i> <span style="color:#38bdf8;">Loading WASM Kernel in Background...</span>';
 
-      window.MoSPIOffline.initPyodide((msg) => {
-        if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-gear fa-spin" style="color:#38bdf8;"></i> <span style="color:#38bdf8;">${msg}</span>`;
-      }).then(() => {
-        if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#4ade80;"></i> <span style="color:#4ade80;">WASM Kernel Ready (Offline)</span>';
-      }).catch((e) => {
-        if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i> <span style="color:#f59e0b;">Kernel Idle (Loads on Run)</span>';
+      window.MoSPIOffline.initPyodide().catch(() => {
         isPyodidePreloaded = false;
       });
     }
@@ -2845,20 +2836,10 @@ function nominateForTpac(titleEnc) {
       window.MoSPIOffline.onStatusChange((state) => {
         const badge = document.getElementById('connectionStatusBadge');
         const text = document.getElementById('statusText');
-        const countPill = document.getElementById('pendingBadgeCount');
         if (!badge || !text) return;
 
         badge.className = 'connection-badge ' + (state.isSyncing ? 'syncing' : state.isOnline ? 'online' : 'offline');
         text.innerText = state.isSyncing ? 'Syncing...' : state.isOnline ? 'Online' : 'Offline Field Mode';
-
-        if (countPill) {
-          if (state.pendingSyncCount > 0) {
-            countPill.style.display = 'inline-block';
-            countPill.innerText = state.pendingSyncCount + ' Syncs';
-          } else {
-            countPill.style.display = 'none';
-          }
-        }
       });
     }
   
